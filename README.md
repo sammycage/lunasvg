@@ -47,3 +47,5 @@ int main()
     return 0;
 }
 ```
+![output](spiral.png)
+
