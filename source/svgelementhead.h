@@ -1,0 +1,51 @@
+#ifndef SVGELEMENTHEAD_H
+#define SVGELEMENTHEAD_H
+
+#include "svgelementimpl.h"
+
+#include <vector>
+
+namespace lunasvg {
+
+class SVGElementTail;
+
+class SVGElementHead : public SVGElementImpl
+{
+public:
+    virtual ~SVGElementHead();
+    virtual void setAttribute(const std::string& name, const std::string& value);
+    virtual std::string getAttribute(const std::string& name) const;
+    virtual bool hasAttribute(const std::string& name) const;
+    virtual void removeAttribute(const std::string& name);
+    virtual void render(RenderContext& context) const;
+    virtual void renderTail(RenderContext&) const;
+    virtual void externalise(std::string& out, unsigned int& indent) const;
+    virtual void externaliseTail(std::string& out, unsigned int& indent) const;
+    void setProperty(DOMPropertyID nameId, const std::string& value);
+    std::string getProperty(DOMPropertyID nameId) const;
+    bool hasProperty(DOMPropertyID nameId) const;
+    void removeProperty(DOMPropertyID nameId);
+    const std::string& tagName() const;
+    const std::string& id() const { return m_id; }
+    ElementID elementId() const { return m_elementId; }
+    bool isSVGElementHead() const { return true; }
+
+    SVGElementTail* tail;
+
+    DOMSVGPropertyBase* findAnimatedProperty(DOMPropertyID nameId) const;
+    void addToPropertyMap(DOMSVGPropertyBase& property);
+    void updateId(const std::string& newValue);
+
+protected:
+    SVGElementHead(ElementID elementId, SVGDocument* document);
+    void baseClone(SVGElementHead& e) const;
+
+private:
+    ElementID m_elementId;
+    std::string m_id;
+    std::vector<DOMSVGPropertyBase*> m_properties;
+};
+
+} // namespace lunasvg
+
+#endif // SVGELEMENTHEAD_H
