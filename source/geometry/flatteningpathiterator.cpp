@@ -40,60 +40,59 @@ void FlatteningPathIterator::next()
         if(!m_pathIterator.isDone())
         {
             double coords[6];
-
             m_segType = m_pathIterator.currentSegment(coords);
             switch(m_segType)
             {
-                case SegTypeMoveTo:
-                    m_pointCoords.push_back(coords[0]);
-                    m_pointCoords.push_back(coords[1]);
-                    m_lastPoint.x = coords[0];
-                    m_lastPoint.y = coords[1];
-                    break;
-                case SegTypeLineTo:
-                    m_pointCoords.push_back(coords[0]);
-                    m_pointCoords.push_back(coords[1]);
-                    m_lastPoint.x = coords[0];
-                    m_lastPoint.y = coords[1];
-                    break;
-                case SegTypeQuadTo:
-                    m_pointCoords.push_back(m_lastPoint.x);
-                    m_pointCoords.push_back(m_lastPoint.y);
-                    m_pointCoords.push_back(coords[0]);
-                    m_pointCoords.push_back(coords[1]);
-                    m_pointCoords.push_back(coords[2]);
-                    m_pointCoords.push_back(coords[3]);
+            case SegTypeMoveTo:
+                m_pointCoords.push_back(coords[0]);
+                m_pointCoords.push_back(coords[1]);
+                m_lastPoint.x = coords[0];
+                m_lastPoint.y = coords[1];
+                break;
+            case SegTypeLineTo:
+                m_pointCoords.push_back(coords[0]);
+                m_pointCoords.push_back(coords[1]);
+                m_lastPoint.x = coords[0];
+                m_lastPoint.y = coords[1];
+                break;
+            case SegTypeQuadTo:
+                m_pointCoords.push_back(m_lastPoint.x);
+                m_pointCoords.push_back(m_lastPoint.y);
+                m_pointCoords.push_back(coords[0]);
+                m_pointCoords.push_back(coords[1]);
+                m_pointCoords.push_back(coords[2]);
+                m_pointCoords.push_back(coords[3]);
 
-                    for(unsigned int i = 0; i < m_recursionLimit;i++)
-                        flattenCurveQuadTo(m_pointCoords);
+                for(unsigned int i = 0; i < m_recursionLimit;i++)
+                    flattenCurveQuadTo(m_pointCoords);
 
-                    m_coordIndex = 2;
-                    m_lastPoint.x = coords[2];
-                    m_lastPoint.y = coords[3];
-                    m_segType = SegTypeLineTo;
-                    break;
-                case SegTypeCubicTo:
-                    m_pointCoords.push_back(m_lastPoint.x);
-                    m_pointCoords.push_back(m_lastPoint.y);
-                    m_pointCoords.push_back(coords[0]);
-                    m_pointCoords.push_back(coords[1]);
-                    m_pointCoords.push_back(coords[2]);
-                    m_pointCoords.push_back(coords[3]);
-                    m_pointCoords.push_back(coords[4]);
-                    m_pointCoords.push_back(coords[5]);
+                m_coordIndex = 2;
+                m_lastPoint.x = coords[2];
+                m_lastPoint.y = coords[3];
+                m_segType = SegTypeLineTo;
+                break;
+            case SegTypeCubicTo:
+                m_pointCoords.push_back(m_lastPoint.x);
+                m_pointCoords.push_back(m_lastPoint.y);
+                m_pointCoords.push_back(coords[0]);
+                m_pointCoords.push_back(coords[1]);
+                m_pointCoords.push_back(coords[2]);
+                m_pointCoords.push_back(coords[3]);
+                m_pointCoords.push_back(coords[4]);
+                m_pointCoords.push_back(coords[5]);
 
-                    for(unsigned int i = 0; i < m_recursionLimit;i++)
-                        flattenCurveCubicTo(m_pointCoords);
+                for(unsigned int i = 0; i < m_recursionLimit;i++)
+                    flattenCurveCubicTo(m_pointCoords);
 
-                    m_coordIndex = 2;
-                    m_lastPoint.x = coords[4];
-                    m_lastPoint.y = coords[5];
-                    m_segType = SegTypeLineTo;
-                    break;
-                case SegTypeClose:
-                    m_pointCoords.push_back(m_lastPoint.x);
-                    m_pointCoords.push_back(m_lastPoint.y);
-                    break;
+                m_coordIndex = 2;
+                m_lastPoint.x = coords[4];
+                m_lastPoint.y = coords[5];
+                m_segType = SegTypeLineTo;
+                break;
+            case SegTypeClose:
+                m_pointCoords.push_back(m_lastPoint.x);
+                m_pointCoords.push_back(m_lastPoint.y);
+                break;
             }
             m_pathIterator.next();
         }

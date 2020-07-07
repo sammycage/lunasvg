@@ -52,7 +52,7 @@ void SVGClipPathElement::render(RenderContext& context) const
     SVGGraphicsElement::render(context);
 }
 
-SVGElementImpl* SVGClipPathElement::clone(SVGDocument *document) const
+SVGElementImpl* SVGClipPathElement::clone(SVGDocument* document) const
 {
     SVGClipPathElement* e = new SVGClipPathElement(document);
     baseClone(*e);

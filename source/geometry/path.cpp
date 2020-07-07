@@ -223,10 +223,10 @@ void Path::addPoints(const std::vector<Point>& points)
 
 void Path::addEllipse(double cx, double cy, double rx, double ry)
 {
-    double  left = cx - rx;
-    double  top = cy - ry;
-    double  right = cx + rx;
-    double  bottom = cy + ry;
+    double left = cx - rx;
+    double top = cy - ry;
+    double right = cx + rx;
+    double bottom = cy + ry;
 
     double cpx = rx * BEZIER_ARC_FACTOR;
     double cpy = ry * BEZIER_ARC_FACTOR;
