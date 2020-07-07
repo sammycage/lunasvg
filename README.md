@@ -47,10 +47,5 @@ int main()
     return 0;
 }
 ```
+
 ![output](spiral.png)
-
-## Support lunasvg project
-
-If you like the work **lunasvg** is doing please consider a small donation:
-
-[ ![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif) ](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VEHCSK6L3ECDQ)
