@@ -44,11 +44,9 @@ public:
     void smoothCubicTo(const Point& p2, const Point& p3, bool rel = false);
 
     void addPath(const Path& path);
-    void addRect(double x, double y, double w, double h, double rx = 0, double ry = 0);
-    void addRect(const Rect& rect, double rx = 0, double ry = 0);
     void addPoints(const std::vector<Point>& points);
     void addEllipse(double cx, double cy, double rx, double ry);
-    void addEllipse(const Rect& rect);
+    void addRect(double x, double y, double w, double h, double rx, double ry);
 
     bool isEmpty() const;
     void reset();
@@ -101,16 +99,6 @@ inline void Path::smoothQuadTo(const Point& p2, bool rel)
 inline void Path::smoothCubicTo(const Point& p2, const Point& p3, bool rel)
 {
     smoothCubicTo(p2.x, p2.y, p3.x, p3.y, rel);
-}
-
-inline void Path::addRect(const Rect& rect, double rx, double ry)
-{
-    addRect(rect.x, rect.y, rect.width, rect.height, rx, ry);
-}
-
-inline void Path::addEllipse(double cx, double cy, double rx, double ry)
-{
-    addEllipse(Rect(cx - rx, cy - ry, rx + rx, ry + ry));
 }
 
 } // namespace lunasvg

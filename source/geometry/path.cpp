@@ -211,10 +211,38 @@ void Path::addPath(const Path& path)
     }
 }
 
+void Path::addPoints(const std::vector<Point>& points)
+{
+    if(points.empty())
+        return;
+
+    moveTo(points[0].x, points[0].y);
+    for(std::size_t i = 1;i < points.size();i++)
+        lineTo(points[i].x, points[i].y);
+}
+
+void Path::addEllipse(double cx, double cy, double rx, double ry)
+{
+    double  left = cx - rx;
+    double  top = cy - ry;
+    double  right = cx + rx;
+    double  bottom = cy + ry;
+
+    double cpx = rx * BEZIER_ARC_FACTOR;
+    double cpy = ry * BEZIER_ARC_FACTOR;
+
+    moveTo(cx, top);
+    cubicTo(cx+cpx, top, right, cy-cpy, right, cy);
+    cubicTo(right, cy+cpy, cx+cpx, bottom, cx, bottom);
+    cubicTo(cx-cpx, bottom, left, cy+cpy, left, cy);
+    cubicTo(left, cy-cpy, cx-cpx, top, cx, top);
+    closePath();
+}
+
 void Path::addRect(double x, double y, double w, double h, double rx, double ry)
 {
     rx = std::min(rx, w * 0.5);
-    ry = std::min(ry, h* 0.5);
+    ry = std::min(ry, h * 0.5);
 
     double right = x + w;
     double bottom = y + h;
@@ -243,44 +271,6 @@ void Path::addRect(double x, double y, double w, double h, double rx, double ry)
     }
 
     closePath();
-}
-
-void Path::addPoints(const std::vector<Point>& points)
-{
-    if(points.empty())
-        return;
-
-    moveTo(points[0].x, points[0].y);
-    for(std::size_t i = 1;i < points.size();i++)
-        lineTo(points[i].x, points[i].y);
-}
-
-void Path::addEllipse(const Rect& rect)
-{
-    double cx = rect.x + (rect.width * 0.5);
-    double cy = rect.y + (rect.height * 0.5);
-    double offx = rect.width * 0.257;
-    double offy = rect.height * 0.257;
-
-    double px[12];
-    px[0] = px[1] = px[11] = rect.x;
-    px[2] = px[10] = cx - offx;
-    px[3] = px[9] = cx;
-    px[4] = px[8] = cx + offx;
-    px[5] = px[6] = px[7] = rect.x + rect.width;
-
-    double py[12];
-    py[2] = py[3] = py[4] = rect.y;
-    py[1] = py[5] = cy - offy;
-    py[0] = py[6] = cy;
-    py[7] = py[11] = cy + offy;
-    py[8] = py[9] = py[10] = rect.y + rect.height;
-
-    moveTo(px[0], py[0]);
-    cubicTo(px[1], py[1], px[2], py[2], px[3], py[3]);
-    cubicTo(px[4], py[4], px[5], py[5], px[6], py[6]);
-    cubicTo(px[7], py[7], px[8], py[8], px[9], py[9]);
-    cubicTo(px[10], py[10], px[11], py[11], px[0], py[0]);
 }
 
 Rect Path::boundingBox() const
