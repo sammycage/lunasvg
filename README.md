@@ -1,7 +1,7 @@
-# lunasvg
+## lunasvg
 lunasvg is c++ library to create, animate, manipulate and render SVG files.
 
-# simple example
+## simple example
 ```cpp
 #include <memory>
 #include <cmath>
@@ -49,3 +49,8 @@ int main()
 ```
 ![output](spiral.png)
 
+## Support lunasvg project
+
+If you like the work **lunasvg** is doing please consider a small donation:
+
+[ ![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif) ](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VEHCSK6L3ECDQ
