@@ -13,7 +13,7 @@
 #define KTagCData 5
 #define KTagPCData 6
 #define KTagInstruction 7
-#define KTagDeclaration 8
+#define KTagDocType 8
 
 namespace lunasvg {
 
@@ -175,13 +175,13 @@ bool SVGParser::enumTag(const char*& ptr, int& tagType, std::string& tagName, st
 
     if(*ptr=='/')
     {
-        ++ptr;
         tagType = KTagClose;
+        ++ptr;
     }
     else if(*ptr=='?')
     {
-        ++ptr;
         tagType = KTagInstruction;
+        ++ptr;
     }
     else if(*ptr=='!')
     {
@@ -192,9 +192,9 @@ bool SVGParser::enumTag(const char*& ptr, int& tagType, std::string& tagName, st
             if(!sub)
                 return false;
 
+            tagType = KTagComment;
             content.assign(ptr, sub);
             ptr += content.length() + 3;
-            tagType = KTagComment;
 
             return true;
         }
@@ -204,9 +204,40 @@ bool SVGParser::enumTag(const char*& ptr, int& tagType, std::string& tagName, st
             if(!sub)
                 return false;
 
+            tagType = KTagCData;
             content.assign(ptr, sub);
             ptr += content.length() + 3;
-            tagType = KTagCData;
+
+            return true;
+        }
+        else if(Utils::skipDesc(ptr, "DOCTYPE", 7))
+        {
+            start = ptr;
+            while(*ptr && *ptr!='>')
+            {
+                if(*ptr=='[')
+                {
+                    ++ptr;
+                    int depth = 1;
+                    while(*ptr && depth > 0)
+                    {
+                        if(*ptr=='[') ++depth;
+                        else if(*ptr==']') --depth;
+                        ++ptr;
+                    }
+                }
+                else
+                {
+                    ++ptr;
+                }
+            }
+
+            if(!*ptr || *ptr!='>')
+                return false;
+
+            tagType = KTagDocType;
+            content.assign(start, ptr);
+            ptr += 1;
 
             return true;
         }
