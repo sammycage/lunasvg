@@ -15,7 +15,7 @@ public:
      * @param width bitmap width.
      * @param height bitmap height.
      * @param stride bitmap stride.
-     * @note Default bitmap format is ARGB32_Premultipied.
+     * @note Default bitmap format is RGBA (non-premultiplied).
      */
     Bitmap(unsigned char* data, unsigned int width, unsigned int height, unsigned int stride);
 
