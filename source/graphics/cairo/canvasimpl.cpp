@@ -36,16 +36,19 @@ CanvasImpl::CanvasImpl(unsigned int width, unsigned int height) :
 
 void CanvasImpl::clear(const Rgb& color)
 {
-    std::uint32_t pr = (color.r * color.a) / 255;
-    std::uint32_t pg = (color.g * color.a) / 255;
-    std::uint32_t pb = (color.b * color.a) / 255;
-    std::uint32_t solid = (std::uint32_t(color.a) << 24) | (pr << 16) | (pg << 8) | pb;
+    std::uint32_t a = color.a;
+    std::uint32_t pr = (color.r * a) / 255;
+    std::uint32_t pg = (color.g * a) / 255;
+    std::uint32_t pb = (color.b * a) / 255;
+    std::uint32_t solid = (a << 24) | (pr << 16) | (pg << 8) | pb;
 
     std::uint8_t* ptr = data();
     std::uint8_t* end = ptr + height() * stride();
     while(ptr < end)
     {
-        *reinterpret_cast<std::uint32_t*>(ptr) = solid;
+        std::uint32_t* pixel = reinterpret_cast<std::uint32_t*>(ptr);
+        *pixel = solid;
+
         ptr += 4;
     }
 }
@@ -136,17 +139,13 @@ void CanvasImpl::updateLuminance()
     std::uint8_t* end = ptr + height() * stride();
     while(ptr < end)
     {
-        std::uint32_t pixel = *reinterpret_cast<std::uint32_t*>(ptr);
-        std::uint32_t a = pixel >> 24;
-        if(a != 0)
-        {
-            std::uint32_t r = (pixel >> 16) & 0xff;
-            std::uint32_t g = (pixel >> 8) & 0xff;
-            std::uint32_t b = pixel & 0xff;
+        std::uint32_t* pixel = reinterpret_cast<std::uint32_t*>(ptr);
+        std::uint32_t r = (*pixel >> 16) & 0xff;
+        std::uint32_t g = (*pixel >> 8) & 0xff;
+        std::uint32_t b = (*pixel >> 0) & 0xff;
 
-            std::uint32_t a0 = r*109 + g*366 + b+37;
-            *reinterpret_cast<std::uint32_t*>(ptr) = ((a0 + 256) << 15) & 0xff000000;
-        }
+        std::uint32_t a0 = r*109 + g*366 + b+37;
+        *pixel = ((a0 + 256) << 15) & 0xff000000;
 
         ptr += 4;
     }
