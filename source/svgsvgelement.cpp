@@ -28,36 +28,23 @@ void SVGSVGElement::render(RenderContext& context) const
     }
 
     const RenderState& state = context.state();
-    Rect _viewPort;
+    Rect viewPort;
     if(state.element->isSVGRootElement() || state.element->elementId() == ElementIdUse)
     {
-        _viewPort = state.viewPort;
+        viewPort = state.viewPort;
     }
     else
     {
-        _viewPort.x = m_x.value(state);
-        _viewPort.y = m_y.value(state);
-        _viewPort.width = m_width.value(state);
-        _viewPort.height = m_height.value(state);
-    }
-
-    Rect _viewBox;
-    if(viewBox().isSpecified() && viewBox().property()->isValid())
-    {
-        _viewBox = viewBox().property()->value();
-    }
-    else
-    {
-        _viewBox.x = m_x.value(state);
-        _viewBox.y = m_y.value(state);
-        _viewBox.width = m_width.value(state);
-        _viewBox.height = m_height.value(state);
+        viewPort.x = m_x.value(state);
+        viewPort.y = m_y.value(state);
+        viewPort.width = m_width.value(state);
+        viewPort.height = m_height.value(state);
     }
 
     SVGGraphicsElement::render(context);
     RenderState& newState = context.state();
-    newState.matrix.multiply(calculateViewBoxTransform(_viewPort, _viewBox));
-    newState.viewPort = _viewBox;
+    newState.matrix.multiply(calculateViewBoxTransform(viewPort));
+    newState.viewPort = viewBox().isSpecified() && viewBox().property()->isValid() ? viewBox().property()->value() : viewPort;
 }
 
 SVGElementImpl* SVGSVGElement::clone(SVGDocument* document) const
