@@ -13,7 +13,7 @@ class SVGFitToViewBox
 public:
     const DOMSVGViewBoxRect& viewBox() const { return m_viewBox; }
     const DOMSVGPreserveAspectRatio& preserveAspectRatio() const { return m_preserveAspectRatio; }
-    AffineTransform calculateViewBoxTransform(const Rect& viewPort) const;
+    AffineTransform calculateViewBoxTransform(const Rect& viewPort, const Rect& viewBox) const;
 
 protected:
     SVGFitToViewBox(SVGElementHead* element);

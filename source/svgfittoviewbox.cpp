@@ -12,12 +12,10 @@ SVGFitToViewBox::SVGFitToViewBox(SVGElementHead* element) :
     element->addToPropertyMap(m_preserveAspectRatio);
 }
 
-AffineTransform SVGFitToViewBox::calculateViewBoxTransform(const Rect& viewPort) const
+AffineTransform SVGFitToViewBox::calculateViewBoxTransform(const Rect& viewPort, const Rect& viewBox) const
 {
-    const Rect& _viewBox = m_viewBox.isSpecified() && m_viewBox.property()->isValid() ? m_viewBox.property()->value() : viewPort;
     const SVGPreserveAspectRatio* positioning = m_preserveAspectRatio.isSpecified() ? m_preserveAspectRatio.property() : SVGPreserveAspectRatio::defaultValue();
-
-    return positioning->getMatrix(viewPort, _viewBox);
+    return positioning->getMatrix(viewPort, viewBox);
 }
 
 } // namespace lunasvg

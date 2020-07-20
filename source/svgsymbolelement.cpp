@@ -18,12 +18,13 @@ void SVGSymbolElement::render(RenderContext& context) const
     }
 
     const RenderState& state = context.state();
-    const Rect& viewPort = state.viewPort;
+    const Rect& _viewPort = state.viewPort;
+    Rect _viewBox = viewBox().isSpecified() && viewBox().property()->isValid() ? viewBox().property()->value() : _viewPort;
 
     SVGStyledElement::render(context);
     RenderState& newState = context.state();
-    newState.matrix.multiply(calculateViewBoxTransform(viewPort));
-    newState.viewPort = viewBox().isSpecified() && viewBox().property()->isValid() ? viewBox().property()->value() : viewPort;
+    newState.matrix.multiply(calculateViewBoxTransform(_viewPort, _viewBox));
+    newState.viewPort = _viewBox;
 }
 
 SVGElementImpl* SVGSymbolElement::clone(SVGDocument* document) const
