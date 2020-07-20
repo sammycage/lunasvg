@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.3)
 
-project(lunasvg VERSION 0.1.0 LANGUAGES CXX)
+project(lunasvg VERSION 0.1.0 LANGUAGES C CXX)
+
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+option(LUNASVG_BUILD_EXAMPLES "Build examples" ON)
 
 add_library(lunasvg)
 
@@ -16,18 +19,22 @@ PRIVATE
 add_subdirectory(include)
 add_subdirectory(source)
 
-set(LUNA_SVG_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
-set(LUNA_SVG_INCDIR ${CMAKE_INSTALL_PREFIX}/include/lunasvg)
+if(LUNASVG_BUILD_EXAMPLES)
+add_subdirectory(example)
+endif()
+
+set(LUNASVG_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
+set(LUNASVG_INCDIR ${CMAKE_INSTALL_PREFIX}/include/lunasvg)
 
 install(FILES
     include/svgdocument.h
     include/svgelement.h
     include/svgelementiter.h
-    DESTINATION ${LUNA_SVG_INCDIR}
+    DESTINATION ${LUNASVG_INCDIR}
 )
 
 install(TARGETS lunasvg
-    LIBRARY     DESTINATION    ${LUNA_SVG_LIBDIR}
-    ARCHIVE     DESTINATION    ${LUNA_SVG_LIBDIR}
-    INCLUDES    DESTINATION    ${LUNA_SVG_INCDIR}
+    LIBRARY     DESTINATION    ${LUNASVG_LIBDIR}
+    ARCHIVE     DESTINATION    ${LUNASVG_LIBDIR}
+    INCLUDES    DESTINATION    ${LUNASVG_INCDIR}
 )
