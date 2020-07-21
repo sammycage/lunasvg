@@ -50,8 +50,8 @@ int main()
 
 ![output](spiral.png)
 
-## Support lunasvg project
+## support
 
 If you like the work **lunasvg** is doing please consider a small donation:
 
-[ ![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif) ](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=6HKNHZ7SEDDB4)
+![Patreon](https://img.shields.io/badge/patreon-Become%20a%20Patron!-red.png?style=for-the-badge&logo=patreon) ](https://www.patreon.com/sammycage)
