@@ -173,9 +173,10 @@ unsigned int CanvasImpl::stride() const
 
 cairo_matrix_t to_cairo_matrix(const AffineTransform& transform)
 {
+#define T(v) std::max(-32767.0, std::min(v, 32767.0))
     const double* m = transform.getMatrix();
     cairo_matrix_t matrix;
-    cairo_matrix_init(&matrix, m[0], m[1], m[2], m[3], m[4], m[5]);
+    cairo_matrix_init(&matrix, T(m[0]), T(m[1]), T(m[2]), T(m[3]), T(m[4]), T(m[5]));
     return matrix;
 }
 
