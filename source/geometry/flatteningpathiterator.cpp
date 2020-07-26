@@ -120,14 +120,12 @@ void FlatteningPathIterator::flattenCurveQuadTo(std::vector<double>& coords) con
         p[5] = (p[3] + p[5]) * 0.5;
         p[2] = (p[0] + p[4]) * 0.5;
         p[3] = (p[1] + p[5]) * 0.5;
+        
+        coords[i + 2] = p[2];
+        coords[i + 3] = p[3];
 
-        count = i + 2;
-
-        coords[count] = p[2];
-        coords[count + 1] = p[3];
-
-        coords.insert(coords.begin() + count++, p[0]);
-        coords.insert(coords.begin() + count, p[1]);
+        coords.insert(coords.begin() + (i + 2), p[0]);
+        coords.insert(coords.begin() + (i + 3), p[1]);
         coords.insert(coords.begin() + (i + 6), p[5]);
         coords.insert(coords.begin() + (i + 7), p[4]);
 
