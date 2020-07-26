@@ -75,13 +75,13 @@ int main(int argc, char **argv)
     SVGDocument document;
     if(!document.loadFromFile(fileName)) return help();
 
-    if(w == -1 || h == -1)
+    if(w <= 0 || h <= 0)
     {
         double documentWidth = document.documentWidth();
         double documentHeight = document.documentHeight();
 
-        w = documentWidth > 0.0 ? int(ceil(documentWidth)) : 512;
-        h = documentHeight > 0.0 ? int(ceil(documentHeight)) : 512;
+        w = int(std::ceil(std::max(documentWidth, 1.0)));
+        h = int(std::ceil(std::max(documentHeight, 1.0)));
     }
 
     std::unique_ptr<std::uint8_t[]> pixels(new std::uint8_t[w*h*4]);
