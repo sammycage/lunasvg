@@ -36,7 +36,7 @@ Paint SVGSolidColorElement::getPaint(const RenderState&) const
     return color;
 }
 
-SVGElementImpl* SVGSolidColorElement::clone(SVGDocument *document) const
+SVGElementImpl* SVGSolidColorElement::clone(SVGDocument* document) const
 {
     SVGSolidColorElement* e = new SVGSolidColorElement(document);
     baseClone(*e);
