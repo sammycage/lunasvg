@@ -22,7 +22,6 @@ SVGElementImpl* SVGGElement::clone(SVGDocument* document) const
 {
     SVGGElement* e = new SVGGElement(document);
     baseClone(*e);
-
     return e;
 }
 
