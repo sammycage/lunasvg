@@ -7,10 +7,11 @@ SVGPolylineElement::SVGPolylineElement(SVGDocument* document) :
 {
 }
 
-Rect SVGPolylineElement::makePathAndBoundingBox(const RenderState&, Path& path) const
+Path SVGPolylineElement::makePath(const RenderState &) const
 {
+    Path path;
     path.addPoints(points().property()->values());
-    return path.boundingBox();
+    return path;
 }
 
 SVGElementImpl* SVGPolylineElement::clone(SVGDocument* document) const

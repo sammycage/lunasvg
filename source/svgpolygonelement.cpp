@@ -7,11 +7,12 @@ SVGPolygonElement::SVGPolygonElement(SVGDocument* document) :
 {
 }
 
-Rect SVGPolygonElement::makePathAndBoundingBox(const RenderState&, Path& path) const
+Path SVGPolygonElement::makePath(const RenderState &) const
 {
+    Path path;
     path.addPoints(points().property()->values());
     path.closePath();
-    return path.boundingBox();
+    return path;
 }
 
 SVGElementImpl* SVGPolygonElement::clone(SVGDocument* document) const

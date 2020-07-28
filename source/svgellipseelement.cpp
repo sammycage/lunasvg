@@ -15,14 +15,24 @@ SVGEllipseElement::SVGEllipseElement(SVGDocument* document) :
     addToPropertyMap(m_ry);
 }
 
-Rect SVGEllipseElement::makePathAndBoundingBox(const RenderState& state, Path& path) const
+Path SVGEllipseElement::makePath(const RenderState& state) const
 {
     double _cx = m_cx.value(state);
     double _cy = m_cy.value(state);
     double _rx = m_rx.value(state);
     double _ry = m_ry.value(state);
-    path.addEllipse(_cx, _cy, _rx, _ry);
 
+    Path path;
+    path.addEllipse(_cx, _cy, _rx, _ry);
+    return path;
+}
+
+Rect SVGEllipseElement::makeBoundingBox(const RenderState& state) const
+{
+    double _cx = m_cx.value(state);
+    double _cy = m_cy.value(state);
+    double _rx = m_rx.value(state);
+    double _ry = m_ry.value(state);
     return Rect(_cx-_rx, _cy-_ry, _rx+_rx, _ry+_ry);
 }
 

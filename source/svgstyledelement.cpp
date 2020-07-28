@@ -62,7 +62,13 @@ void SVGStyledElement::render(RenderContext& context) const
     context.push();
     RenderState& state = context.state();
     state.style.add(style());
-    if(context.mode() == RenderModeClip)
+    if(context.mode() == RenderModeBounding)
+    {
+        state.style.clear(CSSPropertyIdClip_Path);
+        state.style.clear(CSSPropertyIdOpacity);
+        state.style.clear(CSSPropertyIdMask);
+    }
+    else if(context.mode() == RenderModeClipping)
     {
         state.style.clear(CSSPropertyIdOpacity);
         state.style.clear(CSSPropertyIdMask);

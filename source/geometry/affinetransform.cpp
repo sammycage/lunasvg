@@ -58,28 +58,30 @@ void AffineTransform::multiply(const double* a, const double* b)
     m_matrix[4] = m02; m_matrix[5] = m12;
 }
 
-void AffineTransform::multiply(const AffineTransform& transform)
+AffineTransform& AffineTransform::multiply(const AffineTransform& transform)
 {
     const double* a = m_matrix;
     const double* b = transform.m_matrix;
-
     multiply(b, a);
+
+    return *this;
 }
 
-void AffineTransform::postmultiply(const AffineTransform& transform)
+AffineTransform& AffineTransform::postmultiply(const AffineTransform& transform)
 {
     const double* a = m_matrix;
     const double* b = transform.m_matrix;
-
     multiply(a, b);
+
+    return *this;
 }
 
-void AffineTransform::invert()
+AffineTransform AffineTransform::inverted() const
 {
     const double* m = m_matrix;
     double det = (m[0] * m[3] - m[1] * m[2]);
     if(det == 0.0)
-        return;
+        return AffineTransform();
 
     double inv_det = 1.0 / det;
     double m00 = m[0] * inv_det;
@@ -89,9 +91,9 @@ void AffineTransform::invert()
     double m02 = (m[2] *  m[5] - m[3] * m[4]) * inv_det;
     double m12 = (m[1] *  m[4] - m[0] * m[5]) * inv_det;
 
-    m_matrix[0] = m11; m_matrix[1] = -m10;
-    m_matrix[2] = -m01; m_matrix[3] = m00;
-    m_matrix[4] = m02; m_matrix[5] = m12;
+    return AffineTransform(m11, -m10,
+                           -m01, m00,
+                           m02, m12);
 }
 
 void AffineTransform::reset()

@@ -22,23 +22,36 @@ void SVGGeometryElement::render(RenderContext& context) const
     if(state.style.isHidden())
         return;
 
-    Path path;
-    state.bbox = makePathAndBoundingBox(state, path);
-    if(context.mode() == RenderModeClip)
+    state.bbox = makeBoundingBox(state);
+    if(state.style.hasStroke())
     {
-        state.canvas.draw(path, state.matrix, state.style.clipRule(), KRgbBlack, Paint(), StrokeData());
-        return;
+        double strokeWidth = state.style.strokeWidth(state);
+        state.bbox.x -= strokeWidth * 0.5;
+        state.bbox.y -= strokeWidth * 0.5;
+        state.bbox.x += strokeWidth;
+        state.bbox.x += strokeWidth;
     }
 
-    StrokeData strokeData = state.style.strokeData(state);
-    Paint fillPaint = state.style.fillPaint(state);
-    Paint strokePaint = state.style.strokePaint(state);
-    WindRule fillRule = state.style.fillRule();
+    if(context.mode() == RenderModeBounding)
+        return;
 
-    fillPaint.setOpacity(state.style.fillOpacity());
-    strokePaint.setOpacity(state.style.strokeOpacity());
+    Path path = makePath(state);
+    if(context.mode() == RenderModeDisplay)
+    {
+        StrokeData strokeData = state.style.strokeData(state);
+        Paint fillPaint = state.style.fillPaint(state);
+        Paint strokePaint = state.style.strokePaint(state);
+        WindRule fillRule = state.style.fillRule();
 
-    state.canvas.draw(path, state.matrix, fillRule, fillPaint, strokePaint, strokeData);
+        fillPaint.setOpacity(state.style.fillOpacity());
+        strokePaint.setOpacity(state.style.strokeOpacity());
+
+        state.canvas.draw(path, state.matrix, fillRule, fillPaint, strokePaint, strokeData);
+    }
+    else
+    {
+        state.canvas.draw(path, state.matrix, state.style.clipRule(), KRgbBlack, Paint(), StrokeData());
+    }
 }
 
 } // namespace lunasvg

@@ -13,7 +13,8 @@ public:
     const DOMSVGLength& cx() const { return m_cx; }
     const DOMSVGLength& cy() const { return m_cy; }
     const DOMSVGLength& r() const { return m_r; }
-    Rect makePathAndBoundingBox(const RenderState& state, Path& path) const;
+    Path makePath(const RenderState& state) const;
+    Rect makeBoundingBox(const RenderState& state) const;
     void render(RenderContext& context) const;
     SVGElementImpl* clone(SVGDocument* document) const;
 

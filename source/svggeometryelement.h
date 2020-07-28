@@ -14,7 +14,8 @@ class SVGGeometryElement : public SVGGraphicsElement
 public:
     SVGGeometryElement(ElementID elementId, SVGDocument* document);
     bool isSVGGeometryElement() const { return true; }
-    virtual Rect makePathAndBoundingBox(const RenderState& state, Path& path) const = 0;
+    virtual Path makePath(const RenderState& state) const = 0;
+    virtual Rect makeBoundingBox(const RenderState& state) const = 0;
     virtual void render(RenderContext& context) const;
 };
 

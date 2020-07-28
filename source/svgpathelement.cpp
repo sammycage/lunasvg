@@ -9,9 +9,14 @@ SVGPathElement::SVGPathElement(SVGDocument *document) :
     addToPropertyMap(m_d);
 }
 
-Rect SVGPathElement::makePathAndBoundingBox(const RenderState&, Path& path) const
+Path SVGPathElement::makePath(const RenderState&) const
 {
-    path = m_d.property()->value();
+    return m_d.property()->value();
+}
+
+Rect SVGPathElement::makeBoundingBox(const RenderState&) const
+{
+    const Path path = m_d.property()->value();
     return path.boundingBox();
 }
 

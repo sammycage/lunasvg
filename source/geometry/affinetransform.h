@@ -16,13 +16,13 @@ public:
 
     void setMatrix(double m00, double m10, double m01, double m11, double m02, double m12);
     void multiply(const double* a, const double* b);
-    void multiply(const AffineTransform& transform);
-    void postmultiply(const AffineTransform& transform);
-    void invert();
+    AffineTransform& multiply(const AffineTransform& transform);
+    AffineTransform& postmultiply(const AffineTransform& transform);
     void reset();
     void map(double x, double y, double& _x, double& _y) const;
     Point mapPoint(const Point& point) const;
     Rect mapRect(const Rect& rect) const;
+    AffineTransform inverted() const;
 
     void rotate(double radians);
     void rotate(double radians, double cx, double cy);

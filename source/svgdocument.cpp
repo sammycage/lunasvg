@@ -64,6 +64,11 @@ double SVGDocument::documentHeight(double dpi) const
     return m_impl->documentHeight(dpi);
 }
 
+Box SVGDocument::getBBox(double dpi) const
+{
+    return m_impl->getBBox(dpi);
+}
+
 void SVGDocument::render(Bitmap bitmap, double dpi, unsigned int bgColor) const
 {
     m_impl->render(bitmap, dpi, bgColor);

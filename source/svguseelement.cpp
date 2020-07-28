@@ -31,7 +31,7 @@ void SVGUseElement::render(RenderContext& context) const
     }
 
     SVGElementImpl* ref = document()->impl()->resolveIRI(hrefValue());
-    if(!ref || (context.mode() == RenderModeClip && !ref->isSVGGeometryElement()))
+    if(!ref || (context.mode() == RenderModeClipping && !ref->isSVGGeometryElement()))
     {
         context.skipElement();
         return;

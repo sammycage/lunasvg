@@ -13,13 +13,22 @@ SVGCircleElement::SVGCircleElement(SVGDocument* document) :
     addToPropertyMap(m_r);
 }
 
-Rect SVGCircleElement::makePathAndBoundingBox(const RenderState& state, Path& path) const
+Path SVGCircleElement::makePath(const RenderState& state) const
 {
     double _cx = m_cx.value(state);
     double _cy = m_cy.value(state);
     double _r = m_r.value(state);
-    path.addEllipse(_cx, _cy, _r, _r);
 
+    Path path;
+    path.addEllipse(_cx, _cy, _r, _r);
+    return path;
+}
+
+Rect SVGCircleElement::makeBoundingBox(const RenderState& state) const
+{
+    double _cx = m_cx.value(state);
+    double _cy = m_cy.value(state);
+    double _r = m_r.value(state);
     return Rect(_cx-_r, _cy-_r, _r+_r, _r+_r);
 }
 

@@ -12,6 +12,7 @@ public:
     SVGPolyElement(ElementID elementId, SVGDocument* document);
     bool isSVGPolyElement() const { return true; }
     const DOMSVGPointList& points() const { return m_points; }
+    virtual Rect makeBoundingBox(const RenderState& state) const;
     virtual void render(RenderContext& context) const;
 
 private:

@@ -90,7 +90,7 @@ Paint SVGPatternElement::getPaint(const RenderState& state) const
     if(w == 0.0 || h == 0.0 || attributes.patternContentElement == nullptr || RenderBreaker::hasElement(attributes.patternContentElement))
         return Paint();
 
-    RenderContext newContext(RenderModePattern);
+    RenderContext newContext(RenderModeDisplay);
     RenderState& newState = newContext.state();
     newState.element = attributes.patternContentElement;
     newState.canvas.reset(std::uint32_t(w), std::uint32_t(h));

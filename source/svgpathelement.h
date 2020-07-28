@@ -11,7 +11,8 @@ class SVGPathElement : public SVGGeometryElement
 public:
     SVGPathElement(SVGDocument* document);
     const DOMSVGPath& d() const { return m_d; }
-    Rect makePathAndBoundingBox(const RenderState&, Path& path) const;
+    Path makePath(const RenderState& state) const;
+    Rect makeBoundingBox(const RenderState& state) const;
     void render(RenderContext& context) const;
     SVGElementImpl* clone(SVGDocument* document) const;
 

@@ -20,6 +20,7 @@ public:
     bool loadFromData(const std::string& content);
     double documentWidth(double dpi) const;
     double documentHeight(double dpi) const;
+    Box getBBox(double dpi) const;
     void render(Bitmap bitmap, double dpi, unsigned int bgColor) const;
     void updateIdCache(const std::string& oldValue, const std::string& newValue, SVGElementImpl* element);
     SVGElementImpl* resolveIRI(const std::string& href) const;

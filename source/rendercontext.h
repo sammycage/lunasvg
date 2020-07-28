@@ -39,9 +39,13 @@ public:
     bool isSet(CSSPropertyID nameId) const { return m_properties[nameId]; }
     bool isEmpty() const { return m_properties.empty(); }
 
+    bool hasStroke() const;
+    bool hasFill() const;
+
     StrokeData strokeData(const RenderState& state) const;
     Paint fillPaint(const RenderState& state) const;
     Paint strokePaint(const RenderState& state) const;
+    double strokeWidth(const RenderState &state) const;
     double fillOpacity() const;
     double strokeOpacity() const;
     double opacity() const;
@@ -83,10 +87,9 @@ private:
 
 enum RenderMode
 {
-    RenderModeRoot,
-    RenderModeClip,
-    RenderModeMask,
-    RenderModePattern
+    RenderModeDisplay,
+    RenderModeClipping,
+    RenderModeBounding
 };
 
 class RenderContext

@@ -5,6 +5,19 @@
 
 namespace lunasvg {
 
+class Box
+{
+public:
+    Box() : x(0), y(0), width(0), height(0) {}
+    Box(double _x, double _y, double _w, double _h) : x(_x), y(_y), width(_w), height(_h) {}
+
+public:
+    double x;
+    double y;
+    double width;
+    double height;
+};
+
 class SVGDocumentImpl;
 
 class SVGDocument
@@ -89,16 +102,23 @@ public:
     /**
      * @brief Returns the width of the document as specified in the SVG file.
      * @param dpi Dots per inch to use for units conversion to pixels.
-     * @return The width in pixels, or a default pixel of 240 if the height cannot be determined.
+     * @return The width in pixels, or -1 if the height cannot be determined.
      */
     double documentWidth(double dpi = 96.0) const;
 
     /**
      * @brief Returns the height of the document as specified in the SVG file.
      * @param dpi Dots per inch to use for units conversion to pixels.
-     * @return The height in pixels, or a default pixel of 320 if the height cannot be determined.
+     * @return The height in pixels, or -1 if the height cannot be determined.
      */
     double documentHeight(double dpi = 96.0) const;
+
+    /**
+     * @brief getBBox
+     * @param dpi
+     * @return
+     */
+    Box getBBox(double dpi = 96.0) const;
 
     /**
      * @brief Renders this document to bitmap. The width and height of the bitmap will be used as the viewPort.

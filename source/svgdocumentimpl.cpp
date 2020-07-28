@@ -64,7 +64,7 @@ double SVGDocumentImpl::documentWidth(double dpi) const
     if(viewBox.isSpecified() && viewBox.property()->isValid())
         return viewBox.property()->width();
 
-    return 240.0;
+    return -1.0;
 }
 
 double SVGDocumentImpl::documentHeight(double dpi) const
@@ -78,18 +78,29 @@ double SVGDocumentImpl::documentHeight(double dpi) const
     if(viewBox.isSpecified() && viewBox.property()->isValid())
         return viewBox.property()->height();
 
-    return 320.0;
+    return -1.0;
+}
+
+Box SVGDocumentImpl::getBBox(double dpi) const
+{
+    RenderContext context(RenderModeBounding);
+    RenderState &state = context.state();
+    state.element = m_rootElement;
+    state.viewPort = Rect(0, 0, std::max(documentWidth(dpi), 1.0), std::max(documentHeight(dpi), 1.0));
+    state.dpi = dpi;
+    context.render(m_rootElement, m_rootElement->tail);
+
+    return Box(state.bbox.x, state.bbox.y, state.bbox.width, state.bbox.height);
 }
 
 void SVGDocumentImpl::render(Bitmap bitmap, double dpi, unsigned int bgColor) const
 {
-    RenderContext context(RenderModeRoot);
+    RenderContext context(RenderModeDisplay);
     RenderState& state = context.state();
     state.element = m_rootElement;
     state.canvas.reset(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.stride());
     state.canvas.clear(bgColor);
     state.viewPort = Rect(0, 0, bitmap.width(), bitmap.height());
-    state.matrix.scale(state.viewPort.width / std::max(documentWidth(dpi), 1.0), state.viewPort.height / std::max(documentHeight(dpi), 1.0));
     state.dpi = dpi;
     context.render(m_rootElement, m_rootElement->tail);
 

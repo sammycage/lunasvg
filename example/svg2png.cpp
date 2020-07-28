@@ -3,6 +3,7 @@
 #include <array>
 #include <memory>
 #include <cmath>
+#include <sstream>
 
 #ifndef _WIN32
 #include<libgen.h>
@@ -66,33 +67,54 @@ int setup(int argc, char **argv, std::string& fileName, int* width, int* height,
 
 int main(int argc, char **argv)
 {
-    int w = -1, h = -1;
+    int width = -1, height = -1;
     std::string fileName;
     std::uint32_t bgColor = 0x00000000;
 
-    if(setup(argc, argv, fileName, &w, &h, &bgColor)) return 1;
+    if(setup(argc, argv, fileName, &width, &height, &bgColor)) return 1;
 
     SVGDocument document;
     if(!document.loadFromFile(fileName)) return help();
 
-    if(w <= 0 || h <= 0)
+    SVGElement* rootElement = document.rootElement();
+    if(width <= 0 || height <= 0 || !rootElement->hasAttribute("viewBox"))
     {
         double documentWidth = document.documentWidth();
         double documentHeight = document.documentHeight();
+        if(!rootElement->hasAttribute("viewBox"))
+        {
+            if(documentWidth == -1.0 || documentHeight == -1.0)
+            {
+                Box box = document.getBBox();
+                documentWidth = box.width;
+                documentHeight = box.height;
+            }
 
-        w = int(std::ceil(std::max(documentWidth, 1.0)));
-        h = int(std::ceil(std::max(documentHeight, 1.0)));
+            std::stringstream ss;
+            ss << "0,0," << documentWidth << ',' << documentHeight;
+
+            rootElement->setAttribute("viewBox", ss.str());
+        }
+
+        if(width <= 0 || height <= 0)
+        {
+            width = int(std::ceil(documentWidth));
+            height = int(std::ceil(documentHeight));
+        }
     }
 
-    std::unique_ptr<std::uint8_t[]> pixels(new std::uint8_t[w*h*4]);
-    Bitmap bitmap(pixels.get(), w, h, w*4);
+    if(width <= 0 || height <= 0)
+        return -1;
+
+    std::unique_ptr<std::uint8_t[]> pixels(new std::uint8_t[width*height*4]);
+    Bitmap bitmap(pixels.get(), width, height, width*4);
 
     document.render(bitmap, 96.0, bgColor);
 
     std::string baseName = fileName.substr(fileName.find_last_of("/\\") + 1);
     baseName.append(".png");
 
-    stbi_write_png(baseName.c_str(), w, h, 4, pixels.get(), 0);
+    stbi_write_png(baseName.c_str(), width, height, 4, pixels.get(), 0);
 
     std::cout << "Generated PNG file : "<< baseName << std::endl;
 

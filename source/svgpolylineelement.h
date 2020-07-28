@@ -9,7 +9,7 @@ class SVGPolylineElement : public SVGPolyElement
 {
 public:
     SVGPolylineElement(SVGDocument* document);
-    Rect makePathAndBoundingBox(const RenderState&, Path& path) const;
+    Path makePath(const RenderState& state) const;
     SVGElementImpl* clone(SVGDocument* document) const;
 };
 

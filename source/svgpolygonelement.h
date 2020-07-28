@@ -9,7 +9,7 @@ class SVGPolygonElement : public SVGPolyElement
 {
 public:
     SVGPolygonElement(SVGDocument* document);
-    Rect makePathAndBoundingBox(const RenderState&, Path& path) const;
+    Path makePath(const RenderState& state) const;
     SVGElementImpl* clone(SVGDocument* document) const;
 };
 

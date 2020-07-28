@@ -31,7 +31,7 @@ void SVGMaskElement::applyMask(RenderState& state) const
     if(m_width.isZero() || m_height.isZero() || RenderBreaker::hasElement(this))
         return;
 
-    RenderContext newContext(RenderModeMask);
+    RenderContext newContext(RenderModeDisplay);
     RenderState& newState = newContext.state();
     newState.element = this;
     newState.canvas.reset(state.canvas.width(), state.canvas.width());

@@ -20,7 +20,7 @@ void SVGClipPathElement::applyClip(RenderState& state) const
     if(RenderBreaker::hasElement(this))
         return;
 
-    RenderContext newContext(RenderModeClip);
+    RenderContext newContext(RenderModeClipping);
     RenderState& newState = newContext.state();
     newState.element = this;
     newState.canvas.reset(state.canvas.width(), state.canvas.width());

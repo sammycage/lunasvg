@@ -14,7 +14,8 @@ public:
     const DOMSVGLength& y1() const { return m_y1; }
     const DOMSVGLength& x2() const { return m_x2; }
     const DOMSVGLength& y2() const { return m_y2; }
-    Rect makePathAndBoundingBox(const RenderState& state, Path& path) const;
+    Path makePath(const RenderState& state) const;
+    Rect makeBoundingBox(const RenderState& state) const;
     SVGElementImpl* clone(SVGDocument* document) const;
 
 private:

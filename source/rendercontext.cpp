@@ -100,6 +100,22 @@ bool RenderStyle::isHidden() const
     return false;
 }
 
+bool RenderStyle::hasStroke() const
+{
+    if(const SVGProperty* property = get(CSSPropertyIdStroke))
+        return to<SVGPaint>(property)->colorType() != ColorTypeNone;
+
+    return false;
+}
+
+bool RenderStyle::hasFill() const
+{
+    if(const SVGProperty* property = get(CSSPropertyIdFill))
+        return to<SVGPaint>(property)->colorType() != ColorTypeNone;
+
+    return false;
+}
+
 StrokeData RenderStyle::strokeData(const RenderState& state) const
 {
     StrokeData strokeData;
@@ -133,6 +149,14 @@ Paint RenderStyle::strokePaint(const RenderState& state) const
         return to<SVGPaint>(property)->getPaint(state);
 
     return Paint();
+}
+
+double RenderStyle::strokeWidth(const RenderState& state) const
+{
+    if(const SVGProperty* property = get(CSSPropertyIdStroke_Width))
+        return to<SVGLength>(property)->value(state);
+
+    return 1.0;
 }
 
 double RenderStyle::fillOpacity() const
@@ -264,10 +288,12 @@ void RenderContext::push()
 void RenderContext::pop()
 {
     RenderState* newState = m_states.top();
-    double l = std::min(newState->bbox.x, m_state->bbox.x);
-    double t = std::min(newState->bbox.y, m_state->bbox.y);
-    double r = std::max(newState->bbox.x + newState->bbox.width, m_state->bbox.x + m_state->bbox.width);
-    double b = std::max(newState->bbox.y + newState->bbox.height, m_state->bbox.y + m_state->bbox.height);
+    Rect bbox = newState->matrix.inverted().multiply(m_state->matrix).mapRect(m_state->bbox);
+
+    double l = std::min(newState->bbox.x, bbox.x);
+    double t = std::min(newState->bbox.y, bbox.y);
+    double r = std::max(newState->bbox.x + newState->bbox.width, bbox.x + bbox.width);
+    double b = std::max(newState->bbox.y + newState->bbox.height, bbox.y + bbox.height);
 
     newState->bbox.x = l;
     newState->bbox.y = t;
