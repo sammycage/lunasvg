@@ -28,8 +28,8 @@ void SVGGeometryElement::render(RenderContext& context) const
         double strokeWidth = state.style.strokeWidth(state);
         state.bbox.x -= strokeWidth * 0.5;
         state.bbox.y -= strokeWidth * 0.5;
-        state.bbox.x += strokeWidth;
-        state.bbox.x += strokeWidth;
+        state.bbox.width += strokeWidth;
+        state.bbox.height += strokeWidth;
     }
 
     if(context.mode() == RenderModeBounding)

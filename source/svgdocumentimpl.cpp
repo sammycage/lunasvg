@@ -93,6 +93,11 @@ Box SVGDocumentImpl::getBBox(double dpi) const
     return Box(state.bbox.x, state.bbox.y, state.bbox.width, state.bbox.height);
 }
 
+Bitmap SVGDocumentImpl::renderToBitmap(uint32_t width, uint32_t height, double dpi, unsigned int bgColor) const
+{
+    return m_rootElement->renderToBitmap(width, height, dpi, bgColor);
+}
+
 void SVGDocumentImpl::render(Bitmap bitmap, double dpi, unsigned int bgColor) const
 {
     RenderContext context(RenderModeDisplay);
@@ -103,32 +108,7 @@ void SVGDocumentImpl::render(Bitmap bitmap, double dpi, unsigned int bgColor) co
     state.viewPort = Rect(0, 0, bitmap.width(), bitmap.height());
     state.dpi = dpi;
     context.render(m_rootElement, m_rootElement->tail);
-
-    std::uint8_t* ptr = state.canvas.data();
-    std::uint8_t* end = ptr + state.canvas.height() * state.canvas.stride();
-    while(ptr < end)
-    {
-        std::uint32_t pixel;
-        std::memcpy(&pixel, ptr, sizeof(std::uint32_t));
-
-        std::uint8_t a = pixel >> 24;
-        if(a != 0)
-        {
-            ptr[0] = (((pixel >> 16) & 0xff) * 255) / a;
-            ptr[1] = (((pixel >> 8) & 0xff) * 255) / a;
-            ptr[2] = (((pixel >> 0) & 0xff) * 255) / a;
-            ptr[3] = a;
-        }
-        else
-        {
-            ptr[0] = 0;
-            ptr[1] = 0;
-            ptr[2] = 0;
-            ptr[3] = 0;
-        }
-
-        ptr += 4;
-    }
+    state.canvas.convertToRGBA();
 }
 
 void SVGDocumentImpl::updateIdCache(const std::string& oldValue, const std::string& newValue, SVGElementImpl* element)

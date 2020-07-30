@@ -2,6 +2,7 @@
 #define SVGELEMENT_H
 
 #include <string>
+#include <memory>
 
 namespace lunasvg {
 
@@ -17,41 +18,67 @@ public:
      * @param stride bitmap stride.
      * @note Default bitmap format is RGBA (non-premultiplied).
      */
-    Bitmap(unsigned char* data, unsigned int width, unsigned int height, unsigned int stride);
+    Bitmap();
+    Bitmap(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride);
+    Bitmap(std::uint32_t width, std::uint32_t height);
 
+    void reset(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride);
+    void reset(std::uint32_t width, std::uint32_t height);
     /**
      * @brief Returns data attached to the bitmap.
      *
      * @return data attached to the bitmap.
      */
-    unsigned char* data() const { return m_data; }
+    std::uint8_t* data() const;
 
     /**
      * @brief Returns width of the bitmap.
      *
      * @return bitmap width.
      */
-    unsigned int width() const { return m_width; }
+    std::uint32_t width() const;
 
     /**
      * @brief Returns height of the bitmap.
      *
      * @return bitmap height.
      */
-    unsigned int height() const { return m_height; }
+    std::uint32_t height() const;
 
     /**
      * @brief Returns stride of the bitmap.
      *
      * @return bitmap stride.
      */
-    unsigned int stride() const { return m_stride; }
+    std::uint32_t stride() const;
 
 private:
-    unsigned char* m_data;
-    unsigned int m_width;
-    unsigned int m_height;
-    unsigned int m_stride;
+    struct Impl
+    {
+        Impl(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride);
+        Impl(std::uint32_t width, std::uint32_t height);
+
+        std::unique_ptr<std::uint8_t[]> ownData;
+        std::uint8_t* data;
+        std::uint32_t width;
+        std::uint32_t height;
+        std::uint32_t stride;
+    };
+
+    std::shared_ptr<Impl> m_impl;
+};
+
+class Box
+{
+public:
+    Box() : x(0), y(0), width(0), height(0) {}
+    Box(double _x, double _y, double _w, double _h) : x(_x), y(_y), width(_w), height(_h) {}
+
+public:
+    double x;
+    double y;
+    double width;
+    double height;
 };
 
 enum InsertPosition

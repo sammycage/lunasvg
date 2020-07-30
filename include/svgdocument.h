@@ -5,19 +5,6 @@
 
 namespace lunasvg {
 
-class Box
-{
-public:
-    Box() : x(0), y(0), width(0), height(0) {}
-    Box(double _x, double _y, double _w, double _h) : x(_x), y(_y), width(_w), height(_h) {}
-
-public:
-    double x;
-    double y;
-    double width;
-    double height;
-};
-
 class SVGDocumentImpl;
 
 class SVGDocument
@@ -119,6 +106,16 @@ public:
      * @return
      */
     Box getBBox(double dpi = 96.0) const;
+
+    /**
+     * @brief renderToBitmap
+     * @param width
+     * @param height
+     * @param dpi
+     * @param bgColor
+     * @return
+     */
+    Bitmap renderToBitmap(std::uint32_t width = 0, std::uint32_t height = 0, double dpi = 96.0, unsigned int bgColor = 0x00000000) const;
 
     /**
      * @brief Renders this document to bitmap. The width and height of the bitmap will be used as the viewPort.

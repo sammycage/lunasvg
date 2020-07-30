@@ -18,6 +18,7 @@ public:
     void blend(const Canvas& source, BlendMode mode, double opacity, double dx, double dy);
     void draw(const Path& path, const AffineTransform& matrix, WindRule fillRule, const Paint& fillPaint, const Paint& strokePaint, const StrokeData& strokeData);
     void updateLuminance();
+    void convertToRGBA();
 
     unsigned char* data() const;
     unsigned int width() const;

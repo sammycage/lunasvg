@@ -151,6 +151,35 @@ void CanvasImpl::updateLuminance()
     }
 }
 
+void CanvasImpl::convertToRGBA()
+{
+    std::uint8_t* ptr = data();
+    std::uint8_t* end = ptr + height() * stride();
+    while(ptr < end)
+    {
+        std::uint32_t pixel;
+        std::memcpy(&pixel, ptr, sizeof(std::uint32_t));
+
+        std::uint8_t a = pixel >> 24;
+        if(a != 0)
+        {
+            ptr[0] = (((pixel >> 16) & 0xff) * 255) / a;
+            ptr[1] = (((pixel >> 8) & 0xff) * 255) / a;
+            ptr[2] = (((pixel >> 0) & 0xff) * 255) / a;
+            ptr[3] = a;
+        }
+        else
+        {
+            ptr[0] = 0;
+            ptr[1] = 0;
+            ptr[2] = 0;
+            ptr[3] = 0;
+        }
+
+        ptr += 4;
+    }
+}
+
 unsigned char* CanvasImpl::data() const
 {
     return cairo_image_surface_get_data(m_surface);

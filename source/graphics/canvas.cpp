@@ -47,6 +47,11 @@ void Canvas::updateLuminance()
     m_impl->updateLuminance();
 }
 
+void Canvas::convertToRGBA()
+{
+    m_impl->convertToRGBA();
+}
+
 unsigned char* Canvas::data() const
 {
     return m_impl->data();

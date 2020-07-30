@@ -5,9 +5,58 @@
 
 namespace lunasvg {
 
-Bitmap::Bitmap(unsigned char* data, unsigned int width, unsigned int height, unsigned int stride) :
-    m_data(data), m_width(width), m_height(height), m_stride(stride)
+Bitmap::Impl::Impl(uint8_t* data, uint32_t width, uint32_t height, uint32_t stride) :
+    data(data), width(width), height(height), stride(stride)
 {
+}
+
+Bitmap::Impl::Impl(uint32_t width, uint32_t height) :
+    ownData(new std::uint8_t[width*height*4]), data(nullptr), width(width), height(height), stride(width * 4)
+{
+}
+
+Bitmap::Bitmap()
+{
+}
+
+Bitmap::Bitmap(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride) :
+    m_impl(new Impl(data, width, height, stride))
+{
+}
+
+Bitmap::Bitmap(std::uint32_t width, std::uint32_t height) :
+    m_impl(new Impl(width, height))
+{
+}
+
+void Bitmap::reset(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride)
+{
+    m_impl.reset(new Impl(data, width, height, stride));
+}
+
+void Bitmap::reset(std::uint32_t width, std::uint32_t height)
+{
+    m_impl.reset(new Impl(width, height));
+}
+
+std::uint8_t* Bitmap::data() const
+{
+    return m_impl ? m_impl->data ? m_impl->data : m_impl->ownData.get() : nullptr;
+}
+
+std::uint32_t Bitmap::width() const
+{
+    return m_impl ? m_impl->width : 0;
+}
+
+std::uint32_t Bitmap::height() const
+{
+    return m_impl ? m_impl->height : 0;
+}
+
+std::uint32_t Bitmap::stride() const
+{
+    return m_impl ? m_impl->stride : 0;
 }
 
 SVGElement::SVGElement(SVGDocument* document) :
