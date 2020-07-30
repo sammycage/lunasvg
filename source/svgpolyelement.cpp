@@ -19,7 +19,7 @@ Rect SVGPolyElement::makeBoundingBox(const RenderState&) const
     const SVGPointList* points = m_points.property();
     for(unsigned int i = 0;i < points->length();i++)
     {
-        const SVGPoint *p = points->at(i);
+        const SVGPoint* p = points->at(i);
         if(p->x() < xMin) xMin = p->x();
         if(p->x() > xMax) xMax = p->x();
         if(p->y() < yMin) yMin = p->y();
