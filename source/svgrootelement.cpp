@@ -14,7 +14,7 @@ Bitmap SVGRootElement::renderToBitmap(uint32_t width, uint32_t height, double dp
     const SVGDocumentImpl* impl = document()->impl();
     double documentWidth = impl->documentWidth(dpi);
     double documentHeight = impl->documentHeight(dpi);
-    if(documentWidth == -1 || documentHeight == -1)
+    if(documentWidth < 0 || documentHeight < 0)
     {
         RenderContext context(RenderModeBounding);
         RenderState &state = context.state();
@@ -30,10 +30,21 @@ Bitmap SVGRootElement::renderToBitmap(uint32_t width, uint32_t height, double dp
     if(documentWidth == 0.0 || documentHeight == 0.0 || next == tail)
         return Bitmap();
 
-    std::uint32_t bitmapWidth = width == 0 ? std::uint32_t(std::ceil(documentWidth)) : width;
-    std::uint32_t bitmapHeight = height == 0 ? std::uint32_t(std::ceil(documentHeight)) : height;
+    if(width == 0 && height == 0)
+    {
+        width = std::uint32_t(std::ceil(documentWidth));
+        height = std::uint32_t(std::ceil(documentHeight));
+    }
+    else if(width != 0 && height == 0)
+    {
+        height = std::uint32_t(std::ceil(width * documentHeight / documentWidth));
+    }
+    else if(height != 0 && width == 0)
+    {
+        width = std::uint32_t(std::ceil(height * documentWidth / documentHeight));
+    }
 
-    Bitmap bitmap(bitmapWidth, bitmapHeight);
+    Bitmap bitmap(width, height);
     RenderContext context(RenderModeDisplay);
     RenderState& state = context.state();
     state.element = this;

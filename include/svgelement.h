@@ -10,12 +10,6 @@ class Bitmap
 {
 public:
     /**
-     * @brief Bitmap object constructor.
-     *
-     * @param data bitmap data.
-     * @param width bitmap width.
-     * @param height bitmap height.
-     * @param stride bitmap stride.
      * @note Default bitmap format is RGBA (non-premultiplied).
      */
     Bitmap();
@@ -24,32 +18,10 @@ public:
 
     void reset(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride);
     void reset(std::uint32_t width, std::uint32_t height);
-    /**
-     * @brief Returns data attached to the bitmap.
-     *
-     * @return data attached to the bitmap.
-     */
+
     std::uint8_t* data() const;
-
-    /**
-     * @brief Returns width of the bitmap.
-     *
-     * @return bitmap width.
-     */
     std::uint32_t width() const;
-
-    /**
-     * @brief Returns height of the bitmap.
-     *
-     * @return bitmap height.
-     */
     std::uint32_t height() const;
-
-    /**
-     * @brief Returns stride of the bitmap.
-     *
-     * @return bitmap stride.
-     */
     std::uint32_t stride() const;
 
 private:

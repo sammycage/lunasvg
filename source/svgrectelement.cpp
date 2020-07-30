@@ -19,7 +19,7 @@ SVGRectElement::SVGRectElement(SVGDocument* document) :
     addToPropertyMap(m_heigth);
 }
 
-Path SVGRectElement::makePath(const RenderState &state) const
+Path SVGRectElement::makePath(const RenderState& state) const
 {
     double _x = m_x.value(state);
     double _y = m_y.value(state);
@@ -27,14 +27,21 @@ Path SVGRectElement::makePath(const RenderState &state) const
     double _h = m_heigth.value(state);
 
     double _rx, _ry;
-    if (m_rx.isSpecified() && m_ry.isSpecified()) {
+    if(m_rx.isSpecified() && m_ry.isSpecified())
+    {
         _rx = m_rx.value(state);
         _ry = m_ry.value(state);
-    } else if (m_rx.isSpecified()) {
+    }
+    else if(m_rx.isSpecified())
+    {
         _rx = _ry = m_rx.value(state);
-    } else if (m_ry.isSpecified()) {
+    }
+    else if(m_ry.isSpecified())
+    {
         _rx = _ry = m_ry.value(state);
-    } else {
+    }
+    else
+    {
         _rx = _ry = 0.0;
     }
 

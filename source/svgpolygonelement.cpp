@@ -7,7 +7,7 @@ SVGPolygonElement::SVGPolygonElement(SVGDocument* document) :
 {
 }
 
-Path SVGPolygonElement::makePath(const RenderState &) const
+Path SVGPolygonElement::makePath(const RenderState&) const
 {
     Path path;
     path.addPoints(points().property()->values());

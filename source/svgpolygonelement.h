@@ -9,7 +9,7 @@ class SVGPolygonElement : public SVGPolyElement
 {
 public:
     SVGPolygonElement(SVGDocument* document);
-    Path makePath(const RenderState& state) const;
+    Path makePath(const RenderState&) const;
     SVGElementImpl* clone(SVGDocument* document) const;
 };
 

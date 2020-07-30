@@ -29,7 +29,7 @@ void SVGSVGElement::render(RenderContext& context) const
 
     const RenderState& state = context.state();
     Rect viewPort;
-    if(state.element->isSVGRootElement() || state.element->elementId() == ElementIdUse)
+    if(state.element->elementId() == ElementIdUse)
     {
         viewPort = state.viewPort;
     }

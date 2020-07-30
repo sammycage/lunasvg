@@ -7,7 +7,7 @@ SVGPolylineElement::SVGPolylineElement(SVGDocument* document) :
 {
 }
 
-Path SVGPolylineElement::makePath(const RenderState &) const
+Path SVGPolylineElement::makePath(const RenderState&) const
 {
     Path path;
     path.addPoints(points().property()->values());
