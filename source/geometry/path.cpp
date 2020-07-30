@@ -3,6 +3,7 @@
 #include "affinetransform.h"
 
 #include <limits>
+#include <algorithm>
 
 namespace lunasvg
 {

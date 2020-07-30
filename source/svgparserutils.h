@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <algorithm>
 
 namespace lunasvg {
 
@@ -146,8 +147,10 @@ inline bool parseInteger(const char*& ptr, T& integer, int base = 10)
         value = static_cast<T>(base) * value + static_cast<T>(digitValue);
     }
 
+    using ST = typename std::make_signed<T>::type; // workaround for MSVC "Error C4146: unary minus operator applied to unsigned type"
+
     if(isNegative)
-        integer = -value;
+        integer = -static_cast<ST>(value);
     else
         integer = value;
 

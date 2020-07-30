@@ -1,7 +1,11 @@
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+#include <cmath>
+
 #include "pathutils.h"
 #include "path.h"
 
-#include <cmath>
 
 namespace lunasvg
 {
