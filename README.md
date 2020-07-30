@@ -6,7 +6,7 @@ lunasvg is c++ library to create, animate, manipulate and render SVG files.
 ...
 SVGDocument document;
 document.loadFromFile("tiger.svg");
-Bitmap bitmap = document.renderToFit();
+Bitmap bitmap = document.renderToBitmap();
 ...
 
 ```
