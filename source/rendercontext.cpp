@@ -1,6 +1,10 @@
 #include "rendercontext.h"
 #include "svgelementhead.h"
 #include "svgelementtail.h"
+#include "svgcolor.h"
+#include "svglength.h"
+#include "svglengthlist.h"
+#include "svgnumber.h"
 #include "paint.h"
 #include "strokedata.h"
 

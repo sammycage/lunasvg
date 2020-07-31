@@ -1,4 +1,6 @@
 #include "svgsolidcolorelement.h"
+#include "svgcolor.h"
+#include "svgnumber.h"
 
 namespace lunasvg {
 

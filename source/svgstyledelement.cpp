@@ -2,6 +2,7 @@
 #include "svgclippathelement.h"
 #include "svgmaskelement.h"
 #include "svgdocumentimpl.h"
+#include "svgcolor.h"
 #include "rendercontext.h"
 
 namespace lunasvg {

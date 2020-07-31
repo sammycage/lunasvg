@@ -1,8 +1,7 @@
 #ifndef AFFINETRANSFORM_H
 #define AFFINETRANSFORM_H
 
-namespace lunasvg
-{
+namespace lunasvg {
 
 class Point;
 class Rect;

@@ -1,5 +1,4 @@
 #include "svguseelement.h"
-#include "svggeometryelement.h"
 #include "svgelementtail.h"
 #include "svgdocumentimpl.h"
 

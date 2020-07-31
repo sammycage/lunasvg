@@ -5,8 +5,7 @@
 #include <cmath>
 #include <limits>
 
-namespace lunasvg
-{
+namespace lunasvg {
 
 AffineTransform::AffineTransform()
 {

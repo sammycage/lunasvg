@@ -3,10 +3,9 @@
 
 #include <cmath>
 
-#define K_PI 3.14159265358979323846
+namespace lunasvg {
 
-namespace lunasvg
-{
+#define K_PI 3.14159265358979323846
 
 namespace Utils
 {

@@ -3,8 +3,7 @@
 
 #include "pathiterator.h"
 
-namespace lunasvg
-{
+namespace lunasvg {
 
 class FlatteningPathIterator
 {

@@ -1,4 +1,5 @@
 #include "svgstopelement.h"
+#include "svgcolor.h"
 #include "rendercontext.h"
 
 namespace lunasvg {

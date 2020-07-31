@@ -144,8 +144,8 @@ void CanvasImpl::updateLuminance()
         std::uint32_t g = (*pixel >> 8) & 0xff;
         std::uint32_t b = (*pixel >> 0) & 0xff;
 
-        std::uint32_t a0 = r*109 + g*366 + b+37;
-        *pixel = ((a0 + 256) << 15) & 0xff000000;
+        std::uint32_t luminosity = (2*r + 3*g + b) / 6;
+        *pixel = luminosity << 24;
 
         ptr += 4;
     }

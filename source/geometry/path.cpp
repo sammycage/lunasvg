@@ -5,8 +5,7 @@
 #include <limits>
 #include <algorithm>
 
-namespace lunasvg
-{
+namespace lunasvg {
 
 #define BEZIER_ARC_FACTOR 0.5522847498
 

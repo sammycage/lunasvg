@@ -6,9 +6,6 @@
 
 namespace lunasvg {
 
-class RenderState;
-class Path;
-
 class SVGGeometryElement : public SVGGraphicsElement
 {
 public:

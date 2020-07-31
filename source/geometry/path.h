@@ -6,8 +6,7 @@
 
 #include <vector>
 
-namespace lunasvg
-{
+namespace lunasvg {
 
 enum SegType
 {

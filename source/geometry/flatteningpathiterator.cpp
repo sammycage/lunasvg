@@ -1,7 +1,6 @@
 #include "flatteningpathiterator.h"
 
-namespace lunasvg
-{
+namespace lunasvg {
 
 FlatteningPathIterator::FlatteningPathIterator(const Path& path, unsigned int limit) :
     m_pathIterator(path),

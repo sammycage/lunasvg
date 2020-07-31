@@ -2,7 +2,7 @@
 
 namespace lunasvg {
 
-SVGGElement::SVGGElement(SVGDocument *document) :
+SVGGElement::SVGGElement(SVGDocument* document) :
     SVGGraphicsElement(ElementIdG, document)
 {
 }

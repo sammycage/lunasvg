@@ -1,7 +1,5 @@
 #include "svglength.h"
 #include "rendercontext.h"
-#include "svgelementimpl.h"
-#include "svgdocument.h"
 
 namespace lunasvg {
 

@@ -7,7 +7,6 @@
 namespace lunasvg {
 
 class Rgb;
-class RenderStyle;
 
 class SVGStopElement : public SVGStyledElement
 {

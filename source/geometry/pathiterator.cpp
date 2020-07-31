@@ -1,8 +1,7 @@
 #include "pathiterator.h"
 #include "point.h"
 
-namespace lunasvg
-{
+namespace lunasvg {
 
 PathIterator::PathIterator(const Path& path) :
     m_pointSegs(path.getPointSegs()),

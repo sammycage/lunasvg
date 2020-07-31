@@ -2,12 +2,6 @@
 #define RENDERCONTEXT_H
 
 #include "cssproperty.h"
-#include "svgcolor.h"
-#include "svgnumber.h"
-#include "svglength.h"
-#include "svglengthlist.h"
-#include "svgstring.h"
-
 #include "canvas.h"
 #include "affinetransform.h"
 #include "rect.h"
@@ -18,6 +12,9 @@
 
 namespace lunasvg {
 
+class RenderState;
+class Paint;
+class StrokeData;
 class SVGElementImpl;
 
 class RenderStyle
