@@ -16,7 +16,7 @@ Path SVGPathElement::makePath(const RenderState&) const
 
 Rect SVGPathElement::makeBoundingBox(const RenderState&) const
 {
-    const Path path = m_d.property()->value();
+    const Path& path = m_d.property()->value();
     return path.boundingBox();
 }
 

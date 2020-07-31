@@ -1,11 +1,9 @@
-#ifndef _USE_MATH_DEFINES
-#define _USE_MATH_DEFINES
-#endif
-#include <cmath>
-
 #include "pathutils.h"
 #include "path.h"
 
+#include <cmath>
+
+#define K_PI 3.14159265358979323846
 
 namespace lunasvg
 {
@@ -21,8 +19,8 @@ static void path_arc_segment(Path& path, double xc, double yc, double th0, doubl
     double t;
     double thHalf;
 
-    sinTh = sin(xAxisRotation * double(M_PI / 180.0));
-    cosTh = cos(xAxisRotation * double(M_PI / 180.0));
+    sinTh = sin(xAxisRotation * double(K_PI / 180.0));
+    cosTh = cos(xAxisRotation * double(K_PI / 180.0));
 
     a00 =  cosTh * rx;
     a01 = -sinTh * ry;
@@ -66,8 +64,8 @@ void pathArcTo(Path& path, double rx, double ry, double xAxisRotation, bool larg
     rx = fabs(rx);
     ry = fabs(ry);
 
-    sin_th = sin(xAxisRotation * double(M_PI / 180.0));
-    cos_th = cos(xAxisRotation * double(M_PI / 180.0));
+    sin_th = sin(xAxisRotation * double(K_PI / 180.0));
+    cos_th = cos(xAxisRotation * double(K_PI / 180.0));
 
     dx = (cp.x - x) / 2.0;
     dy = (cp.y - y) / 2.0;
@@ -105,11 +103,11 @@ void pathArcTo(Path& path, double rx, double ry, double xAxisRotation, bool larg
 
     th_arc = th1 - th0;
     if(th_arc < 0 && sweepFlag)
-        th_arc += double(2 * M_PI);
+        th_arc += double(2 * K_PI);
     else if(th_arc > 0 && !sweepFlag)
-        th_arc -= double(2 * M_PI);
+        th_arc -= double(2 * K_PI);
 
-    n_segs = int(ceil(fabs(th_arc / double(M_PI * 0.5 + 0.001))));
+    n_segs = int(ceil(fabs(th_arc / double(K_PI * 0.5 + 0.001))));
     for(i = 0; i < n_segs; i++)
         path_arc_segment(path, xc, yc, th0 + i * th_arc / n_segs, th0 + (i + 1) * th_arc / n_segs, rx, ry, xAxisRotation);
 }

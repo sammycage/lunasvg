@@ -19,8 +19,8 @@ public:
     virtual void removeAttribute(const std::string& name);
     virtual void render(RenderContext& context) const;
     virtual void renderTail(RenderContext&) const;
-    virtual void externalise(std::string& out, unsigned int& indent) const;
-    virtual void externaliseTail(std::string& out, unsigned int& indent) const;
+    virtual void externalise(std::string& out, std::uint32_t& indent) const;
+    virtual void externaliseTail(std::string& out, std::uint32_t& indent) const;
     void setProperty(DOMPropertyID nameId, const std::string& value);
     std::string getProperty(DOMPropertyID nameId) const;
     bool hasProperty(DOMPropertyID nameId) const;

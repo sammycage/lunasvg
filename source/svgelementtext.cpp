@@ -11,7 +11,7 @@ void SVGElementText::render(RenderContext&) const
 {
 }
 
-void SVGElementText::externalise(std::string&, unsigned int&) const
+void SVGElementText::externalise(std::string&, std::uint32_t&) const
 {
 }
 

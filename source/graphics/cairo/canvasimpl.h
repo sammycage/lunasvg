@@ -3,7 +3,7 @@
 
 #include "canvas.h"
 
-#include <cairo/cairo.h>
+#include <cairo.h>
 
 namespace lunasvg {
 

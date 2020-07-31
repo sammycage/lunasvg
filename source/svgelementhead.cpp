@@ -53,7 +53,7 @@ void SVGElementHead::removeAttribute(const std::string& name)
         removeProperty(nameId);
 }
 
-void SVGElementHead::externalise(std::string& out, unsigned int& indent) const
+void SVGElementHead::externalise(std::string& out, std::uint32_t& indent) const
 {
     out.append(indent, '\t');
     out += '<';
@@ -117,7 +117,7 @@ void SVGElementHead::externalise(std::string& out, unsigned int& indent) const
     }
 }
 
-void SVGElementHead::externaliseTail(std::string& out, unsigned int& indent) const
+void SVGElementHead::externaliseTail(std::string& out, std::uint32_t& indent) const
 {
     if(next == tail)
         return;

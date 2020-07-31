@@ -1,27 +1,22 @@
 cmake_minimum_required(VERSION 3.3)
 
-project(lunasvg VERSION 0.1.0 LANGUAGES C CXX)
+set(CMAKE_CXX_STANDARD 11)
 
-option(BUILD_SHARED_LIBS "Build shared libraries" ON)
-option(LUNASVG_BUILD_EXAMPLES "Build examples" ON)
+project(lunasvg)
+
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+find_package(Cairo REQUIRED)
+
+project(lunasvg)
 
 add_library(lunasvg)
 
-set_target_properties(lunasvg PROPERTIES VERSION 0.1.0 SONAME 0)
-
-target_link_libraries(lunasvg cairo)
-
-target_compile_options(lunasvg
-PRIVATE
-    -std=c++11 -fPIC -fno-rtti -fno-exceptions -Wall
-)
-
 add_subdirectory(include)
 add_subdirectory(source)
-
-if(LUNASVG_BUILD_EXAMPLES)
 add_subdirectory(example)
-endif()
+
+target_include_directories(lunasvg PRIVATE ${CAIRO_INCLUDE_DIR})
+target_link_libraries(lunasvg ${CAIRO_LIBRARIES})
 
 set(LUNASVG_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
 set(LUNASVG_INCDIR ${CMAKE_INSTALL_PREFIX}/include/lunasvg)

@@ -93,12 +93,12 @@ Box SVGDocumentImpl::getBBox(double dpi) const
     return Box(state.bbox.x, state.bbox.y, state.bbox.width, state.bbox.height);
 }
 
-Bitmap SVGDocumentImpl::renderToBitmap(uint32_t width, uint32_t height, double dpi, unsigned int bgColor) const
+Bitmap SVGDocumentImpl::renderToBitmap(std::uint32_t width, std::uint32_t height, double dpi, std::uint32_t bgColor) const
 {
     return m_rootElement->renderToBitmap(width, height, dpi, bgColor);
 }
 
-void SVGDocumentImpl::render(Bitmap bitmap, double dpi, unsigned int bgColor) const
+void SVGDocumentImpl::render(Bitmap bitmap, double dpi, std::uint32_t bgColor) const
 {
     RenderContext context(RenderModeDisplay);
     RenderState& state = context.state();
@@ -369,7 +369,7 @@ void SVGDocumentImpl::freeElement(SVGElementImpl* head, SVGElementImpl* tail)
 std::string SVGDocumentImpl::toString(const SVGElementImpl* element) const
 {
     std::string out;
-    unsigned int indent = 0;
+    std::uint32_t indent = 0;
 
     SVGElementImpl* head = const_cast<SVGElementImpl*>(element);
     SVGElementImpl* tail;

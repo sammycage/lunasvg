@@ -13,7 +13,7 @@ void SVGElementTail::render(RenderContext& context) const
     parent->renderTail(context);
 }
 
-void SVGElementTail::externalise(std::string& out, unsigned int& indent) const
+void SVGElementTail::externalise(std::string& out, std::uint32_t& indent) const
 {
     parent->externaliseTail(out, indent);
 }

@@ -1,11 +1,8 @@
-#ifndef _USE_MATH_DEFINES
-#define _USE_MATH_DEFINES
-#endif
-#include <cmath>
-
 #include "svgtransform.h"
 
 namespace lunasvg {
+
+#define K_PI 3.14159265358979323846
 
 SVGTransform::SVGTransform() :
     SVGProperty(PropertyTypeTransform)
@@ -102,9 +99,9 @@ void SVGTransform::setValueAsString(const std::string& value)
             break;
         case TransformTypeRotate:
             if(count == 1)
-                m_value.rotate(values[0]*M_PI/180.0, 0, 0);
+                m_value.rotate(values[0]*K_PI/180.0, 0, 0);
             else
-                m_value.rotate(values[0]*M_PI/180.0, values[1], values[2]);
+                m_value.rotate(values[0]*K_PI/180.0, values[1], values[2]);
             break;
         case TransformTypeScale:
             if(count == 1)
@@ -113,10 +110,10 @@ void SVGTransform::setValueAsString(const std::string& value)
                 m_value.scale(values[0], values[1]);
             break;
         case TransformTypeSkewX:
-            m_value.shear(values[0]*M_PI/180.0, 0);
+            m_value.shear(values[0]*K_PI/180.0, 0);
             break;
         case TransformTypeSkewY:
-            m_value.shear(0, values[0]*M_PI/180.0);
+            m_value.shear(0, values[0]*K_PI/180.0);
             break;
         case TransformTypeTranslate:
             if(count == 1)

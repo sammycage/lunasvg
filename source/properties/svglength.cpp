@@ -1,8 +1,3 @@
-#ifndef _USE_MATH_DEFINES
-#define _USE_MATH_DEFINES
-#endif
-#include <cmath>
-
 #include "svglength.h"
 #include "rendercontext.h"
 #include "svgelementimpl.h"
@@ -10,15 +5,17 @@
 
 namespace lunasvg {
 
+#define K_SQRT2 1.41421356237309504880
+
 const SVGLength* hundredPercent()
 {
-    static const SVGLength value(100, LengthUnitPercent);
+    static const SVGLength value(100.0, LengthUnitPercent);
     return &value;
 }
 
 const SVGLength* fiftyPercent()
 {
-    static const SVGLength value(50, LengthUnitPercent);
+    static const SVGLength value(50.0, LengthUnitPercent);
     return &value;
 }
 
@@ -95,7 +92,7 @@ double SVGLength::value(const RenderState& state, LengthMode mode) const
     {
         double w = state.viewPort.width;
         double h = state.viewPort.height;
-        double max = (mode == LengthModeWidth) ? w : (mode == LengthModeHeight) ? h : sqrt(w*w+h*h) / M_SQRT2;
+        double max = (mode == LengthModeWidth) ? w : (mode == LengthModeHeight) ? h : std::sqrt(w*w+h*h) / K_SQRT2;
         return m_value * max / 100.0;
     }
 

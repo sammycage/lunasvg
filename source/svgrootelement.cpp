@@ -9,12 +9,12 @@ SVGRootElement::SVGRootElement(SVGDocument* document) :
 {
 }
 
-Bitmap SVGRootElement::renderToBitmap(uint32_t width, uint32_t height, double dpi, unsigned int bgColor) const
+Bitmap SVGRootElement::renderToBitmap(std::uint32_t width, std::uint32_t height, double dpi, std::uint32_t bgColor) const
 {
     const SVGDocumentImpl* impl = document()->impl();
     double documentWidth = impl->documentWidth(dpi);
     double documentHeight = impl->documentHeight(dpi);
-    if(documentWidth < 0 || documentHeight < 0)
+    if(documentWidth < 0.0 || documentHeight < 0.0)
     {
         RenderContext context(RenderModeBounding);
         RenderState &state = context.state();
