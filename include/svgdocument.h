@@ -115,7 +115,7 @@ public:
      * @param bgColor
      * @return
      */
-    Bitmap renderToBitmap(std::uint32_t width = 0, std::uint32_t height = 0, double dpi = 96.0, unsigned int bgColor = 0x00000000) const;
+    Bitmap renderToBitmap(std::uint32_t width = 0, std::uint32_t height = 0, double dpi = 96.0, std::uint32_t bgColor = 0x00000000) const;
 
     /**
      * @brief Renders this document to bitmap. The width and height of the bitmap will be used as the viewPort.
@@ -124,7 +124,7 @@ public:
      * @param dpi Dots per inch to use for units conversion to pixels.
      * @param bgColor The background color in 0xRRGGBBAA.
      */
-    void render(Bitmap bitmap, double dpi = 96.0, unsigned int bgColor = 0x00000000) const;
+    void render(Bitmap bitmap, double dpi = 96.0, std::uint32_t bgColor = 0x00000000) const;
 
     /**
      * @brief This is the top level element.

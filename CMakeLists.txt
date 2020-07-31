@@ -9,7 +9,7 @@ find_package(Cairo REQUIRED)
 
 project(lunasvg)
 
-add_library(lunasvg)
+add_library(lunasvg SHARED)
 
 add_subdirectory(include)
 add_subdirectory(source)
