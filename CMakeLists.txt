@@ -7,8 +7,6 @@ project(lunasvg)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 find_package(Cairo REQUIRED)
 
-project(lunasvg)
-
 add_library(lunasvg SHARED)
 
 add_subdirectory(include)
