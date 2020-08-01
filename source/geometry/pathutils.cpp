@@ -7,8 +7,7 @@ namespace lunasvg {
 
 #define K_PI 3.14159265358979323846
 
-namespace Utils
-{
+namespace Utils {
 
 static void path_arc_segment(Path& path, double xc, double yc, double th0, double th1, double rx, double ry, double xAxisRotation)
 {

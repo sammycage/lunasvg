@@ -17,7 +17,7 @@ Bitmap SVGRootElement::renderToBitmap(std::uint32_t width, std::uint32_t height,
     if(documentWidth < 0.0 || documentHeight < 0.0)
     {
         RenderContext context(RenderModeBounding);
-        RenderState &state = context.state();
+        RenderState& state = context.state();
         state.element = this;
         state.viewPort = Rect(0, 0, std::max(documentWidth, 1.0), std::max(documentHeight, 1.0));
         state.dpi = dpi;

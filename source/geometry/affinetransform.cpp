@@ -3,7 +3,6 @@
 #include "rect.h"
 
 #include <cmath>
-#include <limits>
 
 namespace lunasvg {
 
@@ -211,20 +210,20 @@ Rect AffineTransform::mapRect(const Rect& rect) const
     map(p[2].x, p[2].y, p[2].x, p[2].y);
     map(p[3].x, p[3].y, p[3].x, p[3].y);
 
-    double xMin = std::numeric_limits<double>::max();
-    double yMin = std::numeric_limits<double>::max();
-    double xMax = std::numeric_limits<double>::min();
-    double yMax = std::numeric_limits<double>::min();
+    double l = p[0].x;
+    double t = p[0].y;
+    double r = p[0].x;
+    double b = p[0].y;
 
     for(int i = 0;i < 4;i++)
     {
-        if(p[i].x < xMin) xMin = p[i].x;
-        if(p[i].x > xMax) xMax = p[i].x;
-        if(p[i].y < yMin) yMin = p[i].y;
-        if(p[i].y > yMax) yMax = p[i].y;
+        if(p[i].x < l) l = p[i].x;
+        if(p[i].x > r) r = p[i].x;
+        if(p[i].y < t) t = p[i].y;
+        if(p[i].y > b) b = p[i].y;
     }
 
-    return Rect(xMin, yMin, xMax-xMin, yMax-yMin);
+    return Rect(l, t, r-l, b-t);
 }
 
 } //namespace lunasvg
