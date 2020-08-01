@@ -84,7 +84,7 @@ double SVGDocumentImpl::documentHeight(double dpi) const
 Box SVGDocumentImpl::getBBox(double dpi) const
 {
     RenderContext context(RenderModeBounding);
-    RenderState &state = context.state();
+    RenderState& state = context.state();
     state.element = m_rootElement;
     state.viewPort = Rect(0, 0, std::max(documentWidth(dpi), 1.0), std::max(documentHeight(dpi), 1.0));
     state.dpi = dpi;
