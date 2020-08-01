@@ -69,7 +69,6 @@ public:
     /**
      * @brief Adds a new attribute. If an attribute with that name is already
      * present in this element, its value is changed to that of the value parameter.
-     *
      * @param name The name of the attribute to create or change.
      * @param value The value to set in string form.
      */
@@ -77,7 +76,6 @@ public:
 
     /**
      * @brief Retrieves an attribute value by name.
-     *
      * @param name The name of the attribute to retrieve.
      * @return The attribute value as a string, or the empty string
      * if that attribute does not have a specified value.
@@ -87,7 +85,6 @@ public:
     /**
      * @brief Returns true when an attribute with a given name is specified on this
      * element otherwise false.
-     *
      * @param name The name of the attribute to look for.
      * @return True if an attribute with the given name is specified on this
      * element, otherwise false.
@@ -97,28 +94,24 @@ public:
     /**
      * @brief Removes an attribute by name. If the removed attribute has a
      * default value it is immediately replaced.
-     *
      * @param name The name of the attribute to remove or replace.
      */
     virtual void removeAttribute(const std::string& name) = 0;
 
     /**
      * @brief The name of this element.
-     *
      * @return The tag name of this element as string.
      */
     virtual const std::string& tagName() const = 0;
 
     /**
      * @brief The id attribute of this element.
-     *
      * @return The id attribute value as a string.
      */
     virtual const std::string& id() const = 0;
 
     /**
      * @brief Finds an element that matches a given id in this element.
-     *
      * @param id The id to match on. An empty string matches all ids.
      * @param index The index of the element collection with the id.
      * @return A pointer to the element on success, otherwise NULL.
@@ -127,7 +120,6 @@ public:
 
     /**
      * @brief Finds an element that matches a given tag name in this element.
-     *
      * @param tagName The tagName to match on. An empty string matches all tags.
      * @param index The index of the element collection with the tag name.
      * @return A pointer to the element on success, otherwise NULL.
@@ -136,7 +128,6 @@ public:
 
     /**
      * @brief Inserts a copy of an element to this element.
-     *
      * @param element A pointer to the element.
      * @param position A position relative to this element.
      * @return A pointer to the copied element on success, otherwise NULL.
@@ -145,7 +136,6 @@ public:
 
     /**
      * @brief Appends a copy of an element to this element.
-     *
      * @param element A pointer to the element.
      * @return A pointer to the copied element on success otherwise, NULL.
      */
@@ -153,7 +143,6 @@ public:
 
     /**
      * @brief Inserts SVG content to this element.
-     *
      * @param content SVG content.
      * @param position A position relative to this element.
      * @return A pointer to the first element in the content on success, otherwise NULL.
@@ -162,7 +151,6 @@ public:
 
     /**
      * @brief Appends SVG content to this element.
-     *
      * @param content SVG content.
      * @return A pointer to the first element in the content on success, otherwise NULL.
      */
@@ -180,21 +168,19 @@ public:
 
     /**
      * @brief Returns the owner document.
-     *
      * @return A pointer to the owner document.
      */
     SVGDocument* document() const;
 
     /**
      * @brief Returns the parent element.
-     *
      * @return A pointer to the parent element.
      */
     SVGElement* parentElement() const;
 
     /**
-     * @brief toString
-     * @return
+     * @brief Returns the string representation of the element.
+     * @return The string representation of the element.
      */
     std::string toString() const;
 

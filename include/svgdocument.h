@@ -15,7 +15,6 @@ public:
 
     /**
      * @brief Finds an element that matches the given id in this document.
-     *
      * @param id The id to match on. An empty string matches all ids.
      * @param index The index of the element collection with the id.
      * @return A pointer to the element on success, otherwise NULL.
@@ -24,7 +23,6 @@ public:
 
     /**
      * @brief Finds an element that matches the given tag name in this document.
-     *
      * @param tagName The tagName to match on. An empty string matches all tags.
      * @param index The index of the element collection with the tag name.
      * @return A pointer to the element on success, otherwise NULL.
@@ -33,7 +31,6 @@ public:
 
     /**
      * @brief Inserts a copy of an element to this document.
-     *
      * @param element A pointer to the element.
      * @param position A position relative to the root element.
      * @return A pointer to the copied element on success, otherwise NULL.
@@ -42,7 +39,6 @@ public:
 
     /**
      * @brief Appends a copy of an element to this document.
-     *
      * @param element A pointer to the element.
      * @return A pointer to the copied element on success, otherwise NULL.
      */
@@ -50,7 +46,6 @@ public:
 
     /**
      * @brief Inserts SVG content to this document.
-     *
      * @param content SVG content.
      * @param position A position relative to the root element.
      * @return A pointer to the first element in the content on success, otherwise NULL.
@@ -59,7 +54,6 @@ public:
 
     /**
      * @brief Appends SVG content to this document.
-     *
      * @param content SVG content.
      * @return A pointer to the first element in the content on success, otherwise NULL.
      */
@@ -72,7 +66,6 @@ public:
 
     /**
      * @brief Loads SVG content from the given filename.
-     *
      * @param filename A SVG resource filename
      * @return True on success, otherwise false.
      */
@@ -80,7 +73,6 @@ public:
 
     /**
      * @brief Loads SVG content from the given data.
-     *
      * @param content A string containing a SVG content.
      * @return True on success, otherwise false.
      */
@@ -101,25 +93,25 @@ public:
     double documentHeight(double dpi = 96.0) const;
 
     /**
-     * @brief getBBox
-     * @param dpi
-     * @return
+     * @brief The smallest rectangle in which the document fits.
+     * @param dpi Dots per inch to use for units conversion to pixels.
+     * @return The smallest rectangle in which the document fits.
      */
     Box getBBox(double dpi = 96.0) const;
 
     /**
-     * @brief renderToBitmap
-     * @param width
-     * @param height
-     * @param dpi
-     * @param bgColor
-     * @return
+     * @brief Renders this document to bitmap. if the width and height is 0, then it is determined
+     * from document dimensions or it will be adjusted to preserve aspect ratio of the SVG image.
+     * @param width The width of the bitmap.
+     * @param height The height of the bitmap.
+     * @param dpi Dots per inch to use for units conversion to pixels.
+     * @param bgColor The background color in 0xRRGGBBAA.
+     * @return The raster representation of the document.
      */
     Bitmap renderToBitmap(std::uint32_t width = 0, std::uint32_t height = 0, double dpi = 96.0, std::uint32_t bgColor = 0x00000000) const;
 
     /**
      * @brief Renders this document to bitmap. The width and height of the bitmap will be used as the viewPort.
-     *
      * @param bitmap Bitmap in which content will be drawn.
      * @param dpi Dots per inch to use for units conversion to pixels.
      * @param bgColor The background color in 0xRRGGBBAA.
@@ -128,14 +120,13 @@ public:
 
     /**
      * @brief This is the top level element.
-     *
      * @return A pointer to the root element.
      */
     SVGElement* rootElement() const;
 
     /**
-     * @brief toString
-     * @return
+     * @brief Returns the string representation of the document.
+     * @return The string representation of the document.
      */
     std::string toString() const;
 
