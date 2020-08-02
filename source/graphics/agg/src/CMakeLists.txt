@@ -1,0 +1,9 @@
+target_sources(lunasvg 
+PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/agg_vcgen_stroke.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/agg_vcgen_dash.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/agg_vcgen_contour.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/agg_trans_affine.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/agg_curves.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/agg_sqrt_tables.cpp"
+)

@@ -17,7 +17,7 @@ public:
     virtual std::string getAttribute(const std::string& name) const;
     virtual bool hasAttribute(const std::string& name) const;
     virtual void removeAttribute(const std::string& name);
-    virtual void render(RenderContext& context) const;
+    virtual void render(RenderContext&) const;
     virtual void renderTail(RenderContext&) const;
     virtual void externalise(std::string& out, std::uint32_t& indent) const;
     virtual void externaliseTail(std::string& out, std::uint32_t& indent) const;

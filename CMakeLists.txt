@@ -4,17 +4,28 @@ project(lunasvg CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-find_package(Cairo REQUIRED)
+option(BUILD_SHARED_LIBS "Builds shared libraries" ON)
+option(LUNASVG_BUILD_EXAMPLES "Builds examples" ON)
+option(LUNASVG_ENABLE_CAIRO "Enable Cairo 2D Graphics"  OFF)
 
-add_library(lunasvg SHARED)
+if(LUNASVG_ENABLE_CAIRO)
+    set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+    find_package(Cairo REQUIRED)
+endif()
+
+add_library(lunasvg)
 
 add_subdirectory(include)
 add_subdirectory(source)
-add_subdirectory(example)
 
-target_include_directories(lunasvg PRIVATE ${CAIRO_INCLUDE_DIR})
-target_link_libraries(lunasvg ${CAIRO_LIBRARIES})
+if(LUNASVG_BUILD_EXAMPLES)
+    add_subdirectory(example)
+endif()
+
+if(LUNASVG_ENABLE_CAIRO)
+    target_include_directories(lunasvg PRIVATE ${CAIRO_INCLUDE_DIR})
+    target_link_libraries(lunasvg ${CAIRO_LIBRARIES})
+endif()
 
 set(LUNASVG_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
 set(LUNASVG_INCDIR ${CMAKE_INSTALL_PREFIX}/include/lunasvg)

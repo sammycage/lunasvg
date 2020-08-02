@@ -1,4 +1,8 @@
-add_subdirectory(cairo)
+if(LUNASVG_ENABLE_CAIRO)
+    add_subdirectory(cairo)
+else()
+    add_subdirectory(agg)
+endif()
 
 target_sources(lunasvg
 PRIVATE
