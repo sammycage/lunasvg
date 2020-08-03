@@ -30,10 +30,12 @@ int main()
 - Document Structure: defs, svg, g, use, symbol.
 - Coordinate Systems, Transformations and Units.
 
-## build
-* Install [cmake](https://cmake.org/download/)
-* Install [cairo](https://www.cairographics.org/download/) (optional)
+## depends
+* [cmake](https://cmake.org/download/)
+* [cairo](https://www.cairographics.org/download/) (optional)
     - pkg-config - Required for building with cairo support
+
+## build
 
 Create a build directory.
 ```
