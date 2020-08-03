@@ -31,8 +31,9 @@ int main()
 - Coordinate Systems, Transformations and Units.
 
 ## build
-- Install [cmake](https://cmake.org/download/)
-- Install [cairo](https://www.cairographics.org/download/) (optional)
+* Install [cmake](https://cmake.org/download/)
+* Install [cairo](https://www.cairographics.org/download/) (optional)
+    - pkg-config - Required for building with cairo support
 
 Create a build directory.
 ```
@@ -43,7 +44,7 @@ Run cmake command inside build directory.
 cd build
 cmake ..
 
-# build with cairo
+# build with cairo support
 
 cmake -DLUNASVG_ENABLE_CAIRO=ON ..
 
