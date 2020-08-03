@@ -1,5 +1,5 @@
 ## lunasvg
-lunasvg is c++ library to create, animate, manipulate and render SVG files.
+lunsvg is a standalone c++ library to create, animate, manipulate and render SVG files.
 
 ![svg2png generated PNG](/example/tiger.svg.png)
 
@@ -25,7 +25,6 @@ int main()
 
 ## build
 - Install [cmake](https://cmake.org/download/) if not already installed.
-- Install [cairo](https://www.cairographics.org/download/) if not already installed.
 
 Create a build directory.
 ```
