@@ -32,7 +32,7 @@ int main()
 
 ## build
 - Install [cmake](https://cmake.org/download/)
-- Install [cairo](https://www.cairographics.org/download/) optional.
+- Install [cairo](https://www.cairographics.org/download/) (optional).
 
 Create a build directory.
 ```
