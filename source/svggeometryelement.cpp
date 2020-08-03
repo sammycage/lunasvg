@@ -43,8 +43,8 @@ void SVGGeometryElement::render(RenderContext& context) const
         Paint strokePaint = state.style.strokePaint(state);
         WindRule fillRule = state.style.fillRule();
 
-        fillPaint.setOpacity(state.style.fillOpacity());
-        strokePaint.setOpacity(state.style.strokeOpacity());
+        fillPaint.setOpacity(state.style.fillOpacity() * state.style.opacity());
+        strokePaint.setOpacity(state.style.strokeOpacity() * state.style.opacity());
 
         state.canvas.draw(path, state.matrix, fillRule, fillPaint, strokePaint, strokeData);
     }

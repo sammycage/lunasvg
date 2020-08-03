@@ -75,7 +75,7 @@ void SVGStyledElement::render(RenderContext& context) const
         state.style.clear(CSSPropertyIdMask);
     }
 
-    if(state.style.opacity() != 1.0 || state.style.mask() != KEmptyString || state.style.clipPath() != KEmptyString)
+    if((!isSVGGeometryElement() && state.style.opacity() != 1.0) || state.style.mask() != KEmptyString || state.style.clipPath() != KEmptyString)
         state.canvas.reset(state.canvas.width(), state.canvas.height());
 
     if(const SVGProperty* property = state.style.get(CSSPropertyIdColor))
@@ -106,7 +106,7 @@ void SVGStyledElement::renderTail(RenderContext& context) const
                 to<SVGMaskElement>(ref)->applyMask(state);
         }
 
-        newState.canvas.blend(state.canvas, BlendModeSrc_Over, state.style.opacity(), 0.0, 0.0);
+        newState.canvas.blend(state.canvas, BlendModeSrc_Over, isSVGGeometryElement() ? 1.0 : state.style.opacity(), 0.0, 0.0);
     }
 
     context.pop();
