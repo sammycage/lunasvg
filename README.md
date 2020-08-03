@@ -1,7 +1,7 @@
 ## lunasvg
 lunsvg is a standalone c++ library to create, animate, manipulate and render SVG files.
 
-![svg2png generated PNG](/example/tiger.svg.png)
+![svg2png generated PNG](/example/luna.png)
 
 ## example
 ```cpp
