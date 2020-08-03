@@ -1,4 +1,4 @@
-if(CAIRO_FOUND)
+if(LUNASVG_ENABLE_CAIRO)
     add_subdirectory(cairo)
 else()
     add_subdirectory(agg)
