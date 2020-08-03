@@ -23,6 +23,13 @@ int main()
 
 ```
 
+## features
+- Basic Shapes : rect, circle, ellipse, line, polyline, polygon, path.
+- Paint server : solidColor, linearGradient, radialGradient, pattern.
+- Clipping, Masking and Compositing : clipPath, mask, group opacity.
+- Document Structure: defs, svg, g, use, symbol.
+- Coordinate Systems, Transformations and Units.
+
 ## build
 - Install [cmake](https://cmake.org/download/) if not already installed.
 
