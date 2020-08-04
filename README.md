@@ -36,7 +36,6 @@ int main()
 ## depends
 * [cmake](https://cmake.org/download/)
 * [cairo](https://www.cairographics.org/download/) (optional)
-* **pkg-config** - Required for building with cairo support
 
 ## build
 
