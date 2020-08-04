@@ -75,4 +75,5 @@ svg2png [filename] [resolution] [bgColor]
 
 ## support
 If you like the work lunasvg is doing please consider a small donation:
+
 <a href="https://www.buymeacoffee.com/sammycage" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 51px !important;width: 217px !important;" ></a>
