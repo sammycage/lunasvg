@@ -23,7 +23,7 @@ void SVGClipPathElement::applyClip(RenderState& state) const
     RenderContext newContext(this, RenderModeClipping);
     RenderState& newState = newContext.state();
     newState.element = this;
-    newState.canvas.reset(state.canvas.width(), state.canvas.width());
+    newState.canvas.reset(state.canvas.width(), state.canvas.height());
     newState.matrix = state.matrix;
     newState.viewPort = state.viewPort;
     newState.dpi = state.dpi;
