@@ -266,10 +266,10 @@ RenderContext::~RenderContext()
     delete m_state;
 }
 
-RenderContext::RenderContext(RenderMode mode) :
+RenderContext::RenderContext(const SVGElementImpl* element, RenderMode mode) :
     m_mode(mode),
     m_state(new RenderState()),
-    m_current(nullptr)
+    m_current(element)
 {
 }
 

@@ -16,7 +16,7 @@ Bitmap SVGRootElement::renderToBitmap(std::uint32_t width, std::uint32_t height,
     double documentHeight = impl->documentHeight(dpi);
     if(documentWidth < 0.0 || documentHeight < 0.0)
     {
-        RenderContext context(RenderModeBounding);
+        RenderContext context(this, RenderModeBounding);
         RenderState& state = context.state();
         state.element = this;
         state.viewPort = Rect(0, 0, std::max(documentWidth, 1.0), std::max(documentHeight, 1.0));
@@ -45,7 +45,7 @@ Bitmap SVGRootElement::renderToBitmap(std::uint32_t width, std::uint32_t height,
     }
 
     Bitmap bitmap(width, height);
-    RenderContext context(RenderModeDisplay);
+    RenderContext context(this, RenderModeDisplay);
     RenderState& state = context.state();
     state.element = this;
     state.canvas.reset(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.stride());

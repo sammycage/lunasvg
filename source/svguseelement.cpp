@@ -41,7 +41,7 @@ void SVGUseElement::render(RenderContext& context) const
     double _x = m_x.value(state);
     double _y = m_y.value(state);
 
-    RenderContext newContext(context.mode());
+    RenderContext newContext(this, context.mode());
     RenderState& newState = newContext.state();
     newState.element = state.element;
     newState.canvas = state.canvas;

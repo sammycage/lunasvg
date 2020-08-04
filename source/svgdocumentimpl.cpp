@@ -83,7 +83,7 @@ double SVGDocumentImpl::documentHeight(double dpi) const
 
 Box SVGDocumentImpl::getBBox(double dpi) const
 {
-    RenderContext context(RenderModeBounding);
+    RenderContext context(m_rootElement, RenderModeBounding);
     RenderState& state = context.state();
     state.element = m_rootElement;
     state.viewPort = Rect(0, 0, std::max(documentWidth(dpi), 1.0), std::max(documentHeight(dpi), 1.0));
@@ -100,7 +100,7 @@ Bitmap SVGDocumentImpl::renderToBitmap(std::uint32_t width, std::uint32_t height
 
 void SVGDocumentImpl::render(Bitmap bitmap, double dpi, std::uint32_t bgColor) const
 {
-    RenderContext context(RenderModeDisplay);
+    RenderContext context(m_rootElement, RenderModeDisplay);
     RenderState& state = context.state();
     state.element = m_rootElement;
     state.canvas.reset(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.stride());

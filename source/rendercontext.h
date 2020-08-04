@@ -93,7 +93,7 @@ class RenderContext
 {
 public:
     ~RenderContext();
-    RenderContext(RenderMode mode);
+    RenderContext(const SVGElementImpl* element, RenderMode mode);
     RenderMode mode() const { return m_mode; }
     RenderState& parent() const { return *m_states.top(); }
     RenderState& state() const { return *m_state; }
