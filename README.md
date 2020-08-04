@@ -29,11 +29,14 @@ int main()
 - Clipping, Masking and Compositing : clipPath, mask, group opacity.
 - Document Structure: defs, svg, g, use, symbol.
 - Coordinate Systems, Transformations and Units.
+- Texting (TODO) : text, tspan, tref, textPath.
+- Animations (TODO) : animate, animateColor, animateMotion, animateTransform
+- Markers (TODO)
 
 ## depends
 * [cmake](https://cmake.org/download/)
 * [cairo](https://www.cairographics.org/download/) (optional)
-    - pkg-config - Required for building with cairo support
+* **pkg-config** - Required for building with cairo support
 
 ## build
 
@@ -71,4 +74,5 @@ svg2png [filename] [resolution] [bgColor]
 ```
 
 ## support
+If you like the work lunasvg is doing please consider a small donation:
 <a href="https://www.buymeacoffee.com/sammycage" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 51px !important;width: 217px !important;" ></a>
