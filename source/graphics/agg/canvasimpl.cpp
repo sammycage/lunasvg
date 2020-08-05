@@ -3,8 +3,25 @@
 #include "affinetransform.h"
 #include "paint.h"
 #include "gradient.h"
+#include "pattern.h"
 #include "rgb.h"
 #include "strokedata.h"
+
+#include <agg_image_accessors.h>
+#include <agg_path_storage.h>
+#include <agg_pixfmt_gray.h>
+#include <agg_pixfmt_rgb.h>
+#include <agg_pixfmt_rgba.h>
+#include <agg_rendering_buffer.h>
+#include <agg_scanline_u.h>
+#include <agg_span_allocator.h>
+#include <agg_span_image_filter_gray.h>
+#include <agg_span_image_filter_rgb.h>
+#include <agg_span_image_filter_rgba.h>
+#include <agg_span_interpolator_linear.h>
+#include <agg_span_pattern_gray.h>
+#include <agg_span_pattern_rgb.h>
+#include <agg_span_pattern_rgba.h>
 
 #include "agg_scanline_u.h"
 #include "agg_scanline_p.h"
@@ -148,7 +165,7 @@ void CanvasImpl::draw(const Path& path, const AffineTransform& matrix, WindRule 
         curved.angle_tolerance(0.0);
         agg::conv_transform<agg::conv_curve<agg::path_storage>> curved_transform(curved, _matrix);
         m_rasterizer.add_path(curved_transform);
-        renderScanlines(_matrix, fillPaint);
+        render_scanlines(fillPaint, _matrix);
     }
 
     if(!strokePaint.isNone())
@@ -185,7 +202,7 @@ void CanvasImpl::draw(const Path& path, const AffineTransform& matrix, WindRule 
             m_rasterizer.add_path(curved_stroke_transform);
         }
 
-        renderScanlines(_matrix, strokePaint);
+        render_scanlines(strokePaint, _matrix);
     }
 }
 
@@ -235,132 +252,144 @@ void CanvasImpl::convertToRGBA()
 
 static const double KGradientScale = 100.0;
 
-class GradientWrapperBase
+template<typename gradient_adaptor_t>
+void CanvasImpl::render_gradient_spread(gradient_adaptor_t& gradient_adaptor, const Gradient* gradient, double opacity, const agg::trans_affine& matrix)
 {
-public:
-    GradientWrapperBase() {}
-
-    virtual ~GradientWrapperBase() {}
-    virtual int calculate(int x, int y, int d) const = 0;
-};
-
-template<typename GradientFunction>
-class GradientWrapper : public GradientWrapperBase
-{
-public:
-    GradientWrapper(const GradientFunction& gradient, SpreadMethod spread) :
-        m_gradient(gradient),
-        m_spread(spread)
-    {}
-
-    int calculate(int x, int y, int d) const
+    agg::trans_affine transform;
+    if(gradient->type() == GradientTypeLinear)
     {
-        int val = m_gradient.calculate(x, y, d);
-        switch(m_spread)
-        {
-        case SpreadMethodPad:
-        {
-            if(val < 0)
-                return 0;
-            if(val > d)
-                return d;
-            return val;
-        }
-        case SpreadMethodRepeat:
-        {
-            int ret = val % d;
-            if(ret < 0) ret += d;
-            return ret;
-        }
-        case SpreadMethodReflect:
-        {
-            int d2 = d * 2;
-            int ret = val % d2;
-            if(ret < 0) ret += d2;
-            if(ret >= d) ret = d2 - ret;
-            return ret;
-        }
-        }
-
-        return val;
+        const LinearGradient* linear = static_cast<const LinearGradient*>(gradient);
+        double dx = linear->x2() - linear->x1();
+        double dy = linear->y2() - linear->y1();
+        transform *= agg::trans_affine_scaling(std::sqrt(dx * dx + dy * dy));
+        transform *= agg::trans_affine_rotation(std::atan2(dy, dx));
+        transform *= agg::trans_affine_translation(linear->x1(), linear->y1());
+    }
+    else
+    {
+        const RadialGradient* radial = static_cast<const RadialGradient*>(gradient);
+        transform *= agg::trans_affine_scaling(radial->r());
+        transform *= agg::trans_affine_translation(radial->cx(), radial->cy());
     }
 
-private:
-    GradientFunction m_gradient;
-    SpreadMethod m_spread;
-};
+    transform.premultiply(agg::trans_affine_scaling(1.0 / KGradientScale));
+    transform.multiply(to_agg_transform(gradient->matrix()));
+    transform.multiply(matrix);
+    transform.invert();
 
-void CanvasImpl::renderScanlines(const agg::trans_affine& matrix, const Paint& paint)
-{
-    switch(paint.type())
+    typedef agg::gradient_lut<agg::color_interpolator<agg::rgba8>> color_function_t;
+    typedef agg::span_interpolator_linear<agg::trans_affine> interpolator_t;
+    typedef agg::span_gradient<agg::rgba8, interpolator_t, gradient_adaptor_t, color_function_t> span_gradient_t;
+    typedef agg::span_allocator<agg::rgba8> span_allocator_t;
+
+    color_function_t colorFunction;
+    const GradientStops& stops = gradient->stops();
+    for(unsigned int i = 0;i < stops.size();i++)
     {
-    case PaintTypeColor:
+        double offset = stops[i].first;
+        const Rgb& c = stops[i].second;
+        colorFunction.add_color(offset, agg::rgba8(c.r, c.g, c.b, std::uint8_t(c.a * opacity)));
+    }
+
+    colorFunction.build_lut();
+
+    interpolator_t interpolator(transform);
+    span_gradient_t sg(interpolator, gradient_adaptor, colorFunction, 0.0, KGradientScale);
+    span_allocator_t allocator;
+
+    agg::scanline_u8 scanline;
+    agg::render_scanlines_aa(m_rasterizer, scanline, m_rendererBase, allocator, sg);
+}
+
+template<typename gradient_function_t>
+void CanvasImpl::render_gradient(gradient_function_t& gradient_function, const Gradient* gradient, double opacity, const agg::trans_affine& matrix)
+{
+    if(gradient->spread() == SpreadMethodReflect)
+    {
+        typedef agg::gradient_reflect_adaptor<gradient_function_t> gradient_adaptor_t;
+        gradient_adaptor_t adaptor(gradient_function);
+        render_gradient_spread(adaptor, gradient, opacity, matrix);
+    }
+    else if(gradient->spread() == SpreadMethodRepeat)
+    {
+        typedef agg::gradient_repeat_adaptor<gradient_function_t> gradient_adaptor_t;
+        gradient_adaptor_t adaptor(gradient_function);
+        render_gradient_spread(adaptor, gradient, opacity, matrix);
+    }
+    else
+    {
+        render_gradient_spread(gradient_function, gradient, opacity, matrix);
+    }
+}
+
+template<typename source_t, typename span_generator_t>
+void CanvasImpl::render_pattern(const Pattern* pattern, const agg::trans_affine& matrix)
+{
+    typedef agg::span_interpolator_linear<> span_interpolator_t;
+    typedef agg::span_allocator<typename pixel_format_t::color_type> span_allocator_t;
+    typedef agg::renderer_scanline_aa<renderer_base_t, span_allocator_t, span_generator_t> pattern_renderer_t;
+
+    agg::trans_affine transform(to_agg_transform(pattern->matrix()));
+    transform.multiply(matrix);
+    transform.invert();
+
+    source_t source(pattern->tile().impl()->m_pixelFormat);
+    span_interpolator_t span_interpolator(transform);
+    span_generator_t span_generator(source, span_interpolator);
+
+    span_allocator_t span_allocator;
+    pattern_renderer_t pattern_renderer(m_rendererBase, span_allocator, span_generator);
+
+    agg::scanline_u8 scanline;
+    agg::render_scanlines(m_rasterizer, scanline, pattern_renderer);
+}
+
+void CanvasImpl::render_scanlines(const Paint& paint, const agg::trans_affine& matrix)
+{
+    if(paint.type() == PaintTypeColor)
     {
         const Rgb* c = paint.color();
         agg::rgba8 color(c->r, c->g, c->b, std::uint8_t(c->a * paint.opacity()));
         m_rendererSolid.color(color);
         agg::scanline_p8 scanline;
         agg::render_scanlines(m_rasterizer, scanline, m_rendererSolid);
-        break;
     }
-    case PaintTypeGradient:
+    else if(paint.type() == PaintTypeGradient)
     {
         const Gradient* g = paint.gradient();
-        std::unique_ptr<GradientWrapperBase> wrapper;
-        agg::trans_affine _matrix;
         if(g->type() == GradientTypeLinear)
         {
-            const LinearGradient& linear = static_cast<const LinearGradient&>(*g);
-            double dx = linear.x2() - linear.x1();
-            double dy = linear.y2() - linear.y1();
-            _matrix *= agg::trans_affine_scaling(std::sqrt(dx * dx + dy * dy));
-            _matrix *= agg::trans_affine_rotation(std::atan2(dy, dx));
-            _matrix *= agg::trans_affine_translation(linear.x1(), linear.y1());
-
-            agg::gradient_x gradient;
-            wrapper.reset(new GradientWrapper<agg::gradient_x>(gradient, g->spread()));
+            agg::gradient_x gradient_function;
+            render_gradient(gradient_function, g, paint.opacity(), matrix);
         }
         else
         {
-            const RadialGradient& radial = static_cast<const RadialGradient&>(*g);
-            _matrix *= agg::trans_affine_scaling(radial.r());
-            _matrix *= agg::trans_affine_translation(radial.cx(), radial.cy());
-
-            agg::gradient_radial_focus gradient(KGradientScale, KGradientScale*(radial.fx() - radial.cx())/ radial.r(), KGradientScale*(radial.fy() - radial.cy())/ radial.r());
-            wrapper.reset(new GradientWrapper<agg::gradient_radial_focus>(gradient, g->spread()));
+            const RadialGradient* radial = static_cast<const RadialGradient*>(g);
+            agg::gradient_radial_focus gradient_function(KGradientScale, KGradientScale*(radial->fx() - radial->cx())/ radial->r(), KGradientScale*(radial->fy() - radial->cy())/ radial->r());
+            render_gradient(gradient_function, radial, paint.opacity(), matrix);
         }
-
-        _matrix.premultiply(agg::trans_affine_scaling(1.0 / KGradientScale));
-        _matrix.multiply(to_agg_transform(g->matrix()));
-        _matrix.multiply(matrix);
-        _matrix.invert();
-
-        typedef agg::gradient_lut<agg::color_interpolator<agg::rgba8>> color_function_t;
-        typedef agg::span_interpolator_linear<agg::trans_affine> interpolator_t;
-        typedef agg::span_gradient<agg::rgba8, interpolator_t, GradientWrapperBase, color_function_t> span_gradient_t;
-        typedef agg::span_allocator<agg::rgba8> span_allocator_t;
-
-        color_function_t colorFunction;
-        const GradientStops& stops = g->stops();
-        for(unsigned int i = 0;i < stops.size();i++)
-        {
-            double offset = stops[i].first;
-            const Rgb& c = stops[i].second;
-            colorFunction.add_color(offset, agg::rgba8(c.r, c.g, c.b, std::uint8_t(c.a * paint.opacity())));
-        }
-
-        colorFunction.build_lut();
-
-        interpolator_t interpolator(_matrix);
-        span_gradient_t sg(interpolator, *wrapper, colorFunction, 0.0, KGradientScale);
-        span_allocator_t allocator;
-
-        agg::scanline_u8 scanline;
-        agg::render_scanlines_aa(m_rasterizer, scanline, m_rendererBase, allocator, sg);
-        break;
     }
-    default:
-        break;
+    else if(paint.type() == PaintTypePattern)
+    {
+        const Pattern* p = paint.pattern();
+        if(p->tileMode() == TileModeReflect)
+        {
+            typedef agg::wrap_mode_reflect wrap_reflect_t;
+            typedef agg::image_accessor_wrap<pixel_format_t, wrap_reflect_t, wrap_reflect_t> source_reflect_t;
+            typedef agg::span_interpolator_linear<> interpolator_t;
+            typedef agg::span_image_filter_rgba_nn<source_reflect_t,  interpolator_t> nearest_reflect_t;
+
+            render_pattern<source_reflect_t, nearest_reflect_t>(p, matrix);
+        }
+        else if(p->tileMode() == TileModeRepeat)
+        {
+            typedef agg::wrap_mode_repeat wrap_repeat_t;
+            typedef agg::image_accessor_wrap<pixel_format_t, wrap_repeat_t, wrap_repeat_t> source_repeat_t;
+            typedef agg::span_interpolator_linear<> interpolator_t;
+            typedef agg::span_image_filter_rgba_nn<source_repeat_t,  interpolator_t> nearest_repeat_t;
+
+            render_pattern<source_repeat_t, nearest_repeat_t>(p, matrix);
+        }
     }
 }
 

@@ -2,6 +2,8 @@
 #define CANVASIMPL_H
 
 #include "canvas.h"
+#include "pattern.h"
+#include "gradient.h"
 
 #include "agg_pixfmt_rgba.h"
 #include "agg_renderer_scanline.h"
@@ -35,7 +37,16 @@ public:
     unsigned int stride() const;
 
 private:
-    void renderScanlines(const agg::trans_affine& matrix, const Paint& paint);
+    template<typename gradient_adaptor_t>
+    void render_gradient_spread(gradient_adaptor_t& gradient_adaptor, const Gradient* gradient, double opacity, const agg::trans_affine& matrix);
+
+    template<typename gradient_function_t>
+    void render_gradient(gradient_function_t& gradient_function, const Gradient* gradient, double opacity, const agg::trans_affine& matrix);
+
+    template<typename source_t, typename span_generator_t>
+    void render_pattern(const Pattern* pattern, const agg::trans_affine& matrix);
+
+    void render_scanlines(const Paint& paint, const agg::trans_affine& matrix);
 
 private:
     std::unique_ptr<std::uint8_t[]> m_data;
