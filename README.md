@@ -25,11 +25,11 @@ int main()
 
 ## features
 - Basic Shapes : rect, circle, ellipse, line, polyline, polygon, path.
-- Paint server : solidColor, linearGradient, radialGradient, pattern.
+- Paint Servers : solidColor, linearGradient, radialGradient, pattern.
 - Clipping, Masking and Compositing : clipPath, mask, group opacity.
 - Document Structure: defs, svg, g, use, symbol.
 - Coordinate Systems, Transformations and Units.
-- Texting (TODO) : text, tspan, tref, textPath.
+- Texts (TODO) : text, tspan, tref, textPath.
 - Animations (TODO) : animate, animateColor, animateMotion, animateTransform
 - Markers (TODO)
 
