@@ -5,12 +5,12 @@
 
 namespace lunasvg {
 
-Bitmap::Impl::Impl(uint8_t* data, uint32_t width, uint32_t height, uint32_t stride) :
+Bitmap::Impl::Impl(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride) :
     data(data), width(width), height(height), stride(stride)
 {
 }
 
-Bitmap::Impl::Impl(uint32_t width, uint32_t height) :
+Bitmap::Impl::Impl(std::uint32_t width, std::uint32_t height) :
     ownData(new std::uint8_t[width*height*4]), data(nullptr), width(width), height(height), stride(width * 4)
 {
 }

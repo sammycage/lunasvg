@@ -69,7 +69,7 @@ Box SVGDocument::getBBox(double dpi) const
     return m_impl->getBBox(dpi);
 }
 
-Bitmap SVGDocument::renderToBitmap(uint32_t width, uint32_t height, double dpi, std::uint32_t bgColor) const
+Bitmap SVGDocument::renderToBitmap(std::uint32_t width, std::uint32_t height, double dpi, std::uint32_t bgColor) const
 {
     return m_impl->renderToBitmap(width, height, dpi, bgColor);
 }
