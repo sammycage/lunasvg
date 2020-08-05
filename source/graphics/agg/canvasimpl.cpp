@@ -7,22 +7,6 @@
 #include "rgb.h"
 #include "strokedata.h"
 
-#include <agg_image_accessors.h>
-#include <agg_path_storage.h>
-#include <agg_pixfmt_gray.h>
-#include <agg_pixfmt_rgb.h>
-#include <agg_pixfmt_rgba.h>
-#include <agg_rendering_buffer.h>
-#include <agg_scanline_u.h>
-#include <agg_span_allocator.h>
-#include <agg_span_image_filter_gray.h>
-#include <agg_span_image_filter_rgb.h>
-#include <agg_span_image_filter_rgba.h>
-#include <agg_span_interpolator_linear.h>
-#include <agg_span_pattern_gray.h>
-#include <agg_span_pattern_rgb.h>
-#include <agg_span_pattern_rgba.h>
-
 #include "agg_scanline_u.h"
 #include "agg_scanline_p.h"
 #include "agg_path_storage.h"
@@ -33,6 +17,8 @@
 #include "agg_span_gradient.h"
 #include "agg_span_allocator.h"
 #include "agg_span_interpolator_linear.h"
+#include "agg_image_accessors.h"
+#include "agg_span_image_filter_rgba.h"
 
 #include <numeric>
 

@@ -2,8 +2,6 @@
 #define CANVASIMPL_H
 
 #include "canvas.h"
-#include "pattern.h"
-#include "gradient.h"
 
 #include "agg_pixfmt_rgba.h"
 #include "agg_renderer_scanline.h"
@@ -17,6 +15,9 @@ typedef agg::pixfmt_bgra32 pixel_format_t;
 typedef agg::renderer_base<pixel_format_t> renderer_base_t;
 typedef agg::renderer_scanline_aa_solid<renderer_base_t> renderer_solid_t;
 typedef agg::rasterizer_scanline_aa_nogamma<> rasterizer_t;
+
+class Pattern;
+class Gradient;
 
 class CanvasImpl
 {
