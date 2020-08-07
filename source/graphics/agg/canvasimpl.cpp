@@ -136,7 +136,8 @@ void CanvasImpl::draw(const Path& path, const AffineTransform& matrix, WindRule 
             _path.curve4(c[0], c[1], c[2], c[3], c[4], c[5]);
             break;
         case SegTypeClose:
-            _path.close_polygon();
+            _path.end_poly();
+            _path.move_to(c[0], c[1]);
             break;
         }
         it.next();
