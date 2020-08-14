@@ -1,7 +1,6 @@
 #include "rgb.h"
 
-namespace lunasvg
-{
+namespace lunasvg {
 
 Rgb::Rgb() :
     r(0),

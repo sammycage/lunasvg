@@ -313,7 +313,7 @@ template<typename source_t, typename span_generator_t>
 void CanvasImpl::render_pattern(const Pattern* pattern, const agg::trans_affine& matrix)
 {
     typedef agg::span_interpolator_linear<> span_interpolator_t;
-    typedef agg::span_allocator<typename pixel_format_t::color_type> span_allocator_t;
+    typedef agg::span_allocator<agg::rgba8> span_allocator_t;
     typedef agg::renderer_scanline_aa<renderer_base_t, span_allocator_t, span_generator_t> pattern_renderer_t;
 
     agg::trans_affine transform(to_agg_transform(pattern->matrix()));
@@ -353,7 +353,7 @@ void CanvasImpl::render_scanlines(const Paint& paint, const agg::trans_affine& m
         {
             const RadialGradient* radial = static_cast<const RadialGradient*>(g);
             agg::gradient_radial_focus gradient_function(KGradientScale, KGradientScale*(radial->fx() - radial->cx())/ radial->r(), KGradientScale*(radial->fy() - radial->cy())/ radial->r());
-            render_gradient(gradient_function, radial, paint.opacity(), matrix);
+            render_gradient(gradient_function, g, paint.opacity(), matrix);
         }
     }
     else if(paint.type() == PaintTypePattern)

@@ -1,5 +1,5 @@
-#ifndef DOMSVGSTYLE_H
-#define DOMSVGSTYLE_H
+#ifndef CSSPROPERTY_H
+#define CSSPROPERTY_H
 
 #include "svgproperty.h"
 
@@ -138,4 +138,4 @@ public:
 
 } // namespace lunasvg
 
-#endif // DOMSVGSTYLE_H
+#endif // CSSPROPERTY_H

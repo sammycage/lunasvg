@@ -19,7 +19,7 @@ SVGElementImpl* SVGPolygonElement::clone(SVGDocument* document) const
 {
     SVGPolygonElement* e = new SVGPolygonElement(document);
     baseClone(*e);
-    return  e;
+    return e;
 }
 
 } // namespace lunasvg

@@ -1,9 +1,3 @@
-if(LUNASVG_ENABLE_CAIRO)
-    add_subdirectory(cairo)
-else()
-    add_subdirectory(agg)
-endif()
-
 target_sources(lunasvg
 PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/canvas.cpp"

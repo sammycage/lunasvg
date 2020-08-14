@@ -1,8 +1,7 @@
 #ifndef RGB_H
 #define RGB_H
 
-namespace lunasvg
-{
+namespace lunasvg {
 
 class Rgb
 {

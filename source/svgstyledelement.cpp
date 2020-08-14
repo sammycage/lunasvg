@@ -75,7 +75,8 @@ void SVGStyledElement::render(RenderContext& context) const
         state.style.clear(CSSPropertyIdMask);
     }
 
-    if((!isSVGGeometryElement() && state.style.opacity() != 1.0) || state.style.mask() != KEmptyString || state.style.clipPath() != KEmptyString)
+    bool compositing = !isSVGGeometryElement() && state.style.opacity() != 1.0;
+    if(compositing || state.style.mask() != KEmptyString || state.style.clipPath() != KEmptyString)
         state.canvas.reset(state.canvas.width(), state.canvas.height());
 
     if(const SVGProperty* property = state.style.get(CSSPropertyIdColor))

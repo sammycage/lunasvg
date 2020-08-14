@@ -74,7 +74,7 @@ SVGElementImpl* SVGRectElement::clone(SVGDocument* document) const
 {
     SVGRectElement* e = new SVGRectElement(document);
     baseClone(*e);
-    return  e;
+    return e;
 }
 
 } // namespace lunasvg

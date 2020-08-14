@@ -1,6 +1,3 @@
-add_subdirectory(include)
-add_subdirectory(src)
-
 target_sources(lunasvg
 PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/canvasimpl.cpp"

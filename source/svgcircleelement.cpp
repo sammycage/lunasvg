@@ -47,7 +47,7 @@ SVGElementImpl* SVGCircleElement::clone(SVGDocument* document) const
 {
     SVGCircleElement* e = new SVGCircleElement(document);
     baseClone(*e);
-    return  e;
+    return e;
 }
 
 } // namespace lunasvg

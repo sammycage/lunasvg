@@ -27,7 +27,7 @@ int main()
 - Basic Shapes : rect, circle, ellipse, line, polyline, polygon, path.
 - Paint Servers : solidColor, linearGradient, radialGradient, pattern.
 - Clipping, Masking and Compositing : clipPath, mask, group opacity.
-- Document Structure: defs, svg, g, use, symbol.
+- Document Structures: defs, svg, g, use, symbol.
 - Coordinate Systems, Transformations and Units.
 - Texts (TODO) : text, tspan, tref, textPath.
 - Animations (TODO) : animate, animateColor, animateMotion, animateTransform

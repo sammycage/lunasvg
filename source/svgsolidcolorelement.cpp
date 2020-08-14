@@ -42,7 +42,7 @@ SVGElementImpl* SVGSolidColorElement::clone(SVGDocument* document) const
 {
     SVGSolidColorElement* e = new SVGSolidColorElement(document);
     baseClone(*e);
-    return  e;
+    return e;
 }
 
 } // namespace lunasvg

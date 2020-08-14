@@ -4,8 +4,6 @@
 #include "svgdocumentimpl.h"
 #include "svguseelement.h"
 
-#include "paint.h"
-
 namespace lunasvg {
 
 SVGClipPathElement::SVGClipPathElement(SVGDocument* document) :

@@ -1,13 +1,11 @@
 #ifndef PATHUTILS_H
 #define PATHUTILS_H
 
-namespace lunasvg
-{
+namespace lunasvg {
 
 class Path;
 
-namespace Utils
-{
+namespace Utils {
 
 void pathArcTo(Path& path, double rx, double ry, double xAxisRotation, bool largeArcFlag, bool sweepFlag, double x, double y, bool rel);
 

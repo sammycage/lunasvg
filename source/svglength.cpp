@@ -217,7 +217,7 @@ std::string SVGLength::valueAsString() const
         break;
     }
 
-    return  out;
+    return out;
 }
 
 SVGProperty* SVGLength::clone() const

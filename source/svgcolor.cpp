@@ -198,9 +198,10 @@ void SVGColor::setValueAsString(const std::string& value)
     if(value.empty())
         return;
 
-    if(value[0] == '#')
+    const char* ptr = value.c_str();
+    Utils::skipWs(ptr);
+    if(Utils::skipDesc(ptr, "#", 1))
     {
-        const char* ptr = value.c_str() + 1;
         const char* start = ptr;
         while(*ptr && Utils::isIntegralDigit(*ptr, 16))
             ++ptr;
@@ -231,7 +232,7 @@ void SVGColor::setValueAsString(const std::string& value)
         m_value.b = (hex&0x0000ff)>>0;
         m_value.a = 255;
     }
-    else if(value.compare("none") == 0)
+    else if(Utils::skipDesc(ptr, "none", 4))
     {
         m_colorType = ColorTypeNone;
         m_value.r = 0;
@@ -239,7 +240,7 @@ void SVGColor::setValueAsString(const std::string& value)
         m_value.b = 0;
         m_value.a = 0;
     }
-    else if(value.compare("currentColor") == 0)
+    else if(Utils::skipDesc(ptr, "currentColor", 12))
     {
         m_colorType = ColorTypeCurrentColor;
         m_value.r = 0;
@@ -247,9 +248,8 @@ void SVGColor::setValueAsString(const std::string& value)
         m_value.b = 0;
         m_value.a = 255;
     }
-    else if(value.substr(0, 4).compare("rgb(") == 0)
+    else if(Utils::skipDesc(ptr, "rgb(", 4))
     {
-        const char* ptr = value.c_str() + 4;
         double r, g, b;
         if(!Utils::skipWs(ptr)
             || !parseColorComponent(ptr, r)
@@ -334,7 +334,7 @@ void SVGPaint::setValueAsString(const std::string& value)
         return;
     }
 
-    SVGColor::setValueAsString(ptr);
+    SVGColor::setValueAsString(value);
 }
 
 std::string SVGPaint::valueAsString() const

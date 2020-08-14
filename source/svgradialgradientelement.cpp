@@ -109,7 +109,7 @@ SVGElementImpl* SVGRadialGradientElement::clone(SVGDocument* document) const
 {
     SVGRadialGradientElement* e = new SVGRadialGradientElement(document);
     baseClone(*e);
-    return  e;
+    return e;
 }
 
 } // namespace lunasvg

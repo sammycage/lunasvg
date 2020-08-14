@@ -101,7 +101,7 @@ SVGElementImpl* SVGLinearGradientElement::clone(SVGDocument* document) const
 {
     SVGLinearGradientElement* e = new SVGLinearGradientElement(document);
     baseClone(*e);
-    return  e;
+    return e;
 }
 
 } // namespace lunasvg

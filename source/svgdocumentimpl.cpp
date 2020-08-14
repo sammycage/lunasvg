@@ -171,12 +171,12 @@ SVGElementImpl* SVGDocumentImpl::copyElement(const SVGElementImpl* element, SVGE
     if(element->isSVGElementHead() && !Utils::isElementPermitted(parent->elementId(), element->elementId()))
         return nullptr;
 
-    SVGElementImpl* head = const_cast<SVGElementImpl*>(element);
-    SVGElementImpl* tail;
+    const SVGElementImpl* head = element;
+    const SVGElementImpl* tail;
     if(element->isSVGElementHead())
         tail = to<SVGElementHead>(element)->tail;
     else
-        tail = const_cast<SVGElementImpl*>(element);
+        tail = element;
 
     std::stack<SVGElementHead*> blocks;
     SVGElementImpl* start = head->clone(parent->document());
@@ -229,7 +229,7 @@ SVGElementImpl* SVGDocumentImpl::moveElement(SVGElementImpl* element, SVGElement
     if(element->isSVGElementHead())
         tail = to<SVGElementHead>(element)->tail;
     else
-        tail = const_cast<SVGElementImpl*>(element);
+        tail = element;
 
     dispatchElementRemoveEvent(head, tail);
 
@@ -368,16 +368,15 @@ void SVGDocumentImpl::freeElement(SVGElementImpl* head, SVGElementImpl* tail)
 
 std::string SVGDocumentImpl::toString(const SVGElementImpl* element) const
 {
-    std::string out;
-    std::uint32_t indent = 0;
-
-    SVGElementImpl* head = const_cast<SVGElementImpl*>(element);
-    SVGElementImpl* tail;
+    const SVGElementImpl* head = element;
+    const SVGElementImpl* tail;
     if(element->isSVGElementHead())
         tail = to<SVGElementHead>(element)->tail;
     else
-        tail = const_cast<SVGElementImpl*>(element);
+        tail = element;
 
+    std::string out;
+    std::uint32_t indent = 0;
     head->externalise(out, indent);
     while(head != tail)
     {
@@ -408,11 +407,11 @@ double SVGDocumentImpl::currentTime() const
     return 0.0;
 }
 
-void SVGDocumentImpl::dispatchElementRemoveEvent(SVGElementImpl*, SVGElementImpl*)
+void SVGDocumentImpl::dispatchElementRemoveEvent(const SVGElementImpl*, const SVGElementImpl*)
 {
 }
 
-void SVGDocumentImpl::dispatchElementInsertEvent(SVGElementImpl*, SVGElementImpl*)
+void SVGDocumentImpl::dispatchElementInsertEvent(const SVGElementImpl*, const SVGElementImpl*)
 {
 }
 

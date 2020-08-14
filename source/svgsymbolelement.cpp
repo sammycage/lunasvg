@@ -37,7 +37,7 @@ SVGElementImpl* SVGSymbolElement::clone(SVGDocument* document) const
 {
     SVGSymbolElement* e = new SVGSymbolElement(document);
     baseClone(*e);
-    return  e;
+    return e;
 }
 
 } // namespace lunasvg

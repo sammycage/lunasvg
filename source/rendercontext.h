@@ -42,7 +42,7 @@ public:
     StrokeData strokeData(const RenderState& state) const;
     Paint fillPaint(const RenderState& state) const;
     Paint strokePaint(const RenderState& state) const;
-    double strokeWidth(const RenderState &state) const;
+    double strokeWidth(const RenderState& state) const;
     double fillOpacity() const;
     double strokeOpacity() const;
     double opacity() const;

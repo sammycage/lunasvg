@@ -26,7 +26,7 @@ void SVGGradientElement::setGradientAttributes(GradientAttributes& attributes) c
         attributes.gradientUnits = m_gradientUnits.property();
     if(attributes.gradientStops.empty())
     {
-        SVGElementImpl* e = next;
+        const SVGElementImpl* e = next;
         while(e != tail)
         {
             if(e->elementId()==ElementIdStop)

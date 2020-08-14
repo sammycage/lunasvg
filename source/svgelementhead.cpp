@@ -189,15 +189,6 @@ void SVGElementHead::renderTail(RenderContext&) const
 {
 }
 
-DOMSVGPropertyBase* SVGElementHead::findAnimatedProperty(DOMPropertyID nameId) const
-{
-    for(unsigned i=0;i<m_properties.size();i++)
-        if(nameId==m_properties[i]->propertyId())
-            return m_properties[i];
-
-    return nullptr;
-}
-
 void SVGElementHead::addToPropertyMap(DOMSVGPropertyBase& property)
 {
     m_properties.push_back(&property);

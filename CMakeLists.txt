@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 3.3)
 
-set(LUNASVG_MAJOR_VERSION 0)
-set(LUNASVG_MINOR_VERSION 1)
-set(LUNASVG_PATCH_VERSION 0)
-set(LUNASVG_VERSION ${LUNASVG_MAJOR_VERSION}.${LUNASVG_MINOR_VERSION}.${LUNASVG_PATCH_VERSION})
-
-project(lunasvg VERSION ${LUNASVG_VERSION} LANGUAGES CXX)
+project(lunasvg VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -27,6 +22,10 @@ if(LUNASVG_ENABLE_CAIRO)
     pkg_check_modules(CAIRO REQUIRED cairo)
     target_include_directories(lunasvg PRIVATE ${CAIRO_INCLUDE_DIRS})
     target_link_libraries(lunasvg ${CAIRO_LIBRARIES})
+    add_subdirectory(source/backends/cairo)
+else()
+    add_subdirectory(3rdparty/agg)
+    add_subdirectory(source/backends/agg)
 endif()
 
 set(LUNASVG_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
@@ -44,4 +43,3 @@ install(TARGETS lunasvg
     ARCHIVE     DESTINATION    ${LUNASVG_LIBDIR}
     INCLUDES    DESTINATION    ${LUNASVG_INCDIR}
 )
-

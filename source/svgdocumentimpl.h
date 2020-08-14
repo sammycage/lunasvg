@@ -26,13 +26,13 @@ public:
     void updateIdCache(const std::string& oldValue, const std::string& newValue, SVGElementImpl* element);
     SVGElementImpl* resolveIRI(const std::string& href) const;
     SVGElementImpl* insertContent(const std::string& content, SVGElementImpl* target, InsertPosition position);
-    SVGElementImpl* copyElement(const SVGElementImpl* element, SVGElementImpl* target, InsertPosition);
-    SVGElementImpl* moveElement(SVGElementImpl* element, SVGElementImpl* target, InsertPosition);
+    SVGElementImpl* copyElement(const SVGElementImpl* element, SVGElementImpl* target, InsertPosition position);
+    SVGElementImpl* moveElement(SVGElementImpl* element, SVGElementImpl* target, InsertPosition position);
     void clearContent(SVGElementImpl* element);
     void removeElement(SVGElementImpl* element);
     void insertElement(SVGElementImpl* head, SVGElementImpl* tail, SVGElementImpl* target, InsertPosition position);
     void freeElement(SVGElementImpl* head, SVGElementImpl* tail);
-    std::string toString(const SVGElementImpl*) const;
+    std::string toString(const SVGElementImpl* element) const;
     bool hasAnimation() const;
     double animationDuration() const;
     bool setCurrentTime(double, bool);
@@ -40,8 +40,8 @@ public:
     SVGRootElement* rootElement() const { return m_rootElement; }
 
 private:
-    void dispatchElementRemoveEvent(SVGElementImpl*, SVGElementImpl*);
-    void dispatchElementInsertEvent(SVGElementImpl*, SVGElementImpl*);
+    void dispatchElementRemoveEvent(const SVGElementImpl*, const SVGElementImpl*);
+    void dispatchElementInsertEvent(const SVGElementImpl*, const SVGElementImpl*);
 
 private:
     SVGRootElement* m_rootElement;

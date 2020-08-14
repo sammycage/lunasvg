@@ -19,18 +19,15 @@ namespace Utils {
 
 inline const char* rtrim(const char* start, const char* end)
 {
-    if(start != end)
-    {
-        while((end-1)!=start && IS_WS(*(end-1)))
-            --end;
-    }
+    while(end > start && IS_WS(end[-1]))
+        --end;
 
     return end;
 }
 
 inline const char* ltrim(const char* start, const char* end)
 {
-    while(start!=end && IS_WS(*start))
+    while(start < end && IS_WS(*start))
         ++start;
 
     return start;
@@ -118,6 +115,7 @@ inline bool parseInteger(const char*& ptr, T& integer, int base = 10)
 
     static const T intMax = std::numeric_limits<T>::max();
     static const bool isSigned = std::numeric_limits<T>::is_signed;
+    using signed_t = typename std::make_signed<T>::type;
     const T maxMultiplier = intMax / static_cast<T>(base);
 
     if(*ptr && isSigned && *ptr == '-')
@@ -148,7 +146,7 @@ inline bool parseInteger(const char*& ptr, T& integer, int base = 10)
     }
 
     if(isNegative)
-        integer = -static_cast<typename std::make_signed<T>::type>(value);
+        integer = -static_cast<signed_t>(value);
     else
         integer = value;
 

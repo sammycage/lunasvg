@@ -42,7 +42,7 @@ public:
     void smoothQuadTo(const Point& p2, bool rel = false);
     void smoothCubicTo(const Point& p2, const Point& p3, bool rel = false);
 
-    void addPath(const Path& path);
+    void addPath(const Path& path, const AffineTransform& matrix);
     void addPoints(const std::vector<Point>& points);
     void addEllipse(double cx, double cy, double rx, double ry);
     void addRect(double x, double y, double w, double h, double rx, double ry);
@@ -56,18 +56,18 @@ public:
     Point controlPoint() const;
 
     const Point& startPoint() const { return m_startPoint; }
-    const std::vector<SegType>& getPointSegs() const { return m_pointSegs; }
-    const std::vector<double>& getPointCoords() const { return m_pointCoords; }
+    const std::vector<SegType>& segments() const { return m_segments; }
+    const std::vector<Point>& coordinates() const { return m_coordinates; }
 
 private:
     Point m_startPoint;
-    std::vector<SegType> m_pointSegs;
-    std::vector<double> m_pointCoords;
+    std::vector<SegType> m_segments;
+    std::vector<Point> m_coordinates;
 };
 
 inline bool Path::isEmpty() const
 {
-    return m_pointCoords.empty();
+    return m_coordinates.empty();
 }
 
 inline void Path::moveTo(const Point& p1, bool rel)

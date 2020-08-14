@@ -5,7 +5,7 @@
 
 namespace lunasvg {
 
-SVGPatternElement::SVGPatternElement(SVGDocument *document) :
+SVGPatternElement::SVGPatternElement(SVGDocument* document) :
     SVGPaintElement(ElementIdPattern, document),
     SVGURIReference(this),
     SVGFitToViewBox(this),

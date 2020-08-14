@@ -198,7 +198,7 @@ std::string SVGPath::valueAsString() const
         it.next();
     }
 
-    return  out;
+    return out;
 }
 
 SVGProperty* SVGPath::clone() const

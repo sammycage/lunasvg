@@ -14,27 +14,31 @@ public:
     AffineTransform(double m00, double m10, double m01, double m11, double m02, double m12);
 
     void setMatrix(double m00, double m10, double m01, double m11, double m02, double m12);
-    void multiply(const double* a, const double* b);
-    AffineTransform& multiply(const AffineTransform& transform);
-    AffineTransform& postmultiply(const AffineTransform& transform);
-    void reset();
-    void map(double x, double y, double& _x, double& _y) const;
-    Point mapPoint(const Point& point) const;
-    Rect mapRect(const Rect& rect) const;
+    void makeIdentity();
     AffineTransform inverted() const;
 
-    void rotate(double radians);
-    void rotate(double radians, double cx, double cy);
-    void scale(double sx, double sy);
-    void shear(double angleX, double angleY);
-    void translate(double cx, double cy);
+    AffineTransform operator*(const AffineTransform& transform) const;
+    AffineTransform& operator*=(const AffineTransform& transform);
 
-    static AffineTransform makeIdentity();
-    static AffineTransform makeRotate(double radians);
-    static AffineTransform makeRotate(double radians, double cx, double cy);
-    static AffineTransform makeScale(double sx, double sy);
-    static AffineTransform makeShear(double shx, double shy);
-    static AffineTransform makeTranslate(double tx, double ty);
+    AffineTransform& multiply(const AffineTransform& transform);
+    AffineTransform& postmultiply(const AffineTransform& transform);
+    AffineTransform& rotate(double radians);
+    AffineTransform& rotate(double radians, double cx, double cy);
+    AffineTransform& scale(double sx, double sy);
+    AffineTransform& shear(double shx, double shy);
+    AffineTransform& translate(double cx, double cy);
+
+    static AffineTransform fromRotate(double radians);
+    static AffineTransform fromRotate(double radians, double cx, double cy);
+    static AffineTransform fromScale(double sx, double sy);
+    static AffineTransform fromShear(double shx, double shy);
+    static AffineTransform fromTranslate(double tx, double ty);
+
+    void map(double x, double y, double& _x, double& _y) const;
+    void map(const double* src, double* dst, int size) const;
+    void map(const Point* src, Point* dst, int size) const;
+    Point mapPoint(const Point& point) const;
+    Rect mapRect(const Rect& rect) const;
 
     bool isIdentity() const;
     double determinant() const;

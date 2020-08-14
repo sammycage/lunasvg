@@ -22,9 +22,8 @@ void Path::moveTo(double x, double y, bool rel)
         y += p.y;
     }
 
-    m_pointSegs.push_back(SegTypeMoveTo);
-    m_pointCoords.push_back(x);
-    m_pointCoords.push_back(y);
+    m_segments.push_back(SegTypeMoveTo);
+    m_coordinates.emplace_back(x, y);
 
     m_startPoint = Point(x, y);
 }
@@ -38,9 +37,8 @@ void Path::lineTo(double x, double y, bool rel)
         y += p.y;
     }
 
-    m_pointSegs.push_back(SegTypeLineTo);
-    m_pointCoords.push_back(x);
-    m_pointCoords.push_back(y);
+    m_segments.push_back(SegTypeLineTo);
+    m_coordinates.emplace_back(x, y);
 }
 
 void Path::quadTo(double x1, double y1, double x2, double y2, bool rel)
@@ -54,11 +52,9 @@ void Path::quadTo(double x1, double y1, double x2, double y2, bool rel)
         y2 += p.y;
     }
 
-    m_pointSegs.push_back(SegTypeQuadTo);
-    m_pointCoords.push_back(x1);
-    m_pointCoords.push_back(y1);
-    m_pointCoords.push_back(x2);
-    m_pointCoords.push_back(y2);
+    m_segments.push_back(SegTypeQuadTo);
+    m_coordinates.emplace_back(x1, y1);
+    m_coordinates.emplace_back(x2, y2);
 }
 
 void Path::cubicTo(double x1, double y1, double x2, double y2, double x3, double y3, bool rel)
@@ -74,13 +70,10 @@ void Path::cubicTo(double x1, double y1, double x2, double y2, double x3, double
         y3 += p.y;
     }
 
-    m_pointSegs.push_back(SegTypeCubicTo);
-    m_pointCoords.push_back(x1);
-    m_pointCoords.push_back(y1);
-    m_pointCoords.push_back(x2);
-    m_pointCoords.push_back(y2);
-    m_pointCoords.push_back(x3);
-    m_pointCoords.push_back(y3);
+    m_segments.push_back(SegTypeCubicTo);
+    m_coordinates.emplace_back(x1, y1);
+    m_coordinates.emplace_back(x2, y2);
+    m_coordinates.emplace_back(x3, y3);
 }
 
 void Path::smoothQuadTo(double x2, double y2, bool rel)
@@ -93,8 +86,8 @@ void Path::smoothQuadTo(double x2, double y2, bool rel)
     }
 
     Point p1;
-    std::size_t count = m_pointSegs.size();
-    if(count > 0 && m_pointSegs[count - 1] == SegTypeQuadTo)
+    std::size_t count = m_segments.size();
+    if(count > 0 && m_segments[count - 1] == SegTypeQuadTo)
         p1 = controlPoint();
     else
         p1 = currentPoint();
@@ -114,8 +107,8 @@ void Path::smoothCubicTo(double x2, double y2, double x3, double y3, bool rel)
     }
 
     Point p1;
-    std::size_t count = m_pointSegs.size();
-    if(count > 0 && m_pointSegs[count - 1] == SegTypeCubicTo)
+    std::size_t count = m_segments.size();
+    if(count > 0 && m_segments[count - 1] == SegTypeCubicTo)
         p1 = controlPoint();
     else
         p1 = currentPoint();
@@ -130,9 +123,8 @@ void Path::horizontalTo(double x, bool rel)
     if(rel)
         x += p.x;
 
-    m_pointSegs.push_back(SegTypeLineTo);
-    m_pointCoords.push_back(x);
-    m_pointCoords.push_back(p.y);
+    m_segments.push_back(SegTypeLineTo);
+    m_coordinates.emplace_back(x, p.y);
 }
 
 void Path::verticalTo(double y, bool rel)
@@ -142,48 +134,40 @@ void Path::verticalTo(double y, bool rel)
     if(rel)
         y += p.y;
 
-    m_pointSegs.push_back(SegTypeLineTo);
-    m_pointCoords.push_back(p.x);
-    m_pointCoords.push_back(y);
+    m_segments.push_back(SegTypeLineTo);
+    m_coordinates.emplace_back(p.x, y);
 }
 
 void Path::closePath()
 {
-    std::size_t count = m_pointSegs.size();
-    if(count > 0 && m_pointSegs[count - 1] != SegTypeClose)
-        m_pointSegs.push_back(SegTypeClose);
+    std::size_t count = m_segments.size();
+    if(count > 0 && m_segments[count - 1] != SegTypeClose)
+        m_segments.push_back(SegTypeClose);
 }
 
 Point Path::currentPoint() const
 {
-    if(m_pointCoords.size() < 2)
+    if(m_coordinates.empty())
         return Point();
 
-    if(m_pointSegs[m_pointSegs.size() - 1] == SegTypeClose)
+    if(m_segments[m_segments.size() - 1] == SegTypeClose)
         return m_startPoint;
 
-    std::size_t count = m_pointCoords.size();
-    double x = m_pointCoords[count - 2];
-    double y = m_pointCoords[count - 1];
-
-    return Point(x, y);
+    return m_coordinates[m_coordinates.size() - 1];
 }
 
 Point Path::controlPoint() const
 {
-    if(m_pointCoords.size() < 4)
+    if(m_coordinates.size() < 2)
         return Point();
 
-    std::size_t count = m_pointCoords.size();
-    double x0 = m_pointCoords[count - 4];
-    double y0 = m_pointCoords[count - 3];
-    double x1 = m_pointCoords[count - 2];
-    double y1 = m_pointCoords[count - 1];
-
-    return Point(x1 + x1 - x0, y1 + y1 - y0);
+    std::size_t count = m_coordinates.size();
+    const Point& p1 = m_coordinates[count - 2];
+    const Point& p2 = m_coordinates[count - 1];
+    return Point(p2.x + p2.x - p1.x, p2.y + p2.y - p1.y);
 }
 
-void Path::addPath(const Path& path)
+void Path::addPath(const Path& path, const AffineTransform& matrix)
 {
     PathIterator it(path);
     double c[6];
@@ -192,15 +176,19 @@ void Path::addPath(const Path& path)
         switch(it.currentSegment(c))
         {
         case SegTypeMoveTo:
+            matrix.map(c, c, 2);
             moveTo(c[0], c[1]);
             break;
         case SegTypeLineTo:
+            matrix.map(c, c, 2);
             lineTo(c[0], c[1]);
             break;
         case SegTypeQuadTo:
+            matrix.map(c, c, 4);
             quadTo(c[0], c[1], c[2], c[3]);
             break;
         case SegTypeCubicTo:
+            matrix.map(c, c, 6);
             cubicTo(c[0], c[1], c[2], c[3], c[4], c[5]);
             break;
         case SegTypeClose:
@@ -280,14 +268,13 @@ Rect Path::boundingBox() const
     double xMax = std::numeric_limits<double>::min();
     double yMax = std::numeric_limits<double>::min();
 
-    for(std::size_t i = 0;i < m_pointCoords.size();i += 2)
+    for(std::size_t i = 0;i < m_coordinates.size();i++)
     {
-        double x = m_pointCoords[i];
-        double y = m_pointCoords[i+1];
-        if(x < xMin) xMin = x;
-        if(x > xMax) xMax = x;
-        if(y < yMin) yMin = y;
-        if(y > yMax) yMax = y;
+        const Point& p = m_coordinates[i];
+        if(p.x < xMin) xMin = p.x;
+        if(p.x > xMax) xMax = p.x;
+        if(p.y < yMin) yMin = p.y;
+        if(p.y > yMax) yMax = p.y;
     }
 
     return Rect(xMin, yMin, xMax - xMin, yMax - yMin);
@@ -295,15 +282,18 @@ Rect Path::boundingBox() const
 
 void Path::transform(const AffineTransform& matrix)
 {
-    for(std::size_t i = 0;i < m_pointCoords.size();i += 2)
-        matrix.map(m_pointCoords[i], m_pointCoords[i+1], m_pointCoords[i], m_pointCoords[i+1]);
+    for(std::size_t i = 0;i < m_coordinates.size();i++)
+    {
+        Point& p = m_coordinates[i];
+        matrix.map(p.x, p.y, p.x, p.y);
+    }
 }
 
 void Path::reset()
 {
     m_startPoint = Point();
-    m_pointSegs.clear();
-    m_pointCoords.clear();
+    m_segments.clear();
+    m_coordinates.clear();
 }
 
 } //namespace lunasvg

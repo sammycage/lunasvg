@@ -54,7 +54,7 @@ SVGElementImpl* SVGStopElement::clone(SVGDocument* document) const
 {
     SVGStopElement* e = new SVGStopElement(document);
     baseClone(*e);
-    return  e;
+    return e;
 }
 
 } // namespace lunasvg

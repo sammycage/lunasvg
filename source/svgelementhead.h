@@ -32,7 +32,6 @@ public:
 
     SVGElementTail* tail;
 
-    DOMSVGPropertyBase* findAnimatedProperty(DOMPropertyID nameId) const;
     void addToPropertyMap(DOMSVGPropertyBase& property);
     void updateId(const std::string& newValue);
 

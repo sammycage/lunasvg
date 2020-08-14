@@ -3,8 +3,7 @@
 
 #include "path.h"
 
-namespace lunasvg
-{
+namespace lunasvg {
 
 class PathIterator
 {
@@ -17,10 +16,9 @@ public:
 
 private:
    mutable Point m_startPoint;
-   const std::vector<SegType>& m_pointSegs;
-   const std::vector<double>& m_pointCoords;
-   unsigned int m_segIndex;
-   unsigned int m_coordIndex;
+   const std::vector<SegType>& m_segments;
+   const Point* m_coordinates;
+   unsigned int m_index;
 };
 
 } //namespace lunasvg

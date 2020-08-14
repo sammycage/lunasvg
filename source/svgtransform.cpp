@@ -78,7 +78,7 @@ bool SVGTransform::parseTransform(const char*& ptr, TransformType& type, double*
 
 void SVGTransform::setValueAsString(const std::string& value)
 {
-    m_value.reset();
+    m_value.makeIdentity();
     if(value.empty())
         return;
 

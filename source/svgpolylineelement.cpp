@@ -18,7 +18,7 @@ SVGElementImpl* SVGPolylineElement::clone(SVGDocument* document) const
 {
     SVGPolylineElement* e = new SVGPolylineElement(document);
     baseClone(*e);
-    return  e;
+    return e;
 }
 
 } // namespace lunasvg
