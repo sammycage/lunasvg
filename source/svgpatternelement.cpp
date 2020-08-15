@@ -115,10 +115,12 @@ Paint SVGPatternElement::getPaint(const RenderState& state) const
     {
         const SVGPreserveAspectRatio* positioning = attributes.preserveAspectRatio ? attributes.preserveAspectRatio : SVGPreserveAspectRatio::defaultValue();
         newState.matrix.multiply(positioning->getMatrix(Rect(0, 0, w, h), attributes.viewBox->value()));
+        newState.viewPort = attributes.viewBox->value();
     }
     else if(attributes.patternContentUnits && attributes.patternContentUnits->enumValue() == UnitTypeObjectBoundingBox)
     {
         newState.matrix.scale(state.bbox.width, state.bbox.height);
+        newState.viewPort = Rect(0, 0, 1, 1);
     }
 
     RenderBreaker::registerElement(attributes.patternContentElement);
