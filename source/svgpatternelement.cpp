@@ -87,14 +87,26 @@ Paint SVGPatternElement::getPaint(const RenderState& state) const
         h = attributes.height ? attributes.height->valueY(state) : 0;
     }
 
-    if(w == 0.0 || h == 0.0 || attributes.patternContentElement == nullptr || RenderBreaker::hasElement(attributes.patternContentElement))
+    AffineTransform transform(state.matrix);
+    if(attributes.patternTransform)
+        transform.multiply(attributes.patternTransform->value());
+
+    const double* m = transform.getMatrix();
+    double scalex = std::sqrt(m[0] * m[0] + m[2] * m[2]);
+    double scaley = std::sqrt(m[1] * m[1] + m[3] * m[3]);
+
+    double width = w * scalex;
+    double height = h * scaley;
+
+    if(width == 0.0 || height == 0.0 || attributes.patternContentElement == nullptr || RenderBreaker::hasElement(attributes.patternContentElement))
         return Paint();
 
     RenderContext newContext(this, RenderModeDisplay);
     RenderState& newState = newContext.state();
     newState.element = attributes.patternContentElement;
-    newState.canvas.reset(std::uint32_t(std::ceil(w)), std::uint32_t(std::ceil(h)));
+    newState.canvas.reset(std::uint32_t(std::ceil(width)), std::uint32_t(std::ceil(height)));
     newState.style.add(style());
+    newState.matrix.scale(scalex, scaley);
     newState.viewPort = state.viewPort;
     newState.color = KRgbBlack;
     newState.dpi = state.dpi;
@@ -113,7 +125,7 @@ Paint SVGPatternElement::getPaint(const RenderState& state) const
     newContext.render(attributes.patternContentElement->next, attributes.patternContentElement->tail->prev);
     RenderBreaker::unregisterElement(attributes.patternContentElement);
 
-    AffineTransform matrix(1, 0, 0, 1, x, y);
+    AffineTransform matrix(1.0/scalex, 0, 0, 1.0/scaley, x, y);
     if(attributes.patternTransform)
         matrix.postmultiply(attributes.patternTransform->value());
 

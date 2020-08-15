@@ -6,4 +6,3 @@ target_include_directories(svg2png
 PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/../include/"
 )
-
