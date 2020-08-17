@@ -21,6 +21,6 @@ private:
    unsigned int m_index;
 };
 
-} //namespace lunasvg
+} // namespace lunasvg
 
 #endif // PATHITERATOR_H

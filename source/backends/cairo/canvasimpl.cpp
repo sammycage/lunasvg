@@ -42,14 +42,17 @@ void CanvasImpl::clear(const Rgb& color)
     std::uint32_t pb = (color.b * a) / 255;
     std::uint32_t solid = (a << 24) | (pr << 16) | (pg << 8) | pb;
 
-    std::uint8_t* ptr = data();
-    std::uint8_t* end = ptr + height() * stride();
-    while(ptr < end)
+    std::uint32_t width = this->width();
+    std::uint32_t height = this->height();
+    std::uint32_t stride = this->stride();
+    std::uint8_t* data = this->data();
+    for(std::uint32_t y = 0;y < height;y++)
     {
-        std::uint32_t* pixel = reinterpret_cast<std::uint32_t*>(ptr);
-        *pixel = solid;
-
-        ptr += 4;
+        std::uint32_t* pixels = reinterpret_cast<std::uint32_t*>(data + stride * y);
+        for(std::uint32_t x = 0;x < width;x++)
+        {
+            pixels[x] = solid;
+        }
     }
 }
 
@@ -135,48 +138,50 @@ void CanvasImpl::draw(const Path& path, const AffineTransform& matrix, WindRule 
 
 void CanvasImpl::updateLuminance()
 {
-    std::uint8_t* ptr = data();
-    std::uint8_t* end = ptr + height() * stride();
-    while(ptr < end)
+    std::uint32_t width = this->width();
+    std::uint32_t height = this->height();
+    std::uint32_t stride = this->stride();
+    std::uint8_t* data = this->data();
+    for(std::uint32_t y = 0;y < height;y++)
     {
-        std::uint32_t* pixel = reinterpret_cast<std::uint32_t*>(ptr);
-        std::uint32_t r = (*pixel >> 16) & 0xff;
-        std::uint32_t g = (*pixel >> 8) & 0xff;
-        std::uint32_t b = (*pixel >> 0) & 0xff;
+        std::uint32_t* pixels = reinterpret_cast<std::uint32_t*>(data + stride * y);
+        for(std::uint32_t x = 0;x < width;x++)
+        {
+            std::uint32_t r = (pixels[x] >> 16) & 0xff;
+            std::uint32_t g = (pixels[x] >> 8) & 0xff;
+            std::uint32_t b = (pixels[x] >> 0) & 0xff;
 
-        std::uint32_t luminosity = (2*r + 3*g + b) / 6;
-        *pixel = luminosity << 24;
-
-        ptr += 4;
+            std::uint32_t luminosity = (2*r + 3*g + b) / 6;
+            pixels[x] = luminosity << 24;
+        }
     }
 }
 
 void CanvasImpl::convertToRGBA()
 {
-    std::uint8_t* ptr = data();
-    std::uint8_t* end = ptr + height() * stride();
-    while(ptr < end)
+    std::uint32_t width = this->width();
+    std::uint32_t height = this->height();
+    std::uint32_t stride = this->stride();
+    std::uint8_t* data = this->data();
+    for(std::uint32_t y = 0;y < height;y++)
     {
-        std::uint32_t pixel;
-        std::memcpy(&pixel, ptr, sizeof(std::uint32_t));
-
-        std::uint8_t a = pixel >> 24;
-        if(a != 0)
+        std::uint32_t* pixels = reinterpret_cast<std::uint32_t*>(data + stride * y);
+        for(std::uint32_t x = 0;x < width;x++)
         {
-            ptr[0] = (((pixel >> 16) & 0xff) * 255) / a;
-            ptr[1] = (((pixel >> 8) & 0xff) * 255) / a;
-            ptr[2] = (((pixel >> 0) & 0xff) * 255) / a;
-            ptr[3] = a;
-        }
-        else
-        {
-            ptr[0] = 0;
-            ptr[1] = 0;
-            ptr[2] = 0;
-            ptr[3] = 0;
-        }
+            std::uint32_t a = pixels[x] >> 24;
+            if(a != 0)
+            {
+                std::uint32_t r = (((pixels[x] >> 16) & 0xff) * 255) / a;
+                std::uint32_t g = (((pixels[x] >> 8) & 0xff) * 255) / a;
+                std::uint32_t b = (((pixels[x] >> 0) & 0xff) * 255) / a;
 
-        ptr += 4;
+                pixels[x] = (a << 24) | (b << 16) | (g << 8) | r;
+            }
+            else
+            {
+                pixels[x] = 0;
+            }
+        }
     }
 }
 

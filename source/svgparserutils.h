@@ -38,22 +38,15 @@ inline std::pair<const char*, const char*> trim(const char* start, const char* e
     return std::make_pair(ltrim(start, end), rtrim(start, end));
 }
 
-inline bool skipDesc(const char*& ptr, const char* str, size_t n)
+inline bool skipDesc(const char*& ptr, const char* str, int length)
 {
-    const char* start = ptr;
-    while(n && *ptr && *str && *ptr==*str)
+    for(int i = 0;i < length;i++)
     {
-        ++ptr;
-        ++str;
-        --n;
+        if(ptr[i] != str[i])
+            return false;
     }
 
-    if(n != 0)
-    {
-        ptr = start;
-        return false;
-    }
-
+    ptr += length;
     return true;
 }
 

@@ -53,6 +53,6 @@ inline const double* AffineTransform::getMatrix() const
    return m_matrix;
 }
 
-} //namespace lunasvg
+} // namespace lunasvg
 
 #endif //AFFINETRANSFORM_H

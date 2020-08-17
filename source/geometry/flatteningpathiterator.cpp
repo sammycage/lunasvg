@@ -180,4 +180,4 @@ void FlatteningPathIterator::flattenCurveCubicTo(std::vector<double>& coords) co
     }
 }
 
-} //namespace lunasvg
+} // namespace lunasvg

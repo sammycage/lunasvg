@@ -231,4 +231,4 @@ Rect AffineTransform::mapRect(const Rect& rect) const
     return Rect(l, t, r-l, b-t);
 }
 
-} //namespace lunasvg
+} // namespace lunasvg

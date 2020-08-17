@@ -195,45 +195,59 @@ void CanvasImpl::draw(const Path& path, const AffineTransform& matrix, WindRule 
 
 void CanvasImpl::updateLuminance()
 {
-    std::uint8_t* ptr = data();
-    std::uint8_t* end = ptr + height() * stride();
-    while(ptr < end)
+    std::uint32_t width = this->width();
+    std::uint32_t height = this->height();
+    std::uint32_t stride = this->stride();
+    std::uint8_t* data = this->data();
+    for(std::uint32_t y = 0;y < height;y++)
     {
-        std::uint32_t b = *ptr++;
-        std::uint32_t g = *ptr++;
-        std::uint32_t r = *ptr++;
-        std::uint32_t luminosity = (2*r + 3*g + b) / 6;
-        *ptr++ = std::uint8_t(luminosity);
+        std::uint8_t* row = data + stride * y;
+        for(std::uint32_t x = 0;x < width;x++)
+        {
+            std::uint8_t b = row[0];
+            std::uint8_t g = row[1];
+            std::uint8_t r = row[2];
+
+            row[3] = (2*r + 3*g + b) / 6;
+
+            row += 4;
+        }
     }
 }
 
 void CanvasImpl::convertToRGBA()
 {
-    std::uint8_t* ptr = data();
-    std::uint8_t* end = ptr + height() * stride();
-    while(ptr < end)
+    std::uint32_t width = this->width();
+    std::uint32_t height = this->height();
+    std::uint32_t stride = this->stride();
+    std::uint8_t* data = this->data();
+    for(std::uint32_t y = 0;y < height;y++)
     {
-        std::uint8_t a = ptr[3];
-        if(a != 0)
+        std::uint8_t* row = data + stride * y;
+        for(std::uint32_t x = 0;x < width;x++)
         {
-            std::uint8_t r = ptr[2];
-            std::uint8_t g = ptr[1];
-            std::uint8_t b = ptr[0];
+            std::uint8_t a = row[3];
+            if(a != 0)
+            {
+                std::uint8_t r = row[2];
+                std::uint8_t g = row[1];
+                std::uint8_t b = row[0];
 
-            ptr[0] = (r * 255) / a;
-            ptr[1] = (g * 255) / a;
-            ptr[2] = (b * 255) / a;
-            ptr[3] = a;
-        }
-        else
-        {
-            ptr[0] = 0;
-            ptr[1] = 0;
-            ptr[2] = 0;
-            ptr[3] = 0;
-        }
+                row[0] = (r * 255) / a;
+                row[1] = (g * 255) / a;
+                row[2] = (b * 255) / a;
+                row[3] = a;
+            }
+            else
+            {
+                row[0] = 0;
+                row[1] = 0;
+                row[2] = 0;
+                row[3] = 0;
+            }
 
-        ptr += 4;
+            row += 4;
+        }
     }
 }
 

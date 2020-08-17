@@ -1,8 +1,5 @@
 #include "svgclippathelement.h"
-#include "svggeometryelement.h"
 #include "svgelementtail.h"
-#include "svgdocumentimpl.h"
-#include "svguseelement.h"
 
 namespace lunasvg {
 

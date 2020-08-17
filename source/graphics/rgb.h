@@ -29,6 +29,6 @@ public:
 #define KRgbYellow Rgb(255, 255, 0)
 #define KRgbTransparent Rgb(0, 0, 0, 0)
 
-} //namespace lunasvg
+} // namespace lunasvg
 
 #endif // RGB_H

@@ -40,7 +40,7 @@ void SVGURIString::setValueAsString(const std::string& value)
     if(!Utils::skipDesc(ptr, "url(", 4))
         return;
 
-    const char* closeBracket = strstr(ptr, ")");
+    const char* closeBracket = strchr(ptr, ')');
     if(closeBracket)
         m_value.assign(ptr, closeBracket);
 }

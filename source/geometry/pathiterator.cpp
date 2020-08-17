@@ -76,4 +76,4 @@ void PathIterator::next()
     m_index += 1;
 }
 
-} //namespace lunasvg
+} // namespace lunasvg

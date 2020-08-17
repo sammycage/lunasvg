@@ -325,7 +325,7 @@ void SVGPaint::setValueAsString(const std::string& value)
     Utils::skipWs(ptr);
     if(Utils::skipDesc(ptr, "url(", 4))
     {
-        const char* closeBracket = strstr(ptr, ")");
+        const char* closeBracket = strchr(ptr, ')');
         if(!closeBracket)
             return;
 
