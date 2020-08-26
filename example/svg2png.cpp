@@ -1,19 +1,6 @@
+#include <SFML/Graphics.hpp>
 #include <iostream>
-#include <string>
-#include <array>
-#include <memory>
-#include <cmath>
-#include <sstream>
-
-#ifndef _WIN32
-#include<libgen.h>
-#else
-#include <windows.h>
-#include <stdlib.h>
-#endif
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+#include <cstring>
 
 #include "svgdocument.h"
 
@@ -25,35 +12,26 @@ int help()
     return 1;
 }
 
-int setup(int argc, char **argv, std::string& fileName, int* width, int* height, std::uint32_t* bgColor)
+int setup(int argc, char** argv, std::string& fileName, std::uint32_t* width, std::uint32_t* height, std::uint32_t* bgColor)
 {
-    char *path{nullptr};
+    char* path = nullptr;
 
     if(argc > 1) path = argv[1];
     if(argc > 2)
     {
-        char tmp[20];
-        char *x = strstr(argv[2], "x");
+        char* x = strstr(argv[2], "x");
         if(x)
         {
-            snprintf(tmp, x - argv[2] + 1, "%s", argv[2]);
-            *width = atoi(tmp);
-            snprintf(tmp, sizeof(tmp), "%s", x + 1);
-            *height = atoi(tmp);
+            char buf[20];
+            snprintf(buf, x - argv[2] + 1, "%s", argv[2]);
+            *width = atoi(buf);
+            snprintf(buf, sizeof(buf), "%s", x + 1);
+            *height = atoi(buf);
         }
     }
 
     if(argc > 3) *bgColor = strtol(argv[3], nullptr, 16);
 
-    if(!path) return help();
-
-    std::array<char, 5000> memory;
-
-#ifdef _WIN32
-    path = _fullpath(memory.data(), path, memory.size());
-#else
-    path = realpath(path, memory.data());
-#endif
     if(!path) return help();
 
     fileName = std::string(path);
@@ -65,9 +43,9 @@ int setup(int argc, char **argv, std::string& fileName, int* width, int* height,
     return 0;
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-    int width = -1, height = -1;
+    std::uint32_t width = 0, height = 0;
     std::string fileName;
     std::uint32_t bgColor = 0x00000000;
 
@@ -79,10 +57,34 @@ int main(int argc, char **argv)
     std::string baseName = fileName.substr(fileName.find_last_of("/\\") + 1);
     baseName.append(".png");
 
-    Bitmap bitmap = document.renderToBitmap(std::max(width, 0), std::max(height, 0), 96.0, bgColor);
-    stbi_write_png(baseName.c_str(), bitmap.width(), bitmap.height(), 4, bitmap.data(), 0);
+    sf::RenderWindow window;
+    sf::Image image;
+    sf::Texture texture;
+    sf::Sprite sprite;
+
+    Bitmap bitmap = document.renderToBitmap(width, height, 96.0, bgColor);
+    image.create(bitmap.width(), bitmap.height(), bitmap.data());
+    image.saveToFile(baseName);
 
     std::cout << "Generated PNG file : "<< baseName << std::endl;
+
+    window.create(sf::VideoMode(bitmap.width(), bitmap.height()), "svg2png");
+    texture.loadFromImage(image);
+    sprite.setTexture(texture);
+
+    while(window.isOpen())
+    {
+        sf::Event event;
+        while(window.pollEvent(event))
+        {
+            if(event.type==sf::Event::Closed)
+                window.close();
+        }
+
+        window.clear(sf::Color::White);
+        window.draw(sprite);
+        window.display();
+    }
 
     return 0;
 }

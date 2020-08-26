@@ -36,6 +36,7 @@ int main()
 ## depends
 * [cmake](https://cmake.org/download/)
 * [cairo](https://www.cairographics.org/download/) (optional)
+* [sfml](https://www.sfml-dev.org/download.php) (optional)
 
 ## build
 
@@ -65,7 +66,7 @@ make install
 ```
 
 ## demo
-While building lunasvg library it generates a simple SVG to PNG converter which can be used to convert SVG file to PNG file.
+While building lunasvg example it generates a simple SVG to PNG converter which can be used to convert SVG file to PNG file.
 
 Run Demo.
 ```

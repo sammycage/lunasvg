@@ -5,7 +5,7 @@ project(lunasvg VERSION 1.0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 11)
 
 option(BUILD_SHARED_LIBS "Builds shared libraries" ON)
-option(LUNASVG_BUILD_EXAMPLES "Builds examples" ON)
+option(LUNASVG_BUILD_EXAMPLES "Builds examples" OFF)
 option(LUNASVG_ENABLE_CAIRO "Enable Cairo 2D Graphics"  OFF)
 
 add_library(lunasvg)
