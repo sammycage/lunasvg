@@ -10,7 +10,7 @@ class SVGRootElement : public SVGSVGElement
 public:
     SVGRootElement(SVGDocument* document);
     bool isSVGRootElement() const { return true; }
-    Bitmap renderToBitmap(std::uint32_t width, std::uint32_t height, double dpi, std::uint32_t bgColor) const;
+    void renderToBitmap(Bitmap& bitmap, const Rect& viewBox, double dpi, std::uint32_t bgColor) const;
 };
 
 } // namespace lunasvg

@@ -95,10 +95,44 @@ Box SVGDocumentImpl::getBBox(double dpi) const
 
 Bitmap SVGDocumentImpl::renderToBitmap(std::uint32_t width, std::uint32_t height, double dpi, std::uint32_t bgColor) const
 {
-    return m_rootElement->renderToBitmap(width, height, dpi, bgColor);
+    double documentWidth = this->documentWidth(dpi);
+    double documentHeight = this->documentHeight(dpi);
+    if(documentWidth < 0.0 || documentHeight < 0.0)
+    {
+        Box bbox = this->getBBox(dpi);
+        documentWidth = bbox.width;
+        documentHeight = bbox.height;
+    }
+
+    if(documentWidth == 0.0 || documentHeight == 0.0)
+        return Bitmap();
+
+    if(width == 0 && height == 0)
+    {
+        width = std::uint32_t(std::ceil(documentWidth));
+        height = std::uint32_t(std::ceil(documentHeight));
+    }
+    else if(width != 0 && height == 0)
+    {
+        height = std::uint32_t(std::ceil(width * documentHeight / documentWidth));
+    }
+    else if(height != 0 && width == 0)
+    {
+        width = std::uint32_t(std::ceil(height * documentWidth / documentHeight));
+    }
+
+    Bitmap bitmap(width, height);
+    Rect viewBox(0, 0, documentWidth, documentHeight);
+    if(m_rootElement->viewBox().isSpecified() && m_rootElement->viewBox().property()->isValid())
+    {
+        viewBox = m_rootElement->viewBox().property()->value();
+    }
+
+    m_rootElement->renderToBitmap(bitmap, viewBox, dpi, bgColor);
+    return bitmap;
 }
 
-void SVGDocumentImpl::render(Bitmap bitmap, double dpi, std::uint32_t bgColor) const
+void SVGDocumentImpl::render(Bitmap& bitmap, double dpi, std::uint32_t bgColor) const
 {
     RenderContext context(m_rootElement, RenderModeDisplay);
     RenderState& state = context.state();

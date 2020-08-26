@@ -9,42 +9,11 @@ SVGRootElement::SVGRootElement(SVGDocument* document) :
 {
 }
 
-Bitmap SVGRootElement::renderToBitmap(std::uint32_t width, std::uint32_t height, double dpi, std::uint32_t bgColor) const
+void SVGRootElement::renderToBitmap(Bitmap& bitmap, const Rect& viewBox, double dpi, std::uint32_t bgColor) const
 {
-    const SVGDocumentImpl* impl = document()->impl();
-    double documentWidth = impl->documentWidth(dpi);
-    double documentHeight = impl->documentHeight(dpi);
-    if(documentWidth < 0.0 || documentHeight < 0.0)
-    {
-        RenderContext context(this, RenderModeBounding);
-        RenderState& state = context.state();
-        state.element = this;
-        state.viewPort = Rect(0, 0, std::max(documentWidth, 1.0), std::max(documentHeight, 1.0));
-        state.dpi = dpi;
-        context.render(this, tail);
+    if(style().isDisplayNone() || next == tail)
+        return;
 
-        documentWidth = state.bbox.width;
-        documentHeight = state.bbox.height;
-    }
-
-    if(documentWidth == 0.0 || documentHeight == 0.0 || next == tail)
-        return Bitmap();
-
-    if(width == 0 && height == 0)
-    {
-        width = std::uint32_t(std::ceil(documentWidth));
-        height = std::uint32_t(std::ceil(documentHeight));
-    }
-    else if(width != 0 && height == 0)
-    {
-        height = std::uint32_t(std::ceil(width * documentHeight / documentWidth));
-    }
-    else if(height != 0 && width == 0)
-    {
-        width = std::uint32_t(std::ceil(height * documentWidth / documentHeight));
-    }
-
-    Bitmap bitmap(width, height);
     RenderContext context(this, RenderModeDisplay);
     RenderState& state = context.state();
     state.element = this;
@@ -55,20 +24,11 @@ Bitmap SVGRootElement::renderToBitmap(std::uint32_t width, std::uint32_t height,
 
     SVGGraphicsElement::render(context);
     RenderState& newState = context.state();
-    if(viewBox().isSpecified() && viewBox().property()->isValid())
-    {
-        newState.matrix.multiply(calculateViewBoxTransform(state.viewPort, viewBox().property()->value()));
-        newState.viewPort = viewBox().property()->value();
-    }
-    else
-    {
-        newState.matrix.multiply(calculateViewBoxTransform(state.viewPort, Rect(0, 0, documentWidth, documentHeight)));
-        newState.viewPort = Rect(0, 0, documentWidth, documentHeight);
-    }
+    newState.matrix.multiply(calculateViewBoxTransform(state.viewPort, viewBox));
+    newState.viewPort = viewBox;
 
     context.render(next, tail);
     state.canvas.convertToRGBA();
-    return bitmap;
 }
 
 } // namespace lunasvg
