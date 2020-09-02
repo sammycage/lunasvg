@@ -4,13 +4,13 @@
 
 namespace lunasvg {
 
-SVGUseElement::SVGUseElement(SVGDocument* document) :
-    SVGGraphicsElement(ElementIdUse, document),
-    SVGURIReference(this),
-    m_x(DOMPropertyIdX, LengthModeWidth, AllowNegativeLengths),
-    m_y(DOMPropertyIdY, LengthModeHeight, AllowNegativeLengths),
-    m_width(DOMPropertyIdWidth, LengthModeWidth, ForbidNegativeLengths),
-    m_height(DOMPropertyIdHeight, LengthModeHeight, ForbidNegativeLengths)
+SVGUseElement::SVGUseElement(SVGDocument* document)
+    : SVGGraphicsElement(DOMElementIdUse, document),
+      SVGURIReference(this),
+      m_x(DOMPropertyIdX, LengthModeWidth, AllowNegativeLengths),
+      m_y(DOMPropertyIdY, LengthModeHeight, AllowNegativeLengths),
+      m_width(DOMPropertyIdWidth, LengthModeWidth, ForbidNegativeLengths),
+      m_height(DOMPropertyIdHeight, LengthModeHeight, ForbidNegativeLengths)
 {
     m_height.setDefaultValue(hundredPercent());
     m_width.setDefaultValue(hundredPercent());
@@ -53,7 +53,7 @@ void SVGUseElement::render(RenderContext& context) const
     newState.color = state.color;
     newState.dpi = state.dpi;
 
-    if(ref->elementId()==ElementIdSvg || ref->elementId()==ElementIdSymbol)
+    if(ref->elementId()==DOMElementIdSvg || ref->elementId()==DOMElementIdSymbol)
     {
         double _w = m_width.value(state);
         double _h = m_height.value(state);

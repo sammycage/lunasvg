@@ -4,12 +4,12 @@
 
 namespace lunasvg {
 
-SVGGradientElement::SVGGradientElement(ElementID elementId, SVGDocument* document) :
-    SVGPaintElement(elementId, document),
-    SVGURIReference (this),
-    m_gradientTransform(DOMPropertyIdGradientTransform),
-    m_spreadMethod(DOMPropertyIdSpreadMethod),
-    m_gradientUnits(DOMPropertyIdGradientUnits)
+SVGGradientElement::SVGGradientElement(DOMElementID elementId, SVGDocument* document)
+    : SVGPaintElement(elementId, document),
+      SVGURIReference (this),
+      m_gradientTransform(DOMPropertyIdGradientTransform),
+      m_spreadMethod(DOMPropertyIdSpreadMethod),
+      m_gradientUnits(DOMPropertyIdGradientUnits)
 {
     addToPropertyMap(m_gradientTransform);
     addToPropertyMap(m_spreadMethod);
@@ -29,7 +29,7 @@ void SVGGradientElement::setGradientAttributes(GradientAttributes& attributes) c
         const SVGElementImpl* e = next;
         while(e != tail)
         {
-            if(e->elementId()==ElementIdStop)
+            if(e->elementId()==DOMElementIdStop)
                 attributes.gradientStops.push_back(to<SVGStopElement>(e));
             e = e->next;
         }

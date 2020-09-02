@@ -32,7 +32,7 @@ public:
     virtual void removeAttribute(const std::string&) {}
     virtual const std::string& tagName() const { return KEmptyString; }
     virtual const std::string& id() const { return KEmptyString; }
-    virtual ElementID elementId() const { return ElementIdUnknown; }
+    virtual DOMElementID elementId() const { return DOMElementIdUnknown; }
     virtual void render(RenderContext& context) const = 0;
     virtual void externalise(std::string& out, unsigned int& indent) const = 0;
     virtual SVGElementImpl* clone(SVGDocument* document) const = 0;

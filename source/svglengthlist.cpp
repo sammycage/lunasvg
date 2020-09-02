@@ -2,8 +2,8 @@
 
 namespace lunasvg {
 
-SVGLengthList::SVGLengthList() :
-    SVGListProperty<SVGLength>(PropertyTypeLengthList)
+SVGLengthList::SVGLengthList()
+    : SVGListProperty<SVGLength>(PropertyTypeLengthList)
 {
 }
 

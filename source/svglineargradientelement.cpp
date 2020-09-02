@@ -3,12 +3,12 @@
 
 namespace lunasvg {
 
-SVGLinearGradientElement::SVGLinearGradientElement(SVGDocument* document) :
-    SVGGradientElement(ElementIdLinearGradient, document),
-    m_x1(DOMPropertyIdX1, LengthModeWidth, AllowNegativeLengths),
-    m_y1(DOMPropertyIdY1, LengthModeHeight, AllowNegativeLengths),
-    m_x2(DOMPropertyIdX2, LengthModeWidth, AllowNegativeLengths),
-    m_y2(DOMPropertyIdY2, LengthModeHeight, AllowNegativeLengths)
+SVGLinearGradientElement::SVGLinearGradientElement(SVGDocument* document)
+    : SVGGradientElement(DOMElementIdLinearGradient, document),
+      m_x1(DOMPropertyIdX1, LengthModeWidth, AllowNegativeLengths),
+      m_y1(DOMPropertyIdY1, LengthModeHeight, AllowNegativeLengths),
+      m_x2(DOMPropertyIdX2, LengthModeWidth, AllowNegativeLengths),
+      m_y2(DOMPropertyIdY2, LengthModeHeight, AllowNegativeLengths)
 {
     m_x2.setDefaultValue(hundredPercent());
 
@@ -26,7 +26,7 @@ void SVGLinearGradientElement::collectGradientAttributes(LinearGradientAttribute
     while(true)
     {
         current->setGradientAttributes(attributes);
-        if(current->elementId() == ElementIdLinearGradient)
+        if(current->elementId() == DOMElementIdLinearGradient)
         {
             const SVGLinearGradientElement* linear = to<SVGLinearGradientElement>(current);
             if(!attributes.x1 && linear->m_x1.isSpecified())

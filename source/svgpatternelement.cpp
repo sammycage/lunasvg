@@ -5,17 +5,17 @@
 
 namespace lunasvg {
 
-SVGPatternElement::SVGPatternElement(SVGDocument* document) :
-    SVGPaintElement(ElementIdPattern, document),
-    SVGURIReference(this),
-    SVGFitToViewBox(this),
-    m_x(DOMPropertyIdX, LengthModeWidth, AllowNegativeLengths),
-    m_y(DOMPropertyIdY, LengthModeHeight, AllowNegativeLengths),
-    m_width(DOMPropertyIdWidth, LengthModeWidth, ForbidNegativeLengths),
-    m_height(DOMPropertyIdHeight, LengthModeHeight, ForbidNegativeLengths),
-    m_patternTransform(DOMPropertyIdPatternTransform),
-    m_patternUnits(DOMPropertyIdPatternUnits),
-    m_patternContentUnits(DOMPropertyIdPatternContentUnits)
+SVGPatternElement::SVGPatternElement(SVGDocument* document)
+    : SVGPaintElement(DOMElementIdPattern, document),
+      SVGURIReference(this),
+      SVGFitToViewBox(this),
+      m_x(DOMPropertyIdX, LengthModeWidth, AllowNegativeLengths),
+      m_y(DOMPropertyIdY, LengthModeHeight, AllowNegativeLengths),
+      m_width(DOMPropertyIdWidth, LengthModeWidth, ForbidNegativeLengths),
+      m_height(DOMPropertyIdHeight, LengthModeHeight, ForbidNegativeLengths),
+      m_patternTransform(DOMPropertyIdPatternTransform),
+      m_patternUnits(DOMPropertyIdPatternUnits),
+      m_patternContentUnits(DOMPropertyIdPatternContentUnits)
 {
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);
@@ -56,7 +56,7 @@ void SVGPatternElement::collectPatternAttributes(PatternAttributes& attributes) 
 
         processedGradients.insert(current);
         SVGElementImpl* ref = document()->impl()->resolveIRI(current->hrefValue());
-        if(!ref || ref->elementId() != ElementIdPattern)
+        if(!ref || ref->elementId() != DOMElementIdPattern)
             break;
 
         current = to<SVGPatternElement>(ref);
@@ -98,12 +98,12 @@ Paint SVGPatternElement::getPaint(const RenderState& state) const
     double width = w * scalex;
     double height = h * scaley;
 
-    if(width == 0.0 || height == 0.0 || attributes.patternContentElement == nullptr || RenderBreaker::hasElement(attributes.patternContentElement))
+    if(width == 0.0 || height == 0.0 || attributes.patternContentElement == nullptr || RenderBreaker::hasElement(this))
         return Paint();
 
     RenderContext newContext(this, RenderModeDisplay);
     RenderState& newState = newContext.state();
-    newState.element = attributes.patternContentElement;
+    newState.element = this;
     newState.canvas.reset(std::uint32_t(std::ceil(width)), std::uint32_t(std::ceil(height)));
     newState.style.add(style());
     newState.matrix.scale(scalex, scaley);
@@ -123,9 +123,9 @@ Paint SVGPatternElement::getPaint(const RenderState& state) const
         newState.viewPort = Rect(0, 0, 1, 1);
     }
 
-    RenderBreaker::registerElement(attributes.patternContentElement);
+    RenderBreaker::registerElement(this);
     newContext.render(attributes.patternContentElement->next, attributes.patternContentElement->tail->prev);
-    RenderBreaker::unregisterElement(attributes.patternContentElement);
+    RenderBreaker::unregisterElement(this);
 
     AffineTransform matrix(1.0/scalex, 0, 0, 1.0/scaley, x, y);
     if(attributes.patternTransform)

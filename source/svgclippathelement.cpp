@@ -3,9 +3,9 @@
 
 namespace lunasvg {
 
-SVGClipPathElement::SVGClipPathElement(SVGDocument* document) :
-    SVGGraphicsElement(ElementIdClipPath, document),
-    m_clipPathUnits(DOMPropertyIdClipPathUnits)
+SVGClipPathElement::SVGClipPathElement(SVGDocument* document)
+    : SVGGraphicsElement(DOMElementIdClipPath, document),
+      m_clipPathUnits(DOMPropertyIdClipPathUnits)
 {
     addToPropertyMap(m_clipPathUnits);
 }
@@ -38,7 +38,7 @@ void SVGClipPathElement::applyClip(RenderState& state) const
 
 void SVGClipPathElement::render(RenderContext& context) const
 {
-    if(context.state().element->elementId() != ElementIdClipPath)
+    if(context.state().element->elementId() != DOMElementIdClipPath)
     {
         context.skipElement();
         return;

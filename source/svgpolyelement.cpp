@@ -2,9 +2,9 @@
 
 namespace lunasvg {
 
-SVGPolyElement::SVGPolyElement(ElementID elementId, SVGDocument* document) :
-    SVGGeometryElement(elementId, document),
-    m_points(DOMPropertyIdPoints)
+SVGPolyElement::SVGPolyElement(DOMElementID elementId, SVGDocument* document)
+    : SVGGeometryElement(elementId, document),
+      m_points(DOMPropertyIdPoints)
 {
     addToPropertyMap(m_points);
 }

@@ -4,8 +4,8 @@
 
 namespace lunasvg {
 
-SVGRootElement::SVGRootElement(SVGDocument* document) :
-    SVGSVGElement(document)
+SVGRootElement::SVGRootElement(SVGDocument* document)
+    : SVGSVGElement(document)
 {
 }
 

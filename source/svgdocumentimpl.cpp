@@ -7,8 +7,8 @@
 
 namespace lunasvg {
 
-SVGDocumentImpl::SVGDocumentImpl(SVGDocument* document) :
-    m_svgParser(new SVGParser(document))
+SVGDocumentImpl::SVGDocumentImpl(SVGDocument* document)
+    : m_svgParser(new SVGParser(document))
 {
     m_rootElement = new SVGRootElement(document);
     m_rootElement->tail = new SVGElementTail(document);
@@ -29,13 +29,14 @@ SVGDocumentImpl::~SVGDocumentImpl()
 
 bool SVGDocumentImpl::loadFromFile(const std::string& filename)
 {
-    std::fstream fs;
+    std::ifstream fs;
     fs.open(filename.c_str());
     if(!fs.is_open())
         return false;
 
     std::string content;
     std::getline(fs, content, '\0');
+    fs.close();
 
     return loadFromData(content);
 }
@@ -332,54 +333,54 @@ void SVGDocumentImpl::insertElement(SVGElementImpl* head, SVGElementImpl* tail, 
 
     switch(position)
     {
-        case BeforeBegin:
-        {
-            SVGElementImpl* targetPrev = target->prev;
+    case BeforeBegin:
+    {
+        SVGElementImpl* targetPrev = target->prev;
 
-            targetPrev->next = head;
-            head->prev = targetPrev;
+        targetPrev->next = head;
+        head->prev = targetPrev;
 
-            target->prev = tail;
-            tail->next = target;
-            break;
-        }
-        case AfterBegin:
-        {
-            SVGElementImpl* targetNext = target->next;
+        target->prev = tail;
+        tail->next = target;
+        break;
+    }
+    case AfterBegin:
+    {
+        SVGElementImpl* targetNext = target->next;
 
-            target->next = head;
-            head->prev = target;
+        target->next = head;
+        head->prev = target;
 
-            targetNext->prev = tail;
-            tail->next = targetNext;
-            break;
-        }
-        case BeforeEnd:
-        {
-            assert(target->isSVGElementHead());
-            target = to<SVGElementHead>(target)->tail;
-            SVGElementImpl* targetPrev = target->prev;
+        targetNext->prev = tail;
+        tail->next = targetNext;
+        break;
+    }
+    case BeforeEnd:
+    {
+        assert(target->isSVGElementHead());
+        target = to<SVGElementHead>(target)->tail;
+        SVGElementImpl* targetPrev = target->prev;
 
-            targetPrev->next = head;
-            head->prev = targetPrev;
+        targetPrev->next = head;
+        head->prev = targetPrev;
 
-            target->prev = tail;
-            tail->next = target;
-            break;
-        }
-        case AfterEnd:
-        {
-            assert(target->isSVGElementHead());
-            target = to<SVGElementHead>(target)->tail;
-            SVGElementImpl* targetNext = target->next;
+        target->prev = tail;
+        tail->next = target;
+        break;
+    }
+    case AfterEnd:
+    {
+        assert(target->isSVGElementHead());
+        target = to<SVGElementHead>(target)->tail;
+        SVGElementImpl* targetNext = target->next;
 
-            target->next = head;
-            head->prev = target;
+        target->next = head;
+        head->prev = target;
 
-            targetNext->prev = tail;
-            tail->next = targetNext;
-            break;
-        }
+        targetNext->prev = tail;
+        tail->next = targetNext;
+        break;
+    }
     }
 }
 

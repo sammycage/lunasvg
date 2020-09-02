@@ -2,8 +2,8 @@
 
 namespace lunasvg {
 
-SVGString::SVGString() :
-    SVGProperty(PropertyTypeString)
+SVGString::SVGString()
+    : SVGProperty(PropertyTypeString)
 {
 }
 

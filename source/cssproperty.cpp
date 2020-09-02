@@ -11,9 +11,9 @@ CSSPropertyBase::~CSSPropertyBase()
 {
 }
 
-CSSPropertyBase::CSSPropertyBase(CSSPropertyID propertyId, PropertyType propertyType) :
-    m_propertyId(propertyId),
-    m_propertyType(propertyType)
+CSSPropertyBase::CSSPropertyBase(CSSPropertyID propertyId, PropertyType propertyType)
+    : m_propertyId(propertyId),
+      m_propertyType(propertyType)
 {
 }
 
@@ -73,8 +73,8 @@ CSSPropertyList::~CSSPropertyList()
         delete m_values[i];
 }
 
-CSSPropertyList::CSSPropertyList() :
-    SVGProperty(PropertyTypeCSSPropertyList)
+CSSPropertyList::CSSPropertyList()
+    : SVGProperty(PropertyTypeCSSPropertyList)
 {
     m_values.fill(nullptr);
 }
@@ -124,7 +124,7 @@ void CSSPropertyList::setValueAsString(const std::string& value)
             ++ptr;
         std::string name(start, ptr);
         Utils::skipWs(ptr);
-        if(!*ptr || *ptr!=':')
+        if(*ptr!=':')
             return;
         ++ptr;
         Utils::skipWs(ptr);
@@ -160,7 +160,7 @@ std::string CSSPropertyList::valueAsString() const
 
 SVGProperty* CSSPropertyList::clone() const
 {
-    CSSPropertyList*  property = new CSSPropertyList;
+    CSSPropertyList* property = new CSSPropertyList;
     for(unsigned int i = 0;i < MAX_STYLE;i++)
     {
         if(m_values[i])
@@ -170,8 +170,8 @@ SVGProperty* CSSPropertyList::clone() const
     return property;
 }
 
-DOMSVGStyle::DOMSVGStyle(DOMPropertyID propertyId) :
-    DOMSVGProperty<CSSPropertyList>(propertyId)
+DOMSVGStyle::DOMSVGStyle(DOMPropertyID propertyId)
+    : DOMSVGProperty<CSSPropertyList>(propertyId)
 {
 }
 

@@ -8,7 +8,7 @@ SVGElementIter::SVGElementIter(const SVGElement* element, const std::string& id,
 {
     m_element = to<SVGElementImpl>(element);
     m_id.assign(id);
-    m_elementId = tagName.empty() ? ElementLastId : Utils::elementId(tagName);
+    m_elementId = tagName.empty() ? DOMElementLastId : Utils::domElementId(tagName);
     m_currentElement = m_element->isSVGElementHead() ? const_cast<SVGElementImpl*>(m_element) : nullptr;
 }
 
@@ -22,7 +22,7 @@ bool SVGElementIter::next()
     {
        if(!m_currentElement->isSVGElementTail())
        {
-           if((m_elementId==ElementLastId || m_elementId==m_currentElement->elementId()) && (m_id.length()==0 || m_id==m_currentElement->id()))
+           if((m_elementId==DOMElementLastId || m_elementId==m_currentElement->elementId()) && (m_id.length()==0 || m_id==m_currentElement->id()))
                return true;
        }
 

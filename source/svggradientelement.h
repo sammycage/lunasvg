@@ -23,7 +23,7 @@ class SVGGradientElement : public SVGPaintElement,
         public SVGURIReference
 {
 public:
-    SVGGradientElement(ElementID elementId, SVGDocument* document);
+    SVGGradientElement(DOMElementID elementId, SVGDocument* document);
     bool isSVGGradientElement() const { return true; }
     const DOMSVGTransform& gradientTransform() const { return m_gradientTransform; }
     const DOMSVGEnumeration<SpreadMethod>& spreadMethod() const { return m_spreadMethod; }

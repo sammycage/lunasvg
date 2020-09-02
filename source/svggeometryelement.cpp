@@ -4,8 +4,8 @@
 
 namespace lunasvg {
 
-SVGGeometryElement::SVGGeometryElement(ElementID elementId, SVGDocument* document) :
-    SVGGraphicsElement(elementId, document)
+SVGGeometryElement::SVGGeometryElement(DOMElementID elementId, SVGDocument* document)
+    : SVGGraphicsElement(elementId, document)
 {
 }
 

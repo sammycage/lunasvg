@@ -2,9 +2,9 @@
 
 namespace lunasvg {
 
-SVGNumber::SVGNumber() :
-    SVGProperty(PropertyTypeNumber),
-    m_value(0)
+SVGNumber::SVGNumber()
+    : SVGProperty(PropertyTypeNumber),
+      m_value(0)
 {
 }
 

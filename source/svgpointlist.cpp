@@ -2,8 +2,8 @@
 
 namespace lunasvg {
 
-SVGPointList::SVGPointList() :
-    SVGListProperty<SVGPoint>(PropertyTypePointList)
+SVGPointList::SVGPointList()
+    : SVGListProperty<SVGPoint>(PropertyTypePointList)
 {
 }
 

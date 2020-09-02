@@ -4,9 +4,9 @@
 
 namespace lunasvg {
 
-SVGFitToViewBox::SVGFitToViewBox(SVGElementHead* element) :
-    m_viewBox(DOMPropertyIdViewBox),
-    m_preserveAspectRatio(DOMPropertyIdPreserveAspectRatio)
+SVGFitToViewBox::SVGFitToViewBox(SVGElementHead* element)
+    : m_viewBox(DOMPropertyIdViewBox),
+      m_preserveAspectRatio(DOMPropertyIdPreserveAspectRatio)
 {
     element->addToPropertyMap(m_viewBox);
     element->addToPropertyMap(m_preserveAspectRatio);

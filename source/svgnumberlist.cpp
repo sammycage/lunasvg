@@ -2,8 +2,8 @@
 
 namespace lunasvg {
 
-SVGNumberList::SVGNumberList() :
-    SVGListProperty<SVGNumber>(PropertyTypeNumberList)
+SVGNumberList::SVGNumberList()
+    : SVGListProperty<SVGNumber>(PropertyTypeNumberList)
 {
 }
 

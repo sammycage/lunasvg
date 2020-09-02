@@ -10,7 +10,7 @@ namespace lunasvg {
 class SVGPaintElement : public SVGStyledElement
 {
 public:
-    SVGPaintElement(ElementID elementId, SVGDocument* document);
+    SVGPaintElement(DOMElementID elementId, SVGDocument* document);
     bool isSVGPaintElement() const { return true; }
     virtual Paint getPaint(const RenderState& state) const = 0;
     virtual void render(RenderContext& context) const;

@@ -7,10 +7,10 @@
 
 namespace lunasvg {
 
-SVGStyledElement::SVGStyledElement(ElementID elementId, SVGDocument* document) :
-    SVGElementHead(elementId, document),
-    m_className(DOMPropertyIdClass),
-    m_style(DOMPropertyIdStyle)
+SVGStyledElement::SVGStyledElement(DOMElementID elementId, SVGDocument* document)
+    : SVGElementHead(elementId, document),
+      m_className(DOMPropertyIdClass),
+      m_style(DOMPropertyIdStyle)
 {
     addToPropertyMap(m_className);
     addToPropertyMap(m_style);
@@ -96,14 +96,14 @@ void SVGStyledElement::renderTail(RenderContext& context) const
         if(state.style.clipPath() != KEmptyString)
         {
             SVGElementImpl* ref = document()->impl()->resolveIRI(state.style.clipPath());
-            if(ref && ref->elementId() == ElementIdClipPath)
+            if(ref && ref->elementId() == DOMElementIdClipPath)
                 to<SVGClipPathElement>(ref)->applyClip(state);
         }
 
         if(state.style.mask() != KEmptyString)
         {
             SVGElementImpl* ref = document()->impl()->resolveIRI(state.style.mask());
-            if(ref && ref->elementId() == ElementIdMask)
+            if(ref && ref->elementId() == DOMElementIdMask)
                 to<SVGMaskElement>(ref)->applyMask(state);
         }
 

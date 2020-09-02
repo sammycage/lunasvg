@@ -27,7 +27,7 @@ public:
     void removeProperty(DOMPropertyID nameId);
     const std::string& tagName() const;
     const std::string& id() const { return m_id; }
-    ElementID elementId() const { return m_elementId; }
+    DOMElementID elementId() const { return m_elementId; }
     bool isSVGElementHead() const { return true; }
 
     SVGElementTail* tail;
@@ -36,11 +36,11 @@ public:
     void updateId(const std::string& newValue);
 
 protected:
-    SVGElementHead(ElementID elementId, SVGDocument* document);
+    SVGElementHead(DOMElementID elementId, SVGDocument* document);
     void baseClone(SVGElementHead& e) const;
 
 private:
-    ElementID m_elementId;
+    DOMElementID m_elementId;
     std::string m_id;
     std::vector<DOMSVGPropertyBase*> m_properties;
 };

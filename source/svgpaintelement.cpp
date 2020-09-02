@@ -2,8 +2,8 @@
 
 namespace lunasvg {
 
-SVGPaintElement::SVGPaintElement(ElementID elementId, SVGDocument* document) :
-    SVGStyledElement(elementId, document)
+SVGPaintElement::SVGPaintElement(DOMElementID elementId, SVGDocument* document)
+    : SVGStyledElement(elementId, document)
 {
 }
 

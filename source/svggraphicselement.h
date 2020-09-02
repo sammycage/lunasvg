@@ -10,7 +10,7 @@ namespace lunasvg {
 class SVGGraphicsElement : public SVGStyledElement
 {
 public:
-    SVGGraphicsElement(ElementID elementId, SVGDocument* document);
+    SVGGraphicsElement(DOMElementID elementId, SVGDocument* document);
     bool isSVGGraphicsElement() const { return true; }
     const DOMSVGTransform& transform() const { return m_transform; }
     virtual void render(RenderContext& context) const;

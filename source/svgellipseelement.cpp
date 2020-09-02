@@ -2,12 +2,12 @@
 
 namespace lunasvg {
 
-SVGEllipseElement::SVGEllipseElement(SVGDocument* document) :
-    SVGGeometryElement(ElementIdEllipse, document),
-    m_cx(DOMPropertyIdCx, LengthModeWidth, AllowNegativeLengths),
-    m_cy(DOMPropertyIdCy, LengthModeHeight, AllowNegativeLengths),
-    m_rx(DOMPropertyIdRx, LengthModeWidth, ForbidNegativeLengths),
-    m_ry(DOMPropertyIdRy, LengthModeHeight, ForbidNegativeLengths)
+SVGEllipseElement::SVGEllipseElement(SVGDocument* document)
+    : SVGGeometryElement(DOMElementIdEllipse, document),
+      m_cx(DOMPropertyIdCx, LengthModeWidth, AllowNegativeLengths),
+      m_cy(DOMPropertyIdCy, LengthModeHeight, AllowNegativeLengths),
+      m_rx(DOMPropertyIdRx, LengthModeWidth, ForbidNegativeLengths),
+      m_ry(DOMPropertyIdRy, LengthModeHeight, ForbidNegativeLengths)
 {
     addToPropertyMap(m_cx);
     addToPropertyMap(m_cy);

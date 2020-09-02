@@ -5,13 +5,25 @@
 
 namespace lunasvg {
 
-Bitmap::Impl::Impl(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride) :
-    data(data), width(width), height(height), stride(stride)
+struct Bitmap::Impl
+{
+    Impl(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride);
+    Impl(std::uint32_t width, std::uint32_t height);
+
+    std::unique_ptr<std::uint8_t[]> ownData;
+    std::uint8_t* data;
+    std::uint32_t width;
+    std::uint32_t height;
+    std::uint32_t stride;
+};
+
+Bitmap::Impl::Impl(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride)
+    : data(data), width(width), height(height), stride(stride)
 {
 }
 
-Bitmap::Impl::Impl(std::uint32_t width, std::uint32_t height) :
-    ownData(new std::uint8_t[width*height*4]), data(nullptr), width(width), height(height), stride(width * 4)
+Bitmap::Impl::Impl(std::uint32_t width, std::uint32_t height)
+    : ownData(new std::uint8_t[width*height*4]), data(nullptr), width(width), height(height), stride(width * 4)
 {
 }
 
@@ -19,13 +31,13 @@ Bitmap::Bitmap()
 {
 }
 
-Bitmap::Bitmap(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride) :
-    m_impl(new Impl(data, width, height, stride))
+Bitmap::Bitmap(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride)
+    : m_impl(new Impl(data, width, height, stride))
 {
 }
 
-Bitmap::Bitmap(std::uint32_t width, std::uint32_t height) :
-    m_impl(new Impl(width, height))
+Bitmap::Bitmap(std::uint32_t width, std::uint32_t height)
+    : m_impl(new Impl(width, height))
 {
 }
 
@@ -59,8 +71,8 @@ std::uint32_t Bitmap::stride() const
     return m_impl ? m_impl->stride : 0;
 }
 
-SVGElement::SVGElement(SVGDocument* document) :
-    m_document(document)
+SVGElement::SVGElement(SVGDocument* document)
+    : m_document(document)
 {
 }
 

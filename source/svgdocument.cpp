@@ -5,8 +5,8 @@
 namespace lunasvg {
 
 SVGDocument::SVGDocument()
+    : m_impl(new SVGDocumentImpl(this))
 {
-    m_impl = new SVGDocumentImpl(this);
 }
 
 SVGElement* SVGDocument::getElementById(const std::string& id, int index) const

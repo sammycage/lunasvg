@@ -3,7 +3,7 @@
 
 namespace lunasvg {
 
-#define K_SQRT2 1.41421356237309504880
+#define SQRT2 1.41421356237309504880
 
 const SVGLength* hundredPercent()
 {
@@ -29,17 +29,17 @@ const SVGLength* oneTwentyPercent()
     return &value;
 }
 
-SVGLength::SVGLength() :
-    SVGProperty(PropertyTypeLength),
-    m_value(0),
-    m_unit(LengthUnitNumber)
+SVGLength::SVGLength()
+    : SVGProperty(PropertyTypeLength),
+      m_value(0),
+      m_unit(LengthUnitNumber)
 {
 }
 
-SVGLength::SVGLength(double value, LengthUnit unit) :
-    SVGProperty(PropertyTypeLength),
-    m_value(value),
-    m_unit(unit)
+SVGLength::SVGLength(double value, LengthUnit unit)
+    : SVGProperty(PropertyTypeLength),
+      m_value(value),
+      m_unit(unit)
 {
 }
 
@@ -90,7 +90,7 @@ double SVGLength::value(const RenderState& state, LengthMode mode) const
     {
         double w = state.viewPort.width;
         double h = state.viewPort.height;
-        double max = (mode == LengthModeWidth) ? w : (mode == LengthModeHeight) ? h : std::sqrt(w*w+h*h) / K_SQRT2;
+        double max = (mode == LengthModeWidth) ? w : (mode == LengthModeHeight) ? h : std::sqrt(w*w+h*h) / SQRT2;
         return m_value * max / 100.0;
     }
 
@@ -229,11 +229,11 @@ SVGProperty* SVGLength::clone() const
     return property;
 }
 
-DOMSVGLength::DOMSVGLength(DOMPropertyID propertyId, LengthMode mode, LengthNegativeValuesMode negativeValuesMode) :
-    DOMSVGProperty<SVGLength>(propertyId),
-    m_mode(mode),
-    m_negativeValuesMode(negativeValuesMode),
-    m_defaultValue(nullptr)
+DOMSVGLength::DOMSVGLength(DOMPropertyID propertyId, LengthMode mode, LengthNegativeValuesMode negativeValuesMode)
+    : DOMSVGProperty<SVGLength>(propertyId),
+      m_mode(mode),
+      m_negativeValuesMode(negativeValuesMode),
+      m_defaultValue(nullptr)
 {
 }
 
@@ -241,7 +241,7 @@ void DOMSVGLength::setPropertyAsString(const std::string& value)
 {
     DOMSVGProperty::setPropertyAsString(value);
 
-    if(negativeValuesMode()==ForbidNegativeLengths && property()->value()<0)
+    if(m_negativeValuesMode==ForbidNegativeLengths && property()->value()<0)
     {
         property()->setValue(0);
         property()->setUnit(LengthUnitNumber);

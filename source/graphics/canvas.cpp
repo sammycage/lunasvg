@@ -7,13 +7,13 @@ Canvas::Canvas()
 {
 }
 
-Canvas::Canvas(unsigned char* data, unsigned int width, unsigned int height, unsigned int stride) :
-    m_impl(new CanvasImpl(data, width, height, stride))
+Canvas::Canvas(unsigned char* data, unsigned int width, unsigned int height, unsigned int stride)
+    : m_impl(new CanvasImpl(data, width, height, stride))
 {
 }
 
-Canvas::Canvas(unsigned int width, unsigned int height) :
-    m_impl(new CanvasImpl(width, height))
+Canvas::Canvas(unsigned int width, unsigned int height)
+    : m_impl(new CanvasImpl(width, height))
 {
 }
 

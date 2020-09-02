@@ -4,8 +4,8 @@
 
 namespace lunasvg {
 
-SVGSolidColorElement::SVGSolidColorElement(SVGDocument* document) :
-    SVGPaintElement(ElementIdSolidColor, document)
+SVGSolidColorElement::SVGSolidColorElement(SVGDocument* document)
+    : SVGPaintElement(DOMElementIdSolidColor, document)
 {
 }
 

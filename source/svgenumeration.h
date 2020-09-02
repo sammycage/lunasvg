@@ -86,10 +86,10 @@ public:
     static PropertyType classType() { return PropertyTypeEnumeration; }
 
 protected:
-    SVGEnumerationBase(const EnumEntryList& entries) :
-        SVGProperty(PropertyTypeEnumeration),
-        m_value(0),
-        m_entries(entries)
+    SVGEnumerationBase(const EnumEntryList& entries)
+        : SVGProperty(PropertyTypeEnumeration),
+          m_value(0),
+          m_entries(entries)
     {}
 
 protected:
@@ -101,8 +101,8 @@ template<typename T>
 class SVGEnumeration : public SVGEnumerationBase
 {
 public:
-    SVGEnumeration() :
-        SVGEnumerationBase(getEnumEntryList<T>())
+    SVGEnumeration()
+        : SVGEnumerationBase(getEnumEntryList<T>())
     {}
 
     T enumValue() const
@@ -128,8 +128,8 @@ template<typename T>
 class DOMSVGEnumeration : public DOMSVGProperty<SVGEnumeration<T>>
 {
 public:
-    DOMSVGEnumeration(DOMPropertyID propertyId) :
-        DOMSVGProperty<SVGEnumeration<T>>(propertyId)
+    DOMSVGEnumeration(DOMPropertyID propertyId)
+        : DOMSVGProperty<SVGEnumeration<T>>(propertyId)
     {}
 };
 

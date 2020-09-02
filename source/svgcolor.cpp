@@ -157,9 +157,9 @@ static const std::map<std::string, Rgb> colormap = {
     {"yellowgreen", 0x9ACD32FF}
 };
 
-SVGColor::SVGColor() :
-    SVGProperty(PropertyTypeColor),
-    m_colorType(ColorTypeRgb)
+SVGColor::SVGColor()
+    : SVGProperty(PropertyTypeColor),
+      m_colorType(ColorTypeRgb)
 {
 }
 
@@ -186,8 +186,9 @@ bool SVGColor::parseColorComponent(const char*& ptr, double& value)
         return false;
 
     if(Utils::skipDesc(ptr, "%", 1))
-        value *= 2.55;
+        value *= 2.56;
 
+    value = (value < 0.0) ? 0.0 : (value > 255.0) ? 255.0 : std::round(value);
     return true;
 }
 

@@ -2,9 +2,9 @@
 
 namespace lunasvg {
 
-SVGRect::SVGRect() :
-    SVGProperty(PropertyTypeRect),
-    m_valid(true)
+SVGRect::SVGRect()
+    : SVGProperty(PropertyTypeRect),
+      m_valid(true)
 {
 }
 
@@ -59,8 +59,8 @@ SVGProperty* SVGRect::clone() const
     return property;
 }
 
-DOMSVGViewBoxRect::DOMSVGViewBoxRect(DOMPropertyID propertyId) :
-    DOMSVGRect(propertyId)
+DOMSVGViewBoxRect::DOMSVGViewBoxRect(DOMPropertyID propertyId)
+    : DOMSVGRect(propertyId)
 {
 }
 

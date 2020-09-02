@@ -49,7 +49,6 @@ void RenderStyle::inheritFrom(const RenderStyle& style)
         switch(i)
         {
         case CSSPropertyIdDisplay:
-        case CSSPropertyIdClip:
         case CSSPropertyIdClip_Path:
         case CSSPropertyIdOverflow:
         case CSSPropertyIdStop_Color:
@@ -266,10 +265,10 @@ RenderContext::~RenderContext()
     delete m_state;
 }
 
-RenderContext::RenderContext(const SVGElementImpl* element, RenderMode mode) :
-    m_mode(mode),
-    m_state(new RenderState()),
-    m_current(element)
+RenderContext::RenderContext(const SVGElementImpl* element, RenderMode mode)
+    : m_mode(mode),
+      m_state(new RenderState()),
+      m_current(element)
 {
 }
 

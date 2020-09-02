@@ -22,15 +22,15 @@ CanvasImpl::~CanvasImpl()
     cairo_surface_destroy(m_surface);
 }
 
-CanvasImpl::CanvasImpl(unsigned char* data, unsigned int width, unsigned int height, unsigned int stride) :
-    m_surface(cairo_image_surface_create_for_data(data, CAIRO_FORMAT_ARGB32, int(width), int(height), int(stride))),
-    m_cr(cairo_create(m_surface))
+CanvasImpl::CanvasImpl(unsigned char* data, unsigned int width, unsigned int height, unsigned int stride)
+    : m_surface(cairo_image_surface_create_for_data(data, CAIRO_FORMAT_ARGB32, int(width), int(height), int(stride))),
+      m_cr(cairo_create(m_surface))
 {
 }
 
-CanvasImpl::CanvasImpl(unsigned int width, unsigned int height) :
-    m_surface(cairo_image_surface_create(CAIRO_FORMAT_ARGB32, int(width), int(height))),
-    m_cr(cairo_create(m_surface))
+CanvasImpl::CanvasImpl(unsigned int width, unsigned int height)
+    : m_surface(cairo_image_surface_create(CAIRO_FORMAT_ARGB32, int(width), int(height))),
+      m_cr(cairo_create(m_surface))
 {
 }
 
@@ -221,7 +221,8 @@ cairo_pattern_t* to_cairo_pattern(const Paint& paint)
         const Rgb* c = paint.color();
         return cairo_pattern_create_rgba(c->r/255.0, c->g/255.0, c->b/255.0, (c->a/255.0)*paint.opacity());
     }
-    else if(paint.type() == PaintTypeGradient)
+
+    if(paint.type() == PaintTypeGradient)
     {
         const Gradient* gradient = paint.gradient();
         cairo_pattern_t* pattern;
@@ -266,7 +267,8 @@ cairo_pattern_t* to_cairo_pattern(const Paint& paint)
         cairo_pattern_set_matrix(pattern, &matrix);
         return pattern;
     }
-    else if(paint.type() == PaintTypePattern)
+
+    if(paint.type() == PaintTypePattern)
     {
         const Pattern* p = paint.pattern();
         cairo_pattern_t* pattern = cairo_pattern_create_for_surface(p->tile().impl()->surface());

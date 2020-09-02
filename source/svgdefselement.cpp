@@ -2,8 +2,8 @@
 
 namespace lunasvg {
 
-SVGDefsElement::SVGDefsElement(SVGDocument* document) :
-    SVGGraphicsElement(ElementIdDefs, document)
+SVGDefsElement::SVGDefsElement(SVGDocument* document)
+    : SVGGraphicsElement(DOMElementIdDefs, document)
 {
 }
 

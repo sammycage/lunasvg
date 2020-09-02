@@ -7,9 +7,9 @@ template<> const EnumEntryList& getEnumEntryList<Display>()
     static EnumEntryList entries;
     if(entries.empty())
     {
-        entries.push_back(EnumEntry(DisplayInline, "inline"));
-        entries.push_back(EnumEntry(DisplayBlock, "block"));
-        entries.push_back(EnumEntry(DisplayNone, "none"));
+        entries.emplace_back(DisplayInline, "inline");
+        entries.emplace_back(DisplayBlock, "block");
+        entries.emplace_back(DisplayNone, "none");
     }
 
     return entries;
@@ -20,9 +20,9 @@ template<> const EnumEntryList& getEnumEntryList<Visibility>()
     static EnumEntryList entries;
     if(entries.empty())
     {
-        entries.push_back(EnumEntry(VisibilityVisible, "visible"));
-        entries.push_back(EnumEntry(VisibilityHidden, "hidden"));
-        entries.push_back(EnumEntry(VisibilityCollaspe, "collaspe"));
+        entries.emplace_back(VisibilityVisible, "visible");
+        entries.emplace_back(VisibilityHidden, "hidden");
+        entries.emplace_back(VisibilityCollaspe, "collaspe");
     }
 
     return entries;
@@ -33,10 +33,10 @@ template<> const EnumEntryList& getEnumEntryList<Overflow>()
     static EnumEntryList entries;
     if(entries.empty())
     {
-        entries.push_back(EnumEntry(OverflowVisible, "visible"));
-        entries.push_back(EnumEntry(OverflowHidden, "hidden"));
-        entries.push_back(EnumEntry(OverflowScroll, "scroll"));
-        entries.push_back(EnumEntry(OverflowAuto, "auto"));
+        entries.emplace_back(OverflowVisible, "visible");
+        entries.emplace_back(OverflowHidden, "hidden");
+        entries.emplace_back(OverflowScroll, "scroll");
+        entries.emplace_back(OverflowAuto, "auto");
     }
 
     return entries;
@@ -47,9 +47,9 @@ template<> const EnumEntryList& getEnumEntryList<LineCap>()
     static EnumEntryList entries;
     if(entries.empty())
     {
-        entries.push_back(EnumEntry(LineCapButt, "butt"));
-        entries.push_back(EnumEntry(LineCapRound, "round"));
-        entries.push_back(EnumEntry(LineCapSquare, "square"));
+        entries.emplace_back(LineCapButt, "butt");
+        entries.emplace_back(LineCapRound, "round");
+        entries.emplace_back(LineCapSquare, "square");
     }
 
     return entries;
@@ -60,9 +60,9 @@ template<> const EnumEntryList& getEnumEntryList<LineJoin>()
     static EnumEntryList entries;
     if(entries.empty())
     {
-        entries.push_back(EnumEntry(LineJoinMiter, "miter"));
-        entries.push_back(EnumEntry(LineJoinBevel, "bevel"));
-        entries.push_back(EnumEntry(LineJoinRound, "round"));
+        entries.emplace_back(LineJoinMiter, "miter");
+        entries.emplace_back(LineJoinBevel, "bevel");
+        entries.emplace_back(LineJoinRound, "round");
     }
 
     return entries;
@@ -73,8 +73,8 @@ template<> const EnumEntryList& getEnumEntryList<WindRule>()
     static EnumEntryList entries;
     if(entries.empty())
     {
-        entries.push_back(EnumEntry(WindRuleNonZero, "nonzero"));
-        entries.push_back(EnumEntry(WindRuleEvenOdd, "evenodd"));
+        entries.emplace_back(WindRuleNonZero, "nonzero");
+        entries.emplace_back(WindRuleEvenOdd, "evenodd");
     }
 
     return entries;
@@ -85,9 +85,9 @@ template<> const EnumEntryList& getEnumEntryList<SpreadMethod>()
     static EnumEntryList entries;
     if(entries.empty())
     {
-        entries.push_back(EnumEntry(SpreadMethodPad, "pad"));
-        entries.push_back(EnumEntry(SpreadMethodReflect, "reflect"));
-        entries.push_back(EnumEntry(SpreadMethodRepeat, "repeat"));
+        entries.emplace_back(SpreadMethodPad, "pad");
+        entries.emplace_back(SpreadMethodReflect, "reflect");
+        entries.emplace_back(SpreadMethodRepeat, "repeat");
     }
 
     return entries;
@@ -98,8 +98,8 @@ template<> const EnumEntryList& getEnumEntryList<UnitType>()
     static EnumEntryList entries;
     if(entries.empty())
     {
-        entries.push_back(EnumEntry(UnitTypeObjectBoundingBox, "objectBoundingBox"));
-        entries.push_back(EnumEntry(UnitTypeUserSpaceOnUse, "userSpaceOnUse"));
+        entries.emplace_back(UnitTypeObjectBoundingBox, "objectBoundingBox");
+        entries.emplace_back(UnitTypeUserSpaceOnUse, "userSpaceOnUse");
     }
 
     return entries;
@@ -130,4 +130,4 @@ std::string SVGEnumerationBase::valueAsString() const
     return KEmptyString;
 }
 
-} //namespace lunasvg
+} // namespace lunasvg

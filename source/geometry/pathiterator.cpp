@@ -3,10 +3,10 @@
 
 namespace lunasvg {
 
-PathIterator::PathIterator(const Path& path) :
-    m_segments(path.segments()),
-    m_coordinates(path.coordinates().data()),
-    m_index(0)
+PathIterator::PathIterator(const Path& path)
+    : m_segments(path.segments()),
+      m_coordinates(path.coordinates().data()),
+      m_index(0)
 {
 }
 

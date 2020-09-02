@@ -111,12 +111,12 @@ inline bool parseInteger(const char*& ptr, T& integer, int base = 10)
     using signed_t = typename std::make_signed<T>::type;
     const T maxMultiplier = intMax / static_cast<T>(base);
 
-    if(*ptr && isSigned && *ptr == '-')
+    if(isSigned && *ptr == '-')
     {
         ++ptr;
         isNegative = true;
     }
-    else if(*ptr && *ptr == '+')
+    else if(*ptr == '+')
         ++ptr;
 
     if(!*ptr || !isIntegralDigit(*ptr, base))
@@ -159,9 +159,9 @@ inline bool parseNumber(const char*& ptr, T& number)
     sign = 1;
     expsign = 1;
 
-    if(*ptr && *ptr == '+')
+    if(*ptr == '+')
         ++ptr;
-    else if(*ptr && *ptr == '-')
+    else if(*ptr == '-')
     {
         ++ptr;
         sign = -1;
@@ -176,7 +176,7 @@ inline bool parseNumber(const char*& ptr, T& number)
             integer = static_cast<T>(10) * integer + (*ptr++ - '0');
     }
 
-    if(*ptr && *ptr == '.')
+    if(*ptr == '.')
     {
         ++ptr;
         if(!*ptr || !IS_NUM(*ptr))

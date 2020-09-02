@@ -29,6 +29,7 @@ public:
     void lineTo(double x1, double y1, bool rel = false);
     void quadTo(double x1, double y1, double x2, double y2, bool rel = false);
     void cubicTo(double x1, double y1, double x2, double y2, double x3, double y3, bool rel = false);
+    void arcTo(double rx, double ry, double xAxisRotation, bool largeArcFlag, bool sweepFlag, double x, double y, bool rel = false);
     void smoothQuadTo(double x2, double y2, bool rel = false);
     void smoothCubicTo(double x2, double y2, double x3, double y3, bool rel = false);
     void horizontalTo(double x, bool rel = false);

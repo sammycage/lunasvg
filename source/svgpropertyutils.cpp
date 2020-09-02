@@ -1,5 +1,4 @@
 #include "svgpropertyutils.h"
-#include "svgparserutils.h"
 #include "svgstring.h"
 
 #include <unordered_map>
@@ -87,21 +86,16 @@ static const std::unordered_map<std::string, SMILPropertyID> smilpropertymap = {
 };
 
 static const std::unordered_map<std::string, CSSPropertyID> csspropertymap = {
-    {"clip", CSSPropertyIdClip},
     {"clip-path", CSSPropertyIdClip_Path},
     {"clip-rule", CSSPropertyIdClip_Rule},
     {"color", CSSPropertyIdColor},
-    {"direction", CSSPropertyIdDirection},
     {"display", CSSPropertyIdDisplay},
     {"fill", CSSPropertyIdFill},
     {"fill-opacity", CSSPropertyIdFill_Opacity},
     {"fill-rule", CSSPropertyIdFill_Rule},
     {"font-family", CSSPropertyIdFont_Family},
     {"font-size", CSSPropertyIdFont_Size},
-    {"font-size-adjust", CSSPropertyIdFont_Size_Adjust},
-    {"font-stretch", CSSPropertyIdFont_Stretch},
     {"font-style", CSSPropertyIdFont_Style},
-    {"font-variant", CSSPropertyIdFont_Variant},
     {"font-weight", CSSPropertyIdFont_Weight},
     {"marker-end", CSSPropertyIdMarker_End},
     {"marker-mid", CSSPropertyIdMarker_Mid},

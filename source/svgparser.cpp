@@ -17,12 +17,12 @@
 
 namespace lunasvg {
 
-SVGParser::SVGParser(SVGDocument* document) :
-    m_document(document)
+SVGParser::SVGParser(SVGDocument* document)
+    : m_document(document)
 {
 }
 
-bool SVGParser::appendHead(ElementID elementId, const AttributeList& attributes)
+bool SVGParser::appendHead(DOMElementID elementId, const AttributeList& attributes)
 {
     SVGElementHead* parent;
     if(m_blocks.empty())
@@ -43,7 +43,7 @@ bool SVGParser::appendHead(ElementID elementId, const AttributeList& attributes)
     return true;
 }
 
-bool SVGParser::appendTail(ElementID elementId)
+bool SVGParser::appendTail(DOMElementID elementId)
 {
     if(m_blocks.empty() || elementId!=m_blocks.top()->elementId())
         return false;
@@ -85,12 +85,12 @@ SVGElementImpl* SVGParser::parse(const std::string& source, SVGElementHead* pare
     AttributeList attributes;
     while(enumTag(ptr, tagType, tagName, content, attributes))
     {
-        ElementID elementId = Utils::elementId(tagName);
+        DOMElementID elementId = Utils::domElementId(tagName);
         if(tagType==KTagOpen || tagType==KTagEmpty)
         {
             if(!parent && m_blocks.empty())
             {
-                if(elementId != ElementIdSvg)
+                if(elementId != DOMElementIdSvg)
                     break;
                 SVGElementHead* rootElement = to<SVGElementHead>(m_document->rootElement());
                 m_blocks.push(rootElement);
@@ -110,7 +110,7 @@ SVGElementImpl* SVGParser::parse(const std::string& source, SVGElementHead* pare
                     break;
                 if(!parent && m_blocks.top() == m_document->rootElement())
                 {
-                    if(elementId != ElementIdSvg)
+                    if(elementId != DOMElementIdSvg)
                         break;
                     m_blocks.pop();
                     break;
@@ -169,9 +169,9 @@ bool SVGParser::enumTag(const char*& ptr, int& tagType, std::string& tagName, st
         return true;
     }
 
-    if(!*ptr || *ptr!='<')
+    if(*ptr!='<')
         return false;
-     ++ptr;
+    ++ptr;
 
     if(*ptr=='/')
     {
@@ -198,7 +198,8 @@ bool SVGParser::enumTag(const char*& ptr, int& tagType, std::string& tagName, st
 
             return true;
         }
-        else if(Utils::skipDesc(ptr, "[CDATA[", 7))
+
+        if(Utils::skipDesc(ptr, "[CDATA[", 7))
         {
             const char* sub = strstr(ptr, "]]>");
             if(!sub)
@@ -210,7 +211,8 @@ bool SVGParser::enumTag(const char*& ptr, int& tagType, std::string& tagName, st
 
             return true;
         }
-        else if(Utils::skipDesc(ptr, "DOCTYPE", 7))
+
+        if(Utils::skipDesc(ptr, "DOCTYPE", 7))
         {
             start = ptr;
             while(*ptr && *ptr!='>')
@@ -232,7 +234,7 @@ bool SVGParser::enumTag(const char*& ptr, int& tagType, std::string& tagName, st
                 }
             }
 
-            if(!*ptr || *ptr!='>')
+            if(*ptr!='>')
                 return false;
 
             tagType = KTagDocType;
@@ -287,7 +289,7 @@ bool SVGParser::enumTag(const char*& ptr, int& tagType, std::string& tagName, st
         start = ptr;
         while(*ptr && *ptr!=quote)
             ++ptr;
-        if(!*ptr || *ptr!=quote)
+        if(*ptr!=quote)
             return false;
         attribute.second.assign(start, Utils::rtrim(start, ptr));
         attributes.push_back(attribute);
@@ -295,13 +297,11 @@ bool SVGParser::enumTag(const char*& ptr, int& tagType, std::string& tagName, st
         Utils::skipWs(ptr);
     }
 
-    if(*ptr=='?')
+    if(*ptr=='>')
     {
-        if(tagType!=KTagInstruction)
+        if(tagType!=KTagUnknown)
             return false;
-        ++ptr;
-        if(*ptr!='>')
-            return false;
+        tagType = KTagOpen;
         ++ptr;
         return true;
     }
@@ -318,11 +318,13 @@ bool SVGParser::enumTag(const char*& ptr, int& tagType, std::string& tagName, st
         return true;
     }
 
-    if(*ptr=='>')
+    if(*ptr=='?')
     {
-        if(tagType!=KTagUnknown)
+        if(tagType!=KTagInstruction)
             return false;
-        tagType = KTagOpen;
+        ++ptr;
+        if(*ptr!='>')
+            return false;
         ++ptr;
         return true;
     }

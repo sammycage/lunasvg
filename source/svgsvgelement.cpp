@@ -2,13 +2,13 @@
 
 namespace lunasvg {
 
-SVGSVGElement::SVGSVGElement(SVGDocument* document) :
-    SVGGraphicsElement(ElementIdSvg, document),
-    SVGFitToViewBox(this),
-    m_x(DOMPropertyIdX, LengthModeWidth, AllowNegativeLengths),
-    m_y(DOMPropertyIdY, LengthModeHeight, AllowNegativeLengths),
-    m_width(DOMPropertyIdWidth, LengthModeWidth, ForbidNegativeLengths),
-    m_height(DOMPropertyIdHeight, LengthModeHeight, ForbidNegativeLengths)
+SVGSVGElement::SVGSVGElement(SVGDocument* document)
+    : SVGGraphicsElement(DOMElementIdSvg, document),
+      SVGFitToViewBox(this),
+      m_x(DOMPropertyIdX, LengthModeWidth, AllowNegativeLengths),
+      m_y(DOMPropertyIdY, LengthModeHeight, AllowNegativeLengths),
+      m_width(DOMPropertyIdWidth, LengthModeWidth, ForbidNegativeLengths),
+      m_height(DOMPropertyIdHeight, LengthModeHeight, ForbidNegativeLengths)
 {
     m_height.setDefaultValue(hundredPercent());
     m_width.setDefaultValue(hundredPercent());
@@ -29,7 +29,7 @@ void SVGSVGElement::render(RenderContext& context) const
 
     const RenderState& state = context.state();
     Rect viewPort;
-    if(state.element->elementId() == ElementIdUse)
+    if(state.element->elementId() == DOMElementIdUse)
     {
         viewPort = state.viewPort;
     }

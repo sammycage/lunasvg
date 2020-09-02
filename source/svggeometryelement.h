@@ -9,7 +9,7 @@ namespace lunasvg {
 class SVGGeometryElement : public SVGGraphicsElement
 {
 public:
-    SVGGeometryElement(ElementID elementId, SVGDocument* document);
+    SVGGeometryElement(DOMElementID elementId, SVGDocument* document);
     bool isSVGGeometryElement() const { return true; }
     virtual Path makePath(const RenderState& state) const = 0;
     virtual Rect makeBoundingBox(const RenderState& state) const = 0;

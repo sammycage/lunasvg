@@ -3,12 +3,8 @@
 
 namespace lunasvg {
 
-StrokeData::StrokeData() :
-    m_width(1.0),
-    m_miterLimit(4.0),
-    m_cap(LineCapButt),
-    m_join(LineJoinMiter),
-    m_dashOffset(0.0)
+StrokeData::StrokeData()
+    : m_width(1.0), m_miterLimit(4.0), m_cap(LineCapButt), m_join(LineJoinMiter), m_dashOffset(0.0)
 {
 }
 

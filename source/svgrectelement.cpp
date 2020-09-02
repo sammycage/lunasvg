@@ -2,14 +2,14 @@
 
 namespace lunasvg {
 
-SVGRectElement::SVGRectElement(SVGDocument* document) :
-    SVGGeometryElement(ElementIdRect, document),
-    m_x(DOMPropertyIdX, LengthModeWidth, AllowNegativeLengths),
-    m_y(DOMPropertyIdY, LengthModeHeight, AllowNegativeLengths),
-    m_rx(DOMPropertyIdRx, LengthModeWidth, ForbidNegativeLengths),
-    m_ry(DOMPropertyIdRy, LengthModeHeight, ForbidNegativeLengths),
-    m_width(DOMPropertyIdWidth, LengthModeWidth, ForbidNegativeLengths),
-    m_heigth(DOMPropertyIdHeight, LengthModeHeight, ForbidNegativeLengths)
+SVGRectElement::SVGRectElement(SVGDocument* document)
+    : SVGGeometryElement(DOMElementIdRect, document),
+      m_x(DOMPropertyIdX, LengthModeWidth, AllowNegativeLengths),
+      m_y(DOMPropertyIdY, LengthModeHeight, AllowNegativeLengths),
+      m_rx(DOMPropertyIdRx, LengthModeWidth, ForbidNegativeLengths),
+      m_ry(DOMPropertyIdRy, LengthModeHeight, ForbidNegativeLengths),
+      m_width(DOMPropertyIdWidth, LengthModeWidth, ForbidNegativeLengths),
+      m_heigth(DOMPropertyIdHeight, LengthModeHeight, ForbidNegativeLengths)
 {
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);

@@ -25,18 +25,7 @@ public:
     std::uint32_t stride() const;
 
 private:
-    struct Impl
-    {
-        Impl(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride);
-        Impl(std::uint32_t width, std::uint32_t height);
-
-        std::unique_ptr<std::uint8_t[]> ownData;
-        std::uint8_t* data;
-        std::uint32_t width;
-        std::uint32_t height;
-        std::uint32_t stride;
-    };
-
+    struct Impl;
     std::shared_ptr<Impl> m_impl;
 };
 

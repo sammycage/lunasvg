@@ -2,12 +2,12 @@
 
 namespace lunasvg {
 
-SVGLineElement::SVGLineElement(SVGDocument* document) :
-    SVGGeometryElement(ElementIdLine, document),
-    m_x1(DOMPropertyIdX1, LengthModeWidth, AllowNegativeLengths),
-    m_y1(DOMPropertyIdY1, LengthModeHeight, AllowNegativeLengths),
-    m_x2(DOMPropertyIdX2, LengthModeWidth, AllowNegativeLengths),
-    m_y2(DOMPropertyIdY2, LengthModeHeight, AllowNegativeLengths)
+SVGLineElement::SVGLineElement(SVGDocument* document)
+    : SVGGeometryElement(DOMElementIdLine, document),
+      m_x1(DOMPropertyIdX1, LengthModeWidth, AllowNegativeLengths),
+      m_y1(DOMPropertyIdY1, LengthModeHeight, AllowNegativeLengths),
+      m_x2(DOMPropertyIdX2, LengthModeWidth, AllowNegativeLengths),
+      m_y2(DOMPropertyIdY2, LengthModeHeight, AllowNegativeLengths)
 {
     addToPropertyMap(m_x1);
     addToPropertyMap(m_y1);

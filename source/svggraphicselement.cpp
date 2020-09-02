@@ -2,9 +2,9 @@
 
 namespace lunasvg {
 
-SVGGraphicsElement::SVGGraphicsElement(ElementID elementId, SVGDocument* document) :
-    SVGStyledElement(elementId, document),
-    m_transform(DOMPropertyIdTransform)
+SVGGraphicsElement::SVGGraphicsElement(DOMElementID elementId, SVGDocument* document)
+    : SVGStyledElement(elementId, document),
+      m_transform(DOMPropertyIdTransform)
 {
     addToPropertyMap(m_transform);
 }

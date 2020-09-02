@@ -2,9 +2,9 @@
 
 namespace lunasvg {
 
-SVGPathElement::SVGPathElement(SVGDocument* document) :
-    SVGGeometryElement(ElementIdPath, document),
-    m_d(DOMPropertyIdD)
+SVGPathElement::SVGPathElement(SVGDocument* document)
+    : SVGGeometryElement(DOMElementIdPath, document),
+      m_d(DOMPropertyIdD)
 {
     addToPropertyMap(m_d);
 }

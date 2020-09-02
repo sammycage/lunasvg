@@ -1,19 +1,18 @@
 #include "svgpath.h"
 #include "pathiterator.h"
-#include "pathutils.h"
 
 namespace lunasvg {
 
-SVGPath::SVGPath() :
-    SVGProperty(PropertyTypePath)
+SVGPath::SVGPath()
+    : SVGProperty(PropertyTypePath)
 {
 }
 
 bool SVGPath::parseArcFlag(const char*& ptr, bool& flag)
 {
-    if(*ptr && *ptr=='0')
+    if(*ptr == '0')
         flag = false;
-    else if(*ptr && *ptr=='1')
+    else if(*ptr == '1')
         flag = true;
     else
         return false;
@@ -23,12 +22,15 @@ bool SVGPath::parseArcFlag(const char*& ptr, bool& flag)
     return true;
 }
 
-bool SVGPath::parseCoord(const char*& ptr, double& value)
+bool SVGPath::parseCoordinate(const char*& ptr, double* coords, int length)
 {
-    if(!Utils::parseNumber(ptr, value))
-        return false;
+    for(int i = 0;i < length;i++)
+    {
+        if(!Utils::parseNumber(ptr, coords[i]))
+            return false;
+        Utils::skipWsComma(ptr);
+    }
 
-    Utils::skipWsComma(ptr);
     return true;
 }
 
@@ -52,78 +54,61 @@ void SVGPath::setValueAsString(const std::string& value)
         {
         case 'M':
         case 'm':
-            if(!parseCoord(ptr, c[0])
-                    || !parseCoord(ptr, c[1]))
+            if(!parseCoordinate(ptr, c, 2))
                 return;
             m_value.moveTo(c[0], c[1], pathCommand == 'm');
             pathCommand = pathCommand == 'm' ? 'l' : 'L';
             break;
         case 'L':
         case 'l':
-            if(!parseCoord(ptr, c[0])
-                    || !parseCoord(ptr, c[1]))
+            if(!parseCoordinate(ptr, c, 2))
                 return;
             m_value.lineTo(c[0], c[1], pathCommand == 'l');
             break;
         case 'Q':
         case 'q':
-            if(!parseCoord(ptr, c[0])
-                    || !parseCoord(ptr, c[1])
-                    || !parseCoord(ptr, c[2])
-                    || !parseCoord(ptr, c[3]))
+            if(!parseCoordinate(ptr, c, 4))
                 return;
             m_value.quadTo(c[0], c[1], c[2], c[3], pathCommand == 'q');
             break;
         case 'C':
         case 'c':
-            if(!parseCoord(ptr, c[0])
-                    || !parseCoord(ptr, c[1])
-                    || !parseCoord(ptr, c[2])
-                    || !parseCoord(ptr, c[3])
-                    || !parseCoord(ptr, c[4])
-                    || !parseCoord(ptr, c[5]))
+            if(!parseCoordinate(ptr, c, 6))
                 return;
             m_value.cubicTo(c[0], c[1], c[2], c[3], c[4], c[5], pathCommand == 'c');
             break;
         case 'T':
         case 't':
-            if(!parseCoord(ptr, c[0])
-                    || !parseCoord(ptr, c[1]))
+            if(!parseCoordinate(ptr, c, 2))
                 return;
             m_value.smoothQuadTo(c[0], c[1], pathCommand == 't');
             break;
         case 'S':
         case 's':
-            if(!parseCoord(ptr, c[0])
-                    || !parseCoord(ptr, c[1])
-                    || !parseCoord(ptr, c[2])
-                    || !parseCoord(ptr, c[3]))
+            if(!parseCoordinate(ptr, c, 4))
                 return;
             m_value.smoothCubicTo(c[0], c[1], c[2], c[3], pathCommand == 's');
             break;
         case 'H':
         case 'h':
-            if(!parseCoord(ptr, c[0]))
+            if(!parseCoordinate(ptr, c, 1))
                 return;
             m_value.horizontalTo(c[0], pathCommand == 'h');
             break;
         case 'V':
         case 'v':
-            if(!parseCoord(ptr, c[0]))
+            if(!parseCoordinate(ptr, c, 1))
                 return;
             m_value.verticalTo(c[0], pathCommand == 'v');
             break;
         case 'A':
         case 'a':
-            if(!parseCoord(ptr, c[0])
-                    || !parseCoord(ptr, c[1])
-                    || !parseCoord(ptr, c[2])
+            if(!parseCoordinate(ptr, c, 3)
                     || !parseArcFlag(ptr, f[0])
                     || !parseArcFlag(ptr, f[1])
-                    || !parseCoord(ptr, c[3])
-                    || !parseCoord(ptr, c[4]))
+                    || !parseCoordinate(ptr, c + 3, 2))
                 return;
-            Utils::pathArcTo(m_value, c[0], c[1], c[2], f[0], f[1], c[3], c[4], pathCommand == 'a');
+            m_value.arcTo(c[0], c[1], c[2], f[0], f[1], c[3], c[4], pathCommand == 'a');
             break;
         case 'Z':
         case 'z':
@@ -153,7 +138,8 @@ std::string SVGPath::valueAsString() const
         SegType seg = it.currentSegment(c);
         if(seg!=lastSeg)
             out += ' ';
-        switch(seg) {
+        switch(seg)
+        {
         case SegTypeMoveTo:
             out += 'M';
             out += Utils::toString(c[0]);

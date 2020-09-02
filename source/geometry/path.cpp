@@ -4,10 +4,13 @@
 
 #include <limits>
 #include <algorithm>
+#include <cmath>
+#include <memory>
 
 namespace lunasvg {
 
 #define BEZIER_ARC_FACTOR 0.5522847498
+#define PI 3.14159265358979323846
 
 Path::Path()
 {
@@ -74,6 +77,121 @@ void Path::cubicTo(double x1, double y1, double x2, double y2, double x3, double
     m_coordinates.emplace_back(x1, y1);
     m_coordinates.emplace_back(x2, y2);
     m_coordinates.emplace_back(x3, y3);
+}
+
+void Path::arcTo(double rx, double ry, double xAxisRotation, bool largeArcFlag, bool sweepFlag, double x, double y, bool rel)
+{
+    Point cp = currentPoint();
+    if(rel)
+    {
+        x += cp.x;
+        y += cp.y;
+    }
+
+    if(x == cp.x && y == cp.y)
+        return;
+
+    if(rx == 0.0 || ry == 0.0)
+    {
+        lineTo(x, y);
+        return;
+    }
+
+    double sin_th = std::sin(xAxisRotation * PI / 180.0);
+    double cos_th = std::cos(xAxisRotation * PI / 180.0);
+
+    double dx2 = (cp.x - x) / 2.0;
+    double dy2 = (cp.y - y) / 2.0;
+
+    double x1 = (cos_th * dx2 + sin_th * dy2);
+    double y1 = (-sin_th * dx2 + cos_th * dy2);
+
+    double rx_sq = rx * rx;
+    double ry_sq = ry * ry;
+    double x1_sq = x1 * x1;
+    double y1_sq = y1 * y1;
+
+    double check = x1_sq / rx_sq + y1_sq / ry_sq;
+    if(check > 0.99999)
+    {
+        double scale = std::sqrt(check) * 1.00001;
+        rx = scale * rx;
+        ry = scale * ry;
+        rx_sq = rx * rx;
+        ry_sq = ry * ry;
+    }
+
+    double sign = (largeArcFlag == sweepFlag) ? -1 : 1;
+    double sq = ((rx_sq * ry_sq) - (rx_sq * y1_sq) - (ry_sq * x1_sq)) / ((rx_sq * y1_sq) + (ry_sq * x1_sq));
+    sq = (sq < 0) ? 0 : sq;
+    double coef = (sign * std::sqrt(sq));
+    double cx1 = coef * ((rx * y1) / ry);
+    double cy1 = coef * -((ry * x1) / rx);
+
+    double sx2 = (cp.x + x) / 2.0;
+    double sy2 = (cp.y + y) / 2.0;
+    double cx = sx2 + (cos_th * cx1 - sin_th * cy1);
+    double cy = sy2 + (sin_th * cx1 + cos_th * cy1);
+
+    double ux = (x1 - cx1) / rx;
+    double uy = (y1 - cy1) / ry;
+    double vx = (-x1 - cx1) / rx;
+    double vy = (-y1 - cy1) / ry;
+    double p, n;
+
+    n = std::sqrt((ux * ux) + (uy * uy));
+    p = ux;
+    sign = (uy < 0) ? -1.0 : 1.0;
+    double angleStart = sign * std::acos(p / n);
+
+    n = std::sqrt((ux * ux + uy * uy) * (vx * vx + vy * vy));
+    p = ux * vx + uy * vy;
+    sign = (ux * vy - uy * vx < 0) ? -1.0 : 1.0;
+    double angleExtent = sign * ((p / n < -1.0) ? PI : (p / n > 1.0) ? 0 : std::acos(p / n));
+    if(!sweepFlag && angleExtent > 0.0)
+    {
+       angleExtent -= PI * 2.0;
+    }
+    else if(sweepFlag && angleExtent < 0.0)
+    {
+       angleExtent += PI * 2.0;
+    }
+
+    int numSegments = int(std::ceil(std::abs(angleExtent) * 2.0 / PI));
+    double angleIncrement = angleExtent / numSegments;
+    double controlLength = 4.0 / 3.0 * std::sin(angleIncrement / 2.0) / (1.0 + std::cos(angleIncrement / 2.0));
+    std::unique_ptr<double[]> coords(new double[numSegments * 6]);
+    std::size_t pos = 0;
+    for(int i = 0;i < numSegments;i++)
+    {
+       double angle = angleStart + i * angleIncrement;
+       double dx = std::cos(angle);
+       double dy = std::sin(angle);
+
+       coords[pos++] = dx - controlLength * dy;
+       coords[pos++] = dy + controlLength * dx;
+
+       angle += angleIncrement;
+       dx = std::cos(angle);
+       dy = std::sin(angle);
+
+       coords[pos++] = dx + controlLength * dy;
+       coords[pos++] = dy - controlLength * dx;
+       coords[pos++] = dx;
+       coords[pos++] = dy;
+    }
+
+    AffineTransform m;
+    m *= AffineTransform::fromScale(rx, ry);
+    m *= AffineTransform::fromRotate(xAxisRotation * PI / 180.0);
+    m *= AffineTransform::fromTranslate(cx, cy);
+    m.map(coords.get(), coords.get(), int(pos));
+
+    coords[pos - 2] = x;
+    coords[pos - 1] = y;
+
+    for(std::size_t i = 0;i < pos;i+=6)
+        cubicTo(coords[i], coords[i+1], coords[i+2], coords[i+3], coords[i+4], coords[i+5]);
 }
 
 void Path::smoothQuadTo(double x2, double y2, bool rel)

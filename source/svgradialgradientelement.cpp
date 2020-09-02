@@ -3,13 +3,13 @@
 
 namespace lunasvg {
 
-SVGRadialGradientElement::SVGRadialGradientElement(SVGDocument* document) :
-    SVGGradientElement(ElementIdRadialGradient, document),
-    m_cx(DOMPropertyIdCx, LengthModeWidth, AllowNegativeLengths),
-    m_cy(DOMPropertyIdCy, LengthModeHeight, AllowNegativeLengths),
-    m_r(DOMPropertyIdR, LengthModeBoth, ForbidNegativeLengths),
-    m_fx(DOMPropertyIdFx, LengthModeWidth, AllowNegativeLengths),
-    m_fy(DOMPropertyIdFy, LengthModeHeight, AllowNegativeLengths)
+SVGRadialGradientElement::SVGRadialGradientElement(SVGDocument* document)
+    : SVGGradientElement(DOMElementIdRadialGradient, document),
+      m_cx(DOMPropertyIdCx, LengthModeWidth, AllowNegativeLengths),
+      m_cy(DOMPropertyIdCy, LengthModeHeight, AllowNegativeLengths),
+      m_r(DOMPropertyIdR, LengthModeBoth, ForbidNegativeLengths),
+      m_fx(DOMPropertyIdFx, LengthModeWidth, AllowNegativeLengths),
+      m_fy(DOMPropertyIdFy, LengthModeHeight, AllowNegativeLengths)
 {
     m_cx.setDefaultValue(fiftyPercent());
     m_cy.setDefaultValue(fiftyPercent());
@@ -30,7 +30,7 @@ void SVGRadialGradientElement::collectGradientAttributes(RadialGradientAttribute
     while(true)
     {
         current->setGradientAttributes(attributes);
-        if(current->elementId() == ElementIdRadialGradient)
+        if(current->elementId() == DOMElementIdRadialGradient)
         {
             const SVGRadialGradientElement* radial = to<SVGRadialGradientElement>(current);
             if(!attributes.cx && radial->m_cx.isSpecified())

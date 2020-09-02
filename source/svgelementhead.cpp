@@ -5,9 +5,9 @@
 
 namespace lunasvg {
 
-SVGElementHead::SVGElementHead(ElementID elementId, SVGDocument* document) :
-    SVGElementImpl(document),
-    m_elementId(elementId)
+SVGElementHead::SVGElementHead(DOMElementID elementId, SVGDocument* document)
+    : SVGElementImpl(document),
+      m_elementId(elementId)
 {
 }
 
@@ -18,7 +18,7 @@ SVGElementHead::~SVGElementHead()
 
 const std::string& SVGElementHead::tagName() const
 {
-    return Utils::elementName(m_elementId);
+    return Utils::domElementName(m_elementId);
 }
 
 void SVGElementHead::setAttribute(const std::string& name, const std::string& value)
@@ -57,7 +57,7 @@ void SVGElementHead::externalise(std::string& out, std::uint32_t& indent) const
 {
     out.append(indent, '\t');
     out += '<';
-    out += Utils::elementName(m_elementId);
+    out += Utils::domElementName(m_elementId);
     if(isSVGRootElement())
     {
         out += ' ';
@@ -126,7 +126,7 @@ void SVGElementHead::externaliseTail(std::string& out, std::uint32_t& indent) co
     out.append(indent, '\t');
     out += '<';
     out += '/';
-    out += Utils::elementName(m_elementId);
+    out += Utils::domElementName(m_elementId);
     out += '>';
     out += '\n';
 }

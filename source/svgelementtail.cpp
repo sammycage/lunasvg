@@ -3,8 +3,8 @@
 
 namespace lunasvg {
 
-SVGElementTail::SVGElementTail(SVGDocument* document) :
-    SVGElementImpl(document)
+SVGElementTail::SVGElementTail(SVGDocument* document)
+    : SVGElementImpl(document)
 {
 }
 

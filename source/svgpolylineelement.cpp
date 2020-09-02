@@ -2,8 +2,8 @@
 
 namespace lunasvg {
 
-SVGPolylineElement::SVGPolylineElement(SVGDocument* document) :
-    SVGPolyElement(ElementIdPolyline, document)
+SVGPolylineElement::SVGPolylineElement(SVGDocument* document)
+    : SVGPolyElement(DOMElementIdPolyline, document)
 {
 }
 

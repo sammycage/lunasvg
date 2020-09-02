@@ -25,8 +25,8 @@ private:
     typedef std::pair<std::string, std::string> Attribute;
     typedef std::vector<Attribute> AttributeList;
     bool enumTag(const char*& ptr, int& tagType, std::string& tagName, std::string& content, AttributeList& attributes);
-    bool appendHead(ElementID elementId, const AttributeList& attributes);
-    bool appendTail(ElementID elementId);
+    bool appendHead(DOMElementID elementId, const AttributeList& attributes);
+    bool appendTail(DOMElementID elementId);
     bool appendText(const std::string&);
     void appendElement(SVGElementImpl* newElement);
 

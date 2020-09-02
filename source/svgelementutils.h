@@ -5,48 +5,48 @@
 
 namespace lunasvg {
 
-enum ElementID
+enum DOMElementID
 {
-    ElementIdUnknown = 0,
-    ElementIdA,
-    ElementIdAnimate,
-    ElementIdAnimateColor,
-    ElementIdAnimateMotion,
-    ElementIdAnimateTransform,
-    ElementIdCircle,
-    ElementIdClipPath,
-    ElementIdDefs,
-    ElementIdDesc,
-    ElementIdEllipse,
-    ElementIdG,
-    ElementIdImage,
-    ElementIdLine,
-    ElementIdLinearGradient,
-    ElementIdMarker,
-    ElementIdMask,
-    ElementIdMetadata,
-    ElementIdMpath,
-    ElementIdPath,
-    ElementIdPattern,
-    ElementIdPolygon,
-    ElementIdPolyline,
-    ElementIdRadialGradient,
-    ElementIdRect,
-    ElementIdSet,
-    ElementIdSolidColor,
-    ElementIdStop,
-    ElementIdStyle,
-    ElementIdSvg,
-    ElementIdSwitch,
-    ElementIdSymbol,
-    ElementIdText,
-    ElementIdTextPath,
-    ElementIdTitle,
-    ElementIdTref,
-    ElementIdTspan,
-    ElementIdUse,
-    ElementIdView,
-    ElementLastId
+    DOMElementIdUnknown = 0,
+    DOMElementIdA,
+    DOMElementIdAnimate,
+    DOMElementIdAnimateColor,
+    DOMElementIdAnimateMotion,
+    DOMElementIdAnimateTransform,
+    DOMElementIdCircle,
+    DOMElementIdClipPath,
+    DOMElementIdDefs,
+    DOMElementIdDesc,
+    DOMElementIdEllipse,
+    DOMElementIdG,
+    DOMElementIdImage,
+    DOMElementIdLine,
+    DOMElementIdLinearGradient,
+    DOMElementIdMarker,
+    DOMElementIdMask,
+    DOMElementIdMetadata,
+    DOMElementIdMpath,
+    DOMElementIdPath,
+    DOMElementIdPattern,
+    DOMElementIdPolygon,
+    DOMElementIdPolyline,
+    DOMElementIdRadialGradient,
+    DOMElementIdRect,
+    DOMElementIdSet,
+    DOMElementIdSolidColor,
+    DOMElementIdStop,
+    DOMElementIdStyle,
+    DOMElementIdSvg,
+    DOMElementIdSwitch,
+    DOMElementIdSymbol,
+    DOMElementIdText,
+    DOMElementIdTextPath,
+    DOMElementIdTitle,
+    DOMElementIdTref,
+    DOMElementIdTspan,
+    DOMElementIdUse,
+    DOMElementIdView,
+    DOMElementLastId
 };
 
 class SVGElementHead;
@@ -54,10 +54,10 @@ class SVGDocument;
 
 namespace Utils {
 
-const std::string& elementName(ElementID nameId);
-ElementID elementId(const std::string& name);
-bool isElementPermitted(ElementID parentId, ElementID childId);
-SVGElementHead* createElement(ElementID elementId, SVGDocument* document);
+const std::string& domElementName(DOMElementID nameId);
+DOMElementID domElementId(const std::string& name);
+bool isElementPermitted(DOMElementID parentId, DOMElementID childId);
+SVGElementHead* createElement(DOMElementID elementId, SVGDocument* document);
 
 } // namespace Utils
 

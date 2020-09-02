@@ -4,9 +4,9 @@
 
 namespace lunasvg {
 
-SVGStopElement::SVGStopElement(SVGDocument* document) :
-    SVGStyledElement(ElementIdStop, document),
-    m_offset(DOMPropertyIdOffset)
+SVGStopElement::SVGStopElement(SVGDocument* document)
+    : SVGStyledElement(DOMElementIdStop, document),
+      m_offset(DOMPropertyIdOffset)
 {
     addToPropertyMap(m_offset);
 }

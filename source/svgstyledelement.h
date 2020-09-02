@@ -11,7 +11,7 @@ class Rgb;
 class SVGStyledElement : public SVGElementHead
 {
 public:
-    SVGStyledElement(ElementID elementId, SVGDocument* document);
+    SVGStyledElement(DOMElementID elementId, SVGDocument* document);
     virtual void setAttribute(const std::string& name, const std::string& value);
     virtual std::string getAttribute(const std::string& name) const;
     virtual bool hasAttribute(const std::string& name) const;

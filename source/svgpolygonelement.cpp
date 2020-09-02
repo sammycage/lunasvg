@@ -2,8 +2,8 @@
 
 namespace lunasvg {
 
-SVGPolygonElement::SVGPolygonElement(SVGDocument* document) :
-    SVGPolyElement(ElementIdPolygon, document)
+SVGPolygonElement::SVGPolygonElement(SVGDocument* document)
+    : SVGPolyElement(DOMElementIdPolygon, document)
 {
 }
 

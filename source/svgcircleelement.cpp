@@ -2,11 +2,11 @@
 
 namespace lunasvg {
 
-SVGCircleElement::SVGCircleElement(SVGDocument* document) :
-    SVGGeometryElement(ElementIdCircle, document),
-    m_cx(DOMPropertyIdCx, LengthModeWidth, AllowNegativeLengths),
-    m_cy(DOMPropertyIdCy, LengthModeHeight, AllowNegativeLengths),
-    m_r(DOMPropertyIdR, LengthModeBoth, ForbidNegativeLengths)
+SVGCircleElement::SVGCircleElement(SVGDocument* document)
+    : SVGGeometryElement(DOMElementIdCircle, document),
+      m_cx(DOMPropertyIdCx, LengthModeWidth, AllowNegativeLengths),
+      m_cy(DOMPropertyIdCy, LengthModeHeight, AllowNegativeLengths),
+      m_r(DOMPropertyIdR, LengthModeBoth, ForbidNegativeLengths)
 {
     addToPropertyMap(m_cx);
     addToPropertyMap(m_cy);

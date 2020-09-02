@@ -2,10 +2,10 @@
 
 namespace lunasvg {
 
-#define K_PI 3.14159265358979323846
+#define PI 3.14159265358979323846
 
-SVGTransform::SVGTransform() :
-    SVGProperty(PropertyTypeTransform)
+SVGTransform::SVGTransform()
+    : SVGProperty(PropertyTypeTransform)
 {
 }
 
@@ -54,7 +54,8 @@ bool SVGTransform::parseTransform(const char*& ptr, TransformType& type, double*
         return false;
     }
 
-    if(!Utils::skipWs(ptr) || *ptr!='(')
+    Utils::skipWs(ptr);
+    if(*ptr!='(')
         return false;
     ++ptr;
 
@@ -69,7 +70,7 @@ bool SVGTransform::parseTransform(const char*& ptr, TransformType& type, double*
         Utils::skipWsComma(ptr);
     }
 
-    if(!*ptr || *ptr!=')' || !(count==required || count==maxCount))
+    if(*ptr!=')' || !(count==required || count==maxCount))
         return false;
     ++ptr;
 
@@ -99,9 +100,9 @@ void SVGTransform::setValueAsString(const std::string& value)
             break;
         case TransformTypeRotate:
             if(count == 1)
-                m_value.rotate(values[0]*K_PI/180.0, 0, 0);
+                m_value.rotate(values[0]*PI/180.0, 0, 0);
             else
-                m_value.rotate(values[0]*K_PI/180.0, values[1], values[2]);
+                m_value.rotate(values[0]*PI/180.0, values[1], values[2]);
             break;
         case TransformTypeScale:
             if(count == 1)
@@ -110,10 +111,10 @@ void SVGTransform::setValueAsString(const std::string& value)
                 m_value.scale(values[0], values[1]);
             break;
         case TransformTypeSkewX:
-            m_value.shear(values[0]*K_PI/180.0, 0);
+            m_value.shear(values[0]*PI/180.0, 0);
             break;
         case TransformTypeSkewY:
-            m_value.shear(0, values[0]*K_PI/180.0);
+            m_value.shear(0, values[0]*PI/180.0);
             break;
         case TransformTypeTranslate:
             if(count == 1)
@@ -146,7 +147,7 @@ std::string SVGTransform::valueAsString() const
     out += Utils::toString(m[5]);
     out += ')';
 
-    return  out;
+    return out;
 }
 
 SVGProperty* SVGTransform::clone() const

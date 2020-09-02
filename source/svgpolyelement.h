@@ -9,7 +9,7 @@ namespace lunasvg {
 class SVGPolyElement : public SVGGeometryElement
 {
 public:
-    SVGPolyElement(ElementID elementId, SVGDocument* document);
+    SVGPolyElement(DOMElementID elementId, SVGDocument* document);
     bool isSVGPolyElement() const { return true; }
     const DOMSVGPointList& points() const { return m_points; }
     virtual Rect makeBoundingBox(const RenderState&) const;

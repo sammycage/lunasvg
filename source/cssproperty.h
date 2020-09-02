@@ -36,9 +36,9 @@ template<typename T>
 class CSSProperty : public CSSPropertyBase
 {
 public:
-    CSSProperty(CSSPropertyID propertyId) :
-        CSSPropertyBase(propertyId, T::classType()),
-        m_property(nullptr)
+    CSSProperty(CSSPropertyID propertyId)
+        : CSSPropertyBase(propertyId, T::classType()),
+          m_property(nullptr)
     {}
 
     SVGProperty* ensureProperty();
