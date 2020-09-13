@@ -62,6 +62,12 @@ enum SpreadMethod
     SpreadMethodRepeat
 };
 
+enum MarkerUnitType
+{
+    MarkerUnitTypeStrokeWidth,
+    MarkerUnitTypeUserSpaceOnUse
+};
+
 typedef std::pair<unsigned short, std::string> EnumEntry;
 typedef std::vector<EnumEntry> EnumEntryList;
 
@@ -74,6 +80,7 @@ template<> const EnumEntryList& getEnumEntryList<LineJoin>();
 template<> const EnumEntryList& getEnumEntryList<WindRule>();
 template<> const EnumEntryList& getEnumEntryList<SpreadMethod>();
 template<> const EnumEntryList& getEnumEntryList<UnitType>();
+template<> const EnumEntryList& getEnumEntryList<MarkerUnitType>();
 
 class SVGEnumerationBase : public SVGProperty
 {

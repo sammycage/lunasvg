@@ -29,6 +29,12 @@ const SVGLength* oneTwentyPercent()
     return &value;
 }
 
+const SVGLength* threePixels()
+{
+    static SVGLength value(3.0, LengthUnitPx);
+    return &value;
+}
+
 SVGLength::SVGLength()
     : SVGProperty(PropertyTypeLength),
       m_value(0),

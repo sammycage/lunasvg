@@ -1,6 +1,8 @@
 #include "rendercontext.h"
+#include "svgdocumentimpl.h"
 #include "svgelementhead.h"
 #include "svgelementtail.h"
+#include "svgmarkerelement.h"
 #include "svgcolor.h"
 #include "svglength.h"
 #include "svglengthlist.h"
@@ -202,30 +204,6 @@ const std::string& RenderStyle::clipPath() const
     return KEmptyString;
 }
 
-const std::string& RenderStyle::markerStart() const
-{
-    if(const SVGProperty* property = get(CSSPropertyIdMarker_Start))
-        return to<SVGString>(property)->value();
-
-    return KEmptyString;
-}
-
-const std::string& RenderStyle::markerMid() const
-{
-    if(const SVGProperty* property = get(CSSPropertyIdMarker_Mid))
-        return to<SVGString>(property)->value();
-
-    return KEmptyString;
-}
-
-const std::string& RenderStyle::markerEnd() const
-{
-    if(const SVGProperty* property = get(CSSPropertyIdMarker_End))
-        return to<SVGString>(property)->value();
-
-    return KEmptyString;
-}
-
 WindRule RenderStyle::fillRule() const
 {
     if(const SVGProperty* property = get(CSSPropertyIdFill_Rule))
@@ -240,6 +218,45 @@ WindRule RenderStyle::clipRule() const
         return to<SVGEnumeration<WindRule>>(property)->enumValue();
 
     return WindRuleNonZero;
+}
+
+const SVGMarkerElement* RenderStyle::markerStart(const SVGDocument* document) const
+{
+    if(const SVGProperty* property = get(CSSPropertyIdMarker_Start))
+    {
+        const std::string& value = to<SVGString>(property)->value();
+        SVGElementImpl* ref = document->impl()->resolveIRI(value);
+        if(ref && ref->elementId() == DOMElementIdMarker)
+            return to<SVGMarkerElement>(ref);
+    }
+
+    return nullptr;
+}
+
+const SVGMarkerElement* RenderStyle::markerMid(const SVGDocument* document) const
+{
+    if(const SVGProperty* property = get(CSSPropertyIdMarker_Mid))
+    {
+        const std::string& value = to<SVGString>(property)->value();
+        SVGElementImpl* ref = document->impl()->resolveIRI(value);
+        if(ref && ref->elementId() == DOMElementIdMarker)
+            return to<SVGMarkerElement>(ref);
+    }
+
+    return nullptr;
+}
+
+const SVGMarkerElement* RenderStyle::markerEnd(const SVGDocument* document) const
+{
+    if(const SVGProperty* property = get(CSSPropertyIdMarker_End))
+    {
+        const std::string& value = to<SVGString>(property)->value();
+        SVGElementImpl* ref = document->impl()->resolveIRI(value);
+        if(ref && ref->elementId() == DOMElementIdMarker)
+            return to<SVGMarkerElement>(ref);
+    }
+
+    return nullptr;
 }
 
 std::set<const SVGElementImpl*> RenderBreaker::renderBreaker;

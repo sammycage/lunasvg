@@ -18,6 +18,7 @@
 #include "svgmaskelement.h"
 #include "svgclippathelement.h"
 #include "svgsolidcolorelement.h"
+#include "svgmarkerelement.h"
 
 #include <map>
 
@@ -321,6 +322,8 @@ SVGElementHead* createElement(DOMElementID elementId, SVGDocument* document)
         return new SVGClipPathElement(document);
     case DOMElementIdSolidColor:
         return new SVGSolidColorElement(document);
+    case DOMElementIdMarker:
+        return new SVGMarkerElement(document);
     default:
         break;
     }

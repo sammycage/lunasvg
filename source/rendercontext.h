@@ -15,7 +15,9 @@ namespace lunasvg {
 class RenderState;
 class Paint;
 class StrokeData;
+class SVGDocument;
 class SVGElementImpl;
+class SVGMarkerElement;
 
 class RenderStyle
 {
@@ -48,11 +50,11 @@ public:
     double opacity() const;
     const std::string& mask() const;
     const std::string& clipPath() const;
-    const std::string& markerStart() const;
-    const std::string& markerMid() const;
-    const std::string& markerEnd() const;
     WindRule fillRule() const;
     WindRule clipRule() const;
+    const SVGMarkerElement* markerStart(const SVGDocument* document) const;
+    const SVGMarkerElement* markerMid(const SVGDocument* document) const;
+    const SVGMarkerElement* markerEnd(const SVGDocument* document) const;
 
 private:
     std::array<const SVGProperty*, MAX_STYLE> m_properties;

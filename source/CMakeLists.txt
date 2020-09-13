@@ -20,6 +20,7 @@ PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/svgstring.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/svgstringlist.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/svgtransform.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/svgangle.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/rendercontext.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/svgdefselement.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/svgdocument.cpp"
@@ -59,6 +60,7 @@ PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/svgmaskelement.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/svgclippathelement.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/svgsolidcolorelement.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/svgmarkerelement.cpp"
 )
 
 target_include_directories(lunasvg

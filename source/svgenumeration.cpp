@@ -105,6 +105,18 @@ template<> const EnumEntryList& getEnumEntryList<UnitType>()
     return entries;
 }
 
+template<> const EnumEntryList& getEnumEntryList<MarkerUnitType>()
+{
+    static EnumEntryList entries;
+    if(entries.empty())
+    {
+        entries.emplace_back(MarkerUnitTypeStrokeWidth, "strokeWidth");
+        entries.emplace_back(MarkerUnitTypeUserSpaceOnUse, "userSpaceOnUse");
+    }
+
+    return entries;
+}
+
 void SVGEnumerationBase::setValueAsString(const std::string& value)
 {
     m_value = 0;

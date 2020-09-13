@@ -40,6 +40,7 @@ const SVGLength* hundredPercent();
 const SVGLength* fiftyPercent();
 const SVGLength* minusTenPercent();
 const SVGLength* oneTwentyPercent();
+const SVGLength* threePixels();
 
 class SVGLength : public SVGProperty
 {
