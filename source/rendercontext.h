@@ -34,7 +34,7 @@ public:
     bool isDisplayNone() const;
     bool isHidden() const;
 
-    const SVGProperty* get(CSSPropertyID nameId) const { return m_properties[nameId]; }
+    const SVGPropertyBase* get(CSSPropertyID nameId) const { return m_properties[nameId]; }
     bool isSet(CSSPropertyID nameId) const { return m_properties[nameId]; }
     bool isEmpty() const { return m_properties.empty(); }
 
@@ -57,7 +57,7 @@ public:
     const SVGMarkerElement* markerEnd(const SVGDocument* document) const;
 
 private:
-    std::array<const SVGProperty*, MAX_STYLE> m_properties;
+    std::array<const SVGPropertyBase*, MAX_STYLE> m_properties;
 };
 
 class RenderState

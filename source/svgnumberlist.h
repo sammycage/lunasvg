@@ -13,8 +13,7 @@ public:
 
     std::vector<double> values() const;
     void setValueAsString(const std::string& value);
-    SVGProperty* clone() const;
-    static PropertyType classType() { return PropertyTypeNumberList; }
+    SVGPropertyBase* clone() const;
 };
 
 typedef DOMSVGProperty<SVGNumberList> DOMSVGNumberList;

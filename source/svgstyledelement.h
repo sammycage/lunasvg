@@ -19,13 +19,11 @@ public:
     virtual void render(RenderContext& context) const;
     virtual void renderTail(RenderContext& context) const;
     bool isSVGStyledElement() const { return true; }
-    const DOMSVGString& className() const { return m_className; }
     const DOMSVGStyle& style() const { return m_style; }
     Rgb currentColor() const;
-    SVGProperty* findInheritedProperty(CSSPropertyID nameId) const;
+    SVGPropertyBase* findInheritedProperty(CSSPropertyID nameId) const;
 
 private:
-    DOMSVGString m_className;
     DOMSVGStyle m_style;
 };
 

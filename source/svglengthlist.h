@@ -13,8 +13,7 @@ public:
 
     std::vector<double> values(const RenderState& state, LengthMode mode = LengthModeBoth) const;
     void setValueAsString(const std::string& value);
-    SVGProperty* clone() const;
-    static PropertyType classType() { return PropertyTypeLengthList; }
+    SVGPropertyBase* clone() const;
 };
 
 typedef DOMSVGProperty<SVGLengthList> DOMSVGLengthList;

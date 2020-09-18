@@ -5,8 +5,7 @@
 namespace lunasvg {
 
 SVGPreserveAspectRatio::SVGPreserveAspectRatio()
-    : SVGProperty(PropertyTypePreserveAspectRatio),
-      m_align(xMidYMid),
+    : m_align(xMidYMid),
       m_scale(Meet)
 {
 }
@@ -176,7 +175,7 @@ std::string SVGPreserveAspectRatio::valueAsString() const
     return out;
 }
 
-SVGProperty* SVGPreserveAspectRatio::clone() const
+SVGPropertyBase* SVGPreserveAspectRatio::clone() const
 {
     SVGPreserveAspectRatio* property = new SVGPreserveAspectRatio();
     property->m_align = m_align;

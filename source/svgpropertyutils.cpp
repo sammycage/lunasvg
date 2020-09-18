@@ -1,23 +1,19 @@
 #include "svgpropertyutils.h"
 #include "svgstring.h"
 
-#include <unordered_map>
+#include <map>
 
 namespace lunasvg {
 
 namespace Utils {
 
-static const std::unordered_map<std::string, DOMPropertyID> dompropertymap = {
-    {"class", DOMPropertyIdClass},
+static const std::map<std::string, DOMPropertyID> dompropertymap = {
     {"clipPathUnits", DOMPropertyIdClipPathUnits},
     {"cx", DOMPropertyIdCx},
     {"cy", DOMPropertyIdCy},
     {"d", DOMPropertyIdD},
-    {"dx", DOMPropertyIdDx},
-    {"dy", DOMPropertyIdDy},
     {"fx", DOMPropertyIdFx},
     {"fy", DOMPropertyIdFy},
-    {"fr", DOMPropertyIdFr},
     {"gradientTransform", DOMPropertyIdGradientTransform},
     {"gradientUnits", DOMPropertyIdGradientUnits},
     {"height", DOMPropertyIdHeight},
@@ -42,10 +38,8 @@ static const std::unordered_map<std::string, DOMPropertyID> dompropertymap = {
     {"rx", DOMPropertyIdRx},
     {"ry", DOMPropertyIdRy},
     {"spreadMethod", DOMPropertyIdSpreadMethod},
-    {"startOffset", DOMPropertyIdStartOffset},
     {"style", DOMPropertyIdStyle},
     {"transform", DOMPropertyIdTransform},
-    {"type", DOMPropertyIdType},
     {"viewBox", DOMPropertyIdViewBox},
     {"width", DOMPropertyIdWidth},
     {"x", DOMPropertyIdX},
@@ -57,35 +51,7 @@ static const std::unordered_map<std::string, DOMPropertyID> dompropertymap = {
     {"y2", DOMPropertyIdY2},
 };
 
-static const std::unordered_map<std::string, SMILPropertyID> smilpropertymap = {
-    {"accumulate", SMILPropertyIdAccumulate},
-    {"additive", SMILPropertyIdAdditive},
-    {"attributeName", SMILPropertyIdAttributeName},
-    {"attributeType", SMILPropertyIdAttributeType},
-    {"begin", SMILPropertyIdBegin},
-    {"by", SMILPropertyIdBy},
-    {"calcMode", SMILPropertyIdCalcMode},
-    {"dur", SMILPropertyIdDur},
-    {"end", SMILPropertyIdEnd},
-    {"fill", SMILPropertyIdFill},
-    {"from", SMILPropertyIdFrom},
-    {"keyPoints", SMILPropertyIdKeyPoints},
-    {"keySplines", SMILPropertyIdKeySplines},
-    {"keyTimes", SMILPropertyIdKeyTimes},
-    {"max", SMILPropertyIdMax},
-    {"min", SMILPropertyIdMin},
-    {"origin", SMILPropertyIdOrigin},
-    {"path", SMILPropertyIdPath},
-    {"repeatCount", SMILPropertyIdRepeatCount},
-    {"repeatDur", SMILPropertyIdRepeatDur},
-    {"restart", SMILPropertyIdRestart},
-    {"rotate", SMILPropertyIdRotate},
-    {"to", SMILPropertyIdTo},
-    {"type", SMILPropertyIdType},
-    {"values", SMILPropertyIdValues},
-};
-
-static const std::unordered_map<std::string, CSSPropertyID> csspropertymap = {
+static const std::map<std::string, CSSPropertyID> csspropertymap = {
     {"clip-path", CSSPropertyIdClip_Path},
     {"clip-rule", CSSPropertyIdClip_Rule},
     {"color", CSSPropertyIdColor},
@@ -93,16 +59,11 @@ static const std::unordered_map<std::string, CSSPropertyID> csspropertymap = {
     {"fill", CSSPropertyIdFill},
     {"fill-opacity", CSSPropertyIdFill_Opacity},
     {"fill-rule", CSSPropertyIdFill_Rule},
-    {"font-family", CSSPropertyIdFont_Family},
-    {"font-size", CSSPropertyIdFont_Size},
-    {"font-style", CSSPropertyIdFont_Style},
-    {"font-weight", CSSPropertyIdFont_Weight},
     {"marker-end", CSSPropertyIdMarker_End},
     {"marker-mid", CSSPropertyIdMarker_Mid},
     {"marker-start", CSSPropertyIdMarker_Start},
     {"mask", CSSPropertyIdMask},
     {"opacity", CSSPropertyIdOpacity},
-    {"overflow", CSSPropertyIdOverflow},
     {"solid-color", CSSPropertyIdSolid_Color},
     {"solid-opacity", CSSPropertyIdSolid_Opacity},
     {"stop-color", CSSPropertyIdStop_Color},
@@ -115,15 +76,13 @@ static const std::unordered_map<std::string, CSSPropertyID> csspropertymap = {
     {"stroke-miterlimit", CSSPropertyIdStroke_Miterlimit},
     {"stroke-opacity", CSSPropertyIdStroke_Opacity},
     {"stroke-width", CSSPropertyIdStroke_Width},
-    {"text-anchor", CSSPropertyIdText_Anchor},
-    {"text-decoration", CSSPropertyIdText_Decoration},
     {"visibility", CSSPropertyIdVisibility},
 };
 
 const std::string& domPropertyName(DOMPropertyID nameId)
 {
-    std::unordered_map<std::string, DOMPropertyID>::const_iterator it = dompropertymap.begin();
-    std::unordered_map<std::string, DOMPropertyID>::const_iterator end = dompropertymap.end();
+    std::map<std::string, DOMPropertyID>::const_iterator it = dompropertymap.begin();
+    std::map<std::string, DOMPropertyID>::const_iterator end = dompropertymap.end();
 
     for(;it != end;++it)
         if(it->second == nameId)
@@ -134,32 +93,14 @@ const std::string& domPropertyName(DOMPropertyID nameId)
 
 DOMPropertyID domPropertyId(const std::string& name)
 {
-    std::unordered_map<std::string, DOMPropertyID>::const_iterator it = dompropertymap.find(name);
+    std::map<std::string, DOMPropertyID>::const_iterator it = dompropertymap.find(name);
     return it != dompropertymap.end() ? it->second : DOMPropertyIdUnknown;
-}
-
-const std::string& smilPropertyName(SMILPropertyID nameId)
-{
-    std::unordered_map<std::string, SMILPropertyID>::const_iterator it = smilpropertymap.begin();
-    std::unordered_map<std::string, SMILPropertyID>::const_iterator end = smilpropertymap.end();
-
-    for(;it != end;++it)
-        if(it->second == nameId)
-            return it->first;
-
-    return KEmptyString;
-}
-
-SMILPropertyID smilPropertyId(const std::string& name)
-{
-    std::unordered_map<std::string, SMILPropertyID>::const_iterator it = smilpropertymap.find(name);
-    return it != smilpropertymap.end() ? it->second : SMILPropertyIdUnknown;
 }
 
 const std::string& cssPropertyName(CSSPropertyID nameId)
 {
-    std::unordered_map<std::string, CSSPropertyID>::const_iterator it = csspropertymap.begin();
-    std::unordered_map<std::string, CSSPropertyID>::const_iterator end = csspropertymap.end();
+    std::map<std::string, CSSPropertyID>::const_iterator it = csspropertymap.begin();
+    std::map<std::string, CSSPropertyID>::const_iterator end = csspropertymap.end();
 
     for(;it != end;++it)
         if(it->second == nameId)
@@ -170,7 +111,7 @@ const std::string& cssPropertyName(CSSPropertyID nameId)
 
 CSSPropertyID cssPropertyId(const std::string& name)
 {
-    std::unordered_map<std::string, CSSPropertyID>::const_iterator it = csspropertymap.find(name);
+    std::map<std::string, CSSPropertyID>::const_iterator it = csspropertymap.find(name);
     return it != csspropertymap.end() ? it->second : CSSPropertyIdUnknown;
 }
 

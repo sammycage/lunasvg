@@ -17,7 +17,7 @@ Paint SVGSolidColorElement::getPaint(const RenderState&) const
     Rgb color;
     if(const CSSPropertyBase* item = style().property()->getItem(CSSPropertyIdSolid_Color))
     {
-        const SVGProperty* property = !item->isInherited() ? item->property() : findInheritedProperty(CSSPropertyIdSolid_Color);
+        const SVGPropertyBase* property = !item->isInherited() ? item->property() : findInheritedProperty(CSSPropertyIdSolid_Color);
         if(property)
         {
             const SVGColor* solidColor = to<SVGColor>(property);
@@ -27,7 +27,7 @@ Paint SVGSolidColorElement::getPaint(const RenderState&) const
 
     if(const CSSPropertyBase* item = style().property()->getItem(CSSPropertyIdSolid_Opacity))
     {
-        const SVGProperty* property = !item->isInherited() ? item->property() : findInheritedProperty(CSSPropertyIdSolid_Opacity);
+        const SVGPropertyBase* property = !item->isInherited() ? item->property() : findInheritedProperty(CSSPropertyIdSolid_Opacity);
         if(property)
         {
             const SVGNumber* solidOpacity = to<SVGNumber>(property);

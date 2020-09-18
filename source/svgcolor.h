@@ -17,7 +17,7 @@ enum ColorType
 class RenderState;
 class Paint;
 
-class SVGColor : public SVGProperty
+class SVGColor : public SVGPropertyBase
 {
 public:
     SVGColor();
@@ -31,8 +31,7 @@ public:
     virtual Paint getPaint(const RenderState& state) const;
     virtual void setValueAsString(const std::string& value);
     virtual std::string valueAsString() const;
-    virtual SVGProperty* clone() const;
-    static PropertyType classType() { return PropertyTypeColor; }
+    virtual SVGPropertyBase* clone() const;
 
 protected:
     ColorType m_colorType;
@@ -50,7 +49,7 @@ public:
     Paint getPaint(const RenderState& state) const;
     void setValueAsString(const std::string& value);
     std::string valueAsString() const;
-    SVGProperty* clone() const;
+    SVGPropertyBase* clone() const;
 
 private:
     std::string m_url;

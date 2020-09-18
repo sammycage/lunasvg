@@ -5,8 +5,7 @@ namespace lunasvg {
 #define PI 3.14159265358979323846
 
 SVGAngle::SVGAngle()
-    : SVGProperty(PropertyTypeAngle),
-      m_value(0),
+    : m_value(0),
       m_orientType(MarkerOrientTypeAngle)
 {
 }
@@ -30,8 +29,8 @@ void SVGAngle::setValueAsString(const std::string& value)
         return;
 
     if(Utils::skipDesc(ptr, "rad", 3))
-        m_value *= 180 * PI;
-    else if(Utils::skipDesc(ptr, "grad", 4))
+        m_value *= 180.0 / PI;
+    else if(Utils::skipDesc(ptr, "grad", 3))
         m_value *= 360.0 / 400.0;
 }
 
@@ -40,7 +39,7 @@ std::string SVGAngle::valueAsString() const
     return m_orientType == MarkerOrientTypeAuto ? std::string("auto") : Utils::toString(m_value);
 }
 
-SVGProperty* SVGAngle::clone() const
+SVGPropertyBase* SVGAngle::clone() const
 {
     SVGAngle* property = new SVGAngle();
     property->m_value = m_value;

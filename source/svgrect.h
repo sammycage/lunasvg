@@ -6,7 +6,7 @@
 
 namespace lunasvg {
 
-class SVGRect : public SVGProperty
+class SVGRect : public SVGPropertyBase
 {
 public:
     SVGRect();
@@ -28,8 +28,7 @@ public:
 
     void setValueAsString(const std::string&);
     std::string valueAsString() const;
-    SVGProperty* clone() const;
-    static PropertyType classType() { return PropertyTypeRect; }
+    SVGPropertyBase* clone() const;
 
 private:
     Rect m_value;

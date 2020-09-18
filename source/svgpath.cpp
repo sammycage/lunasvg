@@ -4,7 +4,6 @@
 namespace lunasvg {
 
 SVGPath::SVGPath()
-    : SVGProperty(PropertyTypePath)
 {
 }
 
@@ -187,7 +186,7 @@ std::string SVGPath::valueAsString() const
     return out;
 }
 
-SVGProperty* SVGPath::clone() const
+SVGPropertyBase* SVGPath::clone() const
 {
     SVGPath* property = new SVGPath();
     property->m_value = m_value;

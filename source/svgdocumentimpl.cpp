@@ -8,7 +8,6 @@
 namespace lunasvg {
 
 SVGDocumentImpl::SVGDocumentImpl(SVGDocument* document)
-    : m_svgParser(new SVGParser(document))
 {
     m_rootElement = new SVGRootElement(document);
     m_rootElement->tail = new SVGElementTail(document);
@@ -23,7 +22,6 @@ SVGDocumentImpl::SVGDocumentImpl(SVGDocument* document)
 SVGDocumentImpl::~SVGDocumentImpl()
 {
     m_idCache.clear();
-    delete m_svgParser;
     freeElement(m_rootElement, m_rootElement->tail);
 }
 
@@ -44,7 +42,7 @@ bool SVGDocumentImpl::loadFromFile(const std::string& filename)
 bool SVGDocumentImpl::loadFromData(const std::string& content)
 {
     m_rootElement->clearContent();
-    SVGElementImpl* head = m_svgParser->parse(content, nullptr);
+    SVGElementImpl* head = SVGParser::parse(content, m_rootElement->document(), nullptr);
     if(!head)
         return false;
 
@@ -125,9 +123,7 @@ Bitmap SVGDocumentImpl::renderToBitmap(std::uint32_t width, std::uint32_t height
     Bitmap bitmap(width, height);
     Rect viewBox(0, 0, documentWidth, documentHeight);
     if(m_rootElement->viewBox().isSpecified() && m_rootElement->viewBox().property()->isValid())
-    {
         viewBox = m_rootElement->viewBox().property()->value();
-    }
 
     m_rootElement->renderToBitmap(bitmap, viewBox, dpi, bgColor);
     return bitmap;
@@ -185,7 +181,7 @@ SVGElementImpl* SVGDocumentImpl::insertContent(const std::string& content, SVGEl
     else
         parent = target->parent;
 
-    SVGElementImpl* head = m_svgParser->parse(content, parent);
+    SVGElementImpl* head = SVGParser::parse(content, target->document(), parent);
     if(!head)
         return nullptr;
 

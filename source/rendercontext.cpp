@@ -52,7 +52,6 @@ void RenderStyle::inheritFrom(const RenderStyle& style)
         {
         case CSSPropertyIdDisplay:
         case CSSPropertyIdClip_Path:
-        case CSSPropertyIdOverflow:
         case CSSPropertyIdStop_Color:
         case CSSPropertyIdStop_Opacity:
         case CSSPropertyIdSolid_Color:
@@ -85,7 +84,7 @@ void RenderStyle::clearAll()
 
 bool RenderStyle::isDisplayNone() const
 {
-    if(const SVGProperty* property = get(CSSPropertyIdDisplay))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdDisplay))
     {
         const SVGEnumeration<Display>* display = to<SVGEnumeration<Display>>(property);
         return display->enumValue() == DisplayNone;
@@ -96,7 +95,7 @@ bool RenderStyle::isDisplayNone() const
 
 bool RenderStyle::isHidden() const
 {
-    if(const SVGProperty* property = get(CSSPropertyIdVisibility))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdVisibility))
     {
         const SVGEnumeration<Visibility>* visibility = to<SVGEnumeration<Visibility>>(property);
         return visibility->enumValue() == VisibilityHidden;
@@ -107,7 +106,7 @@ bool RenderStyle::isHidden() const
 
 bool RenderStyle::hasStroke() const
 {
-    if(const SVGProperty* property = get(CSSPropertyIdStroke))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdStroke))
         return to<SVGPaint>(property)->colorType() != ColorTypeNone;
 
     return false;
@@ -115,7 +114,7 @@ bool RenderStyle::hasStroke() const
 
 bool RenderStyle::hasFill() const
 {
-    if(const SVGProperty* property = get(CSSPropertyIdFill))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdFill))
         return to<SVGPaint>(property)->colorType() != ColorTypeNone;
 
     return false;
@@ -124,17 +123,17 @@ bool RenderStyle::hasFill() const
 StrokeData RenderStyle::strokeData(const RenderState& state) const
 {
     StrokeData strokeData;
-    if(const SVGProperty* property = get(CSSPropertyIdStroke_Width))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdStroke_Width))
         strokeData.setWidth(to<SVGLength>(property)->value(state));
-    if(const SVGProperty* property = get(CSSPropertyIdStroke_Miterlimit))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdStroke_Miterlimit))
         strokeData.setMiterLimit(to<SVGNumber>(property)->value());
-    if(const SVGProperty* property = get(CSSPropertyIdStroke_Linecap))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdStroke_Linecap))
         strokeData.setCap(to<SVGEnumeration<LineCap>>(property)->enumValue());
-    if(const SVGProperty* property = get(CSSPropertyIdStroke_Linejoin))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdStroke_Linejoin))
         strokeData.setJoin(to<SVGEnumeration<LineJoin>>(property)->enumValue());
-    if(const SVGProperty* property = get(CSSPropertyIdStroke_Dasharray))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdStroke_Dasharray))
         strokeData.setDash(to<SVGLengthList>(property)->values(state));
-    if(const SVGProperty* property = get(CSSPropertyIdStroke_Dashoffset))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdStroke_Dashoffset))
         strokeData.setDashOffset(to<SVGLength>(property)->value(state));
 
     return strokeData;
@@ -142,7 +141,7 @@ StrokeData RenderStyle::strokeData(const RenderState& state) const
 
 Paint RenderStyle::fillPaint(const RenderState& state) const
 {
-    if(const SVGProperty* property = get(CSSPropertyIdFill))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdFill))
         return to<SVGPaint>(property)->getPaint(state);
 
     return KRgbBlack;
@@ -150,7 +149,7 @@ Paint RenderStyle::fillPaint(const RenderState& state) const
 
 Paint RenderStyle::strokePaint(const RenderState& state) const
 {
-    if(const SVGProperty* property = get(CSSPropertyIdStroke))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdStroke))
         return to<SVGPaint>(property)->getPaint(state);
 
     return Paint();
@@ -158,7 +157,7 @@ Paint RenderStyle::strokePaint(const RenderState& state) const
 
 double RenderStyle::strokeWidth(const RenderState& state) const
 {
-    if(const SVGProperty* property = get(CSSPropertyIdStroke_Width))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdStroke_Width))
         return to<SVGLength>(property)->value(state);
 
     return 1.0;
@@ -166,7 +165,7 @@ double RenderStyle::strokeWidth(const RenderState& state) const
 
 double RenderStyle::fillOpacity() const
 {
-    if(const SVGProperty* property = get(CSSPropertyIdFill_Opacity))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdFill_Opacity))
         return to<SVGNumber>(property)->value();
 
     return 1.0;
@@ -174,7 +173,7 @@ double RenderStyle::fillOpacity() const
 
 double RenderStyle::strokeOpacity() const
 {
-    if(const SVGProperty* property = get(CSSPropertyIdStroke_Opacity))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdStroke_Opacity))
         return to<SVGNumber>(property)->value();
 
     return 1.0;
@@ -182,7 +181,7 @@ double RenderStyle::strokeOpacity() const
 
 double RenderStyle::opacity() const
 {
-    if(const SVGProperty* property = get(CSSPropertyIdOpacity))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdOpacity))
         return to<SVGNumber>(property)->value();
 
     return 1.0;
@@ -190,7 +189,7 @@ double RenderStyle::opacity() const
 
 const std::string& RenderStyle::mask() const
 {
-    if(const SVGProperty* property = get(CSSPropertyIdMask))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdMask))
         return to<SVGString>(property)->value();
 
     return KEmptyString;
@@ -198,7 +197,7 @@ const std::string& RenderStyle::mask() const
 
 const std::string& RenderStyle::clipPath() const
 {
-    if(const SVGProperty* property = get(CSSPropertyIdClip_Path))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdClip_Path))
         return to<SVGString>(property)->value();
 
     return KEmptyString;
@@ -206,7 +205,7 @@ const std::string& RenderStyle::clipPath() const
 
 WindRule RenderStyle::fillRule() const
 {
-    if(const SVGProperty* property = get(CSSPropertyIdFill_Rule))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdFill_Rule))
         return to<SVGEnumeration<WindRule>>(property)->enumValue();
 
     return WindRuleNonZero;
@@ -214,7 +213,7 @@ WindRule RenderStyle::fillRule() const
 
 WindRule RenderStyle::clipRule() const
 {
-    if(const SVGProperty* property = get(CSSPropertyIdClip_Rule))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdClip_Rule))
         return to<SVGEnumeration<WindRule>>(property)->enumValue();
 
     return WindRuleNonZero;
@@ -222,7 +221,7 @@ WindRule RenderStyle::clipRule() const
 
 const SVGMarkerElement* RenderStyle::markerStart(const SVGDocument* document) const
 {
-    if(const SVGProperty* property = get(CSSPropertyIdMarker_Start))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdMarker_Start))
     {
         const std::string& value = to<SVGString>(property)->value();
         SVGElementImpl* ref = document->impl()->resolveIRI(value);
@@ -235,7 +234,7 @@ const SVGMarkerElement* RenderStyle::markerStart(const SVGDocument* document) co
 
 const SVGMarkerElement* RenderStyle::markerMid(const SVGDocument* document) const
 {
-    if(const SVGProperty* property = get(CSSPropertyIdMarker_Mid))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdMarker_Mid))
     {
         const std::string& value = to<SVGString>(property)->value();
         SVGElementImpl* ref = document->impl()->resolveIRI(value);
@@ -248,7 +247,7 @@ const SVGMarkerElement* RenderStyle::markerMid(const SVGDocument* document) cons
 
 const SVGMarkerElement* RenderStyle::markerEnd(const SVGDocument* document) const
 {
-    if(const SVGProperty* property = get(CSSPropertyIdMarker_End))
+    if(const SVGPropertyBase* property = get(CSSPropertyIdMarker_End))
     {
         const std::string& value = to<SVGString>(property)->value();
         SVGElementImpl* ref = document->impl()->resolveIRI(value);

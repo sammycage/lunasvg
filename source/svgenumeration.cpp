@@ -28,20 +28,6 @@ template<> const EnumEntryList& getEnumEntryList<Visibility>()
     return entries;
 }
 
-template<> const EnumEntryList& getEnumEntryList<Overflow>()
-{
-    static EnumEntryList entries;
-    if(entries.empty())
-    {
-        entries.emplace_back(OverflowVisible, "visible");
-        entries.emplace_back(OverflowHidden, "hidden");
-        entries.emplace_back(OverflowScroll, "scroll");
-        entries.emplace_back(OverflowAuto, "auto");
-    }
-
-    return entries;
-}
-
 template<> const EnumEntryList& getEnumEntryList<LineCap>()
 {
     static EnumEntryList entries;
@@ -111,7 +97,7 @@ template<> const EnumEntryList& getEnumEntryList<MarkerUnitType>()
     if(entries.empty())
     {
         entries.emplace_back(MarkerUnitTypeStrokeWidth, "strokeWidth");
-        entries.emplace_back(MarkerUnitTypeUserSpaceOnUse, "userSpaceOnUse");
+        entries.emplace_back(MarkerUnitTypeUserSpaceOnUse, "objectBoundingBox");
     }
 
     return entries;

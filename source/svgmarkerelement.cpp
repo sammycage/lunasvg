@@ -91,7 +91,7 @@ void SVGMarkerElement::render(RenderContext& context) const
     SVGStyledElement::render(context);
 }
 
-SVGElementImpl* SVGMarkerElement::clone(SVGDocument *document) const
+SVGElementImpl* SVGMarkerElement::clone(SVGDocument* document) const
 {
     SVGMarkerElement* e = new SVGMarkerElement(document);
     baseClone(*e);

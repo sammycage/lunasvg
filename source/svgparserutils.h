@@ -13,7 +13,7 @@ namespace lunasvg {
 
 #define IS_ALPHA(c) (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
 #define IS_NUM(c) (c >= '0' && c <= '9')
-#define IS_WS(c) (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f')
+#define IS_WS(c) (c == ' ' || c == '\t' || c == '\n' || c == '\r')
 
 namespace Utils {
 

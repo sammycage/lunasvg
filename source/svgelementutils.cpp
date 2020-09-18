@@ -26,18 +26,6 @@ namespace lunasvg {
 
 namespace Utils {
 
-#define KElementIdsAnimation \
-    DOMElementIdAnimate, \
-    DOMElementIdAnimateMotion, \
-    DOMElementIdAnimateTransform, \
-    DOMElementIdAnimateColor, \
-    DOMElementIdSet
-
-#define KElementIdsDescriptive \
-    DOMElementIdDesc, \
-    DOMElementIdTitle, \
-    DOMElementIdMetadata
-
 #define KElementIdsGradient \
     DOMElementIdLinearGradient, \
     DOMElementIdRadialGradient
@@ -58,125 +46,33 @@ namespace Utils {
     DOMElementIdPolyline, \
     DOMElementIdRect
 
-#define KElementIdsTextContentChild \
-    DOMElementIdTextPath, \
-    DOMElementIdTref, \
-    DOMElementIdTspan
-
 static const DOMElementID contentmodel_1[] = {
-    KElementIdsAnimation,
     KElementIdsShape,
-    KElementIdsDescriptive,
     KElementIdsStructural,
     KElementIdsGradient,
-    DOMElementIdA,
     DOMElementIdClipPath,
-    DOMElementIdImage,
     DOMElementIdMarker,
     DOMElementIdMask,
     DOMElementIdPattern,
-    DOMElementIdStyle,
-    DOMElementIdSwitch,
-    DOMElementIdText,
-    DOMElementIdView,
+    DOMElementIdSolidColor,
     DOMElementIdUnknown
 };
 
 static const DOMElementID contentmodel_2[] = {
-    KElementIdsAnimation,
-    KElementIdsDescriptive,
+    KElementIdsGradient,
+    DOMElementIdSolidColor,
+    DOMElementIdPattern,
     DOMElementIdUnknown
 };
 
 static const DOMElementID contentmodel_3[] = {
-    //KElementAllIds,
+    KElementIdsShape,
+    DOMElementIdUse,
     DOMElementIdUnknown
 };
 
 static const DOMElementID contentmodel_4[] = {
-    KElementIdsDescriptive,
-    DOMElementIdUnknown
-};
-
-static const DOMElementID contentmodel_5[] = {
-    KElementIdsAnimation,
-    KElementIdsShape,
-    KElementIdsDescriptive,
-    DOMElementIdA,
-    DOMElementIdG,
-    DOMElementIdImage,
-    DOMElementIdSvg,
-    DOMElementIdSwitch,
-    DOMElementIdText,
-    DOMElementIdUse,
-    DOMElementIdUnknown
-};
-
-static const DOMElementID contentmodel_6[] = {
-    KElementIdsAnimation,
-    KElementIdsDescriptive,
-    KElementIdsTextContentChild,
-    DOMElementIdA,
-    DOMElementIdUnknown
-};
-
-static const DOMElementID contentmodel_7[] = {
-    KElementIdsDescriptive,
-    DOMElementIdA,
-    DOMElementIdAnimate,
-    DOMElementIdAnimateColor,
-    DOMElementIdSet,
-    DOMElementIdTref,
-    DOMElementIdTspan,
-    DOMElementIdUnknown
-};
-
-static const DOMElementID contentmodel_8[] = {
-    KElementIdsDescriptive,
-    DOMElementIdAnimate,
-    DOMElementIdAnimateColor,
-    DOMElementIdSet,
-    DOMElementIdUnknown
-};
-
-static const DOMElementID contentmodel_9[] = {
-    KElementIdsGradient,
-    DOMElementIdSolidColor,
-    DOMElementIdPattern,
-    DOMElementIdAnimate,
-    DOMElementIdAnimateColor,
-    DOMElementIdSet,
-    DOMElementIdUnknown
-};
-
-static const DOMElementID contentmodel_11[] = {
-    KElementIdsAnimation,
-    KElementIdsShape,
-    KElementIdsDescriptive,
-    DOMElementIdUse,
-    DOMElementIdText,
-    DOMElementIdUnknown
-};
-
-static const DOMElementID contentmodel_12[] = {
-    KElementIdsDescriptive,
-    DOMElementIdAnimate,
-    DOMElementIdAnimateTransform,
-    DOMElementIdSet,
     DOMElementIdStop,
-    DOMElementIdUnknown
-};
-
-static const DOMElementID contentmodel_13[] = {
-    DOMElementIdAnimate,
-    DOMElementIdAnimateColor,
-    DOMElementIdSet,
-    DOMElementIdUnknown
-};
-
-static const DOMElementID contentmodel_23[] = {
-    KElementIdsDescriptive,
-    DOMElementIdMpath,
     DOMElementIdUnknown
 };
 
@@ -186,86 +82,50 @@ static const struct
     const DOMElementID* content;
 } contentmodelmap[] = {
     {DOMElementIdUnknown, nullptr},
-    {DOMElementIdA, contentmodel_1},
-    {DOMElementIdAnimate, contentmodel_4},
-    {DOMElementIdAnimateColor, contentmodel_4},
-    {DOMElementIdAnimateMotion, contentmodel_23},
-    {DOMElementIdAnimateTransform, contentmodel_4},
-    {DOMElementIdCircle, contentmodel_2},
-    {DOMElementIdClipPath, contentmodel_11},
+    {DOMElementIdCircle, nullptr},
+    {DOMElementIdClipPath, contentmodel_3},
     {DOMElementIdDefs, contentmodel_1},
-    {DOMElementIdDesc, contentmodel_3},
-    {DOMElementIdEllipse, contentmodel_2},
+    {DOMElementIdEllipse, nullptr},
     {DOMElementIdG, contentmodel_1},
-    {DOMElementIdImage, contentmodel_2},
-    {DOMElementIdLine, contentmodel_2},
-    {DOMElementIdLinearGradient, contentmodel_12},
+    {DOMElementIdLine, nullptr},
+    {DOMElementIdLinearGradient, contentmodel_4},
     {DOMElementIdMarker, contentmodel_1},
     {DOMElementIdMask, contentmodel_1},
-    {DOMElementIdMetadata, contentmodel_3},
-    {DOMElementIdMpath, contentmodel_23},
-    {DOMElementIdPath, contentmodel_2},
+    {DOMElementIdPath, nullptr},
     {DOMElementIdPattern, contentmodel_1},
-    {DOMElementIdPolygon, contentmodel_2},
-    {DOMElementIdPolyline, contentmodel_2},
-    {DOMElementIdRadialGradient, contentmodel_12},
-    {DOMElementIdRect, contentmodel_2},
-    {DOMElementIdSet, contentmodel_4},
-    {DOMElementIdSolidColor, contentmodel_9},
-    {DOMElementIdStop, contentmodel_13},
-    {DOMElementIdStyle, contentmodel_3},
+    {DOMElementIdPolygon, nullptr},
+    {DOMElementIdPolyline, nullptr},
+    {DOMElementIdRadialGradient, contentmodel_4},
+    {DOMElementIdRect, nullptr},
+    {DOMElementIdSolidColor, contentmodel_2},
+    {DOMElementIdStop, nullptr},
     {DOMElementIdSvg, contentmodel_1},
-    {DOMElementIdSwitch, contentmodel_5},
     {DOMElementIdSymbol, contentmodel_1},
-    {DOMElementIdText, contentmodel_6},
-    {DOMElementIdTextPath, contentmodel_7},
-    {DOMElementIdTitle, contentmodel_3},
-    {DOMElementIdTref, contentmodel_8},
-    {DOMElementIdTspan, contentmodel_7},
-    {DOMElementIdUse, contentmodel_2},
-    {DOMElementIdView, contentmodel_4},
+    {DOMElementIdUse, nullptr},
     {DOMElementLastId, nullptr}
 };
 
 static const std::map<std::string, DOMElementID> domelementmap = {
-    {"a", DOMElementIdA},
-    {"animate", DOMElementIdAnimate},
-    {"animateColor", DOMElementIdAnimateColor},
-    {"animateMotion", DOMElementIdAnimateMotion},
-    {"animateTransform", DOMElementIdAnimateTransform},
     {"circle", DOMElementIdCircle},
     {"clipPath", DOMElementIdClipPath},
     {"defs", DOMElementIdDefs},
-    {"desc", DOMElementIdDesc},
     {"ellipse", DOMElementIdEllipse},
     {"g", DOMElementIdG},
-    {"image", DOMElementIdImage},
     {"line", DOMElementIdLine},
     {"linearGradient", DOMElementIdLinearGradient},
     {"marker", DOMElementIdMarker},
     {"mask", DOMElementIdMask},
-    {"metadata", DOMElementIdMetadata},
-    {"mpath", DOMElementIdMpath},
     {"path", DOMElementIdPath},
     {"pattern", DOMElementIdPattern},
     {"polygon", DOMElementIdPolygon},
     {"polyline", DOMElementIdPolyline},
     {"radialGradient", DOMElementIdRadialGradient},
     {"rect", DOMElementIdRect},
-    {"set", DOMElementIdSet},
     {"stop", DOMElementIdStop},
     {"solidColor", DOMElementIdSolidColor},
-    {"style", DOMElementIdStyle},
     {"svg", DOMElementIdSvg},
-    {"switch", DOMElementIdSwitch},
     {"symbol", DOMElementIdSymbol},
-    {"text", DOMElementIdText},
-    {"textPath", DOMElementIdTextPath},
-    {"title", DOMElementIdTitle},
-    {"tref", DOMElementIdTref},
-    {"tspan", DOMElementIdTspan},
     {"use", DOMElementIdUse},
-    {"view", DOMElementIdView},
 };
 
 bool isElementPermitted(DOMElementID parentId, DOMElementID childId)

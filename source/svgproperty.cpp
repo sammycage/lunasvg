@@ -2,7 +2,11 @@
 
 namespace lunasvg {
 
-SVGProperty::~SVGProperty()
+SVGPropertyBase::SVGPropertyBase()
+{
+}
+
+SVGPropertyBase::~SVGPropertyBase()
 {
 }
 

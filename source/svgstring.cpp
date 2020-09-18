@@ -3,7 +3,6 @@
 namespace lunasvg {
 
 SVGString::SVGString()
-    : SVGProperty(PropertyTypeString)
 {
 }
 
@@ -17,7 +16,7 @@ std::string SVGString::valueAsString() const
     return  m_value;
 }
 
-SVGProperty* SVGString::clone() const
+SVGPropertyBase* SVGString::clone() const
 {
     SVGString* property = new SVGString();
     property->m_value = m_value;
@@ -50,7 +49,7 @@ std::string SVGURIString::valueAsString() const
     return "url(" + m_value + ")";
 }
 
-SVGProperty* SVGURIString::clone() const
+SVGPropertyBase* SVGURIString::clone() const
 {
     SVGURIString* property = new SVGURIString();
     property->m_value = m_value;

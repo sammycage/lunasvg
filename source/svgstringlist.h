@@ -12,8 +12,7 @@ public:
     SVGStringList();
 
     void setValueAsString(const std::string& value);
-    SVGProperty* clone() const;
-    static PropertyType classType() { return PropertyTypeStringList; }
+    SVGPropertyBase* clone() const;
 };
 
 } // namespace lunasvg

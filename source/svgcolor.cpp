@@ -158,8 +158,7 @@ static const std::map<std::string, Rgb> colormap = {
 };
 
 SVGColor::SVGColor()
-    : SVGProperty(PropertyTypeColor),
-      m_colorType(ColorTypeRgb)
+    : m_colorType(ColorTypeRgb)
 {
 }
 
@@ -288,7 +287,7 @@ std::string SVGColor::valueAsString() const
     return buf;
 }
 
-SVGProperty* SVGColor::clone() const
+SVGPropertyBase* SVGColor::clone() const
 {
     SVGColor* property = new SVGColor();
     property->m_colorType = m_colorType;
@@ -343,7 +342,7 @@ std::string SVGPaint::valueAsString() const
     return  m_colorType == ColorTypeUrl ? "url(" + m_url + ")" : SVGColor::valueAsString();
 }
 
-SVGProperty* SVGPaint::clone() const
+SVGPropertyBase* SVGPaint::clone() const
 {
     SVGPaint* property = new SVGPaint();
     property->m_url = m_url;

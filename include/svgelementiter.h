@@ -3,8 +3,7 @@
 
 #include <string>
 
-namespace lunasvg
-{
+namespace lunasvg {
 
 class SVGElement;
 class SVGElementImpl;

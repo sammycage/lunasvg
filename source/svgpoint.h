@@ -6,7 +6,7 @@
 
 namespace lunasvg {
 
-class SVGPoint : public SVGProperty
+class SVGPoint : public SVGPropertyBase
 {
 public:
     SVGPoint();
@@ -21,8 +21,7 @@ public:
 
     void setValueAsString(const std::string& value);
     std::string valueAsString() const;
-    SVGProperty* clone() const;
-    static PropertyType classType() { return PropertyTypePoint; }
+    SVGPropertyBase* clone() const;
 
 private:
     Point m_value;

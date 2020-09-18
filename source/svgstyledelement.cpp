@@ -9,10 +9,8 @@ namespace lunasvg {
 
 SVGStyledElement::SVGStyledElement(DOMElementID elementId, SVGDocument* document)
     : SVGElementHead(elementId, document),
-      m_className(DOMPropertyIdClass),
       m_style(DOMPropertyIdStyle)
 {
-    addToPropertyMap(m_className);
     addToPropertyMap(m_style);
 }
 
@@ -75,11 +73,11 @@ void SVGStyledElement::render(RenderContext& context) const
         state.style.clear(CSSPropertyIdMask);
     }
 
-    bool compositing = !isSVGGeometryElement() && state.style.opacity() != 1.0;
-    if(compositing || state.style.mask() != KEmptyString || state.style.clipPath() != KEmptyString)
+    double opacity = isSVGGeometryElement() ? 1.0 : state.style.opacity();
+    if(opacity != 1.0 || state.style.mask() != KEmptyString || state.style.clipPath() != KEmptyString)
         state.canvas.reset(state.canvas.width(), state.canvas.height());
 
-    if(const SVGProperty* property = state.style.get(CSSPropertyIdColor))
+    if(const SVGPropertyBase* property = state.style.get(CSSPropertyIdColor))
     {
         const SVGColor* color = to<SVGColor>(property);
         if(color->colorType() != ColorTypeCurrentColor)
@@ -129,7 +127,7 @@ Rgb SVGStyledElement::currentColor() const
     return !isSVGRootElement() ? to<SVGStyledElement>(parent)->currentColor() : KRgbBlack;
 }
 
-SVGProperty* SVGStyledElement::findInheritedProperty(CSSPropertyID nameId) const
+SVGPropertyBase* SVGStyledElement::findInheritedProperty(CSSPropertyID nameId) const
 {
     if(style().isSpecified())
     {

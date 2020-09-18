@@ -29,9 +29,9 @@ int main()
 - Clipping, Masking and Compositing : clipPath, mask, group opacity.
 - Document Structures: defs, svg, g, use, symbol.
 - Coordinate Systems, Transformations and Units.
+- Markers.
 - Texts (TODO) : text, tspan, tref, textPath.
 - Animations (TODO) : animate, animateColor, animateMotion, animateTransform
-- Markers (TODO)
 
 ## depends
 * [cmake](https://cmake.org/download/)

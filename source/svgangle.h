@@ -12,7 +12,7 @@ enum MarkerOrientType
     MarkerOrientTypeAngle
 };
 
-class SVGAngle : public SVGProperty
+class SVGAngle : public SVGPropertyBase
 {
 public:
     SVGAngle();
@@ -24,8 +24,7 @@ public:
 
     void setValueAsString(const std::string& value);
     std::string valueAsString() const;
-    SVGProperty* clone() const;
-    static PropertyType classType() { return PropertyTypeAngle; }
+    SVGPropertyBase* clone() const;
 
 private:
     double m_value;

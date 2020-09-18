@@ -29,7 +29,7 @@ Rgb SVGStopElement::stopColorWithOpacity() const
     Rgb color;
     if(const CSSPropertyBase* item = style().property()->getItem(CSSPropertyIdStop_Color))
     {
-        const SVGProperty* property = !item->isInherited() ? item->property() : findInheritedProperty(CSSPropertyIdStop_Color);
+        const SVGPropertyBase* property = !item->isInherited() ? item->property() : findInheritedProperty(CSSPropertyIdStop_Color);
         if(property)
         {
             const SVGColor* stopColor = to<SVGColor>(property);
@@ -39,7 +39,7 @@ Rgb SVGStopElement::stopColorWithOpacity() const
 
     if(const CSSPropertyBase* item = style().property()->getItem(CSSPropertyIdStop_Opacity))
     {
-        const SVGProperty* property = !item->isInherited() ? item->property() : findInheritedProperty(CSSPropertyIdStop_Opacity);
+        const SVGPropertyBase* property = !item->isInherited() ? item->property() : findInheritedProperty(CSSPropertyIdStop_Opacity);
         if(property)
         {
             const SVGNumber* stopOpacity = to<SVGNumber>(property);

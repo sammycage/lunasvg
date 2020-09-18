@@ -5,7 +5,7 @@
 
 namespace lunasvg {
 
-class SVGString : public SVGProperty
+class SVGString : public SVGPropertyBase
 {
 public:
     SVGString();
@@ -15,8 +15,7 @@ public:
 
     virtual void setValueAsString(const std::string& value);
     virtual std::string valueAsString() const;
-    virtual SVGProperty* clone() const;
-    static PropertyType classType() { return PropertyTypeString; }
+    virtual SVGPropertyBase* clone() const;
 
 protected:
     std::string m_value;
@@ -29,7 +28,7 @@ public:
 
     void setValueAsString(const std::string& value);
     std::string valueAsString() const;
-    SVGProperty* clone() const;
+    SVGPropertyBase* clone() const;
 };
 
 typedef DOMSVGProperty<SVGString> DOMSVGString;

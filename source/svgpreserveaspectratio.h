@@ -8,7 +8,7 @@ namespace lunasvg {
 class AffineTransform;
 class Rect;
 
-class SVGPreserveAspectRatio : public SVGProperty
+class SVGPreserveAspectRatio : public SVGPropertyBase
 {
 public:
     enum Alignment
@@ -41,8 +41,7 @@ public:
     static const SVGPreserveAspectRatio* defaultValue();
     void setValueAsString(const std::string& value);
     std::string valueAsString() const;
-    SVGProperty* clone() const;
-    static PropertyType classType() { return PropertyTypePreserveAspectRatio; }
+    SVGPropertyBase* clone() const;
 
 private:
     Alignment m_align;

@@ -9,7 +9,6 @@ namespace lunasvg {
 
 class SVGElementImpl;
 class SVGRootElement;
-class SVGParser;
 
 class SVGDocumentImpl
 {
@@ -45,7 +44,6 @@ private:
 
 private:
     SVGRootElement* m_rootElement;
-    SVGParser* m_svgParser;
     std::multimap<std::string, SVGElementImpl*> m_idCache;
 };
 

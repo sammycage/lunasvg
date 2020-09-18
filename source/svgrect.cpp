@@ -3,8 +3,7 @@
 namespace lunasvg {
 
 SVGRect::SVGRect()
-    : SVGProperty(PropertyTypeRect),
-      m_valid(true)
+    : m_valid(true)
 {
 }
 
@@ -50,7 +49,7 @@ std::string SVGRect::valueAsString() const
     return out;
 }
 
-SVGProperty* SVGRect::clone() const
+SVGPropertyBase* SVGRect::clone() const
 {
     SVGRect* property = new SVGRect();
     property->m_value = m_value;

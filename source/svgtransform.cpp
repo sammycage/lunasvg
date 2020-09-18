@@ -5,7 +5,6 @@ namespace lunasvg {
 #define PI 3.14159265358979323846
 
 SVGTransform::SVGTransform()
-    : SVGProperty(PropertyTypeTransform)
 {
 }
 
@@ -150,7 +149,7 @@ std::string SVGTransform::valueAsString() const
     return out;
 }
 
-SVGProperty* SVGTransform::clone() const
+SVGPropertyBase* SVGTransform::clone() const
 {
     SVGTransform* property = new SVGTransform();
     property->m_value = m_value;

@@ -18,7 +18,7 @@ enum TransformType
     TransformTypeTranslate
 };
 
-class SVGTransform : public SVGProperty
+class SVGTransform : public SVGPropertyBase
 {
 public:
     SVGTransform();
@@ -29,8 +29,7 @@ public:
     static bool parseTransform(const char*& ptr, TransformType& type, double* values, int& count);
     void setValueAsString(const std::string& value);
     std::string valueAsString() const;
-    SVGProperty* clone() const;
-    static PropertyType classType() { return PropertyTypeTransform; }
+    SVGPropertyBase* clone() const;
 
 private:
     AffineTransform m_value;

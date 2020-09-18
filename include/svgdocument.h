@@ -171,6 +171,6 @@ inline SVGDocumentImpl* SVGDocument::impl() const
     return m_impl;
 }
 
-} //namespace lunasvg
+} // namespace lunasvg
 
 #endif // SVGDOCUMENT_H

@@ -17,67 +17,13 @@
 
 namespace lunasvg {
 
-SVGParser::SVGParser(SVGDocument* document)
-    : m_document(document)
+SVGElementImpl* SVGParser::parse(const std::string& source, SVGDocument* document, SVGElementHead* parent)
 {
-}
-
-bool SVGParser::appendHead(DOMElementID elementId, const AttributeList& attributes)
-{
-    SVGElementHead* parent;
-    if(m_blocks.empty())
-        parent = m_current->parent;
-    else
-        parent = m_blocks.top();
-    if(!Utils::isElementPermitted(parent->elementId(), elementId))
-         return false;
-    SVGElementHead* newElement = Utils::createElement(elementId, m_document);
-    if(newElement==nullptr)
-        return false;
-
-    appendElement(newElement);
-    m_blocks.push(newElement);
-    for(unsigned int i = 0;i < attributes.size();i++)
-        newElement->setAttribute(attributes[i].first, attributes[i].second);
-
-    return true;
-}
-
-bool SVGParser::appendTail(DOMElementID elementId)
-{
-    if(m_blocks.empty() || elementId!=m_blocks.top()->elementId())
-        return false;
-
-    appendElement(new SVGElementTail(m_document));
-    SVGElementHead* head = m_blocks.top();
-    head->tail = to<SVGElementTail>(m_current);
-    m_blocks.pop();
-
-    return true;
-}
-
-bool SVGParser::appendText(const std::string&)
-{
-    return false;
-}
-
-void SVGParser::appendElement(SVGElementImpl* newElement)
-{
-    if(m_blocks.empty())
-        newElement->parent = m_current->parent;
-    else
-        newElement->parent = m_blocks.top();
-    m_current->next = newElement;
-    newElement->prev = m_current;
-    m_current = newElement;
-}
-
-SVGElementImpl* SVGParser::parse(const std::string& source, SVGElementHead* parent)
-{
-    SVGElementImpl* start = new SVGElementText(m_document);
+    SVGElementImpl* start = new SVGElementText(document);
     start->parent = parent;
-    m_current = start;
+    SVGElementImpl* current = start;
 
+    std::stack<SVGElementHead*> blocks;
     std::stack<std::string> unsupported;
     const char* ptr = source.c_str();
     int tagType;
@@ -85,55 +31,92 @@ SVGElementImpl* SVGParser::parse(const std::string& source, SVGElementHead* pare
     AttributeList attributes;
     while(enumTag(ptr, tagType, tagName, content, attributes))
     {
-        DOMElementID elementId = Utils::domElementId(tagName);
         if(tagType==KTagOpen || tagType==KTagEmpty)
         {
-            if(!parent && m_blocks.empty())
+            if(!unsupported.empty())
             {
-                if(elementId != DOMElementIdSvg)
-                    break;
-                SVGElementHead* rootElement = to<SVGElementHead>(m_document->rootElement());
-                m_blocks.push(rootElement);
-                for(unsigned int i = 0;i < attributes.size();i++)
-                    rootElement->setAttribute(attributes[i].first, attributes[i].second);
+                if(tagType==KTagOpen)
+                    unsupported.push(tagName);
+                continue;
             }
-            else if(!unsupported.empty() || !elementId || !appendHead(elementId, attributes))
+
+            DOMElementID elementId = Utils::domElementId(tagName);
+            SVGElementHead* element = nullptr;
+            parent = blocks.empty() ? current->parent : blocks.top();
+            if(parent==nullptr)
             {
-                unsupported.push(tagName);
-            }
-        }
-        if(tagType==KTagClose || tagType==KTagEmpty)
-        {
-            if(unsupported.empty())
-            {
-                if(m_blocks.empty())
+                if(elementId!=DOMElementIdSvg)
                     break;
-                if(!parent && m_blocks.top() == m_document->rootElement())
+                element = to<SVGElementHead>(document->rootElement());
+            }
+            else if(Utils::isElementPermitted(parent->elementId(), elementId))
+            {
+                element = Utils::createElement(elementId, document);
+            }
+
+            if(element==nullptr)
+            {
+                if(tagType==KTagOpen)
+                    unsupported.push(tagName);
+                continue;
+            }
+
+            if(parent!=nullptr)
+            {
+                element->parent = parent;
+                element->prev = current;
+                current->next = element;
+                current = element;
+                if(tagType==KTagEmpty)
                 {
-                    if(elementId != DOMElementIdSvg)
-                        break;
-                    m_blocks.pop();
-                    break;
+                    element->tail = new SVGElementTail(document);
+                    element->tail->parent = element;
+                    element->tail->prev = current;
+                    element->next = element->tail;
+                    current = element->tail;
                 }
-                if(!appendTail(elementId))
-                    break;
             }
-            else
+
+            if(tagType==KTagOpen)
+                blocks.push(element);
+
+            for(unsigned int i = 0;i < attributes.size();i++)
+                element->setAttribute(attributes[i].first, attributes[i].second);
+        }
+        else if(tagType==KTagClose)
+        {
+            if(!unsupported.empty())
             {
-                if(tagName!=unsupported.top())
+                if(unsupported.top() != tagName)
                     break;
                 unsupported.pop();
+                continue;
             }
+
+            DOMElementID elementId = Utils::domElementId(tagName);
+            if(blocks.empty() || elementId!=blocks.top()->elementId())
+                break;
+
+            SVGElementHead* element = blocks.top();
+            blocks.pop();
+
+            if(element->isSVGRootElement())
+                break;
+
+            element->tail = new SVGElementTail(document);
+            element->tail->parent = element;
+            element->tail->prev = current;
+            current->next = element->tail;
+            current = element->tail;
         }
     }
 
-    m_current->next = start;
-    start->prev = m_current;
+    current->next = start;
+    start->prev = current;
 
-    if(!m_blocks.empty() || !unsupported.empty())
+    if(!blocks.empty() || !unsupported.empty())
     {
-        m_document->impl()->freeElement(start, start->prev);
-        std::stack<SVGElementHead*>().swap(m_blocks);
+        document->impl()->freeElement(start, start->prev);
         return nullptr;
     }
 

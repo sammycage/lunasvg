@@ -11,9 +11,8 @@ CSSPropertyBase::~CSSPropertyBase()
 {
 }
 
-CSSPropertyBase::CSSPropertyBase(CSSPropertyID propertyId, PropertyType propertyType)
-    : m_propertyId(propertyId),
-      m_propertyType(propertyType)
+CSSPropertyBase::CSSPropertyBase(CSSPropertyID propertyId)
+    : m_propertyId(propertyId)
 {
 }
 
@@ -52,8 +51,6 @@ CSSPropertyBase* CSSPropertyBase::create(CSSPropertyID propertyId)
         return new CSSProperty<SVGEnumeration<Display>>(propertyId);
     case CSSPropertyIdVisibility:
         return new CSSProperty<SVGEnumeration<Visibility>>(propertyId);
-    case CSSPropertyIdOverflow:
-        return new CSSProperty<SVGEnumeration<Overflow>>(propertyId);
     case CSSPropertyIdClip_Path:
     case CSSPropertyIdMask:
     case CSSPropertyIdMarker_Start:
@@ -74,7 +71,6 @@ CSSPropertyList::~CSSPropertyList()
 }
 
 CSSPropertyList::CSSPropertyList()
-    : SVGProperty(PropertyTypeCSSPropertyList)
 {
     m_values.fill(nullptr);
 }
@@ -158,7 +154,7 @@ std::string CSSPropertyList::valueAsString() const
     return out;
 }
 
-SVGProperty* CSSPropertyList::clone() const
+SVGPropertyBase* CSSPropertyList::clone() const
 {
     CSSPropertyList* property = new CSSPropertyList;
     for(unsigned int i = 0;i < MAX_STYLE;i++)

@@ -3,7 +3,6 @@
 namespace lunasvg {
 
 SVGLengthList::SVGLengthList()
-    : SVGListProperty<SVGLength>(PropertyTypeLengthList)
 {
 }
 
@@ -35,7 +34,7 @@ void SVGLengthList::setValueAsString(const std::string& value)
     }
 }
 
-SVGProperty* SVGLengthList::clone() const
+SVGPropertyBase* SVGLengthList::clone() const
 {
     SVGLengthList* property = new SVGLengthList();
     baseClone(property);

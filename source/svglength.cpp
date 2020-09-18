@@ -36,15 +36,13 @@ const SVGLength* threePixels()
 }
 
 SVGLength::SVGLength()
-    : SVGProperty(PropertyTypeLength),
-      m_value(0),
+    : m_value(0),
       m_unit(LengthUnitNumber)
 {
 }
 
 SVGLength::SVGLength(double value, LengthUnit unit)
-    : SVGProperty(PropertyTypeLength),
-      m_value(value),
+    : m_value(value),
       m_unit(unit)
 {
 }
@@ -226,7 +224,7 @@ std::string SVGLength::valueAsString() const
     return out;
 }
 
-SVGProperty* SVGLength::clone() const
+SVGPropertyBase* SVGLength::clone() const
 {
     SVGLength* property = new SVGLength();
     property->m_value = m_value;

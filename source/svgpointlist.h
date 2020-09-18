@@ -13,8 +13,7 @@ public:
 
     std::vector<Point> values() const;
     void setValueAsString(const std::string& value);
-    SVGProperty* clone() const;
-    static PropertyType classType() { return PropertyTypePointList; }
+    SVGPropertyBase* clone() const;
 };
 
 typedef DOMSVGProperty<SVGPointList> DOMSVGPointList;

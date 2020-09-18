@@ -3,7 +3,6 @@
 namespace lunasvg {
 
 SVGPoint::SVGPoint()
-    : SVGProperty(PropertyTypePoint)
 {
 }
 
@@ -30,7 +29,7 @@ std::string SVGPoint::valueAsString() const
     return out;
 }
 
-SVGProperty* SVGPoint::clone() const
+SVGPropertyBase* SVGPoint::clone() const
 {
     SVGPoint* property = new SVGPoint();
     property->m_value = m_value;

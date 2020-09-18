@@ -7,7 +7,7 @@
 namespace lunasvg {
 
 template <typename T>
-class SVGListProperty : public SVGProperty
+class SVGListProperty : public SVGPropertyBase
 {
 public:
     virtual ~SVGListProperty();
@@ -38,7 +38,7 @@ public:
     }
 
 protected:
-    SVGListProperty(PropertyType propertyType) : SVGProperty(propertyType) {}
+    SVGListProperty();
     void baseClone(SVGListProperty<T>* property) const
     {
         for(std::size_t i = 0;i < length();i++)
@@ -51,6 +51,11 @@ protected:
 private:
     std::vector<T*> m_values;
 };
+
+template<typename T>
+SVGListProperty<T>::SVGListProperty()
+{
+}
 
 template<typename T>
 SVGListProperty<T>::~SVGListProperty()
