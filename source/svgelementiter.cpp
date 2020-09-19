@@ -1,6 +1,5 @@
 #include "svgelementiter.h"
-#include "svgelementhead.h"
-#include "svgelementtail.h"
+#include "svgelementimpl.h"
 
 namespace lunasvg {
 

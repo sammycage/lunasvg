@@ -2,10 +2,8 @@
 #define RENDERCONTEXT_H
 
 #include "cssproperty.h"
-#include "canvas.h"
-#include "affinetransform.h"
+#include "paint.h"
 #include "rect.h"
-#include "rgb.h"
 
 #include <stack>
 #include <set>

@@ -1,7 +1,7 @@
 #include "cssproperty.h"
 #include "svgcolor.h"
+#include "svglength.h"
 #include "svgnumber.h"
-#include "svglengthlist.h"
 #include "svgenumeration.h"
 #include "svgstring.h"
 

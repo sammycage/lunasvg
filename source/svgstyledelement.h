@@ -1,7 +1,7 @@
 #ifndef SVGSTYLEDELEMENT_H
 #define SVGSTYLEDELEMENT_H
 
-#include "svgelementhead.h"
+#include "svgelementimpl.h"
 #include "cssproperty.h"
 
 namespace lunasvg {

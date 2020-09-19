@@ -27,6 +27,18 @@ private:
     Point m_value;
 };
 
+class SVGPointList : public SVGListProperty<SVGPoint>
+{
+public:
+    SVGPointList();
+
+    std::vector<Point> values() const;
+    void setValueAsString(const std::string& value);
+    SVGPropertyBase* clone() const;
+};
+
+typedef DOMSVGProperty<SVGPointList> DOMSVGPointList;
+
 } // namespace lunasvg
 
 #endif // SVGPOINT_H

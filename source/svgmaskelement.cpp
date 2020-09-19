@@ -1,5 +1,4 @@
 #include "svgmaskelement.h"
-#include "svgelementtail.h"
 #include "rendercontext.h"
 
 namespace lunasvg {

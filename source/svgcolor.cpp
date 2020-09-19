@@ -1,6 +1,7 @@
 #include "svgcolor.h"
 #include "svgdocumentimpl.h"
 #include "svgpaintelement.h"
+#include "rendercontext.h"
 
 #include <map>
 

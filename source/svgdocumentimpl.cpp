@@ -1,6 +1,5 @@
 #include "svgdocumentimpl.h"
-#include "svgrootelement.h"
-#include "svgelementtail.h"
+#include "svgsvgelement.h"
 #include "svgparser.h"
 
 #include <fstream>

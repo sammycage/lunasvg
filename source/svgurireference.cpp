@@ -1,5 +1,5 @@
 #include "svgurireference.h"
-#include "svgelementhead.h"
+#include "svgelementimpl.h"
 
 namespace lunasvg {
 

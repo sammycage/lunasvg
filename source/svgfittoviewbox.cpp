@@ -1,5 +1,5 @@
 #include "svgfittoviewbox.h"
-#include "svgelementhead.h"
+#include "svgelementimpl.h"
 #include "affinetransform.h"
 
 namespace lunasvg {

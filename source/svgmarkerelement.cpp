@@ -1,5 +1,4 @@
 #include "svgmarkerelement.h"
-#include "svgelementtail.h"
 #include "rendercontext.h"
 #include "point.h"
 

@@ -2,9 +2,6 @@
 #include "pathiterator.h"
 #include "affinetransform.h"
 #include "paint.h"
-#include "gradient.h"
-#include "pattern.h"
-#include "rgb.h"
 #include "strokedata.h"
 
 #include "agg_scanline_u.h"

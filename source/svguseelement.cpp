@@ -1,5 +1,4 @@
 #include "svguseelement.h"
-#include "svgelementtail.h"
 #include "svgdocumentimpl.h"
 
 namespace lunasvg {

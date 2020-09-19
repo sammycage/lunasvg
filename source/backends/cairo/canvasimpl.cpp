@@ -3,9 +3,6 @@
 #include "pathiterator.h"
 #include "strokedata.h"
 #include "paint.h"
-#include "rgb.h"
-#include "gradient.h"
-#include "pattern.h"
 
 namespace lunasvg {
 

@@ -2,7 +2,7 @@
 #define SVGCOLOR_H
 
 #include "svgproperty.h"
-#include "rgb.h"
+#include "paint.h"
 
 namespace lunasvg {
 
@@ -15,7 +15,6 @@ enum ColorType
 };
 
 class RenderState;
-class Paint;
 
 class SVGColor : public SVGPropertyBase
 {

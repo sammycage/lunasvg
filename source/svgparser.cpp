@@ -1,8 +1,5 @@
 #include "svgparser.h"
 #include "svgdocumentimpl.h"
-#include "svgelementhead.h"
-#include "svgelementtail.h"
-#include "svgelementtext.h"
 #include "svgsvgelement.h"
 
 #define KTagUnknown 0

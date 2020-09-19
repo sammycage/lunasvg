@@ -33,6 +33,15 @@ public:
 
 typedef DOMSVGProperty<SVGString> DOMSVGString;
 
+class SVGStringList : public SVGListProperty<SVGString>
+{
+public:
+    SVGStringList();
+
+    void setValueAsString(const std::string& value);
+    SVGPropertyBase* clone() const;
+};
+
 } // namespace lunasvg
 
 #endif // SVGSTRING_H

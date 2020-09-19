@@ -1,5 +1,4 @@
 #include "svgelementimpl.h"
-#include "svgelementhead.h"
 #include "svgelementiter.h"
 #include "svgdocumentimpl.h"
 

@@ -1,13 +1,12 @@
 #ifndef SVGPARSER_H
 #define SVGPARSER_H
 
-#include "svgelementutils.h"
 #include "svgparserutils.h"
+#include "svgcontentutils.h"
 
 #include <vector>
 #include <stack>
 #include <utility>
-#include <string>
 
 namespace lunasvg {
 

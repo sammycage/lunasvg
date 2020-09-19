@@ -1,7 +1,4 @@
 #include "paint.h"
-#include "rgb.h"
-#include "gradient.h"
-#include "pattern.h"
 
 namespace lunasvg {
 
@@ -111,6 +108,98 @@ double Paint::opacity() const
 PaintType Paint::type() const
 {
     return m_data ? m_data->type : PaintTypeNone;
+}
+
+Rgb::Rgb()
+    : r(0), g(0), b(0), a(255)
+{
+}
+
+Rgb::Rgb(unsigned int value)
+    : r((value&0xff000000)>>24),
+      g((value&0x00ff0000)>>16),
+      b((value&0x0000ff00)>>8 ),
+      a((value&0x000000ff)>>0 )
+{
+}
+
+Rgb::Rgb(unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha)
+    : r(red), g(green), b(blue), a(alpha)
+{
+}
+
+unsigned int Rgb::value() const
+{
+    return (r<<24) | (g<<16) | (b<<8) | a;
+}
+
+bool Rgb::operator==(const Rgb& rgb) const
+{
+    return (rgb.r == r)
+            && (rgb.g == g)
+            && (rgb.b == b)
+            && (rgb.a == a);
+}
+
+bool Rgb::operator!=(const Rgb& rgb) const
+{
+    return !operator==(rgb);
+}
+
+Gradient::Gradient()
+{
+    m_type = GradientTypeUnknown;
+    m_spread = SpreadMethodPad;
+}
+
+LinearGradient::LinearGradient()
+{
+    m_type = GradientTypeLinear;
+    m_values[0] = 0.0;
+    m_values[1] = 0.0;
+    m_values[2] = 1.0;
+    m_values[3] = 1.0;
+    m_values[4] = 0.0;
+}
+
+LinearGradient::LinearGradient(double x1, double y1, double x2, double y2)
+{
+    m_type = GradientTypeLinear;
+    m_values[0] = x1;
+    m_values[1] = y1;
+    m_values[2] = x2;
+    m_values[3] = y2;
+    m_values[4] = 0.0;
+}
+
+RadialGradient::RadialGradient()
+{
+    m_type = GradientTypeRadial;
+    m_values[0] = 0.0;
+    m_values[1] = 0.0;
+    m_values[2] = 1.0;
+    m_values[3] = 0.0;
+    m_values[4] = 0.0;
+}
+
+RadialGradient::RadialGradient(double cx, double cy, double r, double fx, double fy)
+{
+    m_type = GradientTypeRadial;
+    m_values[0] = cx;
+    m_values[1] = cy;
+    m_values[2] = r;
+    m_values[3] = fx;
+    m_values[4] = fy;
+}
+
+Pattern::Pattern()
+{
+}
+
+Pattern::Pattern(const Canvas& canvas)
+    : m_tile(canvas),
+      m_tileMode(TileModeRepeat)
+{
 }
 
 } // namespace lunasvg

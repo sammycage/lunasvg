@@ -4,7 +4,6 @@
 #include "svgenumeration.h"
 
 #include <memory>
-#include <vector>
 
 namespace lunasvg {
 

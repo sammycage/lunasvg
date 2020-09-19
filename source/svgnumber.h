@@ -30,8 +30,19 @@ public:
     SVGPropertyBase* clone() const;
 };
 
+class SVGNumberList : public SVGListProperty<SVGNumber>
+{
+public:
+    SVGNumberList();
+
+    std::vector<double> values() const;
+    void setValueAsString(const std::string& value);
+    SVGPropertyBase* clone() const;
+};
+
 typedef DOMSVGProperty<SVGNumber> DOMSVGNumber;
 typedef DOMSVGProperty<SVGNumberPercentage> DOMSVGNumberPercentage;
+typedef DOMSVGProperty<SVGNumberList> DOMSVGNumberList;
 
 } // namespace lunasvg
 
