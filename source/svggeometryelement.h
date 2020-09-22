@@ -127,7 +127,7 @@ public:
     const DOMSVGLength& rx() const { return m_rx; }
     const DOMSVGLength& ry() const { return m_ry; }
     const DOMSVGLength& width() const { return m_width; }
-    const DOMSVGLength& height() const { return m_heigth; }
+    const DOMSVGLength& height() const { return m_height; }
     Path makePath(const RenderState& state) const;
     Rect makeBoundingBox(const RenderState& state) const;
     void render(RenderContext& context) const;
@@ -139,7 +139,7 @@ private:
     DOMSVGLength m_rx;
     DOMSVGLength m_ry;
     DOMSVGLength m_width;
-    DOMSVGLength m_heigth;
+    DOMSVGLength m_height;
 };
 
 } // namespace lunasvg

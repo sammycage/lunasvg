@@ -16,6 +16,8 @@ class StrokeData;
 class SVGDocument;
 class SVGElementImpl;
 class SVGMarkerElement;
+class SVGMaskElement;
+class SVGClipPathElement;
 
 class RenderStyle
 {
@@ -36,6 +38,7 @@ public:
     bool isSet(CSSPropertyID nameId) const { return m_properties[nameId]; }
     bool isEmpty() const { return m_properties.empty(); }
 
+    bool requiresCompositing(const SVGElementImpl* element) const;
     bool hasStroke() const;
     bool hasFill() const;
 
@@ -46,10 +49,10 @@ public:
     double fillOpacity() const;
     double strokeOpacity() const;
     double opacity() const;
-    const std::string& mask() const;
-    const std::string& clipPath() const;
     WindRule fillRule() const;
     WindRule clipRule() const;
+    const SVGMaskElement* mask(const SVGDocument* document) const;
+    const SVGClipPathElement* clipPath(const SVGDocument* document) const;
     const SVGMarkerElement* markerStart(const SVGDocument* document) const;
     const SVGMarkerElement* markerMid(const SVGDocument* document) const;
     const SVGMarkerElement* markerEnd(const SVGDocument* document) const;
@@ -79,7 +82,7 @@ public:
     static bool hasElement(const SVGElementImpl* element);
 
 private:
-   static std::set<const SVGElementImpl*> renderBreaker;
+    static std::set<const SVGElementImpl*> renderBreaker;
 };
 
 enum RenderMode

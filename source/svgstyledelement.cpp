@@ -73,8 +73,7 @@ void SVGStyledElement::render(RenderContext& context) const
         state.style.clear(CSSPropertyIdMask);
     }
 
-    double opacity = isSVGGeometryElement() ? 1.0 : state.style.opacity();
-    if(opacity != 1.0 || state.style.mask() != KEmptyString || state.style.clipPath() != KEmptyString)
+    if(state.style.requiresCompositing(this))
         state.canvas.reset(state.canvas.width(), state.canvas.height());
 
     if(const SVGPropertyBase* property = state.style.get(CSSPropertyIdColor))
@@ -91,19 +90,10 @@ void SVGStyledElement::renderTail(RenderContext& context) const
     RenderState& newState = context.parent();
     if(state.canvas.impl() != newState.canvas.impl())
     {
-        if(state.style.clipPath() != KEmptyString)
-        {
-            SVGElementImpl* ref = document()->impl()->resolveIRI(state.style.clipPath());
-            if(ref && ref->elementId() == DOMElementIdClipPath)
-                to<SVGClipPathElement>(ref)->applyClip(state);
-        }
-
-        if(state.style.mask() != KEmptyString)
-        {
-            SVGElementImpl* ref = document()->impl()->resolveIRI(state.style.mask());
-            if(ref && ref->elementId() == DOMElementIdMask)
-                to<SVGMaskElement>(ref)->applyMask(state);
-        }
+        if(const SVGClipPathElement* clipPath = state.style.clipPath(document()))
+            clipPath->applyClip(state);
+        if(const SVGMaskElement* mask = state.style.mask(document()))
+            mask->applyMask(state);
 
         newState.canvas.blend(state.canvas, BlendModeSrc_Over, isSVGGeometryElement() ? 1.0 : state.style.opacity(), 0.0, 0.0);
     }

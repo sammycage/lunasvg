@@ -1,5 +1,7 @@
 #include "rendercontext.h"
 #include "svgdocumentimpl.h"
+#include "svgmaskelement.h"
+#include "svgclippathelement.h"
 #include "svgmarkerelement.h"
 #include "svgcolor.h"
 #include "svglength.h"
@@ -101,6 +103,24 @@ bool RenderStyle::isHidden() const
     return false;
 }
 
+bool RenderStyle::requiresCompositing(const SVGElementImpl* element) const
+{
+    if(const SVGPropertyBase* property = get(CSSPropertyIdMask))
+        return true;
+
+    if(const SVGPropertyBase* property = get(CSSPropertyIdClip_Path))
+        return true;
+
+    if(const SVGPropertyBase* property = get(CSSPropertyIdOpacity))
+    {
+        if(element->isSVGGeometryElement())
+            return false;
+        return to<SVGNumber>(property)->value() != 1.0;
+    }
+
+    return false;
+}
+
 bool RenderStyle::hasStroke() const
 {
     if(const SVGPropertyBase* property = get(CSSPropertyIdStroke))
@@ -184,22 +204,6 @@ double RenderStyle::opacity() const
     return 1.0;
 }
 
-const std::string& RenderStyle::mask() const
-{
-    if(const SVGPropertyBase* property = get(CSSPropertyIdMask))
-        return to<SVGString>(property)->value();
-
-    return KEmptyString;
-}
-
-const std::string& RenderStyle::clipPath() const
-{
-    if(const SVGPropertyBase* property = get(CSSPropertyIdClip_Path))
-        return to<SVGString>(property)->value();
-
-    return KEmptyString;
-}
-
 WindRule RenderStyle::fillRule() const
 {
     if(const SVGPropertyBase* property = get(CSSPropertyIdFill_Rule))
@@ -214,6 +218,32 @@ WindRule RenderStyle::clipRule() const
         return to<SVGEnumeration<WindRule>>(property)->enumValue();
 
     return WindRuleNonZero;
+}
+
+const SVGMaskElement* RenderStyle::mask(const SVGDocument* document) const
+{
+    if(const SVGPropertyBase* property = get(CSSPropertyIdMask))
+    {
+        const std::string& value = to<SVGString>(property)->value();
+        SVGElementImpl* ref = document->impl()->resolveIRI(value);
+        if(ref && ref->elementId() == DOMElementIdMask)
+            return to<SVGMaskElement>(ref);
+    }
+
+    return nullptr;
+}
+
+const SVGClipPathElement* RenderStyle::clipPath(const SVGDocument* document) const
+{
+    if(const SVGPropertyBase* property = get(CSSPropertyIdClip_Path))
+    {
+        const std::string& value = to<SVGString>(property)->value();
+        SVGElementImpl* ref = document->impl()->resolveIRI(value);
+        if(ref && ref->elementId() == DOMElementIdClipPath)
+            return to<SVGClipPathElement>(ref);
+    }
+
+    return nullptr;
 }
 
 const SVGMarkerElement* RenderStyle::markerStart(const SVGDocument* document) const

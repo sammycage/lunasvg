@@ -48,7 +48,6 @@ void SVGUseElement::render(RenderContext& context) const
     newState.matrix.translate(_x, _y);
     newState.style.inheritFrom(state.style);
     newState.viewPort = state.viewPort;
-    newState.bbox = Rect(0, 0, 0, 0);
     newState.color = state.color;
     newState.dpi = state.dpi;
 

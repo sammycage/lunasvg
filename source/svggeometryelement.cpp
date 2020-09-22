@@ -408,14 +408,14 @@ SVGRectElement::SVGRectElement(SVGDocument* document)
       m_rx(DOMPropertyIdRx, LengthModeWidth, ForbidNegativeLengths),
       m_ry(DOMPropertyIdRy, LengthModeHeight, ForbidNegativeLengths),
       m_width(DOMPropertyIdWidth, LengthModeWidth, ForbidNegativeLengths),
-      m_heigth(DOMPropertyIdHeight, LengthModeHeight, ForbidNegativeLengths)
+      m_height(DOMPropertyIdHeight, LengthModeHeight, ForbidNegativeLengths)
 {
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);
     addToPropertyMap(m_rx);
     addToPropertyMap(m_ry);
     addToPropertyMap(m_width);
-    addToPropertyMap(m_heigth);
+    addToPropertyMap(m_height);
 }
 
 Path SVGRectElement::makePath(const RenderState& state) const
@@ -423,7 +423,7 @@ Path SVGRectElement::makePath(const RenderState& state) const
     double _x = m_x.value(state);
     double _y = m_y.value(state);
     double _w = m_width.value(state);
-    double _h = m_heigth.value(state);
+    double _h = m_height.value(state);
 
     double _rx, _ry;
     if(m_rx.isSpecified() && m_ry.isSpecified())
@@ -454,13 +454,13 @@ Rect SVGRectElement::makeBoundingBox(const RenderState& state) const
     double _x = m_x.value(state);
     double _y = m_y.value(state);
     double _w = m_width.value(state);
-    double _h = m_heigth.value(state);
+    double _h = m_height.value(state);
     return Rect(_x, _y, _w, _h);
 }
 
 void SVGRectElement::render(RenderContext& context) const
 {
-    if(m_width.isZero() || m_heigth.isZero())
+    if(m_width.isZero() || m_height.isZero())
     {
         context.skipElement();
         return;

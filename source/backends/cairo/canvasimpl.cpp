@@ -309,59 +309,7 @@ cairo_line_join_t to_cairo_line_join(LineJoin join)
 
 cairo_operator_t to_cairo_operator(BlendMode mode)
 {
-    switch(mode)
-    {
-    case BlendModeClear:
-        return CAIRO_OPERATOR_CLEAR;
-    case BlendModeSrc:
-        return CAIRO_OPERATOR_SOURCE;
-    case BlendModeDst:
-        return CAIRO_OPERATOR_DEST;
-    case BlendModeSrc_Over:
-        return CAIRO_OPERATOR_OVER;
-    case BlendModeDst_Over:
-        return CAIRO_OPERATOR_DEST_OVER;
-    case BlendModeSrc_In:
-        return CAIRO_OPERATOR_IN;
-    case BlendModeDst_In:
-        return CAIRO_OPERATOR_DEST_IN;
-    case BlendModeSrc_Out:
-        return CAIRO_OPERATOR_OUT;
-    case BlendModeDst_Out:
-        return CAIRO_OPERATOR_DEST_OUT;
-    case BlendModeSrc_Atop:
-        return CAIRO_OPERATOR_ATOP;
-    case BlendModeDst_Atop:
-        return CAIRO_OPERATOR_DEST_ATOP;
-    case BlendModeXnor:
-        return CAIRO_OPERATOR_XOR;
-    case BlendModePlus:
-        return CAIRO_OPERATOR_ADD;
-    case BlendModeMultiply:
-        return CAIRO_OPERATOR_MULTIPLY;
-    case BlendModeScreen:
-        return CAIRO_OPERATOR_SCREEN;
-    case BlendModeOverlay:
-        return CAIRO_OPERATOR_OVERLAY;
-    case BlendModeDarken:
-        return CAIRO_OPERATOR_DARKEN;
-    case BlendModeLighten:
-        return CAIRO_OPERATOR_LIGHTEN;
-    case BlendModeColor_Dodge:
-        return CAIRO_OPERATOR_COLOR_DODGE;
-    case BlendModeColor_Burn:
-        return CAIRO_OPERATOR_COLOR_BURN;
-    case BlendModeHard_Light:
-        return CAIRO_OPERATOR_HARD_LIGHT;
-    case BlendModeSoft_Light:
-        return CAIRO_OPERATOR_SOFT_LIGHT;
-    case BlendModeDifference:
-        return CAIRO_OPERATOR_DIFFERENCE;
-    case BlendModeExclusion:
-        return CAIRO_OPERATOR_EXCLUSION;
-    }
-
-    return CAIRO_OPERATOR_OVER;
+    return mode == BlendModeDst_In ? CAIRO_OPERATOR_DEST_IN : CAIRO_OPERATOR_OVER;
 }
 
 } // namespace lunasvg

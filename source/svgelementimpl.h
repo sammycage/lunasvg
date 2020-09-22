@@ -51,10 +51,6 @@ public:
     virtual bool isSVGPaintElement() const { return false; }
     virtual bool isSVGGradientElement() const { return false; }
     virtual bool isSVGPolyElement() const { return false; }
-    virtual bool isSVGSMILElement() const { return false; }
-    virtual bool isSVGAnimationElement() const { return false; }
-    virtual bool isSVGTextContentElement() const { return false; }
-    virtual bool isSVGTextPositioningElement() const { return false; }
 
 protected:
     SVGElementImpl(SVGDocument* document);
