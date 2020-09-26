@@ -60,6 +60,13 @@ enum MarkerUnitType
     MarkerUnitTypeUserSpaceOnUse
 };
 
+enum TextAnchor
+{
+    TextAnchorStart,
+    TextAnchorMiddle,
+    TextAnchorEnd
+};
+
 typedef std::pair<unsigned short, std::string> EnumEntry;
 typedef std::vector<EnumEntry> EnumEntryList;
 
@@ -72,6 +79,7 @@ template<> const EnumEntryList& getEnumEntryList<WindRule>();
 template<> const EnumEntryList& getEnumEntryList<SpreadMethod>();
 template<> const EnumEntryList& getEnumEntryList<UnitType>();
 template<> const EnumEntryList& getEnumEntryList<MarkerUnitType>();
+template<> const EnumEntryList& getEnumEntryList<TextAnchor>();
 
 class SVGEnumerationBase : public SVGPropertyBase
 {

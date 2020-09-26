@@ -105,11 +105,15 @@ public:
 class SVGElementText : public SVGElementImpl
 {
 public:
-    SVGElementText(SVGDocument* document);
+    SVGElementText(SVGDocument* document, const std::string& content);
     bool isSVGElementText() const { return true; }
+    const std::string& content() const { return m_content; }
     void render(RenderContext&) const;
-    void externalise(std::string&, std::uint32_t&) const;
+    void externalise(std::string& out, std::uint32_t&) const;
     SVGElementImpl* clone(SVGDocument* document) const;
+
+private:
+    std::string m_content;
 };
 
 } // namespace lunasvg

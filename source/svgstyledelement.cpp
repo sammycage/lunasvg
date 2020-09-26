@@ -95,7 +95,8 @@ void SVGStyledElement::renderTail(RenderContext& context) const
         if(const SVGMaskElement* mask = state.style.mask(document()))
             mask->applyMask(state);
 
-        newState.canvas.blend(state.canvas, BlendModeSrc_Over, isSVGGeometryElement() ? 1.0 : state.style.opacity(), 0.0, 0.0);
+        double opacity = (isSVGGeometryElement() || elementId()==DOMElementIdText) ? 1.0 : state.style.opacity();
+        newState.canvas.blend(state.canvas, BlendModeSrc_Over, opacity, 0.0, 0.0);
     }
 
     context.pop();

@@ -54,6 +54,11 @@ bool SVGDocument::loadFromData(const std::string& content)
     return m_impl->loadFromData(content);
 }
 
+bool SVGDocument::loadFontFromFile(const std::string& filename)
+{
+    return m_impl->loadFontFromFile(filename);
+}
+
 double SVGDocument::documentWidth(double dpi) const
 {
     return m_impl->documentWidth(dpi);

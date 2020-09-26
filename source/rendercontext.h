@@ -46,11 +46,13 @@ public:
     Paint fillPaint(const RenderState& state) const;
     Paint strokePaint(const RenderState& state) const;
     double strokeWidth(const RenderState& state) const;
+    double fontSize(const RenderState& state) const;
     double fillOpacity() const;
     double strokeOpacity() const;
     double opacity() const;
     WindRule fillRule() const;
     WindRule clipRule() const;
+    TextAnchor textAnchor() const;
     const SVGMaskElement* mask(const SVGDocument* document) const;
     const SVGClipPathElement* clipPath(const SVGDocument* document) const;
     const SVGMarkerElement* markerStart(const SVGDocument* document) const;

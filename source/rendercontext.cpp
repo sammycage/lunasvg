@@ -111,12 +111,11 @@ bool RenderStyle::requiresCompositing(const SVGElementImpl* element) const
     if(const SVGPropertyBase* property = get(CSSPropertyIdClip_Path))
         return true;
 
+    if(element->isSVGGeometryElement() || element->elementId()==DOMElementIdText)
+        return false;
+
     if(const SVGPropertyBase* property = get(CSSPropertyIdOpacity))
-    {
-        if(element->isSVGGeometryElement())
-            return false;
         return to<SVGNumber>(property)->value() != 1.0;
-    }
 
     return false;
 }
@@ -180,6 +179,14 @@ double RenderStyle::strokeWidth(const RenderState& state) const
     return 1.0;
 }
 
+double RenderStyle::fontSize(const RenderState &state) const
+{
+    if(const SVGPropertyBase* property = get(CSSPropertyIdFont_Size))
+        return to<SVGLength>(property)->value(state);
+
+    return 12.0;
+}
+
 double RenderStyle::fillOpacity() const
 {
     if(const SVGPropertyBase* property = get(CSSPropertyIdFill_Opacity))
@@ -218,6 +225,14 @@ WindRule RenderStyle::clipRule() const
         return to<SVGEnumeration<WindRule>>(property)->enumValue();
 
     return WindRuleNonZero;
+}
+
+TextAnchor RenderStyle::textAnchor() const
+{
+    if(const SVGPropertyBase* property = get(CSSPropertyIdText_Anchor))
+        return to<SVGEnumeration<TextAnchor>>(property)->enumValue();
+
+    return TextAnchorStart;
 }
 
 const SVGMaskElement* RenderStyle::mask(const SVGDocument* document) const

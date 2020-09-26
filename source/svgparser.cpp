@@ -1,6 +1,6 @@
 #include "svgparser.h"
 #include "svgdocumentimpl.h"
-#include "svgsvgelement.h"
+#include "svgelementimpl.h"
 
 #define KTagUnknown 0
 #define KTagOpen 1
@@ -16,7 +16,7 @@ namespace lunasvg {
 
 SVGElementImpl* SVGParser::parse(const std::string& source, SVGDocument* document, SVGElementHead* parent)
 {
-    SVGElementImpl* start = new SVGElementText(document);
+    SVGElementImpl* start = new SVGElementText(document, KEmptyString);
     start->parent = parent;
     SVGElementImpl* current = start;
 
@@ -106,6 +106,14 @@ SVGElementImpl* SVGParser::parse(const std::string& source, SVGDocument* documen
             current->next = element->tail;
             current = element->tail;
         }
+        else if(tagType==KTagPCData && !blocks.empty())
+        {
+            SVGElementText* element = new SVGElementText(document, content);
+            element->parent = blocks.top();
+            element->prev = current;
+            current->next = element;
+            current = element;
+        }
     }
 
     current->next = start;
@@ -145,7 +153,7 @@ bool SVGParser::enumTag(const char*& ptr, int& tagType, std::string& tagName, st
     if(ptr!=start)
     {
         tagType = KTagPCData;
-        content.assign(start, ptr);
+        content.assign(start, Utils::rtrim(start, ptr));
         return true;
     }
 

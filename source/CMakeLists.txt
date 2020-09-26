@@ -39,6 +39,7 @@ PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/svgmaskelement.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/svgclippathelement.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/svgmarkerelement.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/svgtextelement.cpp"
 )
 
 target_include_directories(lunasvg

@@ -235,8 +235,9 @@ SVGElementImpl* SVGElementTail::clone(SVGDocument* document) const
     return new SVGElementTail(document);
 }
 
-SVGElementText::SVGElementText(SVGDocument* document)
-    : SVGElementImpl(document)
+SVGElementText::SVGElementText(SVGDocument* document, const std::string& content)
+    : SVGElementImpl(document),
+      m_content(content)
 {
 }
 
@@ -244,13 +245,14 @@ void SVGElementText::render(RenderContext&) const
 {
 }
 
-void SVGElementText::externalise(std::string&, std::uint32_t&) const
+void SVGElementText::externalise(std::string& out, std::uint32_t&) const
 {
+    out += m_content;
 }
 
 SVGElementImpl* SVGElementText::clone(SVGDocument* document) const
 {
-    return new SVGElementText(document);
+    return new SVGElementText(document, m_content);
 }
 
 } // namespace lunasvg

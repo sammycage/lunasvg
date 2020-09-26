@@ -27,6 +27,7 @@ enum DOMElementID
     DOMElementIdStop,
     DOMElementIdSvg,
     DOMElementIdSymbol,
+    DOMElementIdText,
     DOMElementIdUse,
     DOMElementLastId
 };
@@ -88,6 +89,7 @@ enum CSSPropertyID
     CSSPropertyIdFill,
     CSSPropertyIdFill_Opacity,
     CSSPropertyIdFill_Rule,
+    CSSPropertyIdFont_Size,
     CSSPropertyIdMarker_End,
     CSSPropertyIdMarker_Mid,
     CSSPropertyIdMarker_Start,
@@ -105,6 +107,7 @@ enum CSSPropertyID
     CSSPropertyIdStroke_Miterlimit,
     CSSPropertyIdStroke_Opacity,
     CSSPropertyIdStroke_Width,
+    CSSPropertyIdText_Anchor,
     CSSPropertyIdVisibility,
     CSSPropertyLastId
 };

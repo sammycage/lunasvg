@@ -10,6 +10,7 @@
 #include "svgclippathelement.h"
 #include "svgmarkerelement.h"
 #include "svggeometryelement.h"
+#include "svgtextelement.h"
 
 #include <map>
 
@@ -46,6 +47,7 @@ static const DOMElementID contentmodel_1[] = {
     DOMElementIdMask,
     DOMElementIdPattern,
     DOMElementIdSolidColor,
+    DOMElementIdText,
     DOMElementIdUnknown
 };
 
@@ -58,6 +60,7 @@ static const DOMElementID contentmodel_2[] = {
 
 static const DOMElementID contentmodel_3[] = {
     KElementIdsShape,
+    DOMElementIdText,
     DOMElementIdUse,
     DOMElementIdUnknown
 };
@@ -92,6 +95,7 @@ static const struct
     {DOMElementIdStop, nullptr},
     {DOMElementIdSvg, contentmodel_1},
     {DOMElementIdSymbol, contentmodel_1},
+    {DOMElementIdText, nullptr},
     {DOMElementIdUse, nullptr},
     {DOMElementLastId, nullptr}
 };
@@ -116,6 +120,7 @@ static const std::map<std::string, DOMElementID> domelementmap = {
     {"solidColor", DOMElementIdSolidColor},
     {"svg", DOMElementIdSvg},
     {"symbol", DOMElementIdSymbol},
+    {"text", DOMElementIdText},
     {"use", DOMElementIdUse},
 };
 
@@ -171,6 +176,7 @@ static const std::map<std::string, CSSPropertyID> csspropertymap = {
     {"fill", CSSPropertyIdFill},
     {"fill-opacity", CSSPropertyIdFill_Opacity},
     {"fill-rule", CSSPropertyIdFill_Rule},
+    {"font-size", CSSPropertyIdFont_Size},
     {"marker-end", CSSPropertyIdMarker_End},
     {"marker-mid", CSSPropertyIdMarker_Mid},
     {"marker-start", CSSPropertyIdMarker_Start},
@@ -188,6 +194,7 @@ static const std::map<std::string, CSSPropertyID> csspropertymap = {
     {"stroke-miterlimit", CSSPropertyIdStroke_Miterlimit},
     {"stroke-opacity", CSSPropertyIdStroke_Opacity},
     {"stroke-width", CSSPropertyIdStroke_Width},
+    {"text-anchor", CSSPropertyIdText_Anchor},
     {"visibility", CSSPropertyIdVisibility},
 };
 
@@ -247,6 +254,8 @@ SVGElementHead* createElement(DOMElementID elementId, SVGDocument* document)
         return new SVGSolidColorElement(document);
     case DOMElementIdMarker:
         return new SVGMarkerElement(document);
+    case DOMElementIdText:
+        return new SVGTextElement(document);
     default:
         break;
     }

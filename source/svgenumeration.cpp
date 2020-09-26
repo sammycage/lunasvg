@@ -103,6 +103,19 @@ template<> const EnumEntryList& getEnumEntryList<MarkerUnitType>()
     return entries;
 }
 
+template<> const EnumEntryList& getEnumEntryList<TextAnchor>()
+{
+    static EnumEntryList entries;
+    if(entries.empty())
+    {
+        entries.emplace_back(TextAnchorStart, "start");
+        entries.emplace_back(TextAnchorMiddle, "middle");
+        entries.emplace_back(TextAnchorEnd, "end");
+    }
+
+    return entries;
+}
+
 void SVGEnumerationBase::setValueAsString(const std::string& value)
 {
     m_value = 0;

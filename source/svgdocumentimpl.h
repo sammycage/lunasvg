@@ -9,6 +9,7 @@ namespace lunasvg {
 
 class SVGElementImpl;
 class SVGRootElement;
+class Font;
 
 class SVGDocumentImpl
 {
@@ -17,6 +18,7 @@ public:
     ~SVGDocumentImpl();
     bool loadFromFile(const std::string& filename);
     bool loadFromData(const std::string& content);
+    bool loadFontFromFile(const std::string& filename);
     double documentWidth(double dpi) const;
     double documentHeight(double dpi) const;
     Box getBBox(double dpi) const;
@@ -37,6 +39,7 @@ public:
     bool setCurrentTime(double, bool);
     double currentTime() const;
     SVGRootElement* rootElement() const { return m_rootElement; }
+    Font* font() const { return m_font.get(); }
 
 private:
     void dispatchElementRemoveEvent(const SVGElementImpl*, const SVGElementImpl*);
@@ -44,6 +47,7 @@ private:
 
 private:
     SVGRootElement* m_rootElement;
+    std::unique_ptr<Font> m_font;
     std::multimap<std::string, SVGElementImpl*> m_idCache;
 };
 

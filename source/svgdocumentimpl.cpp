@@ -1,6 +1,7 @@
 #include "svgdocumentimpl.h"
 #include "svgsvgelement.h"
 #include "svgparser.h"
+#include "font.h"
 
 #include <fstream>
 
@@ -49,6 +50,12 @@ bool SVGDocumentImpl::loadFromData(const std::string& content)
     insertElement(head, tail, m_rootElement, AfterBegin);
     dispatchElementInsertEvent(head, tail);
     return true;
+}
+
+bool SVGDocumentImpl::loadFontFromFile(const std::string& filename)
+{
+    m_font = Font::loadFromFile(filename);
+    return !!m_font;
 }
 
 double SVGDocumentImpl::documentWidth(double dpi) const

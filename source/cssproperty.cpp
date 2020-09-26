@@ -35,6 +35,7 @@ CSSPropertyBase* CSSPropertyBase::create(CSSPropertyID propertyId)
         return new CSSProperty<SVGNumberPercentage>(propertyId);
     case CSSPropertyIdStroke_Miterlimit:
         return new CSSProperty<SVGNumber>(propertyId);
+    case CSSPropertyIdFont_Size:
     case CSSPropertyIdStroke_Width:
     case CSSPropertyIdStroke_Dashoffset:
         return new CSSProperty<SVGLength>(propertyId);
@@ -49,6 +50,8 @@ CSSPropertyBase* CSSPropertyBase::create(CSSPropertyID propertyId)
         return new CSSProperty<SVGEnumeration<LineJoin>>(propertyId);
     case CSSPropertyIdDisplay:
         return new CSSProperty<SVGEnumeration<Display>>(propertyId);
+    case CSSPropertyIdText_Anchor:
+        return new CSSProperty<SVGEnumeration<TextAnchor>>(propertyId);
     case CSSPropertyIdVisibility:
         return new CSSProperty<SVGEnumeration<Visibility>>(propertyId);
     case CSSPropertyIdClip_Path:

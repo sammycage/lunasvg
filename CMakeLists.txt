@@ -12,6 +12,7 @@ add_library(lunasvg)
 
 add_subdirectory(include)
 add_subdirectory(source)
+add_subdirectory(3rdparty/stb)
 
 if(LUNASVG_BUILD_EXAMPLES)
     add_subdirectory(example)

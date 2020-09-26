@@ -79,6 +79,13 @@ public:
     bool loadFromData(const std::string& content);
 
     /**
+     * @brief loadFontFromFile
+     * @param filename
+     * @return
+     */
+    bool loadFontFromFile(const std::string& filename);
+
+    /**
      * @brief Returns the width of the document as specified in the SVG file.
      * @param dpi Dots per inch to use for units conversion to pixels.
      * @return The width in pixels, or -1 if the width cannot be determined.
