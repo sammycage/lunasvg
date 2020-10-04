@@ -88,9 +88,6 @@ void Path::arcTo(double rx, double ry, double xAxisRotation, bool largeArcFlag, 
         y += cp.y;
     }
 
-    if(x == cp.x && y == cp.y)
-        return;
-
     if(rx == 0.0 || ry == 0.0)
     {
         lineTo(x, y);
@@ -102,6 +99,9 @@ void Path::arcTo(double rx, double ry, double xAxisRotation, bool largeArcFlag, 
 
     double dx2 = (cp.x - x) / 2.0;
     double dy2 = (cp.y - y) / 2.0;
+
+    if(dx2 == 0.0 || dy2 == 0.0)
+        return;
 
     double x1 = (cos_th * dx2 + sin_th * dy2);
     double y1 = (-sin_th * dx2 + cos_th * dy2);
@@ -150,11 +150,11 @@ void Path::arcTo(double rx, double ry, double xAxisRotation, bool largeArcFlag, 
     double angleExtent = sign * ((p / n < -1.0) ? PI : (p / n > 1.0) ? 0 : std::acos(p / n));
     if(!sweepFlag && angleExtent > 0.0)
     {
-       angleExtent -= PI * 2.0;
+        angleExtent -= PI * 2.0;
     }
     else if(sweepFlag && angleExtent < 0.0)
     {
-       angleExtent += PI * 2.0;
+        angleExtent += PI * 2.0;
     }
 
     int numSegments = int(std::ceil(std::abs(angleExtent) * 2.0 / PI));
@@ -164,21 +164,21 @@ void Path::arcTo(double rx, double ry, double xAxisRotation, bool largeArcFlag, 
     std::size_t pos = 0;
     for(int i = 0;i < numSegments;i++)
     {
-       double angle = angleStart + i * angleIncrement;
-       double dx = std::cos(angle);
-       double dy = std::sin(angle);
+        double angle = angleStart + i * angleIncrement;
+        double dx = std::cos(angle);
+        double dy = std::sin(angle);
 
-       coords[pos++] = dx - controlLength * dy;
-       coords[pos++] = dy + controlLength * dx;
+        coords[pos++] = dx - controlLength * dy;
+        coords[pos++] = dy + controlLength * dx;
 
-       angle += angleIncrement;
-       dx = std::cos(angle);
-       dy = std::sin(angle);
+        angle += angleIncrement;
+        dx = std::cos(angle);
+        dy = std::sin(angle);
 
-       coords[pos++] = dx + controlLength * dy;
-       coords[pos++] = dy - controlLength * dx;
-       coords[pos++] = dx;
-       coords[pos++] = dy;
+        coords[pos++] = dx + controlLength * dy;
+        coords[pos++] = dy - controlLength * dx;
+        coords[pos++] = dx;
+        coords[pos++] = dy;
     }
 
     AffineTransform m;

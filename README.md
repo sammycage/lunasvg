@@ -30,7 +30,7 @@ int main()
 - Document Structures: defs, svg, g, use, symbol.
 - Coordinate Systems, Transformations and Units.
 - Markers.
-- Texts (TODO) : text, tspan, tref, textPath.
+- Texts.
 - Animations (TODO) : animate, animateColor, animateMotion, animateTransform
 
 ## depends

@@ -121,7 +121,7 @@ static const std::map<std::string, DOMElementID> domelementmap = {
     {"svg", DOMElementIdSvg},
     {"symbol", DOMElementIdSymbol},
     {"text", DOMElementIdText},
-    {"use", DOMElementIdUse},
+    {"use", DOMElementIdUse}
 };
 
 static const std::map<std::string, DOMPropertyID> dompropertymap = {
@@ -142,7 +142,6 @@ static const std::map<std::string, DOMPropertyID> dompropertymap = {
     {"maskUnits", DOMPropertyIdMaskUnits},
     {"offset", DOMPropertyIdOffset},
     {"orient", DOMPropertyIdOrient},
-    {"path", DOMPropertyIdPath},
     {"patternContentUnits", DOMPropertyIdPatternContentUnits},
     {"patternTransform", DOMPropertyIdPatternTransform},
     {"patternUnits", DOMPropertyIdPatternUnits},
@@ -151,7 +150,6 @@ static const std::map<std::string, DOMPropertyID> dompropertymap = {
     {"r", DOMPropertyIdR},
     {"refX", DOMPropertyIdRefX},
     {"refY", DOMPropertyIdRefY},
-    {"rotate", DOMPropertyIdRotate},
     {"rx", DOMPropertyIdRx},
     {"ry", DOMPropertyIdRy},
     {"spreadMethod", DOMPropertyIdSpreadMethod},
@@ -165,7 +163,7 @@ static const std::map<std::string, DOMPropertyID> dompropertymap = {
     {"xlink:href", DOMPropertyIdHref},
     {"y", DOMPropertyIdY},
     {"y1", DOMPropertyIdY1},
-    {"y2", DOMPropertyIdY2},
+    {"y2", DOMPropertyIdY2}
 };
 
 static const std::map<std::string, CSSPropertyID> csspropertymap = {
@@ -195,7 +193,7 @@ static const std::map<std::string, CSSPropertyID> csspropertymap = {
     {"stroke-opacity", CSSPropertyIdStroke_Opacity},
     {"stroke-width", CSSPropertyIdStroke_Width},
     {"text-anchor", CSSPropertyIdText_Anchor},
-    {"visibility", CSSPropertyIdVisibility},
+    {"visibility", CSSPropertyIdVisibility}
 };
 
 bool isElementPermitted(DOMElementID parentId, DOMElementID childId)

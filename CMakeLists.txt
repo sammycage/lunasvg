@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 3.3)
 
-project(lunasvg VERSION 1.2.2 LANGUAGES CXX)
+project(lunasvg VERSION 1.3.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 
-option(BUILD_SHARED_LIBS "Builds shared libraries" ON)
 option(LUNASVG_BUILD_EXAMPLES "Builds examples" OFF)
 option(LUNASVG_ENABLE_CAIRO "Enable Cairo 2D Graphics"  OFF)
 

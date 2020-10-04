@@ -15,41 +15,7 @@ SVGTextElement::SVGTextElement(SVGDocument* document)
     addToPropertyMap(m_y);
 }
 
-inline bool parseEntity(const char* ptr, const char* end, std::uint32_t& codepoint)
-{
-    if(*ptr == '#')
-    {
-        ++ptr;
-        int base = 10;
-        if(*ptr == 'x')
-        {
-            ++ptr;
-            base = 16;
-        }
-
-        if(!Utils::parseInteger(ptr, codepoint, base))
-            return false;
-        return ptr == end;
-    }
-
-    static const std::map<std::string, std::uint32_t> entitymap =
-    {
-        {"amp", 38},
-        {"lt", 60},
-        {"gt", 62},
-        {"quot", 34},
-        {"apos", 39},
-    };
-
-    std::string name(ptr, end);
-    std::map<std::string, std::uint32_t>::const_iterator it = entitymap.find(name);
-    if(it == entitymap.end())
-        return false;
-    codepoint = it->second;
-    return true;
-}
-
-inline const char* decode(const char* begin, const char* end, std::uint32_t& output)
+inline bool decodeUtf8(const char*& ptr, const char* end, std::uint32_t& output)
 {
     static const int trailing[256] =
     {
@@ -68,28 +34,23 @@ inline const char* decode(const char* begin, const char* end, std::uint32_t& out
         0x00000000, 0x00003080, 0x000E2080, 0x03C82080, 0xFA082080, 0x82082080
     };
 
-    int trailingBytes = trailing[static_cast<std::uint8_t>(*begin)];
-    if(begin + trailingBytes < end)
-    {
-        output = 0;
-        switch(trailingBytes)
-        {
-        case 5: output += static_cast<std::uint8_t>(*begin++); output <<= 6;
-        case 4: output += static_cast<std::uint8_t>(*begin++); output <<= 6;
-        case 3: output += static_cast<std::uint8_t>(*begin++); output <<= 6;
-        case 2: output += static_cast<std::uint8_t>(*begin++); output <<= 6;
-        case 1: output += static_cast<std::uint8_t>(*begin++); output <<= 6;
-        case 0: output += static_cast<std::uint8_t>(*begin++);
-        }
+    int trailingBytes = trailing[static_cast<std::uint8_t>(*ptr)];
+    if(ptr + trailingBytes >= end)
+        return false;
 
-        output -= offsets[trailingBytes];
-    }
-    else
+    output = 0;
+    switch(trailingBytes)
     {
-        begin = end;
+    case 5: output += static_cast<std::uint8_t>(*ptr++); output <<= 6;
+    case 4: output += static_cast<std::uint8_t>(*ptr++); output <<= 6;
+    case 3: output += static_cast<std::uint8_t>(*ptr++); output <<= 6;
+    case 2: output += static_cast<std::uint8_t>(*ptr++); output <<= 6;
+    case 1: output += static_cast<std::uint8_t>(*ptr++); output <<= 6;
+    case 0: output += static_cast<std::uint8_t>(*ptr++);
     }
 
-    return begin;
+    output -= offsets[trailingBytes];
+    return true;
 }
 
 std::vector<std::uint32_t> lunasvg::SVGTextElement::buildTextContent() const
@@ -111,22 +72,53 @@ std::vector<std::uint32_t> lunasvg::SVGTextElement::buildTextContent() const
         if(*ptr == '&')
         {
             ++ptr;
-            const char* start = ptr;
-            while(ptr < end && *ptr!=';')
+            if(*ptr == '#')
+            {
                 ++ptr;
-            if(ptr >= end || *ptr!=';')
-                break;
-            std::uint32_t codepoint = 0;
-            if(!parseEntity(start, ptr, codepoint))
-                break;
-            out.push_back(codepoint);
-            ++ptr;
-            continue;
+                int base = 10;
+                if(*ptr == 'x')
+                {
+                    ++ptr;
+                    base = 16;
+                }
+
+                std::uint32_t codepoint;
+                if(!Utils::parseInteger(ptr, codepoint, base))
+                    break;
+                if(ptr >= end || *ptr != ';')
+                    break;
+                ++ptr;
+                out.push_back(codepoint);
+            }
+            else
+            {
+                static const std::map<std::string, std::uint32_t> entitymap =
+                {
+                    {"amp", 38},
+                    {"lt", 60},
+                    {"gt", 62},
+                    {"quot", 34},
+                    {"apos", 39}
+                };
+
+                const char* start = ptr;
+                while(ptr < end && *ptr!=';')
+                    ++ptr;
+                if(ptr >= end || *ptr!=';')
+                    break;
+                std::string name(start, ptr);
+                std::map<std::string, std::uint32_t>::const_iterator it = entitymap.find(name);
+                if(it == entitymap.end())
+                    break;
+                ++ptr;
+                out.push_back(it->second);
+            }
         }
         else
         {
-            std::uint32_t codepoint = 0;
-            ptr = decode(ptr, end, codepoint);
+            std::uint32_t codepoint;
+            if(!decodeUtf8(ptr, end, codepoint))
+                break;
             out.push_back(codepoint);
         }
     }

@@ -285,7 +285,7 @@ SVGElementImpl* SVGLineElement::clone(SVGDocument* document) const
 {
     SVGLineElement* e = new SVGLineElement(document);
     baseClone(*e);
-    return  e;
+    return e;
 }
 
 SVGPathElement::SVGPathElement(SVGDocument* document)

@@ -79,9 +79,9 @@ public:
     bool loadFromData(const std::string& content);
 
     /**
-     * @brief loadFontFromFile
-     * @param filename
-     * @return
+     * @brief Loads font from a file.
+     * @param filename Path of the font file to load.
+     * @return True on success, otherwise false.
      */
     bool loadFontFromFile(const std::string& filename);
 

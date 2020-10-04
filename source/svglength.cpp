@@ -81,9 +81,7 @@ double SVGLength::value(double dpi) const
 double SVGLength::value(const RenderState& state, double max) const
 {
     if(m_unit == LengthUnitPercent)
-    {
         return m_value * max / 100.0;
-    }
 
     return value(state.dpi);
 }
