@@ -30,7 +30,7 @@ void SVGAngle::setValueAsString(const std::string& value)
 
     if(Utils::skipDesc(ptr, "rad", 3))
         m_value *= 180.0 / PI;
-    else if(Utils::skipDesc(ptr, "grad", 3))
+    else if(Utils::skipDesc(ptr, "grad", 4))
         m_value *= 360.0 / 400.0;
 }
 
