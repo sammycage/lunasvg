@@ -38,6 +38,10 @@ int main()
 * [cairo](https://www.cairographics.org/download/) (optional)
 * [sfml](https://www.sfml-dev.org/download.php) (optional)
 
+## backends
+* [agg](https://en.wikipedia.org/wiki/Anti-Grain_Geometry) (default)
+* [cairo](https://www.cairographics.org/)
+
 ## build
 
 Create a build directory.
