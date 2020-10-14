@@ -16,8 +16,8 @@ typedef agg::renderer_base<pixel_format_t> renderer_base_t;
 typedef agg::renderer_scanline_aa_solid<renderer_base_t> renderer_solid_t;
 typedef agg::rasterizer_scanline_aa_nogamma<> rasterizer_t;
 
-class Pattern;
 class Gradient;
+class Texture;
 
 class CanvasImpl
 {
@@ -39,13 +39,10 @@ public:
 
 private:
     template<typename gradient_adaptor_t>
-    void render_gradient_spread(gradient_adaptor_t& gradient_adaptor, const Gradient* gradient, double opacity, const agg::trans_affine& matrix);
+    void render_gradient_spread(gradient_adaptor_t& gradient_adaptor, const Gradient& gradient, double opacity, const agg::trans_affine& matrix);
 
     template<typename gradient_function_t>
-    void render_gradient(gradient_function_t& gradient_function, const Gradient* gradient, double opacity, const agg::trans_affine& matrix);
-
-    template<typename source_t, typename span_generator_t>
-    void render_pattern(const Pattern* pattern, const agg::trans_affine& matrix);
+    void render_gradient(gradient_function_t& gradient_function, const Gradient& gradient, double opacity, const agg::trans_affine& matrix);
 
     void render_scanlines(const Paint& paint, const agg::trans_affine& matrix);
 

@@ -9,30 +9,10 @@ namespace lunasvg {
 
 enum BlendMode
 {
-    BlendModeClear,
     BlendModeSrc,
-    BlendModeDst,
     BlendModeSrc_Over,
-    BlendModeDst_Over,
-    BlendModeSrc_In,
     BlendModeDst_In,
-    BlendModeSrc_Out,
-    BlendModeDst_Out,
-    BlendModeSrc_Atop,
-    BlendModeDst_Atop,
-    BlendModeXnor,
-    BlendModePlus,
-    BlendModeMultiply,
-    BlendModeScreen,
-    BlendModeOverlay,
-    BlendModeDarken,
-    BlendModeLighten,
-    BlendModeColor_Dodge,
-    BlendModeColor_Burn,
-    BlendModeHard_Light,
-    BlendModeSoft_Light,
-    BlendModeDifference,
-    BlendModeExclusion
+    BlendModeDst_Out
 };
 
 class Path;

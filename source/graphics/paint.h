@@ -5,54 +5,14 @@
 #include "affinetransform.h"
 #include "canvas.h"
 
-#include <memory>
-#include <vector>
-#include <utility>
+#include <array>
 
 namespace lunasvg {
-
-enum PaintType
-{
-    PaintTypeNone,
-    PaintTypeColor,
-    PaintTypeGradient,
-    PaintTypePattern
-};
-
-class Rgb;
-class Gradient;
-class Pattern;
-class PaintData;
-
-class Paint
-{
-public:
-    ~Paint();
-    Paint();
-    Paint(const Rgb& color);
-    Paint(const Gradient& gradient);
-    Paint(const Pattern& pattern);
-
-    void setColor(const Rgb& color);
-    void setGradient(const Gradient& gradient);
-    void setPattern(const Pattern& pattern);
-    void setOpacity(double opacity);
-
-    const Rgb* color() const;
-    const Gradient* gradient() const;
-    const Pattern* pattern() const;
-    bool isNone() const;
-    double opacity() const;
-    PaintType type() const;
-
-private:
-    std::shared_ptr<PaintData> m_data;
-};
 
 class Rgb
 {
 public:
-    Rgb();
+    Rgb() = default;
     Rgb(unsigned int value);
     Rgb(unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha = 255);
 
@@ -61,10 +21,10 @@ public:
     unsigned int value() const;
 
 public:
-   unsigned char r;
-   unsigned char g;
-   unsigned char b;
-   unsigned char a;
+    unsigned char r{0};
+    unsigned char g{0};
+    unsigned char b{0};
+    unsigned char a{255};
 };
 
 #define KRgbBlack Rgb(0, 0, 0)
@@ -77,7 +37,6 @@ public:
 
 enum GradientType
 {
-   GradientTypeUnknown,
    GradientTypeLinear,
    GradientTypeRadial
 };
@@ -85,88 +44,93 @@ enum GradientType
 typedef std::pair<double, Rgb> GradientStop;
 typedef std::vector<GradientStop> GradientStops;
 
+class LinearGradient
+{
+public:
+   LinearGradient() = default;
+   LinearGradient(double x1, double y1, double x2, double y2);
+
+public:
+   double x1{0.0};
+   double y1{0.0};
+   double x2{1.0};
+   double y2{1.0};
+};
+
+class RadialGradient
+{
+public:
+   RadialGradient() = default;
+   RadialGradient(double cx, double cy, double r, double fx, double fy);
+
+public:
+   double cx{0.0};
+   double cy{0.0};
+   double r{1.0};
+   double fx{0.0};
+   double fy{0.0};
+};
+
 class Gradient
 {
 public:
-    Gradient();
+    Gradient() = default;
+    Gradient(const LinearGradient& linear);
+    Gradient(const RadialGradient& radial);
 
-    void setSpread(SpreadMethod spread) { m_spread = spread; }
-    void setStops(const GradientStops& stops) { m_stops = stops; }
-    void setMatrix(const AffineTransform& matrix) { m_matrix = matrix; }
-    SpreadMethod spread() const { return m_spread; }
-    const GradientStops& stops() const { return m_stops; }
-    const AffineTransform& matrix() const { return m_matrix; }
-    GradientType type() const { return m_type; }
-    const double* values() const { return m_values; }
+    LinearGradient linear() const;
+    RadialGradient radial() const;
 
-private:
-    friend class LinearGradient;
-    friend class RadialGradient;
-    GradientType m_type;
-    GradientStops m_stops;
-    SpreadMethod m_spread;
-    AffineTransform m_matrix;
-    double m_values[5];
+public:
+    GradientType type{GradientTypeLinear};
+    GradientStops stops;
+    SpreadMethod spread{SpreadMethodPad};
+    AffineTransform matrix;
+    std::array<double, 5> values;
 };
 
-class LinearGradient : public Gradient
+enum TextureType
+{
+    TextureTypePlain,
+    TextureTypeTiled
+};
+
+class Texture
 {
 public:
-   LinearGradient();
-   LinearGradient(double x1, double y1, double x2, double y2);
+    Texture() = default;
+    Texture(const Canvas& canvas);
 
-   void setX1(double x1) { m_values[0] = x1; }
-   void setY1(double y1) { m_values[1] = y1; }
-   void setX2(double x2) { m_values[2] = x2; }
-   void setY2(double y2) { m_values[3] = y2; }
-   double x1() const { return m_values[0]; }
-   double y1() const { return m_values[1]; }
-   double x2() const { return m_values[2]; }
-   double y2() const { return m_values[3]; }
+public:
+    TextureType type{TextureTypePlain};
+    Canvas canvas;
+    AffineTransform matrix;
 };
 
-class RadialGradient : public Gradient
+enum PaintType
+{
+    PaintTypeNone,
+    PaintTypeColor,
+    PaintTypeGradient,
+    PaintTypeTexture
+};
+
+class Paint
 {
 public:
-   RadialGradient();
-   RadialGradient(double cx, double cy, double r, double fx, double fy);
+    Paint() = default;
+    Paint(const Rgb& color);
+    Paint(const Gradient& gradient);
+    Paint(const Texture& texture);
 
-   void setCx(double cx) { m_values[0] = cx; }
-   void setCy(double cy) { m_values[1] = cy; }
-   void setR(double r) { m_values[2] = r; }
-   void setFx(double fx) { m_values[3] = fx; }
-   void setFy(double fy) { m_values[4] = fy; }
-   double cx() const { return m_values[0]; }
-   double cy() const { return m_values[1]; }
-   double r() const { return m_values[2]; }
-   double fx() const { return m_values[3]; }
-   double fy() const { return m_values[4]; }
-};
+    bool isNone() const { return type == PaintTypeNone; }
 
-enum TileMode
-{
-    TileModePad,
-    TileModeReflect,
-    TileModeRepeat
-};
-
-class Pattern
-{
 public:
-    Pattern();
-    Pattern(const Canvas& canvas);
-
-    void setTile(const Canvas& canvas) { m_tile = canvas; }
-    void setTileMode(TileMode mode) { m_tileMode = mode; }
-    void setMatrix(const AffineTransform& matrix) { m_matrix = matrix; }
-    const Canvas& tile() const { return m_tile; }
-    TileMode tileMode() const { return m_tileMode; }
-    const AffineTransform& matrix() const { return m_matrix; }
-
-private:
-    Canvas m_tile;
-    TileMode m_tileMode;
-    AffineTransform m_matrix;
+    PaintType type{PaintTypeNone};
+    double opacity{1.0};
+    Rgb color;
+    Gradient gradient;
+    Texture texture;
 };
 
 } // namespace lunasvg

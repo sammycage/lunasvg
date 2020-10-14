@@ -100,7 +100,7 @@ void Path::arcTo(double rx, double ry, double xAxisRotation, bool largeArcFlag, 
     double dx2 = (cp.x - x) / 2.0;
     double dy2 = (cp.y - y) / 2.0;
 
-    if(dx2 == 0.0 || dy2 == 0.0)
+    if(dx2 == 0.0 && dy2 == 0.0)
         return;
 
     double x1 = (cos_th * dx2 + sin_th * dy2);

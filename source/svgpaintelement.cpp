@@ -99,11 +99,11 @@ void SVGLinearGradientElement::collectGradientAttributes(LinearGradientAttribute
                 attributes.y2 = linear->m_y2.property();
         }
 
-        processedGradients.insert(current);
         SVGElementImpl* ref = document()->impl()->resolveIRI(current->hrefValue());
         if(!ref || !ref->isSVGGradientElement())
             break;
 
+        processedGradients.insert(current);
         current = to<SVGGradientElement>(ref);
         if(processedGradients.find(current)!=processedGradients.end())
             break;
@@ -149,10 +149,11 @@ Paint SVGLinearGradientElement::getPaint(const RenderState& state) const
     if(attributes.gradientTransform)
         matrix.multiply(attributes.gradientTransform->value());
 
-    LinearGradient gradient(x1, y1, x2, y2);
-    gradient.setStops(stops);
-    gradient.setSpread(spread);
-    gradient.setMatrix(matrix);
+    LinearGradient values(x1, y1, x2, y2);
+    Gradient gradient(values);
+    gradient.stops = stops;
+    gradient.spread = spread;
+    gradient.matrix = matrix;
 
     return gradient;
 }
@@ -206,11 +207,11 @@ void SVGRadialGradientElement::collectGradientAttributes(RadialGradientAttribute
                 attributes.fy = radial->m_fy.property();
         }
 
-        processedGradients.insert(current);
         SVGElementImpl* ref = document()->impl()->resolveIRI(current->hrefValue());
         if(!ref || !ref->isSVGGradientElement())
             break;
 
+        processedGradients.insert(current);
         current = to<SVGGradientElement>(ref);
         if(processedGradients.find(current)!=processedGradients.end())
             break;
@@ -258,10 +259,11 @@ Paint SVGRadialGradientElement::getPaint(const RenderState& state) const
     if(attributes.gradientTransform)
         matrix.multiply(attributes.gradientTransform->value());
 
-    RadialGradient gradient(cx, cy, r, fx, fy);
-    gradient.setStops(stops);
-    gradient.setSpread(spread);
-    gradient.setMatrix(matrix);
+    RadialGradient values(cx, cy, r, fx, fy);
+    Gradient gradient(values);
+    gradient.stops = stops;
+    gradient.spread = spread;
+    gradient.matrix = matrix;
 
     return gradient;
 }
@@ -296,7 +298,7 @@ SVGPatternElement::SVGPatternElement(SVGDocument* document)
 
 void SVGPatternElement::collectPatternAttributes(PatternAttributes& attributes) const
 {
-    std::set<const SVGPatternElement*> processedGradients;
+    std::set<const SVGPatternElement*> processedPatterns;
     const SVGPatternElement* current = this;
 
     while(true)
@@ -322,13 +324,13 @@ void SVGPatternElement::collectPatternAttributes(PatternAttributes& attributes) 
         if(!attributes.patternContentElement && current->next != current->tail)
             attributes.patternContentElement = current;
 
-        processedGradients.insert(current);
         SVGElementImpl* ref = document()->impl()->resolveIRI(current->hrefValue());
         if(!ref || ref->elementId() != DOMElementIdPattern)
             break;
 
+        processedPatterns.insert(current);
         current = to<SVGPatternElement>(ref);
-        if(processedGradients.find(current)!=processedGradients.end())
+        if(processedPatterns.find(current)!=processedPatterns.end())
             break;
     }
 }
@@ -399,11 +401,12 @@ Paint SVGPatternElement::getPaint(const RenderState& state) const
     if(attributes.patternTransform)
         matrix.postmultiply(attributes.patternTransform->value());
 
-    Pattern pattern(newState.canvas);
-    pattern.setTileMode(TileModeRepeat);
-    pattern.setMatrix(matrix);
+    Texture texture;
+    texture.type = TextureTypeTiled;
+    texture.canvas = newState.canvas;
+    texture.matrix = matrix;
 
-    return pattern;
+    return texture;
 }
 
 SVGElementImpl* SVGPatternElement::clone(SVGDocument* document) const

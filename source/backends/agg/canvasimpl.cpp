@@ -251,27 +251,27 @@ void CanvasImpl::convertToRGBA()
 static const double KGradientScale = 100.0;
 
 template<typename gradient_adaptor_t>
-void CanvasImpl::render_gradient_spread(gradient_adaptor_t& gradient_adaptor, const Gradient* gradient, double opacity, const agg::trans_affine& matrix)
+void CanvasImpl::render_gradient_spread(gradient_adaptor_t& gradient_adaptor, const Gradient& gradient, double opacity, const agg::trans_affine& matrix)
 {
     agg::trans_affine transform;
-    if(gradient->type() == GradientTypeLinear)
+    if(gradient.type == GradientTypeLinear)
     {
-        const LinearGradient* linear = static_cast<const LinearGradient*>(gradient);
-        double dx = linear->x2() - linear->x1();
-        double dy = linear->y2() - linear->y1();
+        LinearGradient linear = gradient.linear();
+        double dx = linear.x2 - linear.x1;
+        double dy = linear.y2 - linear.y1;
         transform *= agg::trans_affine_scaling(std::sqrt(dx * dx + dy * dy));
         transform *= agg::trans_affine_rotation(std::atan2(dy, dx));
-        transform *= agg::trans_affine_translation(linear->x1(), linear->y1());
+        transform *= agg::trans_affine_translation(linear.x1, linear.y1);
     }
     else
     {
-        const RadialGradient* radial = static_cast<const RadialGradient*>(gradient);
-        transform *= agg::trans_affine_scaling(radial->r());
-        transform *= agg::trans_affine_translation(radial->cx(), radial->cy());
+        RadialGradient radial = gradient.radial();
+        transform *= agg::trans_affine_scaling(radial.r);
+        transform *= agg::trans_affine_translation(radial.cx, radial.cy);
     }
 
     transform.premultiply(agg::trans_affine_scaling(1.0 / KGradientScale));
-    transform.multiply(to_agg_transform(gradient->matrix()));
+    transform.multiply(to_agg_transform(gradient.matrix));
     transform.multiply(matrix);
     transform.invert();
 
@@ -281,7 +281,7 @@ void CanvasImpl::render_gradient_spread(gradient_adaptor_t& gradient_adaptor, co
     typedef agg::span_allocator<agg::rgba8> span_allocator_t;
 
     color_function_t colorFunction;
-    const GradientStops& stops = gradient->stops();
+    const GradientStops& stops = gradient.stops;
     for(unsigned int i = 0;i < stops.size();i++)
     {
         double offset = stops[i].first;
@@ -300,15 +300,15 @@ void CanvasImpl::render_gradient_spread(gradient_adaptor_t& gradient_adaptor, co
 }
 
 template<typename gradient_function_t>
-void CanvasImpl::render_gradient(gradient_function_t& gradient_function, const Gradient* gradient, double opacity, const agg::trans_affine& matrix)
+void CanvasImpl::render_gradient(gradient_function_t& gradient_function, const Gradient& gradient, double opacity, const agg::trans_affine& matrix)
 {
-    if(gradient->spread() == SpreadMethodReflect)
+    if(gradient.spread == SpreadMethodReflect)
     {
         typedef agg::gradient_reflect_adaptor<gradient_function_t> gradient_adaptor_t;
         gradient_adaptor_t adaptor(gradient_function);
         render_gradient_spread(adaptor, gradient, opacity, matrix);
     }
-    else if(gradient->spread() == SpreadMethodRepeat)
+    else if(gradient.spread == SpreadMethodRepeat)
     {
         typedef agg::gradient_repeat_adaptor<gradient_function_t> gradient_adaptor_t;
         gradient_adaptor_t adaptor(gradient_function);
@@ -320,73 +320,81 @@ void CanvasImpl::render_gradient(gradient_function_t& gradient_function, const G
     }
 }
 
-template<typename source_t, typename span_generator_t>
-void CanvasImpl::render_pattern(const Pattern* pattern, const agg::trans_affine& matrix)
-{
-    typedef agg::span_interpolator_linear<> span_interpolator_t;
-    typedef agg::span_allocator<agg::rgba8> span_allocator_t;
-    typedef agg::renderer_scanline_aa<renderer_base_t, span_allocator_t, span_generator_t> pattern_renderer_t;
-
-    agg::trans_affine transform(to_agg_transform(pattern->matrix()));
-    transform.multiply(matrix);
-    transform.invert();
-
-    source_t source(pattern->tile().impl()->m_pixelFormat);
-    span_interpolator_t span_interpolator(transform);
-    span_generator_t span_generator(source, span_interpolator);
-
-    span_allocator_t span_allocator;
-    pattern_renderer_t pattern_renderer(m_rendererBase, span_allocator, span_generator);
-
-    agg::scanline_u8 scanline;
-    agg::render_scanlines(m_rasterizer, scanline, pattern_renderer);
-}
-
 void CanvasImpl::render_scanlines(const Paint& paint, const agg::trans_affine& matrix)
 {
-    if(paint.type() == PaintTypeColor)
+    if(paint.type == PaintTypeColor)
     {
-        const Rgb* c = paint.color();
-        agg::rgba8 color(c->r, c->g, c->b, std::uint8_t(c->a * paint.opacity()));
+        const Rgb& c = paint.color;
+        agg::rgba8 color(c.r, c.g, c.b, std::uint8_t(c.a * paint.opacity));
         m_rendererSolid.color(color);
         agg::scanline_p8 scanline;
         agg::render_scanlines(m_rasterizer, scanline, m_rendererSolid);
     }
-    else if(paint.type() == PaintTypeGradient)
+    else if(paint.type == PaintTypeGradient)
     {
-        const Gradient* g = paint.gradient();
-        if(g->type() == GradientTypeLinear)
+        const Gradient& gradient = paint.gradient;
+        if(gradient.type == GradientTypeLinear)
         {
             agg::gradient_x gradient_function;
-            render_gradient(gradient_function, g, paint.opacity(), matrix);
+            render_gradient(gradient_function, gradient, paint.opacity, matrix);
         }
         else
         {
-            const RadialGradient* radial = static_cast<const RadialGradient*>(g);
-            agg::gradient_radial_focus gradient_function(KGradientScale, KGradientScale*(radial->fx() - radial->cx())/ radial->r(), KGradientScale*(radial->fy() - radial->cy())/ radial->r());
-            render_gradient(gradient_function, g, paint.opacity(), matrix);
+            RadialGradient radial = gradient.radial();
+            agg::gradient_radial_focus gradient_function(KGradientScale, KGradientScale*(radial.fx-radial.cx)/radial.r, KGradientScale*(radial.fy - radial.cy)/ radial.r);
+            render_gradient(gradient_function, gradient, paint.opacity, matrix);
         }
     }
-    else if(paint.type() == PaintTypePattern)
+    else if(paint.type == PaintTypeTexture)
     {
-        const Pattern* p = paint.pattern();
-        if(p->tileMode() == TileModeReflect)
+        const Texture& texture = paint.texture;
+        if(texture.type == TextureTypePlain)
         {
-            typedef agg::wrap_mode_reflect wrap_reflect_t;
-            typedef agg::image_accessor_wrap<pixel_format_t, wrap_reflect_t, wrap_reflect_t> source_reflect_t;
+            typedef agg::image_accessor_clip<pixel_format_t> source_t;
             typedef agg::span_interpolator_linear<> interpolator_t;
-            typedef agg::span_image_filter_rgba_nn<source_reflect_t,  interpolator_t> nearest_reflect_t;
+            typedef agg::span_image_filter_rgba_nn<source_t,  interpolator_t> span_generator_t;
 
-            render_pattern<source_reflect_t, nearest_reflect_t>(p, matrix);
+            typedef agg::span_allocator<agg::rgba8> span_allocator_t;
+            typedef agg::renderer_scanline_aa<renderer_base_t, span_allocator_t, span_generator_t> image_renderer_t;
+
+            agg::trans_affine transform(to_agg_transform(texture.matrix));
+            transform.multiply(matrix);
+            transform.invert();
+            interpolator_t interpolator(transform);
+
+            agg::rgba color(0, 0, 0, 0);
+            source_t source(texture.canvas.impl()->m_pixelFormat, color);
+            span_generator_t span_generator(source, interpolator);
+
+            span_allocator_t span_allocator;
+            image_renderer_t image_renderer(m_rendererBase, span_allocator, span_generator);
+
+            agg::scanline_u8 scanline;
+            agg::render_scanlines(m_rasterizer, scanline, image_renderer);
         }
-        else if(p->tileMode() == TileModeRepeat)
+        else
         {
-            typedef agg::wrap_mode_repeat wrap_repeat_t;
-            typedef agg::image_accessor_wrap<pixel_format_t, wrap_repeat_t, wrap_repeat_t> source_repeat_t;
+            typedef agg::image_accessor_wrap<pixel_format_t, agg::wrap_mode_repeat, agg::wrap_mode_repeat> source_t;
             typedef agg::span_interpolator_linear<> interpolator_t;
-            typedef agg::span_image_filter_rgba_nn<source_repeat_t,  interpolator_t> nearest_repeat_t;
+            typedef agg::span_image_filter_rgba_nn<source_t,  interpolator_t> span_generator_t;
 
-            render_pattern<source_repeat_t, nearest_repeat_t>(p, matrix);
+            typedef agg::span_interpolator_linear<> span_interpolator_t;
+            typedef agg::span_allocator<agg::rgba8> span_allocator_t;
+            typedef agg::renderer_scanline_aa<renderer_base_t, span_allocator_t, span_generator_t> pattern_renderer_t;
+
+            agg::trans_affine transform(to_agg_transform(texture.matrix));
+            transform.multiply(matrix);
+            transform.invert();
+
+            source_t source(texture.canvas.impl()->m_pixelFormat);
+            span_interpolator_t span_interpolator(transform);
+            span_generator_t span_generator(source, span_interpolator);
+
+            span_allocator_t span_allocator;
+            pattern_renderer_t pattern_renderer(m_rendererBase, span_allocator, span_generator);
+
+            agg::scanline_u8 scanline;
+            agg::render_scanlines(m_rasterizer, scanline, pattern_renderer);
         }
     }
 }

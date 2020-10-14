@@ -213,36 +213,32 @@ cairo_matrix_t to_cairo_matrix(const AffineTransform& transform)
 
 cairo_pattern_t* to_cairo_pattern(const Paint& paint)
 {
-    if(paint.type() == PaintTypeColor)
+    if(paint.type == PaintTypeColor)
     {
-        const Rgb* c = paint.color();
-        return cairo_pattern_create_rgba(c->r/255.0, c->g/255.0, c->b/255.0, (c->a/255.0)*paint.opacity());
+        const Rgb& c = paint.color;
+        return cairo_pattern_create_rgba(c.r/255.0, c.g/255.0, c.b/255.0, (c.a/255.0)*paint.opacity);
     }
 
-    if(paint.type() == PaintTypeGradient)
+    if(paint.type == PaintTypeGradient)
     {
-        const Gradient* gradient = paint.gradient();
+        const Gradient& gradient = paint.gradient;
         cairo_pattern_t* pattern;
-        if(gradient->type() == GradientTypeLinear)
+        if(gradient.type == GradientTypeLinear)
         {
-            const LinearGradient& linear = static_cast<const LinearGradient&>(*gradient);
-            pattern = cairo_pattern_create_linear(linear.x1(), linear.y1(), linear.x2(), linear.y2());
-        }
-        else if(gradient->type() == GradientTypeRadial)
-        {
-            const RadialGradient& radial = static_cast<const RadialGradient&>(*gradient);
-            pattern = cairo_pattern_create_radial(radial.fx(), radial.fy(), 0, radial.cx(), radial.cy(), radial.r());
+            LinearGradient linear = gradient.linear();
+            pattern = cairo_pattern_create_linear(linear.x1, linear.y1, linear.x2, linear.y2);
         }
         else
         {
-            return nullptr;
+            RadialGradient radial = gradient.radial();
+            pattern = cairo_pattern_create_radial(radial.fx, radial.fy, 0, radial.cx, radial.cy, radial.r);
         }
 
-        if(gradient->spread() == SpreadMethodReflect)
+        if(gradient.spread == SpreadMethodReflect)
         {
             cairo_pattern_set_extend(pattern, CAIRO_EXTEND_REFLECT);
         }
-        else if(gradient->spread() == SpreadMethodRepeat)
+        else if(gradient.spread == SpreadMethodRepeat)
         {
             cairo_pattern_set_extend(pattern, CAIRO_EXTEND_REPEAT);
         }
@@ -251,39 +247,35 @@ cairo_pattern_t* to_cairo_pattern(const Paint& paint)
             cairo_pattern_set_extend(pattern, CAIRO_EXTEND_PAD);
         }
 
-        const GradientStops& stops = gradient->stops();
+        const GradientStops& stops = gradient.stops;
         for(unsigned int i = 0;i < stops.size();i++)
         {
             double offset = stops[i].first;
             const Rgb& c = stops[i].second;
-            cairo_pattern_add_color_stop_rgba(pattern, offset, c.r/255.0, c.g/255.0, c.b/255.0, (c.a/255.0)*paint.opacity());
+            cairo_pattern_add_color_stop_rgba(pattern, offset, c.r/255.0, c.g/255.0, c.b/255.0, (c.a/255.0)*paint.opacity);
         }
 
-        cairo_matrix_t matrix = to_cairo_matrix(gradient->matrix());
+        cairo_matrix_t matrix = to_cairo_matrix(gradient.matrix);
         cairo_matrix_invert(&matrix);
         cairo_pattern_set_matrix(pattern, &matrix);
         return pattern;
     }
 
-    if(paint.type() == PaintTypePattern)
+    if(paint.type == PaintTypeTexture)
     {
-        const Pattern* p = paint.pattern();
-        cairo_pattern_t* pattern = cairo_pattern_create_for_surface(p->tile().impl()->surface());
+        const Texture& texture = paint.texture;
+        cairo_pattern_t* pattern = cairo_pattern_create_for_surface(texture.canvas.impl()->surface());
 
-        if(p->tileMode() == TileModeReflect)
+        if(texture.type == TextureTypePlain)
         {
-            cairo_pattern_set_extend(pattern, CAIRO_EXTEND_REFLECT);
-        }
-        else if(p->tileMode() == TileModeRepeat)
-        {
-            cairo_pattern_set_extend(pattern, CAIRO_EXTEND_REPEAT);
+            cairo_pattern_set_extend(pattern, CAIRO_EXTEND_NONE);
         }
         else
         {
-            cairo_pattern_set_extend(pattern, CAIRO_EXTEND_PAD);
+            cairo_pattern_set_extend(pattern, CAIRO_EXTEND_REPEAT);
         }
 
-        cairo_matrix_t matrix = to_cairo_matrix(p->matrix());
+        cairo_matrix_t matrix = to_cairo_matrix(texture.matrix);
         cairo_matrix_invert(&matrix);
         cairo_pattern_set_matrix(pattern, &matrix);
         return pattern;
