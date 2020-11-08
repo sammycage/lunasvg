@@ -1,31 +1,22 @@
 cmake_minimum_required(VERSION 3.3)
 
-project(lunasvg VERSION 1.3.1 LANGUAGES CXX)
+project(lunasvg VERSION 1.4.0 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_C_STANDARD 11)
 
 option(LUNASVG_BUILD_EXAMPLES "Builds examples" OFF)
-option(LUNASVG_ENABLE_CAIRO "Enable Cairo 2D Graphics"  OFF)
 
 add_library(lunasvg)
 
 add_subdirectory(include)
 add_subdirectory(source)
 add_subdirectory(3rdparty/stb)
+add_subdirectory(3rdparty/software)
+add_subdirectory(3rdparty/plutovg)
 
 if(LUNASVG_BUILD_EXAMPLES)
     add_subdirectory(example)
-endif()
-
-if(LUNASVG_ENABLE_CAIRO)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(CAIRO REQUIRED cairo)
-    target_include_directories(lunasvg PRIVATE ${CAIRO_INCLUDE_DIRS})
-    target_link_libraries(lunasvg ${CAIRO_LIBRARIES})
-    add_subdirectory(source/backends/cairo)
-else()
-    add_subdirectory(3rdparty/agg)
-    add_subdirectory(source/backends/agg)
 endif()
 
 set(LUNASVG_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)

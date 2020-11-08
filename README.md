@@ -31,16 +31,7 @@ int main()
 - Coordinate Systems, Transformations and Units.
 - Markers.
 - Texts.
-- Animations (TODO) : animate, animateColor, animateMotion, animateTransform
-
-## depends
-* [cmake](https://cmake.org/download/)
-* [cairo](https://www.cairographics.org/download/) (optional)
-* [sfml](https://www.sfml-dev.org/download.php) (optional)
-
-## backends
-* [agg](https://en.wikipedia.org/wiki/Anti-Grain_Geometry) (default)
-* [cairo](https://www.cairographics.org/)
+- Animations (TODO) : animate, animateColor, animateMotion, animateTransform.
 
 ## build
 
@@ -52,11 +43,6 @@ Run cmake command inside build directory.
 ```
 cd build
 cmake ..
-
-# build with cairo support
-
-cmake -DLUNASVG_ENABLE_CAIRO=ON ..
-
 ```
 Run make to build lunasvg.
 
