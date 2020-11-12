@@ -3,6 +3,8 @@ PRIVATE
     "${CMAKE_CURRENT_LIST_DIR}/affinetransform.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/font.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/path.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/dasher.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/bezier.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/pathiterator.cpp"
 )
 

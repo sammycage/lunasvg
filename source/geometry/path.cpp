@@ -414,4 +414,12 @@ void Path::reset()
     m_coordinates.clear();
 }
 
+void Path::grow_reserve(size_t points_count, size_t segments_count)
+{
+    if (m_coordinates.capacity() < m_coordinates.size() + points_count)
+        m_coordinates.reserve(m_coordinates.size() + points_count);
+    if (m_segments.capacity() < m_segments.size() + segments_count)
+        m_segments.reserve(m_segments.size() + segments_count);
+}
+
 } //namespace lunasvg

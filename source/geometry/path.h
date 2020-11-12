@@ -60,6 +60,8 @@ public:
     const std::vector<SegType>& segments() const { return m_segments; }
     const std::vector<Point>& coordinates() const { return m_coordinates; }
 
+    void grow_reserve(size_t points_count, size_t segments_count);
+
 private:
     Point m_startPoint;
     std::vector<SegType> m_segments;

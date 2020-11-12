@@ -3,6 +3,7 @@
 #include "pathiterator.h"
 #include "strokedata.h"
 #include "paint.h"
+#include "dasher.h"
 
 namespace lunasvg {
 
@@ -63,41 +64,47 @@ void CanvasImpl::blend(const Canvas& source, BlendMode mode, double opacity, dou
 
 void CanvasImpl::draw(const Path& path, const AffineTransform& matrix, WindRule fillRule, const Paint& fillPaint, const Paint& strokePaint, const StrokeData& strokeData)
 {
-    if(fillPaint.isNone() && strokePaint.isNone())
+    if (fillPaint.isNone() && strokePaint.isNone())
         return;
 
-    plutovg_matrix_t m = to_plutovg_matrix(matrix);
-    plutovg_set_matrix(m_pluto, &m);
-    plutovg_set_operator(m_pluto, plutovg_operator_src_over);
-    plutovg_set_opacity(m_pluto, 1.0);
-
-    PathIterator it(path);
-    double c[6];
-    while(!it.isDone())
+    bool only_dashed_outline = fillPaint.isNone() && strokeData.dash().size() != 0;
+    if (!only_dashed_outline)
     {
-        switch(it.currentSegment(c))
-        {
-        case SegTypeMoveTo:
-            plutovg_move_to(m_pluto, c[0], c[1]);
-            break;
-        case SegTypeLineTo:
-            plutovg_line_to(m_pluto, c[0], c[1]);
-            break;
-        case SegTypeQuadTo:
-            plutovg_quad_to(m_pluto, c[0], c[1], c[2], c[3]);
-            break;
-        case SegTypeCubicTo:
-            plutovg_cubic_to(m_pluto, c[0], c[1], c[2], c[3], c[4], c[5]);
-            break;
-        case SegTypeClose:
-            plutovg_close_path(m_pluto);
-            break;
-        }
+        // surface to fill
+        plutovg_matrix_t m = to_plutovg_matrix(matrix);
+        plutovg_set_matrix(m_pluto, &m);
+        plutovg_set_operator(m_pluto, plutovg_operator_src_over);
+        plutovg_set_opacity(m_pluto, 1.0);
 
-        it.next();
+        PathIterator it(path);
+        double c[6];
+
+        while (!it.isDone())
+        {
+            switch (it.currentSegment(c))
+            {
+            case SegTypeMoveTo:
+                plutovg_move_to(m_pluto, c[0], c[1]);
+                break;
+            case SegTypeLineTo:
+                plutovg_line_to(m_pluto, c[0], c[1]);
+                break;
+            case SegTypeQuadTo:
+                plutovg_quad_to(m_pluto, c[0], c[1], c[2], c[3]);
+                break;
+            case SegTypeCubicTo:
+                plutovg_cubic_to(m_pluto, c[0], c[1], c[2], c[3], c[4], c[5]);
+                break;
+            case SegTypeClose:
+                plutovg_close_path(m_pluto);
+                break;
+            }
+
+            it.next();
+        }
     }
 
-    if(!fillPaint.isNone())
+    if (!fillPaint.isNone())
     {
         plutovg_paint_t* paint = to_plutovg_paint(fillPaint);
         plutovg_set_fill_rule(m_pluto, to_plutovg_fill_rule(fillRule));
@@ -106,16 +113,32 @@ void CanvasImpl::draw(const Path& path, const AffineTransform& matrix, WindRule 
         plutovg_paint_destroy(paint);
     }
 
-    if(!strokePaint.isNone())
+    if (!strokePaint.isNone())
     {
-        plutovg_paint_t* paint = to_plutovg_paint(strokePaint);
-        plutovg_set_miter_limit(m_pluto, strokeData.miterLimit());
-        plutovg_set_line_cap(m_pluto, to_plutovg_line_cap(strokeData.cap()));
-        plutovg_set_line_join(m_pluto, to_plutovg_line_join(strokeData.join()));
-        plutovg_set_line_width(m_pluto, strokeData.width());
-        plutovg_set_source(m_pluto, paint);
-        plutovg_stroke_preserve(m_pluto);
-        plutovg_paint_destroy(paint);
+        if (strokeData.dash().size())
+        {
+            Dasher dasher(strokeData.dash(), strokeData.dashOffset());
+            Path dashedPath;
+            dasher.dashed(path, dashedPath);
+
+            plutovg_new_path(m_pluto);
+
+            Paint dashedFillPaint = Paint();
+            StrokeData dashedStrokeData = strokeData;
+            dashedStrokeData.setDash(DashArray());
+            draw(dashedPath, matrix, fillRule, dashedFillPaint, strokePaint, dashedStrokeData);
+        }
+        else
+        {
+            plutovg_paint_t* paint = to_plutovg_paint(strokePaint);
+            plutovg_set_miter_limit(m_pluto, strokeData.miterLimit());
+            plutovg_set_line_cap(m_pluto, to_plutovg_line_cap(strokeData.cap()));
+            plutovg_set_line_join(m_pluto, to_plutovg_line_join(strokeData.join()));
+            plutovg_set_line_width(m_pluto, strokeData.width());
+            plutovg_set_source(m_pluto, paint);
+            plutovg_stroke_preserve(m_pluto);
+            plutovg_paint_destroy(paint);
+        }
     }
 
     plutovg_new_path(m_pluto);
