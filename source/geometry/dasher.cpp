@@ -11,9 +11,9 @@ Dasher::Dasher(const DashArray& dashArray, double dashOffset)
 {
     assert(dashArray.size() % 2 == 0);
     m_dash_array.resize(dashArray.size() / 2);
-    for (size_t i = 0; i < dashArray.size(); i+=2)
+    for (size_t i = 0; i < m_dash_array.size(); ++i)
     {
-        m_dash_array[i] = { dashArray[i], dashArray[i+1] };
+        m_dash_array[i] = { dashArray[i*2], dashArray[(i*2+1) % dashArray.size()] };
     }
 
     m_dash_offset = dashOffset;
@@ -197,6 +197,7 @@ void Dasher::dashHelper(const Path& path, Path& result)
         }
         case SegTypeQuadTo:
             assert("TODO");
+            ptPtr += 2;
             break;
         case SegTypeCubicTo: {
             cubicTo(*ptPtr, *(ptPtr + 1), *(ptPtr + 2));
