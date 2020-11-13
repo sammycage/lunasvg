@@ -203,9 +203,8 @@ void Dasher::dashHelper(const Path& path, Path& result)
             ptPtr += 3;
             break;
         }
-        case SegTypeClose: {
-            // The point is already joined to start point in VPath
-            // no need to do anything here.
+        case SegTypeClose: {            
+            lineTo(path.startPoint());
             break;
         }
         }
