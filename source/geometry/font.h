@@ -19,6 +19,7 @@ class FontImpl;
 class Font
 {
 public:
+    static std::unique_ptr<Font> loadFromStream(std::streambuf* stream);
     static std::unique_ptr<Font> loadFromFile(const std::string& filename);
 
     const Glyph& getGlyph(std::uint32_t codepoint) const;

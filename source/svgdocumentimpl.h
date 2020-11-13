@@ -19,6 +19,7 @@ public:
     bool loadFromFile(const std::string& filename);
     bool loadFromData(const std::string& content);
     bool loadFontFromFile(const std::string& filename);
+    bool loadFontFromStream(std::streambuf* stream);
     double documentWidth(double dpi) const;
     double documentHeight(double dpi) const;
     Box getBBox(double dpi) const;

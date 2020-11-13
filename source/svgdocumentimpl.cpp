@@ -52,6 +52,12 @@ bool SVGDocumentImpl::loadFromData(const std::string& content)
     return true;
 }
 
+bool SVGDocumentImpl::loadFontFromStream(std::streambuf* stream)
+{
+    m_font = Font::loadFromStream(stream);
+    return !!m_font;
+}
+
 bool SVGDocumentImpl::loadFontFromFile(const std::string& filename)
 {
     m_font = Font::loadFromFile(filename);

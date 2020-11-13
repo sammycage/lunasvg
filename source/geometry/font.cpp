@@ -11,6 +11,7 @@ namespace lunasvg {
 class FontImpl
 {
 public:
+    bool init(std::streambuf* stream);
     bool init(const std::string& filename);
 
     const Glyph& getGlyph(std::uint32_t codepoint) const;
@@ -27,6 +28,15 @@ std::unique_ptr<Font> Font::loadFromFile(const std::string& filename)
 {
     std::unique_ptr<Font> font(new Font);
     if(font->d->init(filename))
+        return font;
+
+    return nullptr;
+}
+
+std::unique_ptr<Font> Font::loadFromStream(std::streambuf* stream)
+{
+    std::unique_ptr<Font> font(new Font);
+    if (font->d->init(stream))
         return font;
 
     return nullptr;
@@ -56,23 +66,32 @@ Font::Font()
 {
 }
 
+bool FontImpl::init(std::streambuf* stream)
+{
+    if (stream)
+    {
+        std::streampos size = stream->pubseekoff(0, std::ios_base::end);
+        stream->pubseekoff(0, std::ios_base::beg);
+        m_data.reset(new std::uint8_t[size]);
+        std::streampos read = stream->sgetn((char*)m_data.get(), size);
+        assert(read == size);
+
+        if (!stbtt_InitFont(&m_info, m_data.get(), 0))
+            return false;
+
+        return true;
+    }
+
+    return false;
+}
+
 bool FontImpl::init(const std::string& filename)
 {
     std::ifstream fs(filename, std::ios::binary);
     if(!fs.is_open())
         return false;
-
-    fs.seekg(0, std::ios::end);
-    std::streamoff size = fs.tellg();
-    fs.seekg(0, std::ios::beg);
-    m_data.reset(new std::uint8_t[size]);
-    fs.read(reinterpret_cast<char*>(m_data.get()), size);
-    fs.close();
-
-    if(!stbtt_InitFont(&m_info, m_data.get(), 0))
-        return false;
-
-    return true;
+    
+    return init(fs.rdbuf());
 }
 
 const Glyph& FontImpl::getGlyph(std::uint32_t codepoint) const
