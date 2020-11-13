@@ -196,9 +196,21 @@ void Dasher::dashHelper(const Path& path, Path& result)
             break;
         }
         case SegTypeQuadTo:
-            assert("TODO");
+        {
+            const Point& p = m_cur_point;
+            const Point& p1 = *ptPtr;
+            const Point& p2 = *(ptPtr + 1);
+
+            Point cp1,cp2;
+            cp1.x = 2.0 / 3.0 * p1.x + 1.0 / 3.0 * p.x;
+            cp1.y = 2.0 / 3.0 * p1.y + 1.0 / 3.0 * p.y;
+            cp2.x = 2.0 / 3.0 * p1.x + 1.0 / 3.0 * p2.x;
+            cp2.y = 2.0 / 3.0 * p1.y + 1.0 / 3.0 * p2.y;
+            cubicTo(cp1, cp2, p2);
+
             ptPtr += 2;
-            break;
+        }
+        break;
         case SegTypeCubicTo: {
             cubicTo(*ptPtr, *(ptPtr + 1), *(ptPtr + 2));
             ptPtr += 3;
