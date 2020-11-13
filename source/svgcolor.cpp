@@ -8,6 +8,7 @@
 namespace lunasvg {
 
 static const std::map<std::string, Rgb> colormap = {
+    {"transparent", 0x00000000},
     {"aliceblue", 0xF0F8FFFF},
     {"antiquewhite", 0xFAEBD7FF},
     {"aqua", 0x00FFFFFF},
