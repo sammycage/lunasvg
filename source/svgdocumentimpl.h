@@ -30,6 +30,7 @@ public:
     SVGElementImpl* insertContent(const std::string& content, SVGElementImpl* target, InsertPosition position);
     SVGElementImpl* copyElement(const SVGElementImpl* element, SVGElementImpl* target, InsertPosition position);
     SVGElementImpl* moveElement(SVGElementImpl* element, SVGElementImpl* target, InsertPosition position);
+    void clear();
     void clearContent(SVGElementImpl* element);
     void removeElement(SVGElementImpl* element);
     void insertElement(SVGElementImpl* head, SVGElementImpl* tail, SVGElementImpl* target, InsertPosition position);
@@ -45,6 +46,7 @@ public:
 private:
     void dispatchElementRemoveEvent(const SVGElementImpl*, const SVGElementImpl*);
     void dispatchElementInsertEvent(const SVGElementImpl*, const SVGElementImpl*);
+    void initRootElement(SVGDocument* document);
 
 private:
     SVGRootElement* m_rootElement;

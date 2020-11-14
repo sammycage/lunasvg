@@ -39,6 +39,11 @@ SVGElement* SVGDocument::appendContent(const std::string& content)
     return m_impl->rootElement()->appendContent(content);
 }
 
+void SVGDocument::clear()
+{
+    m_impl->clear();
+}
+
 void SVGDocument::clearContent()
 {
     m_impl->rootElement()->clearContent();

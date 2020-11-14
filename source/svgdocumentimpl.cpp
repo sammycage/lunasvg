@@ -9,6 +9,11 @@ namespace lunasvg {
 
 SVGDocumentImpl::SVGDocumentImpl(SVGDocument* document)
 {
+    initRootElement(document);
+}
+
+void SVGDocumentImpl::initRootElement(SVGDocument* document)
+{
     m_rootElement = new SVGRootElement(document);
     m_rootElement->tail = new SVGElementTail(document);
     m_rootElement->parent = m_rootElement;
@@ -283,6 +288,14 @@ SVGElementImpl* SVGDocumentImpl::moveElement(SVGElementImpl* element, SVGElement
     insertElement(head, tail, target, position);
     dispatchElementInsertEvent(head, tail);
     return head;
+}
+
+void SVGDocumentImpl::clear()
+{
+    m_idCache.clear();
+    SVGDocument* document = m_rootElement->document();
+    freeElement(m_rootElement, m_rootElement->tail);
+    initRootElement(document);
 }
 
 void SVGDocumentImpl::clearContent(SVGElementImpl* element)

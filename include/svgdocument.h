@@ -65,6 +65,11 @@ public:
     void clearContent();
 
     /**
+     * @brief Clear the document.
+     */
+    void clear();
+
+    /**
      * @brief Loads SVG content from the given filename.
      * @param filename A SVG resource filename
      * @return True on success, otherwise false.
