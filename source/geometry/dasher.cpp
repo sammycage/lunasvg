@@ -24,9 +24,9 @@ Dasher::Dasher(const DashArray& dashArray, double dashOffset)
     // segments or ZERO lengths gaps we could
     // optimize those usecase.
     for (size_t i = 0; i < m_dash_array.size(); i++) {
-        if (!almostEqual(m_dash_array[i].length, 0.0f))
+        if (!almostEqual(m_dash_array[i].length, 0.0))
             m_no_length = false;
-        if (!almostEqual(m_dash_array[i].gap, 0.0f))
+        if (!almostEqual(m_dash_array[i].gap, 0.0))
             n_no_gap = false;
     }
 }
@@ -38,7 +38,7 @@ void Dasher::moveTo(const Point& p)
     m_cur_point = p;
     m_index = 0;
 
-    if (!almostEqual(m_dash_offset, 0.0f)) {
+    if (!almostEqual(m_dash_offset, 0.0)) {
         double totalLength = 0.0;
         for (size_t i = 0; i < m_dash_array.size(); i++) {
             totalLength = m_dash_array[i].length + m_dash_array[i].gap;

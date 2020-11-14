@@ -160,6 +160,7 @@ static void bbox_callback(int x, int y, int w, int h, void* user)
 plutovg_rle_t* plutovg_rle_render(const plutovg_path_t* path, const plutovg_matrix_t* matrix, const plutovg_rect_t* clip, const plutovg_stroke_data_t* stroke, plutovg_fill_rule_t winding)
 {
     outline_t* outline = outline_create();
+    outline_ensure(outline, path->points.size, path->elements.size);
     plutovg_path_element_t* elements = path->elements.data;
     plutovg_point_t* points = path->points.data;
     plutovg_point_t p[3];
