@@ -214,8 +214,10 @@ void plutovg_set_source_texture(plutovg_t* pluto, plutovg_texture_t* texture)
 
 void plutovg_set_source(plutovg_t* pluto, plutovg_paint_t* source)
 {
-    plutovg_paint_destroy(pluto->state->source);
+    plutovg_paint_t* previous_state = pluto->state->source;
     pluto->state->source = plutovg_paint_reference(source);
+    plutovg_paint_destroy(previous_state);
+
 }
 
 void plutovg_set_fill_rule(plutovg_t* pluto, plutovg_fill_rule_t fill_rule)
