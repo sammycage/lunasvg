@@ -250,8 +250,9 @@ void plutovg_texture_get_matrix(const plutovg_texture_t* texture, plutovg_matrix
 
 void plutovg_texture_set_surface(plutovg_texture_t* texture, plutovg_surface_t* surface)
 {
+    surface = plutovg_surface_reference(surface);
     plutovg_surface_destroy(texture->surface);
-    texture->surface = plutovg_surface_reference(surface);
+    texture->surface = surface;
 }
 
 plutovg_surface_t* plutovg_texture_get_surface(const plutovg_texture_t* texture)

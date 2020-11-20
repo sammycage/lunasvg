@@ -151,6 +151,7 @@ plutovg_path_t* plutovg_path_create(void)
 {
     plutovg_path_t* path = malloc(sizeof(plutovg_path_t));
     path->ref = 1;
+    path->contours = 0;
     path->start.x = 0.0;
     path->start.y = 0.0;
     plutovg_array_init(path->elements);
@@ -194,6 +195,7 @@ void plutovg_path_move_to(plutovg_path_t* path, double x, double y)
 
     path->elements.size += 1;
     path->points.size += 1;
+    path->contours += 1;
 
     path->start.x = x;
     path->start.y = y;
@@ -382,6 +384,7 @@ void plutovg_path_add_path(plutovg_path_t* path, const plutovg_path_t* source, c
 
     path->elements.size += source->elements.size;
     path->points.size += source->points.size;
+    path->contours += source->contours;
     path->start = source->start;
 }
 
@@ -433,6 +436,7 @@ void plutovg_path_clear(plutovg_path_t* path)
 {
     path->elements.size = 0;
     path->points.size = 0;
+    path->contours = 0;
     path->start.x = 0.0;
     path->start.y = 0.0;
 }
@@ -454,6 +458,7 @@ plutovg_path_t* plutovg_path_clone(const plutovg_path_t* path)
 
     p->elements.size = path->elements.size;
     p->points.size = path->points.size;
+    p->contours = path->contours;
     p->start = path->start;
 
     return p;
@@ -469,15 +474,15 @@ typedef struct {
 static inline void split(const bezier_t* b, bezier_t* first, bezier_t* second)
 {
     double c = (b->x2 + b->x3) * 0.5;
-    first->x2 = (b->x1 + b->x2)*.5;
-    second->x3 = (b->x3 + b->x4)*.5;
+    first->x2 = (b->x1 + b->x2) * 0.5;
+    second->x3 = (b->x3 + b->x4) * 0.5;
     first->x1 = b->x1;
     second->x4 = b->x4;
-    first->x3 = (first->x2 + c)*.5;
-    second->x2 = (second->x3 + c)*.5;
+    first->x3 = (first->x2 + c) * 0.5;
+    second->x2 = (second->x3 + c) * 0.5;
     first->x4 = second->x1 = (first->x3 + second->x2) * 0.5;
 
-    c = (b->y2 + b->y3) / 2;
+    c = (b->y2 + b->y3) * 0.5;
     first->y2 = (b->y1 + b->y2) * 0.5;
     second->y3 = (b->y3 + b->y4) * 0.5;
     first->y1 = b->y1;
@@ -487,7 +492,6 @@ static inline void split(const bezier_t* b, bezier_t* first, bezier_t* second)
     first->y4 = second->y1 = (first->y3 + second->y2) * 0.5;
 }
 
-#define abs(a) ((a) < 0 ? -(a) : (a))
 static void flatten_curve(plutovg_path_t* path, const plutovg_point_t* p0, const plutovg_point_t* p1, const plutovg_point_t* p2, const plutovg_point_t* p3)
 {
     bezier_t beziers[32];
@@ -507,15 +511,15 @@ static void flatten_curve(plutovg_path_t* path, const plutovg_point_t* p0, const
     {
         double y4y1 = b->y4 - b->y1;
         double x4x1 = b->x4 - b->x1;
-        double l = abs(x4x1) + abs(y4y1);
+        double l = fabs(x4x1) + fabs(y4y1);
         double d;
         if(l > 1.)
         {
-            d = abs((x4x1)*(b->y1 - b->y2) - (y4y1)*(b->x1 - b->x2)) + abs((x4x1)*(b->y1 - b->y3) - (y4y1)*(b->x1 - b->x3));
+            d = fabs((x4x1)*(b->y1 - b->y2) - (y4y1)*(b->x1 - b->x2)) + fabs((x4x1)*(b->y1 - b->y3) - (y4y1)*(b->x1 - b->x3));
         }
         else
         {
-            d = abs(b->x1 - b->x2) + abs(b->y1 - b->y2) + abs(b->x1 - b->x3) + abs(b->y1 - b->y3);
+            d = fabs(b->x1 - b->x2) + fabs(b->y1 - b->y2) + fabs(b->x1 - b->x3) + fabs(b->y1 - b->y3);
             l = 1.;
         }
 

@@ -223,19 +223,32 @@ void plutovg_set_source_color(plutovg_t* pluto, const plutovg_color_t* color);
 void plutovg_set_source_gradient(plutovg_t* pluto, plutovg_gradient_t* gradient);
 void plutovg_set_source_texture(plutovg_t* pluto, plutovg_texture_t* texture);
 void plutovg_set_source(plutovg_t* pluto, plutovg_paint_t* source);
+plutovg_paint_t* plutovg_get_source(const plutovg_t* pluto);
+
+void plutovg_set_operator(plutovg_t* pluto, plutovg_operator_t op);
+void plutovg_set_opacity(plutovg_t* pluto, double opacity);
 void plutovg_set_fill_rule(plutovg_t* pluto, plutovg_fill_rule_t fill_rule);
+plutovg_operator_t plutovg_get_operator(const plutovg_t* pluto);
+double plutovg_get_opacity(const plutovg_t* pluto);
+plutovg_fill_rule_t plutovg_get_fill_rule(const plutovg_t* pluto);
+
 void plutovg_set_line_width(plutovg_t* pluto, double width);
 void plutovg_set_line_cap(plutovg_t* pluto, plutovg_line_cap_t cap);
 void plutovg_set_line_join(plutovg_t* pluto, plutovg_line_join_t join);
 void plutovg_set_miter_limit(plutovg_t* pluto, double limit);
-void plutovg_set_operator(plutovg_t* pluto, plutovg_operator_t op);
-void plutovg_set_opacity(plutovg_t* pluto, double opacity);
+double plutovg_get_line_width(const plutovg_t* pluto);
+plutovg_line_cap_t plutovg_get_line_cap(const plutovg_t* pluto);
+plutovg_line_join_t plutovg_get_line_join(const plutovg_t* pluto);
+double plutovg_get_miter_limit(const plutovg_t* pluto);
+
 void plutovg_translate(plutovg_t* pluto, double x, double y);
 void plutovg_scale(plutovg_t* pluto, double x, double y);
 void plutovg_rotate(plutovg_t* pluto, double radians, double x, double y);
 void plutovg_transform(plutovg_t* pluto, const plutovg_matrix_t* matrix);
 void plutovg_set_matrix(plutovg_t* pluto, const plutovg_matrix_t* matrix);
 void plutovg_identity_matrix(plutovg_t* pluto);
+void plutovg_get_matrix(const plutovg_t* pluto, plutovg_matrix_t* matrix);
+
 void plutovg_move_to(plutovg_t* pluto, double x, double y);
 void plutovg_line_to(plutovg_t* pluto, double x, double y);
 void plutovg_quad_to(plutovg_t* pluto, double x1, double y1, double x2, double y2);
@@ -251,23 +264,16 @@ void plutovg_circle(plutovg_t* pluto, double cx, double cy, double r);
 void plutovg_add_path(plutovg_t* pluto, const plutovg_path_t* path);
 void plutovg_new_path(plutovg_t* pluto);
 void plutovg_close_path(plutovg_t* pluto);
+plutovg_path_t* plutovg_get_path(const plutovg_t* pluto);
+
 void plutovg_fill(plutovg_t* pluto);
 void plutovg_stroke(plutovg_t* pluto);
 void plutovg_clip(plutovg_t* pluto);
+
 void plutovg_fill_preserve(plutovg_t* pluto);
 void plutovg_stroke_preserve(plutovg_t* pluto);
 void plutovg_clip_preserve(plutovg_t* pluto);
 void plutovg_paint(plutovg_t* pluto);
-plutovg_fill_rule_t plutovg_get_fill_rule(const plutovg_t* pluto);
-double plutovg_get_line_width(const plutovg_t* pluto);
-plutovg_line_cap_t plutovg_get_line_cap(const plutovg_t* pluto);
-plutovg_line_join_t plutovg_get_line_join(const plutovg_t* pluto);
-double plutovg_get_miter_limit(const plutovg_t* pluto);
-plutovg_operator_t plutovg_get_operator(const plutovg_t* pluto);
-double plutovg_get_opacity(const plutovg_t* pluto);
-void plutovg_get_matrix(const plutovg_t* pluto, plutovg_matrix_t* matrix);
-plutovg_path_t* plutovg_get_path(const plutovg_t* pluto);
-plutovg_paint_t* plutovg_get_source(const plutovg_t* pluto);
 
 #ifdef __cplusplus
 }

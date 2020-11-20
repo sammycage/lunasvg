@@ -19,6 +19,7 @@ struct plutovg_surface {
 
 struct plutovg_path {
     int ref;
+    int contours;
     plutovg_point_t start;
     struct {
         plutovg_path_element_t* data;
@@ -92,7 +93,7 @@ typedef struct {
 } plutovg_stroke_data_t;
 
 typedef struct plutovg_state {
-    plutovg_rle_t* clip;
+    plutovg_rle_t* clippath;
     plutovg_paint_t* source;
     plutovg_matrix_t matrix;
     plutovg_fill_rule_t winding;
@@ -111,46 +112,20 @@ struct plutovg {
     plutovg_surface_t* surface;
     plutovg_state_t* state;
     plutovg_path_t* path;
+    plutovg_rle_t* clippath;
     plutovg_rect_t clip;
 };
 
-plutovg_rle_t* plutovg_rle_render(const plutovg_path_t* path, const plutovg_matrix_t* matrix, const plutovg_rect_t* clip, const plutovg_stroke_data_t* stroke, plutovg_fill_rule_t winding);
+plutovg_rle_t* plutovg_rasterize(const plutovg_path_t* path, const plutovg_matrix_t* matrix, const plutovg_rect_t* clip, const plutovg_stroke_data_t* stroke, plutovg_fill_rule_t winding);
 void plutovg_rle_destroy(plutovg_rle_t* rle);
+plutovg_rle_t* plutovg_rle_intersection(const plutovg_rle_t* a, const plutovg_rle_t* b);
 void plutovg_rle_clip_path(plutovg_rle_t* rle, const plutovg_rle_t* clip);
-void plutovg_rle_clip_rect(plutovg_rle_t* rle, const plutovg_rect_t* clip);
 plutovg_rle_t* plutovg_rle_clone(const plutovg_rle_t* rle);
 
-#define COLOR_TABLE_SIZE 1024
-typedef struct {
-    plutovg_gradient_type_t type;
-    plutovg_spread_method_t spread;
-    plutovg_matrix_t matrix;
-    uint32_t colortable[COLOR_TABLE_SIZE];
-    union {
-        struct {
-            double x1, y1;
-            double x2, y2;
-        } linear;
-        struct {
-            double cx, cy, cr;
-            double fx, fy, fr;
-        } radial;
-    };
-} plutovg_gradient_data_t;
-
-typedef struct {
-    plutovg_texture_type_t type;
-    plutovg_matrix_t matrix;
-    uint8_t* data;
-    int width;
-    int height;
-    int stride;
-    int const_alpha;
-} plutovg_texture_data_t;
-
-void plutovg_blend_solid(plutovg_surface_t* surface, plutovg_operator_t op, const plutovg_rle_t* rle, uint32_t solid);
-void plutovg_blend_gradient(plutovg_surface_t* surface, plutovg_operator_t op, const plutovg_rle_t* rle, const plutovg_gradient_data_t* gradient);
-void plutovg_blend_texture(plutovg_surface_t* surface, plutovg_operator_t op, const plutovg_rle_t* rle, const plutovg_texture_data_t* texture);
+void plutovg_blend(plutovg_t* pluto, const plutovg_rle_t* rle);
+void plutovg_blend_color(plutovg_t* pluto, const plutovg_rle_t* rle, const plutovg_color_t* color);
+void plutovg_blend_gradient(plutovg_t* pluto, const plutovg_rle_t* rle, const plutovg_gradient_t* gradient);
+void plutovg_blend_texture(plutovg_t* pluto, const plutovg_rle_t* rle, const plutovg_texture_t* texture);
 
 #define plutovg_array_init(array) \
     do { \
