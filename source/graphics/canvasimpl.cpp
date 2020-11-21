@@ -113,6 +113,7 @@ void CanvasImpl::draw(const Path& path, const AffineTransform& matrix, WindRule 
         plutovg_set_line_cap(m_pluto, to_plutovg_line_cap(strokeData.cap()));
         plutovg_set_line_join(m_pluto, to_plutovg_line_join(strokeData.join()));
         plutovg_set_line_width(m_pluto, strokeData.width());
+        plutovg_set_dash(m_pluto, strokeData.dashOffset(), strokeData.dash().data(), int(strokeData.dash().size()));
         plutovg_set_source(m_pluto, paint);
         plutovg_stroke_preserve(m_pluto);
         plutovg_paint_destroy(paint);

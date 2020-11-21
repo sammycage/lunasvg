@@ -520,7 +520,7 @@ static void flatten_curve(plutovg_path_t* path, const plutovg_point_t* p0, const
         else
         {
             d = fabs(b->x1 - b->x2) + fabs(b->y1 - b->y2) + fabs(b->x1 - b->x3) + fabs(b->y1 - b->y3);
-            l = 1.;
+            l = 1.0;
         }
 
         if(d < threshold*l || b == beziers + 31)

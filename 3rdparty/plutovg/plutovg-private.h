@@ -86,10 +86,17 @@ typedef struct {
 } plutovg_rle_t;
 
 typedef struct {
+    double offset;
+    double* data;
+    int size;
+} plutovg_dash_t;
+
+typedef struct {
     double width;
     double miterlimit;
     plutovg_line_cap_t cap;
     plutovg_line_join_t join;
+    plutovg_dash_t* dash;
 } plutovg_stroke_data_t;
 
 typedef struct plutovg_state {
@@ -102,10 +109,6 @@ typedef struct plutovg_state {
     double opacity;
     struct plutovg_state* next;
 } plutovg_state_t;
-
-plutovg_state_t* plutovg_state_create(void);
-plutovg_state_t* plutovg_state_clone(const plutovg_state_t* state);
-void plutovg_state_destroy(plutovg_state_t* state);
 
 struct plutovg {
     int ref;
@@ -121,6 +124,15 @@ void plutovg_rle_destroy(plutovg_rle_t* rle);
 plutovg_rle_t* plutovg_rle_intersection(const plutovg_rle_t* a, const plutovg_rle_t* b);
 void plutovg_rle_clip_path(plutovg_rle_t* rle, const plutovg_rle_t* clip);
 plutovg_rle_t* plutovg_rle_clone(const plutovg_rle_t* rle);
+
+plutovg_dash_t* plutovg_dash_create(double offset, const double* data, int size);
+plutovg_dash_t* plutovg_dash_clone(const plutovg_dash_t* dash);
+void plutovg_dash_destroy(plutovg_dash_t* dash);
+plutovg_path_t* plutovg_dash_path(const plutovg_dash_t* dash, const plutovg_path_t* path);
+
+plutovg_state_t* plutovg_state_create(void);
+plutovg_state_t* plutovg_state_clone(const plutovg_state_t* state);
+void plutovg_state_destroy(plutovg_state_t* state);
 
 void plutovg_blend(plutovg_t* pluto, const plutovg_rle_t* rle);
 void plutovg_blend_color(plutovg_t* pluto, const plutovg_rle_t* rle, const plutovg_color_t* color);

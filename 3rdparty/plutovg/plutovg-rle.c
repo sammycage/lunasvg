@@ -131,6 +131,14 @@ static SW_FT_Outline* sw_ft_outline_convert(const plutovg_path_t* path, const pl
     return outline;
 }
 
+static SW_FT_Outline* sw_ft_outline_convert_dash(const plutovg_path_t* path, const plutovg_matrix_t* matrix, const plutovg_dash_t* dash)
+{
+    plutovg_path_t* dashed = plutovg_dash_path(dash, path);
+    SW_FT_Outline* outline = sw_ft_outline_convert(dashed, matrix);
+    plutovg_path_destroy(dashed);
+    return outline;
+}
+
 static void generation_callback(int count, const SW_FT_Span* spans, void* user)
 {
     plutovg_rle_t* rle = user;
@@ -172,7 +180,7 @@ plutovg_rle_t* plutovg_rasterize(const plutovg_path_t* path, const plutovg_matri
 
     if(stroke)
     {
-        SW_FT_Outline* outline = sw_ft_outline_convert(path, matrix);
+        SW_FT_Outline* outline = stroke->dash ? sw_ft_outline_convert_dash(path, matrix, stroke->dash) : sw_ft_outline_convert(path, matrix);
         SW_FT_Stroker_LineCap ftCap;
         SW_FT_Stroker_LineJoin ftJoin;
         SW_FT_Fixed ftWidth;

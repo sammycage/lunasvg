@@ -81,6 +81,7 @@ plutovg_state_t* plutovg_state_create(void)
     state->stroke.miterlimit = 4.0;
     state->stroke.cap = plutovg_line_cap_butt;
     state->stroke.join = plutovg_line_join_miter;
+    state->stroke.dash = NULL;
     state->op = plutovg_operator_src_over;
     state->opacity = 1.0;
     state->next = NULL;
@@ -98,6 +99,7 @@ plutovg_state_t* plutovg_state_clone(const plutovg_state_t* state)
     newstate->stroke.miterlimit = state->stroke.miterlimit;
     newstate->stroke.cap = state->stroke.cap;
     newstate->stroke.join = state->stroke.join;
+    newstate->stroke.dash = plutovg_dash_clone(state->stroke.dash);
     newstate->op = state->op;
     newstate->opacity = state->opacity;
     newstate->next = NULL;
@@ -108,6 +110,7 @@ void plutovg_state_destroy(plutovg_state_t* state)
 {
     plutovg_rle_destroy(state->clippath);
     plutovg_paint_destroy(state->source);
+    plutovg_dash_destroy(state->stroke.dash);
     free(state);
 }
 
@@ -274,6 +277,12 @@ void plutovg_set_line_join(plutovg_t* pluto, plutovg_line_join_t join)
 void plutovg_set_miter_limit(plutovg_t* pluto, double limit)
 {
     pluto->state->stroke.miterlimit = limit;
+}
+
+void plutovg_set_dash(plutovg_t* pluto, double offset, const double* data, int size)
+{
+    plutovg_dash_destroy(pluto->state->stroke.dash);
+    pluto->state->stroke.dash = plutovg_dash_create(offset, data, size);
 }
 
 double plutovg_get_line_width(const plutovg_t* pluto)

@@ -236,6 +236,7 @@ void plutovg_set_line_width(plutovg_t* pluto, double width);
 void plutovg_set_line_cap(plutovg_t* pluto, plutovg_line_cap_t cap);
 void plutovg_set_line_join(plutovg_t* pluto, plutovg_line_join_t join);
 void plutovg_set_miter_limit(plutovg_t* pluto, double limit);
+void plutovg_set_dash(plutovg_t* pluto, double offset, const double* data, int size);
 double plutovg_get_line_width(const plutovg_t* pluto);
 plutovg_line_cap_t plutovg_get_line_cap(const plutovg_t* pluto);
 plutovg_line_join_t plutovg_get_line_join(const plutovg_t* pluto);
