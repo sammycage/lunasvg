@@ -364,17 +364,17 @@ static void composition_destination_out(uint32_t* dest, int length, const uint32
     }
 }
 
-typedef void(*composition_function_solid_t)(uint32_t* dest, int length, uint32_t color, uint32_t const_alpha);
+typedef void(*composition_solid_function_t)(uint32_t* dest, int length, uint32_t color, uint32_t const_alpha);
 typedef void(*composition_function_t)(uint32_t* dest, int length, const uint32_t* src, uint32_t const_alpha);
 
-static const composition_function_solid_t function_for_mode_solid[] = {
+static const composition_solid_function_t composition_solid_map[] = {
     composition_solid_source,
     composition_solid_source_over,
     composition_solid_destination_in,
     composition_solid_destination_out
 };
 
-static const composition_function_t function_for_mode[] = {
+static const composition_function_t composition_map[] = {
     composition_source,
     composition_source_over,
     composition_destination_in,
@@ -383,9 +383,9 @@ static const composition_function_t function_for_mode[] = {
 
 static void blend_solid(plutovg_surface_t* surface, plutovg_operator_t op, const plutovg_rle_t* rle, uint32_t solid)
 {
-    composition_function_solid_t func = function_for_mode_solid[op];
+    composition_solid_function_t func = composition_solid_map[op];
     int count = rle->spans.size;
-    const plutovg_span_t* spans= rle->spans.data;
+    const plutovg_span_t* spans = rle->spans.data;
     while(count--)
     {
         uint32_t* target = (uint32_t*)(surface->data + spans->y * surface->stride) + spans->x;
@@ -398,7 +398,7 @@ static void blend_solid(plutovg_surface_t* surface, plutovg_operator_t op, const
 #define BUFFER_SIZE 1024
 static void blend_linear_gradient(plutovg_surface_t* surface, plutovg_operator_t op, const plutovg_rle_t* rle, const gradient_data_t* gradient)
 {
-    composition_function_t func = function_for_mode[op];
+    composition_function_t func = composition_map[op];
     unsigned int buffer[BUFFER_SIZE];
 
     linear_gradient_values_t v;
@@ -435,7 +435,7 @@ static void blend_linear_gradient(plutovg_surface_t* surface, plutovg_operator_t
 
 static void blend_radial_gradient(plutovg_surface_t* surface, plutovg_operator_t op, const plutovg_rle_t* rle, const gradient_data_t* gradient)
 {
-    composition_function_t func = function_for_mode[op];
+    composition_function_t func = composition_map[op];
     unsigned int buffer[BUFFER_SIZE];
 
     radial_gradient_values_t v;
@@ -474,7 +474,7 @@ static void blend_radial_gradient(plutovg_surface_t* surface, plutovg_operator_t
 #define FIXED_SCALE (1 << 16)
 static void blend_transformed_argb(plutovg_surface_t* surface, plutovg_operator_t op, const plutovg_rle_t* rle, const texture_data_t* texture)
 {
-    composition_function_t func = function_for_mode[op];
+    composition_function_t func = composition_map[op];
     uint32_t buffer[BUFFER_SIZE];
 
     int image_width = texture->width;
@@ -524,7 +524,7 @@ static void blend_transformed_argb(plutovg_surface_t* surface, plutovg_operator_
 
 static void blend_untransformed_argb(plutovg_surface_t* surface, plutovg_operator_t op, const plutovg_rle_t* rle, const texture_data_t* texture)
 {
-    composition_function_t func = function_for_mode[op];
+    composition_function_t func = composition_map[op];
 
     const int image_width = texture->width;
     const int image_height = texture->height;
@@ -564,7 +564,7 @@ static void blend_untransformed_argb(plutovg_surface_t* surface, plutovg_operato
 
 static void blend_untransformed_tiled_argb(plutovg_surface_t* surface, plutovg_operator_t op, const plutovg_rle_t* rle, const texture_data_t* texture)
 {
-    composition_function_t func = function_for_mode[op];
+    composition_function_t func = composition_map[op];
 
     int image_width = texture->width;
     int image_height = texture->height;
@@ -610,7 +610,7 @@ static void blend_untransformed_tiled_argb(plutovg_surface_t* surface, plutovg_o
 
 static void blend_transformed_tiled_argb(plutovg_surface_t* surface, plutovg_operator_t op, const plutovg_rle_t* rle, const texture_data_t* texture)
 {
-    composition_function_t func = function_for_mode[op];
+    composition_function_t func = composition_map[op];
     uint32_t buffer[BUFFER_SIZE];
 
     int image_width = texture->width;
@@ -723,18 +723,14 @@ void plutovg_blend_gradient(plutovg_t* pluto, const plutovg_rle_t* rle, const pl
 
     int dist, idist, pos = 0;
     int i;
-    int alpha = 0;
     int nstop = gradient->stops.size;
     const plutovg_gradient_stop_t *curr, *next, *start;
     uint32_t curr_color, next_color;
     double delta, t, incr, fpos;
     double opacity = state->opacity * gradient->opacity;
 
-    if(opacity != 1.0) alpha = 1;
-
     start = gradient->stops.data;
     curr = start;
-    if(curr->color.a != 0.0) alpha = 1;
     curr_color = premultiply_color(&curr->color, opacity);
     incr = 1.0 / COLOR_TABLE_SIZE;
     fpos = 1.5 * incr;
@@ -753,7 +749,6 @@ void plutovg_blend_gradient(plutovg_t* pluto, const plutovg_rle_t* rle, const pl
         curr = (start + i);
         next = (start + i + 1);
         delta = 1.0 / (next->offset - curr->offset);
-        if(next->color.a != 0.0) alpha = 1;
         next_color = premultiply_color(&next->color, opacity);
         while(fpos < next->offset && pos < COLOR_TABLE_SIZE)
         {
@@ -768,10 +763,10 @@ void plutovg_blend_gradient(plutovg_t* pluto, const plutovg_rle_t* rle, const pl
         curr_color = next_color;
     }
 
-    for(;pos < COLOR_TABLE_SIZE;++pos) data.colortable[pos] = curr_color;
-    data.colortable[COLOR_TABLE_SIZE - 1] = curr_color;
-    data.spread = gradient->spread;
+    for(;pos < COLOR_TABLE_SIZE;++pos)
+        data.colortable[pos] = curr_color;
 
+    data.spread = gradient->spread;
     data.matrix = gradient->matrix;
     plutovg_matrix_multiply(&data.matrix, &data.matrix, &state->matrix);
     plutovg_matrix_invert(&data.matrix);
@@ -796,7 +791,7 @@ void plutovg_blend_texture(plutovg_t* pluto, const plutovg_rle_t* rle, const plu
     plutovg_matrix_multiply(&data.matrix, &data.matrix, &state->matrix);
     plutovg_matrix_invert(&data.matrix);
 
-    const plutovg_matrix_t* matrix = &texture->matrix;
+    const plutovg_matrix_t* matrix = &data.matrix;
     int translating = (matrix->m00==1.0 && matrix->m10==0.0 && matrix->m01==0.0 && matrix->m11==1.0);
     if(translating)
     {

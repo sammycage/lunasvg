@@ -148,13 +148,13 @@ void plutovg_blend_texture(plutovg_t* pluto, const plutovg_rle_t* rle, const plu
 
 #define plutovg_array_ensure(array, count) \
     do { \
-        if(array.size + count < array.capacity) \
-            break; \
+    if(array.size + count > array.capacity) { \
         int capacity = array.size + count; \
         int newcapacity = array.capacity == 0 ? 8 : array.capacity; \
         while(newcapacity < capacity) { newcapacity *= 2; } \
         array.data = realloc(array.data, (size_t)newcapacity * sizeof(array.data[0])); \
         array.capacity = newcapacity; \
+    } \
     } while(0)
 
 #endif // PLUTOVG_PRIVATE_H

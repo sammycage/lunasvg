@@ -448,20 +448,20 @@ int plutovg_path_empty(const plutovg_path_t* path)
 
 plutovg_path_t* plutovg_path_clone(const plutovg_path_t* path)
 {
-    plutovg_path_t* p = plutovg_path_create();
+    plutovg_path_t* result = plutovg_path_create();
 
-    plutovg_array_ensure(p->elements, path->elements.size);
-    plutovg_array_ensure(p->points, path->points.size);
+    plutovg_array_ensure(result->elements, path->elements.size);
+    plutovg_array_ensure(result->points, path->points.size);
 
-    memcpy(p->elements.data, path->elements.data, (size_t)path->elements.size * sizeof(plutovg_path_element_t));
-    memcpy(p->points.data, path->points.data, (size_t)path->points.size * sizeof(plutovg_point_t));
+    memcpy(result->elements.data, path->elements.data, (size_t)path->elements.size * sizeof(plutovg_path_element_t));
+    memcpy(result->points.data, path->points.data, (size_t)path->points.size * sizeof(plutovg_point_t));
 
-    p->elements.size = path->elements.size;
-    p->points.size = path->points.size;
-    p->contours = path->contours;
-    p->start = path->start;
+    result->elements.size = path->elements.size;
+    result->points.size = path->points.size;
+    result->contours = path->contours;
+    result->start = path->start;
 
-    return p;
+    return result;
 }
 
 typedef struct {
@@ -492,7 +492,7 @@ static inline void split(const bezier_t* b, bezier_t* first, bezier_t* second)
     first->y4 = second->y1 = (first->y3 + second->y2) * 0.5;
 }
 
-static void flatten_curve(plutovg_path_t* path, const plutovg_point_t* p0, const plutovg_point_t* p1, const plutovg_point_t* p2, const plutovg_point_t* p3)
+static void flatten(plutovg_path_t* path, const plutovg_point_t* p0, const plutovg_point_t* p1, const plutovg_point_t* p2, const plutovg_point_t* p3)
 {
     bezier_t beziers[32];
     beziers[0].x1 = p0->x;
@@ -513,7 +513,7 @@ static void flatten_curve(plutovg_path_t* path, const plutovg_point_t* p0, const
         double x4x1 = b->x4 - b->x1;
         double l = fabs(x4x1) + fabs(y4y1);
         double d;
-        if(l > 1.)
+        if(l > 1.0)
         {
             d = fabs((x4x1)*(b->y1 - b->y2) - (y4y1)*(b->x1 - b->x2)) + fabs((x4x1)*(b->y1 - b->y3) - (y4y1)*(b->x1 - b->x3));
         }
@@ -538,10 +538,10 @@ static void flatten_curve(plutovg_path_t* path, const plutovg_point_t* p0, const
 
 plutovg_path_t* plutovg_path_clone_flat(const plutovg_path_t* path)
 {
-    plutovg_path_t* p = plutovg_path_create();
+    plutovg_path_t* result = plutovg_path_create();
 
-    plutovg_array_ensure(p->elements, path->elements.size);
-    plutovg_array_ensure(p->points, path->points.size);
+    plutovg_array_ensure(result->elements, path->elements.size);
+    plutovg_array_ensure(result->points, path->points.size);
 
     plutovg_point_t* points = path->points.data;
     for(int i = 0;i < path->elements.size;i++)
@@ -549,27 +549,27 @@ plutovg_path_t* plutovg_path_clone_flat(const plutovg_path_t* path)
         switch(path->elements.data[i])
         {
         case plutovg_path_element_move_to:
-            plutovg_path_move_to(p, points[0].x, points[0].y);
+            plutovg_path_move_to(result, points[0].x, points[0].y);
             points += 1;
             break;
         case plutovg_path_element_line_to:
-            plutovg_path_line_to(p, points[0].x, points[0].y);
+            plutovg_path_line_to(result, points[0].x, points[0].y);
             points += 1;
             break;
         case plutovg_path_element_close:
-            plutovg_path_line_to(p, points[0].x, points[0].y);
+            plutovg_path_line_to(result, points[0].x, points[0].y);
             points += 1;
             break;
         case plutovg_path_element_cubic_to:
         {
             plutovg_point_t p0;
-            plutovg_path_get_current_point(p, &p0.x, &p0.y);
-            flatten_curve(p, &p0, points, points + 1, points + 2);
+            plutovg_path_get_current_point(result, &p0.x, &p0.y);
+            flatten(result, &p0, points, points + 1, points + 2);
             points += 3;
             break;
         }
         }
     }
 
-    return p;
+    return result;
 }

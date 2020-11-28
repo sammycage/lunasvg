@@ -287,28 +287,25 @@ plutovg_paint_t* plutovg_paint_create_rgba(double r, double g, double b, double 
 
 plutovg_paint_t* plutovg_paint_create_linear(double x1, double y1, double x2, double y2)
 {
-    plutovg_paint_t* paint = malloc(sizeof(plutovg_paint_t));
-    paint->ref = 1;
-    paint->type = plutovg_paint_type_gradient;
-    paint->gradient = plutovg_gradient_create_linear(x1, y1, x2, y2);
+    plutovg_gradient_t* gradient = plutovg_gradient_create_linear(x1, y1, x2, y2);
+    plutovg_paint_t* paint = plutovg_paint_create_gradient(gradient);
+    plutovg_gradient_destroy(gradient);
     return paint;
 }
 
 plutovg_paint_t* plutovg_paint_create_radial(double cx, double cy, double cr, double fx, double fy, double fr)
 {
-    plutovg_paint_t* paint = malloc(sizeof(plutovg_paint_t));
-    paint->ref = 1;
-    paint->type = plutovg_paint_type_gradient;
-    paint->gradient = plutovg_gradient_create_radial(cx, cy, cr, fx, fy, fr);
+    plutovg_gradient_t* gradient = plutovg_gradient_create_radial(cx, cy, cr, fx, fy, fr);
+    plutovg_paint_t* paint = plutovg_paint_create_gradient(gradient);
+    plutovg_gradient_destroy(gradient);
     return paint;
 }
 
 plutovg_paint_t* plutovg_paint_create_for_surface(plutovg_surface_t* surface)
 {
-    plutovg_paint_t* paint = malloc(sizeof(plutovg_paint_t));
-    paint->ref = 1;
-    paint->type = plutovg_paint_type_texture;
-    paint->texture = plutovg_texture_create(surface);
+    plutovg_texture_t* texture = plutovg_texture_create(surface);
+    plutovg_paint_t* paint = plutovg_paint_create_texture(texture);
+    plutovg_texture_destroy(texture);
     return paint;
 }
 

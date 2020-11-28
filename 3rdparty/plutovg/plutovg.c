@@ -3,11 +3,10 @@
 plutovg_surface_t* plutovg_surface_create(int width, int height)
 {
     plutovg_surface_t* surface = malloc(sizeof(plutovg_surface_t));
-    const size_t size = (size_t)(width * height * 4);
     surface->ref = 1;
     surface->owndata = 1;
-    surface->data = malloc(size);
-    memset(surface->data, 0, size);
+    surface->data = malloc((size_t)(width * height * 4));
+    memset(surface->data, 0, (size_t)(width * height * 4));
     surface->width = width;
     surface->height = height;
     surface->stride = width * 4;
@@ -438,6 +437,23 @@ void plutovg_clip(plutovg_t* pluto)
     plutovg_new_path(pluto);
 }
 
+void plutovg_paint(plutovg_t* pluto)
+{
+    plutovg_state_t* state = pluto->state;
+    if(state->clippath==NULL && pluto->clippath==NULL)
+    {
+        plutovg_path_t* path = plutovg_path_create();
+        plutovg_path_add_rect(path, pluto->clip.x, pluto->clip.y, pluto->clip.w, pluto->clip.h);
+        plutovg_matrix_t matrix;
+        plutovg_matrix_init_identity(&matrix);
+        pluto->clippath = plutovg_rasterize(path, &matrix, &pluto->clip, NULL, plutovg_fill_rule_non_zero);
+        plutovg_path_destroy(path);
+    }
+
+    plutovg_rle_t* rle = state->clippath ? state->clippath : pluto->clippath;
+    plutovg_blend(pluto, rle);
+}
+
 void plutovg_fill_preserve(plutovg_t* pluto)
 {
     plutovg_state_t* state = pluto->state;
@@ -469,21 +485,4 @@ void plutovg_clip_preserve(plutovg_t* pluto)
     {
         state->clippath = rle;
     }
-}
-
-void plutovg_paint(plutovg_t* pluto)
-{
-    plutovg_state_t* state = pluto->state;
-    if(state->clippath==NULL && pluto->clippath==NULL)
-    {
-        plutovg_path_t* path = plutovg_path_create();
-        plutovg_path_add_rect(path, pluto->clip.x, pluto->clip.y, pluto->clip.w, pluto->clip.h);
-        plutovg_matrix_t matrix;
-        plutovg_matrix_init_identity(&matrix);
-        pluto->clippath = plutovg_rasterize(path, &matrix, &pluto->clip, NULL, plutovg_fill_rule_non_zero);
-        plutovg_path_destroy(path);
-    }
-
-    plutovg_rle_t* rle = state->clippath ? state->clippath : pluto->clippath;
-    plutovg_blend(pluto, rle);
 }
