@@ -7,7 +7,7 @@ set(CMAKE_C_STANDARD 11)
 
 option(LUNASVG_BUILD_EXAMPLES "Builds examples" OFF)
 
-add_library(lunasvg)
+add_library(lunasvg STATIC)
 
 add_subdirectory(include)
 add_subdirectory(source)
