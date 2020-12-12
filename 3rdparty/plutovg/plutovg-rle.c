@@ -157,12 +157,29 @@ static void bbox_callback(int x, int y, int w, int h, void* user)
     rle->h = h;
 }
 
-#define SQRT2 1.41421356237309504880
-plutovg_rle_t* plutovg_rasterize(const plutovg_path_t* path, const plutovg_matrix_t* matrix, const plutovg_rect_t* clip, const plutovg_stroke_data_t* stroke, plutovg_fill_rule_t winding)
+plutovg_rle_t* plutovg_rle_create(void)
 {
     plutovg_rle_t* rle = malloc(sizeof(plutovg_rle_t));
     plutovg_array_init(rle->spans);
+    rle->x = 0;
+    rle->y = 0;
+    rle->w = 0;
+    rle->h = 0;
+    return rle;
+}
 
+void plutovg_rle_destroy(plutovg_rle_t* rle)
+{
+    if(rle==NULL)
+        return;
+
+    free(rle->spans.data);
+    free(rle);
+}
+
+#define SQRT2 1.41421356237309504880
+void plutovg_rle_rasterize(plutovg_rle_t* rle, const plutovg_path_t* path, const plutovg_matrix_t* matrix, const plutovg_rect_t* clip, const plutovg_stroke_data_t* stroke, plutovg_fill_rule_t winding)
+{
     SW_FT_Raster_Params params;
     params.flags = SW_FT_RASTER_FLAG_DIRECT | SW_FT_RASTER_FLAG_AA;
     params.gray_spans = generation_callback;
@@ -254,17 +271,6 @@ plutovg_rle_t* plutovg_rasterize(const plutovg_path_t* path, const plutovg_matri
         sw_ft_grays_raster.raster_render(NULL, &params);
         sw_ft_outline_destroy(outline);
     }
-
-    return rle;
-}
-
-void plutovg_rle_destroy(plutovg_rle_t* rle)
-{
-    if(rle==NULL)
-        return;
-
-    free(rle->spans.data);
-    free(rle);
 }
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -395,4 +401,13 @@ plutovg_rle_t* plutovg_rle_clone(const plutovg_rle_t* rle)
     result->w = rle->w;
     result->h = rle->h;
     return result;
+}
+
+void plutovg_rle_clear(plutovg_rle_t* rle)
+{
+    rle->spans.size = 0;
+    rle->x = 0;
+    rle->y = 0;
+    rle->w = 0;
+    rle->h = 0;
 }

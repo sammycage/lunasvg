@@ -115,15 +115,18 @@ struct plutovg {
     plutovg_surface_t* surface;
     plutovg_state_t* state;
     plutovg_path_t* path;
+    plutovg_rle_t* rle;
     plutovg_rle_t* clippath;
     plutovg_rect_t clip;
 };
 
-plutovg_rle_t* plutovg_rasterize(const plutovg_path_t* path, const plutovg_matrix_t* matrix, const plutovg_rect_t* clip, const plutovg_stroke_data_t* stroke, plutovg_fill_rule_t winding);
+plutovg_rle_t* plutovg_rle_create(void);
 void plutovg_rle_destroy(plutovg_rle_t* rle);
+void plutovg_rle_rasterize(plutovg_rle_t* rle, const plutovg_path_t* path, const plutovg_matrix_t* matrix, const plutovg_rect_t* clip, const plutovg_stroke_data_t* stroke, plutovg_fill_rule_t winding);
 plutovg_rle_t* plutovg_rle_intersection(const plutovg_rle_t* a, const plutovg_rle_t* b);
 void plutovg_rle_clip_path(plutovg_rle_t* rle, const plutovg_rle_t* clip);
 plutovg_rle_t* plutovg_rle_clone(const plutovg_rle_t* rle);
+void plutovg_rle_clear(plutovg_rle_t* rle);
 
 plutovg_dash_t* plutovg_dash_create(double offset, const double* data, int size);
 plutovg_dash_t* plutovg_dash_clone(const plutovg_dash_t* dash);
