@@ -70,6 +70,11 @@ std::uint32_t Bitmap::stride() const
     return m_impl ? m_impl->stride : 0;
 }
 
+bool Bitmap::valid() const
+{
+    return !!m_impl;
+}
+
 SVGElement::SVGElement(SVGDocument* document)
     : m_document(document)
 {
