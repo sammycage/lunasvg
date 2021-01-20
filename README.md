@@ -37,6 +37,7 @@ int main()
 - Animations (TODO)
 - Filters (TODO)
 - Image (TODO)
+- StyleSheet (TODO)
 
 ## build
 
