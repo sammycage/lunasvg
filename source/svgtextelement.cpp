@@ -174,6 +174,12 @@ void SVGTextElement::render(RenderContext& context) const
     }
 
     state.bbox = path.boundingBox();
+    TextAnchor anchor = state.style.textAnchor();
+    if(anchor == TextAnchorMiddle)
+        state.matrix.translate(-state.bbox.width * 0.5, 0);
+    else if(anchor == TextAnchorEnd)
+        state.matrix.translate(-state.bbox.width, 0);
+
     if(state.style.hasStroke())
     {
         double strokeWidth = state.style.strokeWidth(state);
@@ -182,12 +188,6 @@ void SVGTextElement::render(RenderContext& context) const
         state.bbox.width += strokeWidth;
         state.bbox.height += strokeWidth;
     }
-
-    TextAnchor anchor = state.style.textAnchor();
-    if(anchor == TextAnchorMiddle)
-        state.matrix.translate(-state.bbox.width * 0.5, 0);
-    else if(anchor == TextAnchorEnd)
-        state.matrix.translate(-state.bbox.width, 0);
 
     if(context.mode() == RenderModeBounding)
         return;
