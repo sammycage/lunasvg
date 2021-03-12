@@ -1,0 +1,22 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.7)
+
+
+PROJECT(lunaSVG_examples LANGUAGES CXX)
+
+find_package(X11 REQUIRED)
+
+find_library(IMLIB2_FOUND "Imlib2" PATHS "${CMAKE_INSTALL_PREFIX}/lib")
+IF(IMLIB2_FOUND)
+	MESSAGE("\tIMLIB2 Found")
+ELSE(IMLIB2_FOUND)
+	MESSAGE(FATAL_ERROR "\tIMLIB2 Not Found")
+ENDIF(IMLIB2_FOUND)
+
+
+include_directories(${X11_INCLUDE_DIRS} ${IMLIB2_INCLUDE_DIR} PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../../include/" )
+
+
+ADD_EXECUTABLE(lunaSVG_X11 lunaSVG_X11.cpp)
+target_link_libraries(lunaSVG_X11 ${X11_LIBRARIES} Imlib2 lunasvg)
+
+
