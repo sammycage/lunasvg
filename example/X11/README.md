@@ -1,5 +1,5 @@
 
-#Simple example to use lunaSVG with X11 and Imlib2
+# Simple example to use lunaSVG with X11 and Imlib2
 
 ## build
 

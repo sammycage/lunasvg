@@ -1,5 +1,5 @@
 
-#Simple example to use lunaSVG with WxWidgets
+# Simple example to use lunaSVG with WxWidgets
 
 ## build
 

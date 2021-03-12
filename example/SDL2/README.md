@@ -1,5 +1,5 @@
 
-#Simple example to use lunaSVG with SDL2
+# Simple example to use lunaSVG with SDL2
 
 ## build
 
