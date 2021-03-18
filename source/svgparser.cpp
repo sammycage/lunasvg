@@ -106,10 +106,11 @@ SVGElementImpl* SVGParser::parse(const std::string& source, SVGDocument* documen
             current->next = element->tail;
             current = element->tail;
         }
-        else if(tagType==KTagPCData && !blocks.empty())
+        else if(tagType==KTagPCData)
         {
+            parent = blocks.empty() ? current->parent : blocks.top();
             SVGElementText* element = new SVGElementText(document, content);
-            element->parent = blocks.top();
+            element->parent = parent;
             element->prev = current;
             current->next = element;
             current = element;
