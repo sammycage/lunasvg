@@ -1,7 +1,9 @@
+#include <iostream>
+#include <cstring>
+
 #include "wx/wx.h"
 
-
-#include "../include/svgdocument.h"
+#include "../include/document.h"
 using namespace lunasvg;
 
 
@@ -91,15 +93,16 @@ MyApp::OnInit ()
       return false;
     }
 
-  SVGDocument document;
-  if (document.loadFromFile ((const char *) argv[1].c_str ()))
+  auto document = Document::loadFromFile (std::string (argv[1]));
+
+  if (document)
     {
-      width = document.documentWidth (96.0);
-      height = document.documentHeight (96.0);
+      width = document->width ();
+      height = document->height ();
 
       frame->SetSize (width + 10, height + 40);
 
-      Bitmap bitmap = document.renderToBitmap (width, height, 96.0, 0);
+      auto bitmap = document->renderToBitmap (width, height, 0);
 
       const unsigned char * bmp = bitmap.data ();
       int size = bitmap.width () * bitmap.height ();

@@ -1,8 +1,10 @@
+#include <iostream>
+#include <cstring>
 #include <X11/Xlib.h>
 #include<Imlib2.h>
 
 
-#include "../include/svgdocument.h"
+#include "../include/document.h"
 using namespace lunasvg;
 
 int
@@ -33,13 +35,14 @@ main (int argc, char ** argv)
       exit (1);
     }
 
-  SVGDocument document;
-  if (document.loadFromFile (argv[1]))
-    {
-      width = document.documentWidth (96.0);
-      height = document.documentHeight (96.0);
+  auto document = Document::loadFromFile (std::string (argv[1]));
 
-      Bitmap bitmap = document.renderToBitmap (width, height, 96.0, 0);
+  if (document)
+    {
+      width = document->width ();
+      height = document->height ();
+
+      auto bitmap = document->renderToBitmap (width, height, 0);
 
       screen = DefaultScreen (display);
       window = XCreateSimpleWindow (display, RootWindow (display, screen), 10, 10, width, height, 1,
