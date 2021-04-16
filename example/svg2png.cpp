@@ -1,8 +1,10 @@
-#include <SFML/Graphics.hpp>
 #include <iostream>
 #include <cstring>
 
-#include "svgdocument.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
+#include "document.h"
 
 using namespace lunasvg;
 
@@ -51,40 +53,18 @@ int main(int argc, char** argv)
 
     if(setup(argc, argv, fileName, &width, &height, &bgColor)) return 1;
 
-    SVGDocument document;
-    if(!document.loadFromFile(fileName)) return help();
+    auto document = Document::loadFromFile(fileName);
+    if(document == nullptr)
+        return help();
+
+    auto bitmap = document->renderToBitmap(width, height, bgColor);
 
     std::string baseName = fileName.substr(fileName.find_last_of("/\\") + 1);
     baseName.append(".png");
 
-    sf::RenderWindow window;
-    sf::Image image;
-    sf::Texture texture;
-    sf::Sprite sprite;
-
-    Bitmap bitmap = document.renderToBitmap(width, height, 96.0, bgColor);
-    image.create(bitmap.width(), bitmap.height(), bitmap.data());
-    image.saveToFile(baseName);
+    stbi_write_png(baseName.c_str(), bitmap.width(), bitmap.height(), 4, bitmap.data(), 0);
 
     std::cout << "Generated PNG file : "<< baseName << std::endl;
-
-    window.create(sf::VideoMode(bitmap.width(), bitmap.height()), "svg2png");
-    texture.loadFromImage(image);
-    sprite.setTexture(texture);
-
-    while(window.isOpen())
-    {
-        sf::Event event;
-        while(window.pollEvent(event))
-        {
-            if(event.type==sf::Event::Closed)
-                window.close();
-        }
-
-        window.clear(sf::Color::White);
-        window.draw(sprite);
-        window.display();
-    }
 
     return 0;
 }

@@ -1,31 +1,29 @@
-## lunasvg
+# LunaSVG
 
-lunasvg is a standalone c++ library to create, animate, manipulate and render SVG files.
+lunasvg is a standalone SVG rendering library in C++.
 
 ![svg2png generated PNG](luna.png)
 
-## example
+## Example
 
 ```cpp
-#include <lunasvg/svgdocument.h>
+#include <lunasvg/document.h>
 
 using namespace lunasvg;
 
 int main()
 {
-    SVGDocument document;
-    document.loadFromFile("tiger.svg");
-    
-    Bitmap bitmap = document.renderToBitmap();
-    
-    // do something useful with the bitmap.
-    
+    auto document = Document::loadFromFile("tiger.svg");
+    auto bitmap = document->renderToBitmap();
+
+    // do something useful with the bitmap here.
+
     return 0;
 }
 
 ```
 
-## features
+## Features
 
 - Basic Shapes : rect, circle, ellipse, line, polyline, polygon, path.
 - Paint Servers : solidColor, linearGradient, radialGradient, pattern.
@@ -33,13 +31,13 @@ int main()
 - Document Structures: defs, svg, g, use, symbol.
 - Coordinate Systems, Transformations and Units.
 - Markers.
-- Texts.
+- Texts (TODO)
 - Animations (TODO)
 - Filters (TODO)
 - Image (TODO)
 - StyleSheet (TODO)
 
-## build
+## Build
 
 Create a build directory.
 ```
@@ -61,7 +59,7 @@ To install lunasvg library.
 make install
 ```
 
-## demo
+## Demo
 
 While building lunasvg example it generates a simple SVG to PNG converter which can be used to convert SVG file to PNG file.
 
@@ -70,7 +68,7 @@ Run Demo.
 svg2png [filename] [resolution] [bgColor]
 ```
 
-## support
+## Support
 
 If you like the work lunasvg is doing please consider a small donation:
 
