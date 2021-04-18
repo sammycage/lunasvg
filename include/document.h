@@ -2,6 +2,7 @@
 #define DOCUMENT_H
 
 #include <memory>
+#include <string>
 
 namespace lunasvg {
 
