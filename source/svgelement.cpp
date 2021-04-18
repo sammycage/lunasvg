@@ -1,151 +1,143 @@
-#include "svgelementimpl.h"
-#include "svgelementiter.h"
-#include "svgdocumentimpl.h"
+#include "svgelement.h"
+#include "parser.h"
+#include "layoutcontext.h"
 
-namespace lunasvg {
+using namespace lunasvg;
 
-struct Bitmap::Impl
-{
-    Impl(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride);
-    Impl(std::uint32_t width, std::uint32_t height);
-
-    std::unique_ptr<std::uint8_t[]> ownData;
-    std::uint8_t* data;
-    std::uint32_t width;
-    std::uint32_t height;
-    std::uint32_t stride;
-};
-
-Bitmap::Impl::Impl(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride)
-    : data(data), width(width), height(height), stride(stride)
+SVGElement::SVGElement()
+    : GraphicsElement(ElementId::Svg)
 {
 }
 
-Bitmap::Impl::Impl(std::uint32_t width, std::uint32_t height)
-    : ownData(new std::uint8_t[width*height*4]), data(nullptr), width(width), height(height), stride(width * 4)
+Length SVGElement::x() const
 {
+    auto& value = get(PropertyId::X);
+    if(value.empty())
+        return Length{};
+
+    return Parser::parseLength(value, AllowNegativeLengths);
 }
 
-Bitmap::Bitmap()
+Length SVGElement::y() const
 {
+    auto& value = get(PropertyId::Y);
+    if(value.empty())
+        return Length{};
+
+    return Parser::parseLength(value, AllowNegativeLengths);
 }
 
-Bitmap::Bitmap(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride)
-    : m_impl(new Impl(data, width, height, stride))
+Length SVGElement::width() const
 {
+    auto& value = get(PropertyId::Width);
+    if(value.empty())
+        return Length{100, LengthUnits::Percent};
+
+    return Parser::parseLength(value, ForbidNegativeLengths);
 }
 
-Bitmap::Bitmap(std::uint32_t width, std::uint32_t height)
-    : m_impl(new Impl(width, height))
+Length SVGElement::height() const
 {
+    auto& value = get(PropertyId::Height);
+    if(value.empty())
+        return Length{100, LengthUnits::Percent};
+
+    return Parser::parseLength(value, ForbidNegativeLengths);
 }
 
-void Bitmap::reset(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride)
+Rect SVGElement::viewBox() const
 {
-    m_impl.reset(new Impl(data, width, height, stride));
+    auto& value = get(PropertyId::ViewBox);
+    if(value.empty())
+        return Rect{};
+
+    return Parser::parseViewBox(value);
 }
 
-void Bitmap::reset(std::uint32_t width, std::uint32_t height)
+PreserveAspectRatio SVGElement::preserveAspectRatio() const
 {
-    m_impl.reset(new Impl(width, height));
+    auto& value = get(PropertyId::PreserveAspectRatio);
+    if(value.empty())
+        return PreserveAspectRatio{};
+
+    return Parser::parsePreserveAspectRatio(value);
 }
 
-std::uint8_t* Bitmap::data() const
+std::unique_ptr<LayoutRoot> SVGElement::layoutDocument(const ParseDocument* document) const
 {
-    return m_impl ? m_impl->data ? m_impl->data : m_impl->ownData.get() : nullptr;
-}
+    if(isDisplayNone())
+        return nullptr;
 
-std::uint32_t Bitmap::width() const
-{
-    return m_impl ? m_impl->width : 0;
-}
+    auto w = this->width();
+    auto h = this->height();
+    if(w.isZero() || h.isZero())
+        return nullptr;
 
-std::uint32_t Bitmap::height() const
-{
-    return m_impl ? m_impl->height : 0;
-}
+    LengthContext lengthContext(this);
+    Rect viewPort;
+    viewPort.x = lengthContext.valueForLength(x(), LengthMode::Width);
+    viewPort.y = lengthContext.valueForLength(y(), LengthMode::Height);
+    viewPort.w = lengthContext.valueForLength(w, LengthMode::Width);
+    viewPort.h = lengthContext.valueForLength(h, LengthMode::Height);
 
-std::uint32_t Bitmap::stride() const
-{
-    return m_impl ? m_impl->stride : 0;
-}
+    auto viewBox = this->viewBox();
+    auto preserveAspectRatio = this->preserveAspectRatio();
 
-bool Bitmap::valid() const
-{
-    return !!m_impl;
-}
+    auto root = std::make_unique<LayoutRoot>();
+    root->transform = transform();
+    root->viewTransform = preserveAspectRatio.getMatrix(viewPort, viewBox);
+    root->opacity = opacity();
 
-SVGElement::SVGElement(SVGDocument* document)
-    : m_document(document)
-{
-}
+    LayoutContext context{document, root.get()};
+    root->masker = context.getMasker(mask());
+    root->clipper = context.getClipper(clip_path());
+    layoutChildren(&context, root.get());
 
-SVGElement::~SVGElement()
-{
-}
-
-SVGElement* SVGElement::insertContent(const std::string& content, InsertPosition position)
-{
-    return document()->impl()->insertContent(content, to<SVGElementImpl>(this), position);
-}
-
-SVGElement* SVGElement::appendContent(const std::string& content)
-{
-    return insertContent(content, BeforeEnd);
-}
-
-void SVGElement::clearContent()
-{
-    document()->impl()->clearContent(to<SVGElementImpl>(this));
-}
-
-void SVGElement::removeElement()
-{
-    document()->impl()->removeElement(to<SVGElementImpl>(this));
-}
-
-SVGElement* SVGElement::insertElement(const SVGElement* element, InsertPosition position)
-{
-    return document()->impl()->copyElement(to<SVGElementImpl>(element), to<SVGElementImpl>(this), position);
-}
-
-SVGElement* SVGElement::appendElement(const SVGElement* element)
-{
-    return insertElement(element, BeforeEnd);
-}
-
-SVGElement* SVGElement::getElementById(const std::string& id, int index) const
-{
-    SVGElementIter it(this, id);
-    while(it.next())
+    root->width = w.isRelative() ? viewBox.w : viewPort.w;
+    root->height = h.isRelative() ? viewBox.h : viewPort.h;
+    if(root->width == 0.0 || root->height == 0.0)
     {
-        if(index-- == 0)
-            return it.currentElement();
+        RenderState state;
+        state.mode = RenderMode::Bounding;
+        root->render(state);
+
+        if(root->width == 0.0) root->width = state.box.w;
+        if(root->height == 0.0) root->height = state.box.h;
     }
 
-    return nullptr;
+    return root;
 }
 
-SVGElement* SVGElement::getElementByTag(const std::string& tagName, int index) const
+void SVGElement::layout(LayoutContext* context, LayoutContainer* current) const
 {
-    SVGElementIter it(this, KEmptyString, tagName);
-    while(it.next())
-    {
-        if(index-- == 0)
-            return it.currentElement();
-    }
+    if(isDisplayNone())
+        return;
 
-    return nullptr;
+    auto w = this->width();
+    auto h = this->height();
+    if(w.isZero() || h.isZero())
+        return;
+
+    LengthContext lengthContext(this);
+    Rect viewPort;
+    viewPort.x = lengthContext.valueForLength(x(), LengthMode::Width);
+    viewPort.y = lengthContext.valueForLength(y(), LengthMode::Height);
+    viewPort.w = lengthContext.valueForLength(w, LengthMode::Width);
+    viewPort.h = lengthContext.valueForLength(h, LengthMode::Height);
+
+    auto preserveAspectRatio = this->preserveAspectRatio();
+    auto viewTransform = preserveAspectRatio.getMatrix(viewPort, viewBox());
+
+    auto group = std::make_unique<LayoutGroup>();
+    group->transform = viewTransform * transform();
+    group->opacity = opacity();
+    group->masker = context->getMasker(mask());
+    group->clipper = context->getClipper(clip_path());
+    layoutChildren(context, group.get());
+    current->addChild(std::move(group));
 }
 
-SVGElement* SVGElement::parentElement() const
+std::unique_ptr<Node> SVGElement::clone() const
 {
-    return to<SVGElementImpl>(this)->parent;
+    return cloneElement<SVGElement>();
 }
-
-std::string SVGElement::toString() const
-{
-    return document()->impl()->toString(to<SVGElementImpl>(this));
-}
-
-} // namespace lunasvg

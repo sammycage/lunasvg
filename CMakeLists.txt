@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.3)
 
-project(lunasvg VERSION 1.4.1 LANGUAGES CXX C)
+project(lunasvg VERSION 2.0.0 LANGUAGES CXX C)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_C_STANDARD 11)
 
 option(LUNASVG_BUILD_EXAMPLES "Builds examples" OFF)
@@ -11,7 +11,6 @@ add_library(lunasvg STATIC)
 
 add_subdirectory(include)
 add_subdirectory(source)
-add_subdirectory(3rdparty/stb)
 add_subdirectory(3rdparty/software)
 add_subdirectory(3rdparty/plutovg)
 
@@ -23,9 +22,7 @@ set(LUNASVG_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
 set(LUNASVG_INCDIR ${CMAKE_INSTALL_PREFIX}/include/lunasvg)
 
 install(FILES
-    include/svgdocument.h
-    include/svgelement.h
-    include/svgelementiter.h
+    include/document.h
     DESTINATION ${LUNASVG_INCDIR}
 )
 
