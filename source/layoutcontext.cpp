@@ -371,6 +371,12 @@ void RenderState::updateBoundingBox(const RenderState& state)
     auto matrix = state.matrix * this->matrix.inverted();
     auto box = matrix.map(state.box);
 
+    if(this->box.empty())
+    {
+        this->box = box;
+        return;
+    }
+
     auto l = std::min(this->box.x, box.x);
     auto t = std::min(this->box.y, box.y);
     auto r = std::max(this->box.x + this->box.w, box.x + box.w);
