@@ -85,7 +85,7 @@ class Paint
 {
 public:
     Paint() = default;
-    Paint(Color color);
+    Paint(const Color& color);
     Paint(const std::string& ref);
 
     const Color& color() const { return m_color; }
@@ -137,8 +137,8 @@ public:
 
     Transform& premultiply(const Transform& transform);
     Transform& postmultiply(const Transform& transform);
-    Transform& rotate(double radians);
-    Transform& rotate(double radians, double cx, double cy);
+    Transform& rotate(double angle);
+    Transform& rotate(double angle, double cx, double cy);
     Transform& scale(double sx, double sy);
     Transform& shear(double shx, double shy);
     Transform& translate(double tx, double ty);
@@ -150,8 +150,8 @@ public:
     Point map(const Point& point) const;
     Rect map(const Rect& rect) const;
 
-    static Transform rotated(double radians);
-    static Transform rotated(double radians, double cx, double cy);
+    static Transform rotated(double angle);
+    static Transform rotated(double angle, double cx, double cy);
     static Transform scaled(double sx, double sy);
     static Transform sheared(double shx, double shy);
     static Transform translated(double tx, double ty);

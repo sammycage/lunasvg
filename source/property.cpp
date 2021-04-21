@@ -18,7 +18,7 @@ Color::Color(double r, double g, double b, double a)
 {
 }
 
-Paint::Paint(Color color)
+Paint::Paint(const Color& color)
     : m_color(color)
 {
 }
@@ -90,15 +90,15 @@ Transform& Transform::postmultiply(const Transform& transform)
     return *this;
 }
 
-Transform& Transform::rotate(double radians)
+Transform& Transform::rotate(double angle)
 {
-    *this = rotated(radians) * *this;
+    *this = rotated(angle) * *this;
     return *this;
 }
 
-Transform& Transform::rotate(double radians, double cx, double cy)
+Transform& Transform::rotate(double angle, double cx, double cy)
 {
-    *this = rotated(radians, cx, cy) * *this;
+    *this = rotated(angle, cx, cy) * *this;
     return *this;
 }
 
@@ -180,21 +180,23 @@ Rect Transform::map(const Rect& rect) const
     return Rect{l, t, r-l, b-t};
 }
 
-Transform Transform::rotated(double radians)
+static const double pi = 3.14159265358979323846;
+
+Transform Transform::rotated(double angle)
 {
-    double c = std::cos(radians);
-    double s = std::sin(radians);
+    auto c = std::cos(angle * pi / 180.0);
+    auto s = std::sin(angle * pi / 180.0);
 
     return Transform{c, s, -s, c, 0, 0};
 }
 
-Transform Transform::rotated(double radians, double cx, double cy)
+Transform Transform::rotated(double angle, double cx, double cy)
 {
-    double c = std::cos(radians);
-    double s = std::sin(radians);
+    auto c = std::cos(angle * pi / 180.0);
+    auto s = std::sin(angle * pi / 180.0);
 
-    double x = cx * (1 - c) + cy * s;
-    double y = cy * (1 - c) - cx * s;
+    auto x = cx * (1 - c) + cy * s;
+    auto y = cy * (1 - c) - cx * s;
 
     return Transform{c, s, -s, c, x, y};
 }
@@ -206,8 +208,8 @@ Transform Transform::scaled(double sx, double sy)
 
 Transform Transform::sheared(double shx, double shy)
 {
-    double x = std::tan(shx);
-    double y = std::tan(shy);
+    auto x = std::tan(shx * pi / 180.0);
+    auto y = std::tan(shy * pi / 180.0);
 
     return Transform{1, y, x, 1, 0, 0};
 }
@@ -261,14 +263,12 @@ bool Path::empty() const
 
 void Path::quadTo(double cx, double cy, double x1, double y1, double x2, double y2)
 {
-    double cx1 = 2.0 / 3.0 * x1 + 1.0 / 3.0 * cx;
-    double cy1 = 2.0 / 3.0 * y1 + 1.0 / 3.0 * cy;
-    double cx2 = 2.0 / 3.0 * x1 + 1.0 / 3.0 * x2;
-    double cy2 = 2.0 / 3.0 * y1 + 1.0 / 3.0 * y2;
+    auto cx1 = 2.0 / 3.0 * x1 + 1.0 / 3.0 * cx;
+    auto cy1 = 2.0 / 3.0 * y1 + 1.0 / 3.0 * cy;
+    auto cx2 = 2.0 / 3.0 * x1 + 1.0 / 3.0 * x2;
+    auto cy2 = 2.0 / 3.0 * y1 + 1.0 / 3.0 * y2;
     cubicTo(cx1, cy1, cx2, cy2, x2, y2);
 }
-
-static const double pi = 3.14159265358979323846;
 
 void Path::arcTo(double cx, double cy, double rx, double ry, double xAxisRotation, bool largeArcFlag, bool sweepFlag, double x, double y)
 {

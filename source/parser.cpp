@@ -97,8 +97,6 @@ PointList Parser::parsePointList(const std::string& string)
     return values;
 }
 
-static const double pi = 3.14159265358979323846;
-
 Transform Parser::parseTransform(const std::string& string)
 {
     auto ptr = string.data();
@@ -116,13 +114,13 @@ Transform Parser::parseTransform(const std::string& string)
         Utils::skipWsComma(ptr, end);
         switch(type) {
         case TransformType::Matrix:
-            transform.premultiply(Transform{values[0], values[1], values[2], values[3], values[4], values[5]});
+            transform.transform(values[0], values[1], values[2], values[3], values[4], values[5]);
             break;
         case TransformType::Rotate:
             if(count == 1)
-                transform.rotate(values[0] * pi / 180.0, 0, 0);
+                transform.rotate(values[0], 0, 0);
             else
-                transform.rotate(values[0] * pi / 180.0, values[1], values[2]);
+                transform.rotate(values[0], values[1], values[2]);
             break;
         case TransformType::Scale:
             if(count == 1)
@@ -131,10 +129,10 @@ Transform Parser::parseTransform(const std::string& string)
                 transform.scale(values[0], values[1]);
             break;
         case TransformType::SkewX:
-            transform.shear(values[0] * pi / 180.0, 0);
+            transform.shear(values[0], 0);
             break;
         case TransformType::SkewY:
-            transform.shear(0, values[0] * pi / 180.0);
+            transform.shear(0, values[0]);
             break;
         case TransformType::Translate:
             if(count == 1)
@@ -429,6 +427,8 @@ PreserveAspectRatio Parser::parsePreserveAspectRatio(const std::string& string)
 
     return PreserveAspectRatio{align, scale};
 }
+
+static const double pi = 3.14159265358979323846;
 
 Angle Parser::parseAngle(const std::string& string)
 {

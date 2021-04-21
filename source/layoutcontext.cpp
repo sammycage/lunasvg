@@ -114,8 +114,6 @@ LayoutMarker::LayoutMarker()
 {
 }
 
-static const double pi = 3.14159265358979323846;
-
 void LayoutMarker::apply(RenderState& state, const Point& origin, double angle, double strokeWidth) const
 {
     RenderState newState;
@@ -123,9 +121,9 @@ void LayoutMarker::apply(RenderState& state, const Point& origin, double angle, 
     newState.matrix = state.matrix;
     newState.matrix.translate(origin.x, origin.y);
     if(orient.type() == MarkerOrient::Auto)
-        newState.matrix.rotate(angle * pi / 180.0);
+        newState.matrix.rotate(angle);
     else
-        newState.matrix.rotate(orient.value() * pi / 180.0);
+        newState.matrix.rotate(orient.value());
 
     if(units == MarkerUnits::StrokeWidth)
         newState.matrix.scale(strokeWidth, strokeWidth);

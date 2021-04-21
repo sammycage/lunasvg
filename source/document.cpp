@@ -128,17 +128,15 @@ std::unique_ptr<Document> Document::loadFromData(const char* data)
     return loadFromData(data, std::strlen(data));
 }
 
-static const double pi = 3.14159265358979323846;
-
 Document* Document::rotate(double angle)
 {
-    root->transform.rotate(angle * pi / 180.0);
+    root->transform.rotate(angle);
     return this;
 }
 
 Document* Document::rotate(double angle, double cx, double cy)
 {
-    root->transform.rotate(angle * pi / 180.0, cx, cy);
+    root->transform.rotate(angle, cx, cy);
     return this;
 }
 
