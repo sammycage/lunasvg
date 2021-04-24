@@ -63,6 +63,16 @@ PreserveAspectRatio SVGElement::preserveAspectRatio() const
     return Parser::parsePreserveAspectRatio(value);
 }
 
+Rect SVGElement::viewPort() const
+{
+    LengthContext lengthContext(this);
+    auto _x = lengthContext.valueForLength(x(), LengthMode::Width);
+    auto _y = lengthContext.valueForLength(y(), LengthMode::Height);
+    auto _w = lengthContext.valueForLength(width(), LengthMode::Width);
+    auto _h = lengthContext.valueForLength(height(), LengthMode::Height);
+    return Rect{_x, _y, _w, _h};
+}
+
 std::unique_ptr<LayoutRoot> SVGElement::layoutDocument(const ParseDocument* document) const
 {
     if(isDisplayNone())
@@ -73,13 +83,7 @@ std::unique_ptr<LayoutRoot> SVGElement::layoutDocument(const ParseDocument* docu
     if(w.isZero() || h.isZero())
         return nullptr;
 
-    LengthContext lengthContext(this);
-    Rect viewPort;
-    viewPort.x = lengthContext.valueForLength(x(), LengthMode::Width);
-    viewPort.y = lengthContext.valueForLength(y(), LengthMode::Height);
-    viewPort.w = lengthContext.valueForLength(w, LengthMode::Width);
-    viewPort.h = lengthContext.valueForLength(h, LengthMode::Height);
-
+    auto viewPort = this->viewPort();
     auto viewBox = this->viewBox();
     auto preserveAspectRatio = this->preserveAspectRatio();
 
@@ -118,15 +122,8 @@ void SVGElement::layout(LayoutContext* context, LayoutContainer* current) const
     if(w.isZero() || h.isZero())
         return;
 
-    LengthContext lengthContext(this);
-    Rect viewPort;
-    viewPort.x = lengthContext.valueForLength(x(), LengthMode::Width);
-    viewPort.y = lengthContext.valueForLength(y(), LengthMode::Height);
-    viewPort.w = lengthContext.valueForLength(w, LengthMode::Width);
-    viewPort.h = lengthContext.valueForLength(h, LengthMode::Height);
-
     auto preserveAspectRatio = this->preserveAspectRatio();
-    auto viewTransform = preserveAspectRatio.getMatrix(viewPort, viewBox());
+    auto viewTransform = preserveAspectRatio.getMatrix(viewPort(), viewBox());
 
     auto group = std::make_unique<LayoutGroup>();
     group->transform = viewTransform * transform();
