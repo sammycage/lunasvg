@@ -47,9 +47,13 @@ Rect Element::nearestViewBox() const
 {
     if(parent == nullptr)
         return Rect{};
-    if(parent->id == ElementId::Svg)
-        return static_cast<SVGElement*>(parent)->viewBox();
-    return parent->nearestViewBox();
+    if(parent->id != ElementId::Svg)
+        return parent->nearestViewBox();
+
+    auto element = static_cast<SVGElement*>(parent);
+    if(element->has(PropertyId::ViewBox))
+        return element->viewBox();
+    return element->viewPort();
 }
 
 void Element::layoutChildren(LayoutContext* context, LayoutContainer* current) const
