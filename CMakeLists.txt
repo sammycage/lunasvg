@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.3)
 
-project(lunasvg VERSION 2.0.0 LANGUAGES CXX C)
+project(lunasvg VERSION 2.0.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_C_STANDARD 11)
