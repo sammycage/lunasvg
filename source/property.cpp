@@ -487,7 +487,7 @@ Length::Length(double value, LengthUnits units)
 
 static const double dpi = 96.0;
 
-double Length::value() const
+double Length::value(double max) const
 {
     switch(m_units) {
     case LengthUnits::Number:
@@ -504,7 +504,7 @@ double Length::value() const
     case LengthUnits::Pc:
         return m_value * dpi / 6.0;
     case LengthUnits::Percent:
-        return m_value / 100.0;
+        return m_value * max / 100.0;
     default:
         break;
     }
@@ -525,7 +525,7 @@ double Length::value(const Element* element, LengthMode mode) const
         return m_value * max / 100.0;
     }
 
-    return value();
+    return value(1.0);
 }
 
 LengthContext::LengthContext(const Element* element)
@@ -541,7 +541,7 @@ LengthContext::LengthContext(const Element* element, Units units)
 double LengthContext::valueForLength(const Length& length, LengthMode mode) const
 {
     if(m_units == Units::ObjectBoundingBox)
-        return length.value();
+        return length.value(1.0);
     return length.value(m_element, mode);
 }
 
