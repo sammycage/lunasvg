@@ -248,7 +248,7 @@ public:
     Length(double value);
     Length(double value, LengthUnits units);
 
-    double value() const;
+    double value(double max) const;
     double value(const Element* element, LengthMode mode) const;
 
     bool isValid() const { return  m_units != LengthUnits::Unknown; }
