@@ -83,13 +83,8 @@ std::unique_ptr<LayoutRoot> SVGElement::layoutDocument(const ParseDocument* docu
     if(w.isZero() || h.isZero())
         return nullptr;
 
-    auto viewPort = this->viewPort();
-    auto viewBox = this->viewBox();
-    auto preserveAspectRatio = this->preserveAspectRatio();
-
     auto root = std::make_unique<LayoutRoot>();
     root->transform = transform();
-    root->viewTransform = preserveAspectRatio.getMatrix(viewPort, viewBox);
     root->opacity = opacity();
 
     LayoutContext context{document, root.get()};
@@ -97,17 +92,32 @@ std::unique_ptr<LayoutRoot> SVGElement::layoutDocument(const ParseDocument* docu
     root->clipper = context.getClipper(clip_path());
     layoutChildren(&context, root.get());
 
-    root->width = w.isRelative() ? viewBox.w : viewPort.w;
-    root->height = h.isRelative() ? viewBox.h : viewPort.h;
-    if(root->width == 0.0 || root->height == 0.0)
+    auto x = this->x();
+    auto y = this->y(); 
+
+    auto viewBox = this->viewBox();
+    auto preserveAspectRatio = this->preserveAspectRatio();
+    if(viewBox.empty())
     {
         RenderState state;
         state.mode = RenderMode::Bounding;
         root->render(state);
 
-        if(root->width == 0.0) root->width = state.box.w;
-        if(root->height == 0.0) root->height = state.box.h;
+        viewBox.x = state.box.x;
+        viewBox.y = state.box.y;
+        viewBox.w = state.box.w;
+        viewBox.h = state.box.h;
     }
+
+    Rect viewPort;
+    viewPort.x = x.value(viewBox.w);
+    viewPort.y = y.value(viewBox.h);
+    viewPort.w = w.value(viewBox.w);
+    viewPort.h = h.value(viewBox.h);
+
+    root->viewTransform = preserveAspectRatio.getMatrix(viewPort, viewBox);
+    root->width = viewPort.w;
+    root->height = viewPort.h;
 
     return root;
 }
