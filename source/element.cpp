@@ -46,14 +46,17 @@ Node* Element::addChild(std::unique_ptr<Node> child)
 Rect Element::nearestViewBox() const
 {
     if(parent == nullptr)
-        return Rect{};
-    if(parent->id != ElementId::Svg)
-        return parent->nearestViewBox();
+        return Rect{0, 0, 512, 512};
 
-    auto element = static_cast<SVGElement*>(parent);
-    if(element->has(PropertyId::ViewBox))
-        return element->viewBox();
-    return element->viewPort();
+    if(parent->id == ElementId::Svg)
+    {
+        auto element = static_cast<SVGElement*>(parent);
+        if(element->has(PropertyId::ViewBox))
+            return element->viewBox();
+        return element->viewPort();
+    }
+
+    return parent->nearestViewBox();
 }
 
 void Element::layoutChildren(LayoutContext* context, LayoutContainer* current) const
