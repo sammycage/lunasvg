@@ -33,18 +33,20 @@ inline const char* ltrim(const char* start, const char* end)
 
 inline bool skipDesc(const char*& ptr, const char* end, const char* data)
 {
-    auto start = ptr;
-    while(ptr < end && *data && *ptr == *data)
+    int read = 0;
+    while(data[read])
     {
+        if(ptr >= end || *ptr != data[read])
+        {
+            ptr -= read;
+            return false;
+        }
+
+        ++read;
         ++ptr;
-        ++data;
     }
 
-    if(*data == 0)
-        return true;
-
-    ptr = start;
-    return false;
+    return true;
 }
 
 inline bool skipUntil(const char*& ptr, const char* end, char delimiter)
