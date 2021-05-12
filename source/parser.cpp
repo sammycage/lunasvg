@@ -753,26 +753,60 @@ bool Parser::parseLength(const char*& ptr, const char* end, double& value, Lengt
     if(mode == ForbidNegativeLengths && value < 0.0)
         return false;
 
-    if(Utils::skipDesc(ptr, end, "%"))
+    char c[2] = {0, 0};
+    if(ptr + 0 < end) c[0] = ptr[0];
+    if(ptr + 1 < end) c[1] = ptr[1];
+
+    switch(c[0]) {
+    case '%':
         units = LengthUnits::Percent;
-    else if(Utils::skipDesc(ptr, end, "px"))
-        units = LengthUnits::Px;
-    else if(Utils::skipDesc(ptr, end, "pt"))
-        units = LengthUnits::Pt;
-    else if(Utils::skipDesc(ptr, end, "pc"))
-        units = LengthUnits::Pc;
-    else if(Utils::skipDesc(ptr, end, "in"))
-        units = LengthUnits::In;
-    else if(Utils::skipDesc(ptr, end, "cm"))
-        units = LengthUnits::Cm;
-    else if(Utils::skipDesc(ptr, end, "mm"))
-        units = LengthUnits::Mm;
-    else if(Utils::skipDesc(ptr, end, "ex"))
-        units = LengthUnits::Ex;
-    else if(Utils::skipDesc(ptr, end, "em"))
-        units = LengthUnits::Em;
-    else
+        ptr += 1;
+        break;
+    case 'p':
+        if(c[1] == 'x')
+            units = LengthUnits::Px;
+        else if(c[1] == 'c')
+            units = LengthUnits::Pc;
+        else if(ptr[1] == 't')
+            units = LengthUnits::Pt;
+        else
+            return false;
+        ptr += 2;
+        break;
+    case 'i':
+        if(c[1] == 'n')
+            units = LengthUnits::In;
+        else
+            return false;
+        ptr += 2;
+        break;
+    case 'c':
+        if(c[1] == 'm')
+            units = LengthUnits::Cm;
+        else
+            return false;
+        ptr += 2;
+        break;
+    case 'm':
+        if(c[1] == 'm')
+            units = LengthUnits::Mm;
+        else
+            return false;
+        ptr += 2;
+        break;
+    case 'e':
+        if(c[1] == 'm')
+            units = LengthUnits::Em;
+        else if(c[1] == 'x')
+            units = LengthUnits::Ex;
+        else
+            return false;
+        ptr += 2;
+        break;
+    default:
         units = LengthUnits::Number;
+        break;
+    }
 
     return true;
 }
