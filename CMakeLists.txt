@@ -5,9 +5,10 @@ project(lunasvg VERSION 2.0.1 LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_C_STANDARD 11)
 
+option(BUILD_SHARED_LIBS "Builds as shared library" OFF)
 option(LUNASVG_BUILD_EXAMPLES "Builds examples" OFF)
 
-add_library(lunasvg STATIC)
+add_library(lunasvg)
 
 add_subdirectory(include)
 add_subdirectory(source)
