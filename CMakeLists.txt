@@ -15,6 +15,11 @@ add_subdirectory(source)
 add_subdirectory(3rdparty/software)
 add_subdirectory(3rdparty/plutovg)
 
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(lunasvg PUBLIC LUNASVG_SHARED)
+    target_compile_definitions(lunasvg PRIVATE LUNASVG_EXPORT)
+endif()
+
 if(LUNASVG_BUILD_EXAMPLES)
     add_subdirectory(example)
 endif()
