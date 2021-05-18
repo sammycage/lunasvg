@@ -17,13 +17,12 @@ void GeometryElement::layout(LayoutContext* context, LayoutContainer* current) c
         return;
 
     auto path = this->path();
-    auto box = path.box();
-    if(path.empty() || box.empty())
+    if(path.empty())
         return;
 
     auto shape = std::make_unique<LayoutShape>();
     shape->path = std::move(path);
-    shape->box = box;
+    shape->box = shape->path.box();
     shape->transform = transform();
     shape->fillData = context->fillData(this);
     shape->strokeData = context->strokeData(this);
