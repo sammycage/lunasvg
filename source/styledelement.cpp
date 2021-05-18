@@ -122,7 +122,7 @@ Length StyledElement::stroke_dashoffset() const
     if(value.empty())
         return Length{};
 
-    return Parser::parseLength(value, ForbidNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths);
 }
 
 LengthList StyledElement::stroke_dasharray() const
