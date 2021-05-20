@@ -527,7 +527,7 @@ DashData LayoutContext::dashData(const StyledElement* element)
     auto offset = lengthContex.valueForLength(element->stroke_dashoffset(), LengthMode::Both);
     dashData.offset = std::fmod(offset, sum);
     if(dashData.offset < 0.0)
-        dashData.offset *= sum;
+        dashData.offset += sum;
 
     return dashData;
 }
