@@ -37,20 +37,9 @@ plutovg_path_t* plutovg_dash_path(const plutovg_dash_t* dash, const plutovg_path
     if(dash->data==NULL || dash->size==0)
         return plutovg_path_clone(path);
 
-    double sum = 0.0;
-    for(int i = 0;i < dash->size;i++)
-        sum += dash->data[i];
-
-    if(sum == 0.0)
-        return plutovg_path_clone(path);
-
-    double dashoffset = fmod(dash->offset, sum);
-    if(dashoffset < 0.0)
-        dashoffset += sum;
-
     int toggle = 1;
     int offset = 0;
-    double phase = dashoffset;
+    double phase = dash->offset;
     while(phase >= dash->data[offset])
     {
         toggle = !toggle;

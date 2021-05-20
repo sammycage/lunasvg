@@ -221,8 +221,7 @@ public:
     double miterlimit{4};
     LineCap cap{LineCap::Butt};
     LineJoin join{LineJoin::Miter};
-    DashArray dash;
-    double dashoffet{0};
+    DashData dash;
 };
 
 class MarkerPosition
@@ -315,6 +314,7 @@ public:
     LayoutPaint* getPainter(const std::string& id);
 
     FillData fillData(const StyledElement* element);
+    DashData dashData(const StyledElement* element);
     StrokeData strokeData(const StyledElement* element);
 
 private:

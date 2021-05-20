@@ -37,6 +37,16 @@ public:
 
 using DashArray = std::vector<double>;
 
+class DashData
+{
+public:
+    DashData() = default;
+
+public:
+    DashArray array;
+    double offset{4.0};
+};
+
 enum class TileMode
 {
     Plain,
@@ -70,7 +80,7 @@ public:
     void setLineCap(LineCap cap);
     void setLineJoin(LineJoin join);
     void setMiterlimit(double miterlimit);
-    void setDash(const DashArray& dash, double offset);
+    void setDash(const DashData& dash);
 
     void fill(const Path& path);
     void stroke(const Path& path);

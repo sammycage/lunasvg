@@ -152,9 +152,9 @@ void Canvas::setMiterlimit(double miterlimit)
     plutovg_set_miter_limit(d->pluto, miterlimit);
 }
 
-void Canvas::setDash(const DashArray& dash, double offset)
+void Canvas::setDash(const DashData& dash)
 {
-    plutovg_set_dash(d->pluto, offset, dash.data(), static_cast<int>(dash.size()));
+    plutovg_set_dash(d->pluto, dash.offset, dash.array.data(), static_cast<int>(dash.array.size()));
 }
 
 void Canvas::fill(const Path& path)

@@ -7,7 +7,6 @@
 #include "markerelement.h"
 
 #include <cmath>
-#include <numeric>
 
 using namespace lunasvg;
 
@@ -266,7 +265,7 @@ void StrokeData::render(RenderState& state, const Path& path) const
     state.canvas->setMiterlimit(miterlimit);
     state.canvas->setLineCap(cap);
     state.canvas->setLineJoin(join);
-    state.canvas->setDash(dash, dashoffet);
+    state.canvas->setDash(dash);
     state.canvas->stroke(path);
 }
 
@@ -495,6 +494,44 @@ FillData LayoutContext::fillData(const StyledElement* element)
     return fillData;
 }
 
+DashData LayoutContext::dashData(const StyledElement* element)
+{
+    auto dasharray = element->stroke_dasharray();
+    if(dasharray.empty())
+        return DashData{};
+
+    LengthContext lengthContex(element);
+    DashArray dashes;
+    for(auto& dash : dasharray)
+    {
+        auto value = lengthContex.valueForLength(dash, LengthMode::Both);
+        dashes.push_back(value);
+    }
+
+    auto num_dash = dashes.size();
+    if(num_dash % 2)
+        num_dash *= 2;
+
+    DashData dashData;
+    dashData.array.resize(num_dash);
+    double sum = 0.0;
+    for(std::size_t i = 0;i < num_dash;i++)
+    {
+        dashData.array[i] = dashes[i % dashes.size()];
+        sum += dashData.array[i];
+    }
+
+    if(sum == 0.0)
+        return DashData{};
+
+    auto offset = lengthContex.valueForLength(element->stroke_dashoffset(), LengthMode::Both);
+    dashData.offset = std::fmod(offset, sum);
+    if(dashData.offset < 0.0)
+        dashData.offset *= sum;
+
+    return dashData;
+}
+
 StrokeData LayoutContext::strokeData(const StyledElement* element)
 {
     auto stroke = element->stroke();
@@ -510,20 +547,6 @@ StrokeData LayoutContext::strokeData(const StyledElement* element)
     strokeData.miterlimit = element->stroke_miterlimit();
     strokeData.cap = element->stroke_linecap();
     strokeData.join = element->stroke_linejoin();
-    strokeData.dashoffet = lengthContex.valueForLength(element->stroke_dashoffset(), LengthMode::Both);
-
-    DashArray dashes;
-    auto dasharray = element->stroke_dasharray();
-    for(auto& dash : dasharray)
-        dashes.push_back(lengthContex.valueForLength(dash, LengthMode::Both));
-
-    if(std::accumulate(dashes.begin(), dashes.end(), 0.0) == 0.0)
-        dashes.clear();
-
-    std::size_t num_dash = dashes.size() % 2 == 0 ? dashes.size() : dashes.size() * 2;
-    strokeData.dash.resize(num_dash);
-    for(std::size_t i = 0;i < num_dash;i++)
-        strokeData.dash[i] = dashes[i % dashes.size()];
-
+    strokeData.dash = dashData(element);
     return strokeData;
 }
