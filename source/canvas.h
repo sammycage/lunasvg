@@ -44,7 +44,7 @@ public:
 
 public:
     DashArray array;
-    double offset{4.0};
+    double offset{1.0};
 };
 
 enum class TileMode
