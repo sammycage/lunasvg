@@ -843,7 +843,7 @@ bool Parser::parseColorComponent(const char*& ptr, const char* end, double& valu
         return false;
 
     if(Utils::skipDesc(ptr, end, "%"))
-        value *= 2.56;
+        value *= 2.55;
 
     value = (value < 0.0) ? 0.0 : (value > 255.0) ? 255.0 : std::round(value);
     return 1;
