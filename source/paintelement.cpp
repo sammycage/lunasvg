@@ -165,7 +165,7 @@ std::unique_ptr<LayoutPaint> LinearGradientElement::getPainter(LayoutContext* co
     {
         auto solid = std::make_unique<LayoutSolidColor>();
         solid->color = stops.back().second;
-        return std::move(solid);
+        return solid;
     }
 
     auto gradient = std::make_unique<LayoutLinearGradient>();
@@ -179,7 +179,7 @@ std::unique_ptr<LayoutPaint> LinearGradientElement::getPainter(LayoutContext* co
     gradient->x2 = x2;
     gradient->y2 = y2;
 
-    return std::move(gradient);
+    return gradient;
 }
 
 std::unique_ptr<Node> LinearGradientElement::clone() const
@@ -293,7 +293,7 @@ std::unique_ptr<LayoutPaint> RadialGradientElement::getPainter(LayoutContext *co
     {
         auto solid = std::make_unique<LayoutSolidColor>();
         solid->color = stops.back().second;
-        return std::move(solid);
+        return solid;
     }
 
     auto gradient = std::make_unique<LayoutRadialGradient>();
@@ -309,7 +309,7 @@ std::unique_ptr<LayoutPaint> RadialGradientElement::getPainter(LayoutContext *co
     gradient->fx = lengthContext.valueForLength(attributes.fx(), LengthMode::Width);
     gradient->fy = lengthContext.valueForLength(attributes.fy(), LengthMode::Height);
 
-    return std::move(gradient);
+    return gradient;
 }
 
 std::unique_ptr<Node> RadialGradientElement::clone() const
@@ -471,7 +471,7 @@ std::unique_ptr<LayoutPaint> PatternElement::getPainter(LayoutContext* context) 
     pattern->height = lengthContext.valueForLength(attributes.height(), LengthMode::Height);
     element->layoutChildren(context, pattern.get());
 
-    return std::move(pattern);
+    return pattern;
 }
 
 std::unique_ptr<Node> PatternElement::clone() const
@@ -489,7 +489,7 @@ std::unique_ptr<LayoutPaint> SolidColorElement::getPainter(LayoutContext*) const
     auto solid = std::make_unique<LayoutSolidColor>();
     solid->color = solid_color();
     solid->color.a = solid_opacity();
-    return std::move(solid);
+    return solid;
 }
 
 std::unique_ptr<Node> SolidColorElement::clone() const
