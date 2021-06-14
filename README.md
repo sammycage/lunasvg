@@ -68,6 +68,35 @@ Run Demo.
 svg2png [filename] [resolution] [bgColor]
 ```
 
+## SVG Element Support Matrix
+
+| **SVG Element** | **Supported** |
+|:--|:-:|
+| svg | 👍 |
+| g | 👍 |
+| clipPath | 👍 |
+| defs | 👍 |
+| ellipse | 👍 |
+| line | 👍 |
+| path | 👍 |
+| polyline | 👍 |   
+| polygon | 👍 |
+| rect | 👍 |
+| marker | 👍 |
+| mask | 👍 |
+| linearGradient | 👍 |
+| radialGradient | 👍 |
+| pattern | 👍 |
+| solidColor | 👍 |
+| stop | 👍 |
+| symbol | 👍 |
+| text | 👍 |
+| use | 👍 |
+| text | ⛔️ |
+| filter | ⛔️ |
+| image| ⛔️ |
+| style | ⛔️ |
+
 ## Support
 
 If you like the work lunasvg is doing please consider a small donation:
