@@ -6,17 +6,17 @@
 
 #if defined(_MSC_VER) && defined(LUNASVG_SHARED)
 # ifdef LUNASVG_EXPORT
-#  define DLLEXPORT __declspec(dllexport)
+#  define LUNASVG_DLLEXPORT __declspec(dllexport)
 # else
-#  define DLLEXPORT __declspec(dllimport)
+#  define LUNASVG_DLLEXPORT __declspec(dllimport)
 # endif
 #else
-# define DLLEXPORT
+# define LUNASVG_DLLEXPORT
 #endif
 
 namespace lunasvg {
 
-class DLLEXPORT Bitmap
+class LUNASVG_DLLEXPORT Bitmap
 {
 public:
     /**
@@ -40,7 +40,7 @@ private:
     std::shared_ptr<Impl> m_impl;
 };
 
-class DLLEXPORT Box
+class LUNASVG_DLLEXPORT Box
 {
 public:
     Box() = default;
@@ -53,7 +53,7 @@ public:
     double h{0};
 };
 
-class DLLEXPORT Matrix
+class LUNASVG_DLLEXPORT Matrix
 {
 public:
     Matrix() = default;
@@ -70,7 +70,7 @@ public:
 
 class LayoutRoot;
 
-class DLLEXPORT Document
+class LUNASVG_DLLEXPORT Document
 {
 public:
     /**
@@ -209,6 +209,6 @@ private:
 
 } //namespace lunasvg
 
-#undef DLLEXPORT
+#undef LUNASVG_DLLEXPORT
 
 #endif // DOCUMENT_H
