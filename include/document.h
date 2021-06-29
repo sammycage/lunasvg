@@ -209,6 +209,4 @@ private:
 
 } //namespace lunasvg
 
-#undef LUNASVG_DLLEXPORT
-
 #endif // DOCUMENT_H
