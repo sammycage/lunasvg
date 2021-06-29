@@ -141,6 +141,7 @@ class Element : public Node
 public:
     Element(ElementId id);
 
+    void insert(PropertyId id, const std::string& value);
     void set(PropertyId id, const std::string& value);
     const std::string& get(PropertyId id) const;
     const std::string& find(PropertyId id) const;

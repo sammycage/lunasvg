@@ -11,6 +11,11 @@ Element::Element(ElementId id)
 {
 }
 
+void Element::insert(PropertyId id, const std::string& value)
+{
+    properties.emplace(id, value);
+}
+
 void Element::set(PropertyId id, const std::string& value)
 {
     properties[id] = value;

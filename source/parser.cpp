@@ -1306,7 +1306,7 @@ bool ParseDocument::parse(const char* data, std::size_t size)
                 else if(id == PropertyId::Id)
                     m_idCache.emplace(value, element);
                 else
-                    element->set(id, value);
+                    element->insert(id, value);
             }
 
             ++ptr;
