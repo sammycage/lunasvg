@@ -79,16 +79,6 @@ bool Bitmap::valid() const
     return !!m_impl;
 }
 
-Box::Box(double x, double y, double w, double h)
-    : x(x), y(y), w(w), h(h)
-{
-}
-
-Matrix::Matrix(double a, double b, double c, double d, double e, double f)
-    : a(a), b(b), c(c), d(d), e(e), f(f)
-{
-}
-
 std::unique_ptr<Document> Document::loadFromFile(const std::string& filename)
 {
     std::ifstream fs;

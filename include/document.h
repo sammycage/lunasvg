@@ -5,18 +5,50 @@
 #include <string>
 
 #if defined(_MSC_VER) && defined(LUNASVG_SHARED)
-# ifdef LUNASVG_EXPORT
-#  define LUNASVG_DLLEXPORT __declspec(dllexport)
-# else
-#  define LUNASVG_DLLEXPORT __declspec(dllimport)
-# endif
+#ifdef LUNASVG_EXPORT
+#define LUNASVG_API __declspec(dllexport)
 #else
-# define LUNASVG_DLLEXPORT
+#define LUNASVG_API __declspec(dllimport)
+#endif
+#else
+#define LUNASVG_API
 #endif
 
 namespace lunasvg {
 
-class LUNASVG_DLLEXPORT Bitmap
+class Box
+{
+public:
+    Box() = default;
+    Box(double x, double y, double w, double h)
+        : x(x), y(y), w(w), h(h)
+    {}
+
+public:
+    double x{0};
+    double y{0};
+    double w{0};
+    double h{0};
+};
+
+class Matrix
+{
+public:
+    Matrix() = default;
+    Matrix(double a, double b, double c, double d, double e, double f)
+        : a(a), b(b), c(c), d(d), e(e), f(f)
+    {}
+
+public:
+    double a{1};
+    double b{0};
+    double c{0};
+    double d{1};
+    double e{0};
+    double f{0};
+};
+
+class LUNASVG_API Bitmap
 {
 public:
     /**
@@ -29,7 +61,7 @@ public:
     void reset(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride);
     void reset(std::uint32_t width, std::uint32_t height);
 
-    std::uint8_t* data() const;
+    std::uint8_t *data() const;
     std::uint32_t width() const;
     std::uint32_t height() const;
     std::uint32_t stride() const;
@@ -40,37 +72,9 @@ private:
     std::shared_ptr<Impl> m_impl;
 };
 
-class LUNASVG_DLLEXPORT Box
-{
-public:
-    Box() = default;
-    Box(double x, double y, double w, double h);
-
-public:
-    double x{0};
-    double y{0};
-    double w{0};
-    double h{0};
-};
-
-class LUNASVG_DLLEXPORT Matrix
-{
-public:
-    Matrix() = default;
-    Matrix(double a, double b, double c, double d, double e, double f);
-
-public:
-    double a{1};
-    double b{0};
-    double c{0};
-    double d{1};
-    double e{0};
-    double f{0};
-};
-
 class LayoutRoot;
 
-class LUNASVG_DLLEXPORT Document
+class LUNASVG_API Document
 {
 public:
     /**
@@ -201,6 +205,7 @@ public:
     Bitmap renderToBitmap(std::uint32_t width = 0, std::uint32_t height = 0, std::uint32_t bgColor = 0x00000000) const;
 
     ~Document();
+
 private:
     Document();
 
