@@ -206,9 +206,10 @@ double Document::height() const
     return root->height;
 }
 
-void Document::render(Bitmap bitmap, std::uint32_t bgColor) const
+void Document::render(Bitmap bitmap, const Matrix& matrix, std::uint32_t bgColor) const
 {
     RenderState state;
+    state.matrix = Transform{matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f};
     state.canvas = Canvas::create(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.stride());
     state.canvas->clear(bgColor);
     root->render(state);
@@ -234,13 +235,9 @@ Bitmap Document::renderToBitmap(std::uint32_t width, std::uint32_t height, std::
         width = static_cast<std::uint32_t>(std::ceil(height * root->width / root->height));
     }
 
-    Bitmap bitmap{width, height};
-    RenderState state;
-    state.matrix.scale(width / root->width, height / root->height);
-    state.canvas = Canvas::create(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.stride());
-    state.canvas->clear(bgColor);
-    root->render(state);
-    state.canvas->rgba();
+    auto bitmap = Bitmap{width, height};
+    auto matrix = Matrix{width / root->width, 0, 0, height / root->height, 0, 0};
+    render(bitmap, matrix, bgColor);
     return bitmap;
 }
 

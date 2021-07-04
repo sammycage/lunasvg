@@ -189,7 +189,7 @@ public:
      * @param bitmap
      * @param bgColor
      */
-    void render(Bitmap bitmap, std::uint32_t bgColor = 0x00000000) const;
+    void render(Bitmap bitmap, const Matrix& matrix = Matrix{}, std::uint32_t bgColor = 0x00000000) const;
 
     /**
      * @brief renderToBitmap
