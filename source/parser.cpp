@@ -34,6 +34,9 @@ Length Parser::parseLength(const std::string& string, LengthNegativeValuesMode m
 
 LengthList Parser::parseLengthList(const std::string& string, LengthNegativeValuesMode mode)
 {
+    if(string.empty())
+        return LengthList{};
+
     auto ptr = string.data();
     auto end = ptr + string.size();
 
@@ -111,9 +114,6 @@ PointList Parser::parsePointList(const std::string& string)
 
 Transform Parser::parseTransform(const std::string& string)
 {
-    if(string.empty())
-        return Transform{};
-
     auto ptr = string.data();
     auto end = ptr + string.size();
 
@@ -163,12 +163,9 @@ Transform Parser::parseTransform(const std::string& string)
 
 Path Parser::parsePath(const std::string& string)
 {
-    if(string.empty())
-        return Path{};
-
     auto ptr = string.data();
     auto end = ptr + string.size();
-    if(*ptr != 'M' || *ptr != 'm')
+    if(ptr >= end || !(*ptr == 'M' || *ptr == 'm'))
         return Path{};
 
     auto command = *ptr++;
@@ -376,10 +373,7 @@ std::string Parser::parseUrl(const std::string& string)
 
 std::string Parser::parseHref(const std::string& string)
 {
-    if(string.empty())
-        return std::string{};
-
-    if(string.size() > 1 && string[0] == '#')
+    if(string.size() > 1 && string.back() == '#')
         return string.substr(1);
 
     return std::string{};
@@ -509,7 +503,7 @@ Units Parser::parseUnits(const std::string& string, Units defaultValue)
     if(string.compare("userSpaceOnUse") == 0)
         return Units::UserSpaceOnUse;
     if(string.compare("objectBoundingBox") == 0)
-        return Units::UserSpaceOnUse;
+        return Units::ObjectBoundingBox;
     return defaultValue;
 }
 
