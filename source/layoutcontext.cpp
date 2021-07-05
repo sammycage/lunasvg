@@ -353,15 +353,26 @@ void StrokeData::stroke(RenderState& state, const Path& path) const
     state.canvas->stroke(path);
 }
 
+static const double sqrt2 = 1.41421356237309504880;
+
 void StrokeData::inflate(Rect& box) const
 {
     if(opacity == 0.0 || (painter == nullptr && color.isNone()))
         return;
 
-    box.x -= width * 0.5;
-    box.y -= width * 0.5;
-    box.w += width;
-    box.h += width;
+    double caplimit = width / 2.0;
+    if(cap == LineCap::Square)
+        caplimit *= sqrt2;
+
+    double joinlimit = width / 2.0;
+    if(join == LineJoin::Miter)
+        joinlimit *= miterlimit;
+
+    double delta = std::max(caplimit, joinlimit);
+    box.x -= delta;
+    box.y -= delta;
+    box.w += delta * 2.0;
+    box.h += delta * 2.0;
 }
 
 MarkerPosition::MarkerPosition(const LayoutMarker* marker, const Point& origin, double angle)
