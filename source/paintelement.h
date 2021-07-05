@@ -6,14 +6,14 @@
 
 namespace lunasvg {
 
-class LayoutPaint;
+class LayoutObject;
 
 class PaintElement : public StyledElement
 {
 public:
     PaintElement(ElementId id);
 
-    virtual std::unique_ptr<LayoutPaint> getPainter(LayoutContext* context) const = 0;
+    virtual std::unique_ptr<LayoutObject> getPainter(LayoutContext* context) const = 0;
 };
 
 class GradientElement : public PaintElement
@@ -38,7 +38,7 @@ public:
     Length x2() const;
     Length y2() const;
 
-    std::unique_ptr<LayoutPaint> getPainter(LayoutContext* context) const;
+    std::unique_ptr<LayoutObject> getPainter(LayoutContext* context) const;
     std::unique_ptr<Node> clone() const;
 };
 
@@ -53,7 +53,7 @@ public:
     Length fx() const;
     Length fy() const;
 
-    std::unique_ptr<LayoutPaint> getPainter(LayoutContext* context) const;
+    std::unique_ptr<LayoutObject> getPainter(LayoutContext* context) const;
     std::unique_ptr<Node> clone() const;
 };
 
@@ -74,7 +74,7 @@ public:
     PreserveAspectRatio preserveAspectRatio() const;
     std::string href() const;
 
-    std::unique_ptr<LayoutPaint> getPainter(LayoutContext* context) const;
+    std::unique_ptr<LayoutObject> getPainter(LayoutContext* context) const;
     std::unique_ptr<Node> clone() const;
 };
 
@@ -83,7 +83,7 @@ class SolidColorElement : public PaintElement
 public:
     SolidColorElement();
 
-    std::unique_ptr<LayoutPaint> getPainter(LayoutContext*) const;
+    std::unique_ptr<LayoutObject> getPainter(LayoutContext*) const;
     std::unique_ptr<Node> clone() const;
 };
 
@@ -346,7 +346,7 @@ private:
     Transform m_patternTransform;
     Units m_patternUnits{Units::ObjectBoundingBox};
     Units m_patternContentUnits{Units::UserSpaceOnUse};
-    Rect m_viewBox;
+    Rect m_viewBox{Rect::Invalid};
     PreserveAspectRatio m_preserveAspectRatio;
     const PatternElement* m_patternContentElement{nullptr};
 

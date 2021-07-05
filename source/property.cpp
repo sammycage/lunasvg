@@ -33,9 +33,56 @@ Point::Point(double x, double y)
 {
 }
 
+const Rect Rect::Empty = {0, 0, 0, 0};
+const Rect Rect::Invalid = {0, 0, -1, -1};
+
 Rect::Rect(double x, double y, double w, double h)
     : x(x), y(y), w(w), h(h)
 {
+}
+
+Rect Rect::operator&(const Rect& rect) const
+{
+    if(!rect.valid())
+        return *this;
+
+    if(!valid())
+        return rect;
+
+    auto l = std::max(x, rect.x);
+    auto t = std::max(y, rect.y);
+    auto r = std::min(x + w, rect.x + rect.w);
+    auto b = std::min(y + h, rect.y + rect.h);
+
+    return Rect{l, t, r-l, b-t};
+}
+
+Rect Rect::operator|(const Rect& rect) const
+{
+    if(!rect.valid())
+        return *this;
+
+    if(!valid())
+        return rect;
+
+    auto l = std::min(x, rect.x);
+    auto t = std::min(y, rect.y);
+    auto r = std::max(x + w, rect.x + rect.w);
+    auto b = std::max(y + h, rect.y + rect.h);
+
+    return Rect{l, t, r-l, b-t};
+}
+
+Rect& Rect::intersect(const Rect& rect)
+{
+    *this = *this & rect;
+    return *this;
+}
+
+Rect& Rect::unite(const Rect& rect)
+{
+    *this = *this | rect;
+    return *this;
 }
 
 Transform::Transform(double m00, double m10, double m01, double m11, double m02, double m12)
@@ -550,40 +597,40 @@ PreserveAspectRatio::PreserveAspectRatio(Align align, MeetOrSlice scale)
 {
 }
 
-Transform PreserveAspectRatio::getMatrix(const Rect& viewPort, const Rect& viewBox) const
+Transform PreserveAspectRatio::getMatrix(double width, double height, const Rect& viewBox) const
 {
-    auto matrix = Transform::translated(viewPort.x, viewPort.y);
+    Transform matrix;
     if(viewBox.w == 0.0 || viewBox.h == 0.0)
         return matrix;
 
-    auto scaleX = viewPort.w  / viewBox.w;
-    auto scaleY = viewPort.h  / viewBox.h;
-    if(scaleX == 0.0 || scaleY == 0.0)
+    auto sx = width  / viewBox.w;
+    auto sy = width  / viewBox.h;
+    if(sx == 0.0 || sy == 0.0)
         return matrix;
 
-    auto transX = -viewBox.x;
-    auto transY = -viewBox.y;
+    auto tx = -viewBox.x;
+    auto ty = -viewBox.y;
     if(m_align == Align::None)
     {
-        matrix.scale(scaleX, scaleY);
-        matrix.translate(transX, transY);
+        matrix.scale(sx, sy);
+        matrix.translate(tx, ty);
         return matrix;
     }
 
-    auto scale = (m_scale == MeetOrSlice::Meet) ? std::min(scaleX, scaleY) : std::max(scaleX, scaleY);
-    auto viewW = viewPort.w / scale;
-    auto viewH = viewPort.h / scale;
+    auto scale = (m_scale == MeetOrSlice::Meet) ? std::min(sx, sy) : std::max(sx, sy);
+    auto viewW = width / scale;
+    auto viewH = width / scale;
 
     switch(m_align) {
     case Align::xMidYMin:
     case Align::xMidYMid:
     case Align::xMidYMax:
-        transX -= (viewBox.w - viewW) * 0.5;
+        tx -= (viewBox.w - viewW) * 0.5;
         break;
     case Align::xMaxYMin:
     case Align::xMaxYMid:
     case Align::xMaxYMax:
-        transX -= (viewBox.w - viewW);
+        tx -= (viewBox.w - viewW);
         break;
     default:
         break;
@@ -593,19 +640,19 @@ Transform PreserveAspectRatio::getMatrix(const Rect& viewPort, const Rect& viewB
     case Align::xMinYMid:
     case Align::xMidYMid:
     case Align::xMaxYMid:
-        transY -= (viewBox.h - viewH) * 0.5;
+        ty -= (viewBox.h - viewH) * 0.5;
         break;
     case Align::xMinYMax:
     case Align::xMidYMax:
     case Align::xMaxYMax:
-        transY -= (viewBox.h - viewH);
+        ty -= (viewBox.h - viewH);
         break;
     default:
         break;
     }
 
     matrix.scale(scale, scale);
-    matrix.translate(transX, transY);
+    matrix.translate(tx, ty);
     return matrix;
 }
 

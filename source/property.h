@@ -116,7 +116,17 @@ public:
     Rect() = default;
     Rect(double x, double y, double w, double h);
 
-    bool empty() const { return x == 0.0 && y == 0.0 && w == 0.0 && h == 0.0; }
+    Rect operator&(const Rect& rect) const;
+    Rect operator|(const Rect& rect) const;
+
+    Rect& intersect(const Rect& rect);
+    Rect& unite(const Rect& rect);
+
+    bool empty() const { return w <= 0.0 && h <= 0.0; }
+    bool valid() const { return w >= 0.0 && h >= 0.0; }
+
+    static const Rect Empty;
+    static const Rect Invalid;
 
 public:
     double x{0};
@@ -301,7 +311,7 @@ public:
     PreserveAspectRatio() = default;
     PreserveAspectRatio(Align align, MeetOrSlice scale);
 
-    Transform getMatrix(const Rect& viewPort, const Rect& viewBox) const;
+    Transform getMatrix(double width, double height, const Rect& viewBox) const;
 
     Align align() const { return m_align; }
     MeetOrSlice scale() const { return m_scale; }

@@ -63,16 +63,6 @@ PreserveAspectRatio SVGElement::preserveAspectRatio() const
     return Parser::parsePreserveAspectRatio(value);
 }
 
-Rect SVGElement::viewPort() const
-{
-    LengthContext lengthContext(this);
-    auto _x = lengthContext.valueForLength(x(), LengthMode::Width);
-    auto _y = lengthContext.valueForLength(y(), LengthMode::Height);
-    auto _w = lengthContext.valueForLength(width(), LengthMode::Width);
-    auto _h = lengthContext.valueForLength(height(), LengthMode::Height);
-    return Rect{_x, _y, _w, _h};
-}
-
 std::unique_ptr<LayoutRoot> SVGElement::layoutDocument(const ParseDocument* document) const
 {
     if(isDisplayNone())
@@ -83,14 +73,20 @@ std::unique_ptr<LayoutRoot> SVGElement::layoutDocument(const ParseDocument* docu
     if(w.isZero() || h.isZero())
         return nullptr;
 
-    auto viewPort = this->viewPort();
+    LengthContext lengthContext(this);
+    auto _x = lengthContext.valueForLength(x(), LengthMode::Width);
+    auto _y = lengthContext.valueForLength(y(), LengthMode::Height);
+    auto _w = lengthContext.valueForLength(w, LengthMode::Width);
+    auto _h = lengthContext.valueForLength(h, LengthMode::Height);
+
     auto preserveAspectRatio = this->preserveAspectRatio();
+    auto viewTranslation = Transform::translated(_x, _y);
+    auto viewTransform = preserveAspectRatio.getMatrix(_w, _h, viewBox());
 
     auto root = std::make_unique<LayoutRoot>();
-    root->width = viewPort.w;
-    root->height = viewPort.h;
-    root->viewTransform = preserveAspectRatio.getMatrix(viewPort, viewBox());
-    root->transform = transform();
+    root->width = _w;
+    root->height = _h;
+    root->transform = (viewTranslation * viewTransform) * transform();
     root->opacity = opacity();
 
     LayoutContext context{document, root.get()};
@@ -110,11 +106,18 @@ void SVGElement::layout(LayoutContext* context, LayoutContainer* current) const
     if(w.isZero() || h.isZero())
         return;
 
+    LengthContext lengthContext(this);
+    auto _x = lengthContext.valueForLength(x(), LengthMode::Width);
+    auto _y = lengthContext.valueForLength(y(), LengthMode::Height);
+    auto _w = lengthContext.valueForLength(w, LengthMode::Width);
+    auto _h = lengthContext.valueForLength(h, LengthMode::Height);
+
     auto preserveAspectRatio = this->preserveAspectRatio();
-    auto viewTransform = preserveAspectRatio.getMatrix(viewPort(), viewBox());
+    auto viewTranslation = Transform::translated(_x, _y);
+    auto viewTransform = preserveAspectRatio.getMatrix(_w, _h, viewBox());
 
     auto group = std::make_unique<LayoutGroup>();
-    group->transform = viewTransform * transform();
+    group->transform = (viewTranslation * viewTransform) * transform();
     group->opacity = opacity();
     group->masker = context->getMasker(mask());
     group->clipper = context->getClipper(clip_path());

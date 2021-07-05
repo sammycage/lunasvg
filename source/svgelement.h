@@ -20,7 +20,6 @@ public:
 
     Rect viewBox() const;
     PreserveAspectRatio preserveAspectRatio() const;
-    Rect viewPort() const;
     std::unique_ptr<LayoutRoot> layoutDocument(const ParseDocument* document) const;
 
     void layout(LayoutContext* context, LayoutContainer* current) const;

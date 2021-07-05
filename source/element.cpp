@@ -58,7 +58,13 @@ Rect Element::nearestViewBox() const
         auto element = static_cast<SVGElement*>(parent);
         if(element->has(PropertyId::ViewBox))
             return element->viewBox();
-        return element->viewPort();
+
+        LengthContext lengthContext(this);
+        auto _x = lengthContext.valueForLength(element->x(), LengthMode::Width);
+        auto _y = lengthContext.valueForLength(element->y(), LengthMode::Height);
+        auto _w = lengthContext.valueForLength(element->width(), LengthMode::Width);
+        auto _h = lengthContext.valueForLength(element->height(), LengthMode::Height);
+        return Rect{_x, _y, _w, _h};
     }
 
     return parent->nearestViewBox();

@@ -22,7 +22,6 @@ void GeometryElement::layout(LayoutContext* context, LayoutContainer* current) c
 
     auto shape = std::make_unique<LayoutShape>();
     shape->path = std::move(path);
-    shape->box = shape->path.box();
     shape->transform = transform();
     shape->fillData = context->fillData(this);
     shape->strokeData = context->strokeData(this);

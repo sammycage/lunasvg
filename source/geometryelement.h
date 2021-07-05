@@ -23,7 +23,6 @@ public:
     PathElement();
 
     Path d() const;
-
     Path path() const;
 
     std::unique_ptr<Node> clone() const;

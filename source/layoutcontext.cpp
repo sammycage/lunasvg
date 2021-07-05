@@ -23,8 +23,48 @@ void LayoutObject::render(RenderState&) const
 {
 }
 
-LayoutContainer::LayoutContainer()
+void LayoutObject::apply(RenderState&) const
 {
+}
+
+Rect LayoutObject::map(const Rect&) const
+{
+    return Rect::Invalid;
+}
+
+LayoutContainer::LayoutContainer(LayoutId id)
+    : LayoutObject(id)
+{
+}
+
+const Rect& LayoutContainer::fillBoundingBox() const
+{
+    if(m_fillBoundingBox.valid())
+        return m_fillBoundingBox;
+
+    for(const auto& child : children)
+    {
+        if(child->isHidden())
+            continue;
+        m_fillBoundingBox.unite(child->map(child->fillBoundingBox()));
+    }
+
+    return m_fillBoundingBox;
+}
+
+const Rect& LayoutContainer::strokeBoundingBox() const
+{
+    if(m_strokeBoundingBox.valid())
+        return m_strokeBoundingBox;
+
+    for(const auto& child : children)
+    {
+        if(child->isHidden())
+            continue;
+        m_strokeBoundingBox.unite(child->map(child->fillBoundingBox()));
+    }
+
+    return m_strokeBoundingBox;
 }
 
 LayoutObject* LayoutContainer::addChild(std::unique_ptr<LayoutObject> child)
@@ -33,27 +73,39 @@ LayoutObject* LayoutContainer::addChild(std::unique_ptr<LayoutObject> child)
     return &*children.back();
 }
 
+LayoutObject* LayoutContainer::addChildIfNotEmpty(std::unique_ptr<LayoutContainer> child)
+{
+    if(child->children.empty())
+        return nullptr;
+
+    return addChild(std::move(child));
+}
+
+void LayoutContainer::renderChildren(RenderState& state) const
+{
+    for(const auto& child : children)
+        child->render(state);
+}
+
 LayoutClipPath::LayoutClipPath()
-    : LayoutObject(LayoutId::ClipPath)
+    : LayoutContainer(LayoutId::ClipPath)
 {
 }
 
 void LayoutClipPath::apply(RenderState& state) const
 {
-    RenderState newState;
-    newState.mode = RenderMode::Clipping;
+    RenderState newState(this, RenderMode::Clipping);
     newState.canvas = Canvas::create(state.canvas->width(), state.canvas->height());
     newState.matrix = state.matrix;
     if(units == Units::ObjectBoundingBox)
     {
-        newState.matrix.translate(state.box.x, state.box.y);
-        newState.matrix.scale(state.box.w, state.box.h);
+        const auto& box = state.objectBoundingBox();
+        newState.matrix.translate(box.x, box.y);
+        newState.matrix.scale(box.w, box.h);
     }
 
     newState.matrix.premultiply(transform);
-    for(auto& child : children)
-        child->render(newState);
-
+    renderChildren(state);
     if(clipper != nullptr)
         clipper->apply(newState);
 
@@ -61,24 +113,23 @@ void LayoutClipPath::apply(RenderState& state) const
 }
 
 LayoutMask::LayoutMask()
-    : LayoutObject(LayoutId::Mask)
+    : LayoutContainer(LayoutId::Mask)
 {
 }
 
 void LayoutMask::apply(RenderState& state) const
 {
-    RenderState newState;
+    RenderState newState(this, state.mode());
     newState.canvas = Canvas::create(state.canvas->width(), state.canvas->height());
     newState.matrix = state.matrix;
     if(contentUnits == Units::ObjectBoundingBox)
     {
-        newState.matrix.translate(state.box.x, state.box.y);
-        newState.matrix.scale(state.box.w, state.box.h);
+        const auto& box = state.objectBoundingBox();
+        newState.matrix.translate(box.x, box.y);
+        newState.matrix.scale(box.w, box.h);
     }
 
-    for(auto& child : children)
-        child->render(newState);
-
+    renderChildren(state);
     if(clipper != nullptr)
         clipper->apply(newState);
 
@@ -90,33 +141,32 @@ void LayoutMask::apply(RenderState& state) const
 }
 
 LayoutGroup::LayoutGroup()
-    : LayoutObject(LayoutId::Group)
+    : LayoutContainer(LayoutId::Group)
 {
 }
 
 void LayoutGroup::render(RenderState& state) const
 {
-    RenderState newState;
-    newState.mode = state.mode;
+    RenderState newState(this, state.mode());
     newState.matrix = transform * state.matrix;
     newState.beginGroup(state, clipper, masker, opacity);
-
-    for(auto& child : children)
-        child->render(newState);
-
+    renderChildren(newState);
     newState.endGroup(state, clipper, masker, opacity);
-    state.updateBoundingBox(newState);
+}
+
+Rect LayoutGroup::map(const Rect& rect) const
+{
+    return transform.map(rect);
 }
 
 LayoutMarker::LayoutMarker()
-    : LayoutObject(LayoutId::Marker)
+    : LayoutContainer(LayoutId::Marker)
 {
 }
 
-void LayoutMarker::apply(RenderState& state, const Point& origin, double angle, double strokeWidth) const
+void LayoutMarker::renderMarker(RenderState& state, const Point& origin, double angle, double strokeWidth) const
 {
-    RenderState newState;
-    newState.mode = state.mode;
+    RenderState newState(this, state.mode());
     newState.matrix = state.matrix;
     newState.matrix.translate(origin.x, origin.y);
     if(orient.type() == MarkerOrient::Auto)
@@ -129,23 +179,13 @@ void LayoutMarker::apply(RenderState& state, const Point& origin, double angle, 
 
     newState.matrix.translate(-refX, -refY);
     newState.matrix.premultiply(transform);
-
     newState.beginGroup(state, clipper, masker, opacity);
-
-    for(auto& child : children)
-        child->render(newState);
-
+    renderChildren(state);
     newState.endGroup(state, clipper, masker, opacity);
-    state.updateBoundingBox(newState);
-}
-
-LayoutPaint::LayoutPaint(LayoutId id)
-    : LayoutObject(id)
-{
 }
 
 LayoutGradient::LayoutGradient(LayoutId id)
-    : LayoutPaint(id)
+    : LayoutObject(id)
 {
 }
 
@@ -159,8 +199,9 @@ void LayoutLinearGradient::apply(RenderState& state) const
     Transform matrix;
     if(units == Units::ObjectBoundingBox)
     {
-        matrix.translate(state.box.x, state.box.y);
-        matrix.scale(state.box.w, state.box.h);
+        const auto& box = state.objectBoundingBox();
+        matrix.translate(box.x, box.y);
+        matrix.scale(box.w, box.h);
     }
 
     LinearGradientValues values{x1, y1, x2, y2};
@@ -177,8 +218,9 @@ void LayoutRadialGradient::apply(RenderState& state) const
     Transform matrix;
     if(units == Units::ObjectBoundingBox)
     {
-        matrix.translate(state.box.x, state.box.y);
-        matrix.scale(state.box.w, state.box.h);
+        const auto& box = state.objectBoundingBox();
+        matrix.translate(box.x, box.y);
+        matrix.scale(box.w, box.h);
     }
 
     RadialGradientValues values{cx, cy, r, fx, fy};
@@ -186,45 +228,50 @@ void LayoutRadialGradient::apply(RenderState& state) const
 }
 
 LayoutPattern::LayoutPattern()
-    : LayoutPaint(LayoutId::Pattern)
+    : LayoutContainer(LayoutId::Pattern)
 {
 }
 
 void LayoutPattern::apply(RenderState& state) const
 {
-    Rect b{x, y, width, height};
+    Rect rect{x, y, width, height};
     if(units == Units::ObjectBoundingBox)
     {
-        b.x = b.x * state.box.w + state.box.x;
-        b.y = b.y * state.box.h + state.box.y;
-        b.w = b.w * state.box.w;
-        b.h = b.h * state.box.h;
+        const auto& box = state.objectBoundingBox();
+        rect.x = rect.x * box.w + box.x;
+        rect.y = rect.y * box.h + box.y;
+        rect.w = rect.w * box.w;
+        rect.h = rect.h * box.h;
     }
 
     auto scalex = std::sqrt(state.matrix.m00 * state.matrix.m00 + state.matrix.m01 * state.matrix.m01);
     auto scaley = std::sqrt(state.matrix.m10 * state.matrix.m10 + state.matrix.m11 * state.matrix.m11);
 
-    auto width = static_cast<std::uint32_t>(std::ceil(b.w * scalex));
-    auto height = static_cast<std::uint32_t>(std::ceil(b.h * scaley));
+    auto width = static_cast<std::uint32_t>(std::ceil(rect.w * scalex));
+    auto height = static_cast<std::uint32_t>(std::ceil(rect.h * scaley));
 
-    RenderState newState;
+    RenderState newState(this, RenderMode::Display);
     newState.canvas = Canvas::create(width, height);
     newState.matrix.scale(scalex, scaley);
 
-    if(!viewBox.empty())
-        newState.matrix.premultiply(preserveAspectRatio.getMatrix(Rect{0, 0, b.w, b.h}, viewBox));
+    if(viewBox.valid())
+    {
+        auto viewTransform = preserveAspectRatio.getMatrix(rect.w, rect.h, viewBox);
+        newState.matrix.premultiply(viewTransform);
+    }
     else if(contentUnits == Units::ObjectBoundingBox)
-        newState.matrix.scale(state.box.w, state.box.h);
+    {
+        const auto& box = state.objectBoundingBox();
+        newState.matrix.scale(box.w, box.h);
+    }
 
-    for(auto& child : children)
-        child->render(newState);
-
-    Transform matrix{1.0/scalex, 0, 0, 1.0/scaley, b.x, b.y};
+    renderChildren(newState);
+    Transform matrix{1.0/scalex, 0, 0, 1.0/scaley, rect.x, rect.y};
     state.canvas->setPattern(*newState.canvas, matrix * transform, TileMode::Tiled);
 }
 
 LayoutSolidColor::LayoutSolidColor()
-    : LayoutPaint(LayoutId::SolidColor)
+    : LayoutObject(LayoutId::SolidColor)
 {
 }
 
@@ -276,7 +323,7 @@ MarkerPosition::MarkerPosition(const LayoutMarker* marker, const Point& origin, 
 
 void MarkerPosition::render(RenderState& state, double strokeWidth) const
 {
-    marker->apply(state, origin, angle, strokeWidth);
+    marker->renderMarker(state, origin, angle, strokeWidth);
 }
 
 LayoutShape::LayoutShape()
@@ -286,24 +333,19 @@ LayoutShape::LayoutShape()
 
 void LayoutShape::render(RenderState& state) const
 {
-    RenderState newState;
-    newState.mode = state.mode;
-    newState.matrix = transform * state.matrix;
-    newState.box = box;
     if(visibility == Visibility::Hidden)
-    {
-        state.updateBoundingBox(newState);
         return;
-    }
 
+    RenderState newState(this, state.mode());
+    newState.matrix = transform * state.matrix;
     newState.beginGroup(state, clipper, masker, 1.0);
 
-    if(newState.mode == RenderMode::Display)
+    if(newState.mode() == RenderMode::Display)
     {
         fillData.render(newState, path);
         strokeData.render(newState, path);
     }
-    else if(newState.mode == RenderMode::Clipping)
+    else
     {
         newState.canvas->setMatrix(newState.matrix);
         newState.canvas->setColor(Color::Black);
@@ -316,34 +358,58 @@ void LayoutShape::render(RenderState& state) const
         marker.render(newState, strokeData.width);
 
     newState.endGroup(state, clipper, masker, 1.0);
-    state.updateBoundingBox(newState);
+}
+
+Rect LayoutShape::map(const Rect& rect) const
+{
+    return transform.map(rect);
+}
+
+const Rect& LayoutShape::fillBoundingBox() const
+{
+    if(m_fillBoundingBox.valid())
+        return m_fillBoundingBox;
+
+    m_fillBoundingBox = path.box();
+    return m_fillBoundingBox;
+}
+
+const Rect& LayoutShape::strokeBoundingBox() const
+{
+    if(m_strokeBoundingBox.valid())
+        return m_strokeBoundingBox;
+
+    m_strokeBoundingBox = fillBoundingBox();
+    return m_strokeBoundingBox;
 }
 
 LayoutRoot::LayoutRoot()
-    : LayoutObject(LayoutId::Root)
+    : LayoutContainer(LayoutId::Root)
 {
 }
 
 void LayoutRoot::render(RenderState& state) const
 {
-    RenderState newState;
-    newState.mode = state.mode;
-    newState.matrix = viewTransform * transform * state.matrix;
+    RenderState newState(this, state.mode());
+    newState.matrix = transform * state.matrix;
     newState.beginGroup(state, clipper, masker, opacity);
-
-    for(auto& child : children)
-        child->render(newState);
-
+    renderChildren(newState);
     newState.endGroup(state, clipper, masker, opacity);
-    state.updateBoundingBox(newState);
+}
+
+Rect LayoutRoot::map(const Rect& rect) const
+{
+    return transform.map(rect);
+}
+
+RenderState::RenderState(const LayoutObject* object, RenderMode mode)
+    : m_object(object), m_mode(mode)
+{
 }
 
 void RenderState::beginGroup(RenderState& state, const LayoutClipPath* clipper, const LayoutMask* masker, double opacity)
 {
-    if(mode == RenderMode::Bounding)
-        return;
-
-    if(clipper || (mode == RenderMode::Display && (masker || opacity < 1.0)))
+    if(clipper || (m_mode == RenderMode::Display && (masker || opacity < 1.0)))
         canvas = Canvas::create(state.canvas->width(), state.canvas->height());
     else
         canvas = state.canvas;
@@ -351,38 +417,16 @@ void RenderState::beginGroup(RenderState& state, const LayoutClipPath* clipper, 
 
 void RenderState::endGroup(RenderState& state, const LayoutClipPath* clipper, const LayoutMask* masker, double opacity)
 {
-    if(mode == RenderMode::Bounding || !(masker || clipper || opacity < 1.0))
+    if(state.canvas == canvas)
         return;
 
-    if(clipper && (mode == RenderMode::Display || mode == RenderMode::Clipping))
+    if(clipper && (m_mode == RenderMode::Display || m_mode == RenderMode::Clipping))
         clipper->apply(*this);
 
-    if(masker && mode == RenderMode::Display)
+    if(masker && m_mode == RenderMode::Display)
         masker->apply(*this);
 
-    state.canvas->blend(*canvas, BlendMode::Src_Over, mode == RenderMode::Display ? opacity : 1.0);
-}
-
-void RenderState::updateBoundingBox(const RenderState& state)
-{
-    auto matrix = state.matrix * this->matrix.inverted();
-    auto box = matrix.map(state.box);
-
-    if(this->box.empty())
-    {
-        this->box = box;
-        return;
-    }
-
-    auto l = std::min(this->box.x, box.x);
-    auto t = std::min(this->box.y, box.y);
-    auto r = std::max(this->box.x + this->box.w, box.x + box.w);
-    auto b = std::max(this->box.y + this->box.h, box.y + box.h);
-
-    this->box.x = l;
-    this->box.y = t;
-    this->box.w = r - l;
-    this->box.h = b - t;
+    state.canvas->blend(*canvas, BlendMode::Src_Over, m_mode == RenderMode::Display ? opacity : 1.0);
 }
 
 LayoutContext::LayoutContext(const ParseDocument* document, LayoutRoot* root)
@@ -463,21 +507,21 @@ LayoutMarker* LayoutContext::getMarker(const std::string& id)
     return static_cast<LayoutMarker*>(addToResourcesCache(id, std::move(marker)));
 }
 
-LayoutPaint* LayoutContext::getPainter(const std::string& id)
+LayoutObject* LayoutContext::getPainter(const std::string& id)
 {
     if(id.empty())
         return nullptr;
 
     auto ref = getResourcesById(id);
-    if(ref && (ref->id == LayoutId::LinearGradient || ref->id == LayoutId::RadialGradient || ref->id == LayoutId::Pattern || ref->id == LayoutId::SolidColor))
-        return static_cast<LayoutPaint*>(ref);
+    if(ref && ref->isPaint())
+        return ref;
 
     auto element = getElementById(id);
     if(element == nullptr || !(element->id == ElementId::LinearGradient || element->id == ElementId::RadialGradient || element->id == ElementId::Pattern || element->id == ElementId::SolidColor))
         return nullptr;
 
     auto painter = static_cast<PaintElement*>(element)->getPainter(this);
-    return static_cast<LayoutPaint*>(addToResourcesCache(id, std::move(painter)));
+    return addToResourcesCache(id, std::move(painter));
 }
 
 FillData LayoutContext::fillData(const StyledElement* element)

@@ -174,16 +174,8 @@ Matrix Document::matrix() const
 
 Box Document::box() const
 {
-    RenderState state;
-    state.mode = RenderMode::Bounding;
-    root->render(state);
-
-    Box box;
-    box.x = state.box.x;
-    box.y = state.box.y;
-    box.w = state.box.w;
-    box.h = state.box.h;
-    return box;
+    auto box = root->map(root->strokeBoundingBox());
+    return Box{box.x, box.y, box.w, box.h};
 }
 
 double Document::width() const
@@ -198,7 +190,7 @@ double Document::height() const
 
 void Document::render(Bitmap bitmap, const Matrix& matrix, std::uint32_t bgColor) const
 {
-    RenderState state;
+    RenderState state(nullptr, RenderMode::Display);
     state.matrix = Transform{matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f};
     state.canvas = Canvas::create(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.stride());
     state.canvas->clear(bgColor);

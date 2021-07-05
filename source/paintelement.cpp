@@ -112,7 +112,7 @@ Length LinearGradientElement::y2() const
     return Parser::parseLength(value, AllowNegativeLengths);
 }
 
-std::unique_ptr<LayoutPaint> LinearGradientElement::getPainter(LayoutContext* context) const
+std::unique_ptr<LayoutObject> LinearGradientElement::getPainter(LayoutContext* context) const
 {
     LinearGradientAttributes attributes;
     std::set<const GradientElement*> processedGradients;
@@ -237,7 +237,7 @@ Length RadialGradientElement::fy() const
     return Parser::parseLength(value, AllowNegativeLengths);
 }
 
-std::unique_ptr<LayoutPaint> RadialGradientElement::getPainter(LayoutContext *context) const
+std::unique_ptr<LayoutObject> RadialGradientElement::getPainter(LayoutContext* context) const
 {
     RadialGradientAttributes attributes;
     std::set<const GradientElement*> processedGradients;
@@ -412,7 +412,7 @@ std::string PatternElement::href() const
     return Parser::parseHref(value);
 }
 
-std::unique_ptr<LayoutPaint> PatternElement::getPainter(LayoutContext* context) const
+std::unique_ptr<LayoutObject> PatternElement::getPainter(LayoutContext* context) const
 {
     PatternAttributes attributes;
     std::set<const PatternElement*> processedPatterns;
@@ -484,7 +484,7 @@ SolidColorElement::SolidColorElement()
 {
 }
 
-std::unique_ptr<LayoutPaint> SolidColorElement::getPainter(LayoutContext*) const
+std::unique_ptr<LayoutObject> SolidColorElement::getPainter(LayoutContext*) const
 {
     auto solid = std::make_unique<LayoutSolidColor>();
     solid->color = solid_color();

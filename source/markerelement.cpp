@@ -86,13 +86,11 @@ std::unique_ptr<LayoutMarker> MarkerElement::getMarker(LayoutContext* context) c
     LengthContext lengthContext(this);
     auto _refX = lengthContext.valueForLength(refX(), LengthMode::Width);
     auto _refY = lengthContext.valueForLength(refY(), LengthMode::Height);
-
-    Rect viewPort;
-    viewPort.w = lengthContext.valueForLength(markerWidth(), LengthMode::Width);
-    viewPort.h = lengthContext.valueForLength(markerHeight(), LengthMode::Height);
+    auto _markerWidth = lengthContext.valueForLength(markerWidth(), LengthMode::Width);
+    auto _markerHeight = lengthContext.valueForLength(markerHeight(), LengthMode::Height);
 
     auto preserveAspectRatio = this->preserveAspectRatio();
-    auto viewTransform = preserveAspectRatio.getMatrix(viewPort, viewBox());
+    auto viewTransform = preserveAspectRatio.getMatrix(_markerWidth, _markerHeight, viewBox());
     viewTransform.map(_refX, _refY, &_refX, &_refY);
 
     auto marker = std::make_unique<LayoutMarker>();

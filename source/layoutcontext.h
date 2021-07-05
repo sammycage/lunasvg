@@ -31,6 +31,14 @@ public:
     LayoutObject(LayoutId id);
     virtual ~LayoutObject();
     virtual void render(RenderState&) const;
+    virtual void apply(RenderState&) const;
+    virtual Rect map(const Rect&) const;
+
+    virtual const Rect& fillBoundingBox() const { return Rect::Invalid;}
+    virtual const Rect& strokeBoundingBox() const { return Rect::Invalid;}
+
+    bool isPaint() const { return id == LayoutId::LinearGradient || id == LayoutId::RadialGradient || id == LayoutId::Pattern || id == LayoutId::SolidColor; }
+    bool isHidden() const { return isPaint() || id == LayoutId::ClipPath || id == LayoutId::Mask || id == LayoutId::Marker; }
 
 public:
     LayoutId id;
@@ -38,18 +46,27 @@ public:
 
 using LayoutList = std::list<std::unique_ptr<LayoutObject>>;
 
-class LayoutContainer
+class LayoutContainer : public LayoutObject
 {
 public:
-    LayoutContainer();
+    LayoutContainer(LayoutId id);
+
+    const Rect& fillBoundingBox() const;
+    const Rect& strokeBoundingBox() const;
 
     LayoutObject* addChild(std::unique_ptr<LayoutObject> child);
+    LayoutObject* addChildIfNotEmpty(std::unique_ptr<LayoutContainer> child);
+    void renderChildren(RenderState& state) const;
 
 public:
     LayoutList children;
+
+protected:
+    mutable Rect m_fillBoundingBox{Rect::Invalid};
+    mutable Rect m_strokeBoundingBox{Rect::Invalid};
 };
 
-class LayoutClipPath : public LayoutObject, public LayoutContainer
+class LayoutClipPath : public LayoutContainer
 {
 public:
     LayoutClipPath();
@@ -57,12 +74,12 @@ public:
     void apply(RenderState& state) const;
 
 public:
-    Units units{Units::UserSpaceOnUse};
+    Units units;
     Transform transform;
-    const LayoutClipPath* clipper{nullptr};
+    const LayoutClipPath* clipper;
 };
 
-class LayoutMask : public LayoutObject, public LayoutContainer
+class LayoutMask : public LayoutContainer
 {
 public:
     LayoutMask();
@@ -70,66 +87,59 @@ public:
     void apply(RenderState& state) const;
 
 public:
-    double x{0};
-    double y{0};
-    double width{0};
-    double height{0};
-    Units units{Units::ObjectBoundingBox};
-    Units contentUnits{Units::UserSpaceOnUse};
-    double opacity{1};
-    const LayoutMask* masker{nullptr};
-    const LayoutClipPath* clipper{nullptr};
+    double x;
+    double y;
+    double width;
+    double height;
+    Units units;
+    Units contentUnits;
+    double opacity;
+    const LayoutMask* masker;
+    const LayoutClipPath* clipper;
 };
 
-class LayoutGroup : public LayoutObject, public LayoutContainer
+class LayoutGroup : public LayoutContainer
 {
 public:
     LayoutGroup();
 
     void render(RenderState& state) const;
+    Rect map(const Rect& rect) const;
 
 public:
     Transform transform;
-    double opacity{1};
-    const LayoutMask* masker{nullptr};
-    const LayoutClipPath* clipper{nullptr};
+    double opacity;
+    const LayoutMask* masker;
+    const LayoutClipPath* clipper;
 };
 
-class LayoutMarker : public LayoutObject, public LayoutContainer
+class LayoutMarker : public LayoutContainer
 {
 public:
     LayoutMarker();
 
-    void apply(RenderState& state, const Point& origin, double angle, double strokeWidth) const;
+    void renderMarker(RenderState& state, const Point& origin, double angle, double strokeWidth) const;
 
 public:
-    double refX{0};
-    double refY{0};
+    double refX;
+    double refY;
     Transform transform;
     Angle orient;
-    MarkerUnits units{MarkerUnits::StrokeWidth};
-    double opacity{1};
-    const LayoutMask* masker{nullptr};
-    const LayoutClipPath* clipper{nullptr};
+    MarkerUnits units;
+    double opacity;
+    const LayoutMask* masker;
+    const LayoutClipPath* clipper;
 };
 
-class LayoutPaint : public LayoutObject
-{
-public:
-    LayoutPaint(LayoutId id);
-
-    virtual void apply(RenderState& state) const = 0;
-};
-
-class LayoutGradient : public LayoutPaint
+class LayoutGradient : public LayoutObject
 {
 public:
     LayoutGradient(LayoutId id);
 
 public:
     Transform transform;
-    SpreadMethod spreadMethod{SpreadMethod::Pad};
-    Units units{Units::ObjectBoundingBox};
+    SpreadMethod spreadMethod;
+    Units units;
     GradientStops stops;
 };
 
@@ -155,14 +165,14 @@ public:
     void apply(RenderState& state) const;
 
 public:
-    double cx{0.5};
-    double cy{0.5};
-    double r{0.5};
-    double fx{0};
-    double fy{0};
+    double cx;
+    double cy;
+    double r;
+    double fx;
+    double fy;
 };
 
-class LayoutPattern : public LayoutPaint, public LayoutContainer
+class LayoutPattern : public LayoutContainer
 {
 public:
     LayoutPattern();
@@ -170,18 +180,18 @@ public:
     void apply(RenderState& state) const;
 
 public:
-    double x{0};
-    double y{0};
-    double width{0};
-    double height{0};
+    double x;
+    double y;
+    double width;
+    double height;
     Transform transform;
-    Units units{Units::ObjectBoundingBox};
-    Units contentUnits{Units::UserSpaceOnUse};
+    Units units;
+    Units contentUnits;
     Rect viewBox;
     PreserveAspectRatio preserveAspectRatio;
 };
 
-class LayoutSolidColor : public LayoutPaint
+class LayoutSolidColor : public LayoutObject
 {
 public:
     LayoutSolidColor();
@@ -200,7 +210,7 @@ public:
     void render(RenderState& state, const Path& path) const;
 
 public:
-    const LayoutPaint* painter{nullptr};
+    const LayoutObject* painter{nullptr};
     Color color{Color::Transparent};
     double opacity{0};
     WindRule fillRule{WindRule::NonZero};
@@ -214,7 +224,7 @@ public:
     void render(RenderState& state, const Path& path) const;
 
 public:
-    const LayoutPaint* painter{nullptr};
+    const LayoutObject* painter{nullptr};
     Color color{Color::Transparent};
     double opacity{0};
     double width{1};
@@ -243,58 +253,68 @@ public:
     LayoutShape();
 
     void render(RenderState& state) const;
+    Rect map(const Rect& rect) const;
+    const Rect& fillBoundingBox() const;
+    const Rect& strokeBoundingBox() const;
 
 public:
     Path path;
-    Rect box;
     Transform transform;
     FillData fillData;
     StrokeData strokeData;
-    Visibility visibility{Visibility::Visible};
-    WindRule clipRule{WindRule::NonZero};
-    const LayoutMask* masker{nullptr};
-    const LayoutClipPath* clipper{nullptr};
+    Visibility visibility;
+    WindRule clipRule;
+    const LayoutMask* masker;
+    const LayoutClipPath* clipper;
     std::vector<MarkerPosition> markers;
+
+protected:
+    mutable Rect m_fillBoundingBox{Rect::Invalid};
+    mutable Rect m_strokeBoundingBox{Rect::Invalid};
 };
 
-class LayoutRoot : public LayoutObject, public LayoutContainer
+class LayoutRoot : public LayoutContainer
 {
 public:
     LayoutRoot();
 
     void render(RenderState& state) const;
+    Rect map(const Rect& rect) const;
 
 public:
-    double width{0};
-    double height{0};
+    double width;
+    double height;
     Transform transform;
-    Transform viewTransform;
-    double opacity{1};
-    const LayoutMask* masker{nullptr};
-    const LayoutClipPath* clipper{nullptr};
+    double opacity;
+    const LayoutMask* masker;
+    const LayoutClipPath* clipper;
 };
 
 enum class RenderMode
 {
     Display,
-    Clipping,
-    Bounding
+    Clipping
 };
 
 class RenderState
 {
 public:
-    RenderState() = default;
+    RenderState(const LayoutObject* object, RenderMode mode);
 
     void beginGroup(RenderState& state, const LayoutClipPath* clipper, const LayoutMask* masker, double opacity);
     void endGroup(RenderState& state, const LayoutClipPath* clipper, const LayoutMask* masker, double opacity);
-    void updateBoundingBox(const RenderState& state);
+
+    const LayoutObject* object() const { return m_object;}
+    RenderMode mode() const { return m_mode; }
+    const Rect& objectBoundingBox() const { return m_object->fillBoundingBox(); }
 
 public:
-    RenderMode mode{RenderMode::Display};
     std::shared_ptr<Canvas> canvas;
     Transform matrix;
-    Rect box;
+
+private:
+    const LayoutObject* m_object;
+    RenderMode m_mode;
 };
 
 class ParseDocument;
@@ -311,7 +331,7 @@ public:
     LayoutMask* getMasker(const std::string& id);
     LayoutClipPath* getClipper(const std::string& id);
     LayoutMarker* getMarker(const std::string& id);
-    LayoutPaint* getPainter(const std::string& id);
+    LayoutObject* getPainter(const std::string& id);
 
     FillData fillData(const StyledElement* element);
     DashData dashData(const StyledElement* element);
