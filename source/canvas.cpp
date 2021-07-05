@@ -74,8 +74,8 @@ void Canvas::setGradient(const LinearGradientValues& values, const Transform& ma
 
     for(auto& stop : stops)
     {
-        auto offset = stop.first;
-        auto& color = stop.second;
+        auto offset = std::get<0>(stop);
+        auto& color = std::get<1>(stop);
         plutovg_gradient_add_stop_rgba(gradient, offset, color.r, color.g, color.b, color.a);
     }
 

@@ -140,7 +140,7 @@ std::unique_ptr<LayoutObject> LinearGradientElement::getPainter(LayoutContext* c
     if((x1 == x2 && y1 == y2) || stops.size() == 1)
     {
         auto solid = std::make_unique<LayoutSolidColor>();
-        solid->color = stops.back().second;
+        solid->color = std::get<1>(stops.back());
         return std::move(solid);
     }
 
@@ -253,7 +253,7 @@ std::unique_ptr<LayoutObject> RadialGradientElement::getPainter(LayoutContext* c
     if(r.isZero() || stops.size() == 1)
     {
         auto solid = std::make_unique<LayoutSolidColor>();
-        solid->color = stops.back().second;
+        solid->color = std::get<1>(stops.back());
         return std::move(solid);
     }
 
