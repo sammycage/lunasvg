@@ -62,8 +62,8 @@ void UseElement::transferWidthAndHeight(Element* element) const
     auto& width = get(PropertyId::Width);
     auto& height = get(PropertyId::Height);
 
-    element->set(PropertyId::Width, width);
-    element->set(PropertyId::Height, height);
+    element->insert(PropertyId::Width, width);
+    element->insert(PropertyId::Height, height);
 }
 
 void UseElement::layout(LayoutContext* context, LayoutContainer* current) const
@@ -83,8 +83,7 @@ void UseElement::layout(LayoutContext* context, LayoutContainer* current) const
     auto _x = lengthContext.valueForLength(x(), LengthMode::Width);
     auto _y = lengthContext.valueForLength(y(), LengthMode::Height);
 
-    std::string transform;
-    transform += get(PropertyId::Transform);
+    auto transform = get(PropertyId::Transform);
     transform += "translate(";
     transform += std::to_string(_x);
     transform += ' ';

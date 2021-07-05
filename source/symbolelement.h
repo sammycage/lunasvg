@@ -10,6 +10,10 @@ class SymbolElement : public StyledElement
 public:
     SymbolElement();
 
+    Length x() const;
+    Length y() const;
+    Length width() const;
+    Length height() const;
     Rect viewBox() const;
     PreserveAspectRatio preserveAspectRatio() const;
 
