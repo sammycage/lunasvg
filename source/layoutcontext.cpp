@@ -105,7 +105,7 @@ void LayoutClipPath::apply(RenderState& state) const
     }
 
     newState.matrix.premultiply(transform);
-    renderChildren(state);
+    renderChildren(newState);
     if(clipper != nullptr)
         clipper->apply(newState);
 
@@ -129,7 +129,7 @@ void LayoutMask::apply(RenderState& state) const
         newState.matrix.scale(box.w, box.h);
     }
 
-    renderChildren(state);
+    renderChildren(newState);
     if(clipper != nullptr)
         clipper->apply(newState);
 
@@ -180,7 +180,7 @@ void LayoutMarker::renderMarker(RenderState& state, const Point& origin, double 
     newState.matrix.translate(-refX, -refY);
     newState.matrix.premultiply(transform);
     newState.beginGroup(state, clipper, masker, opacity);
-    renderChildren(state);
+    renderChildren(newState);
     newState.endGroup(state, clipper, masker, opacity);
 }
 
