@@ -122,7 +122,7 @@ void SVGElement::layout(LayoutContext* context, LayoutContainer* current) const
     group->masker = context->getMasker(mask());
     group->clipper = context->getClipper(clip_path());
     layoutChildren(context, group.get());
-    current->addChild(std::move(group));
+    current->addChildIfNotEmpty(std::move(group));
 }
 
 std::unique_ptr<Node> SVGElement::clone() const
