@@ -98,6 +98,23 @@ public:
     const LayoutClipPath* clipper;
 };
 
+class LayoutRoot : public LayoutContainer
+{
+public:
+    LayoutRoot();
+
+    void render(RenderState& state) const;
+    Rect map(const Rect& rect) const;
+
+public:
+    double width;
+    double height;
+    Transform transform;
+    double opacity;
+    const LayoutMask* masker;
+    const LayoutClipPath* clipper;
+};
+
 class LayoutGroup : public LayoutContainer
 {
 public:
@@ -118,6 +135,7 @@ class LayoutMarker : public LayoutContainer
 public:
     LayoutMarker();
 
+    Transform markerTransform(const Point& origin, double angle, double strokeWidth) const;
     void renderMarker(RenderState& state, const Point& origin, double angle, double strokeWidth) const;
 
 public:
@@ -129,6 +147,25 @@ public:
     double opacity;
     const LayoutMask* masker;
     const LayoutClipPath* clipper;
+};
+
+class LayoutPattern : public LayoutContainer
+{
+public:
+    LayoutPattern();
+
+    void apply(RenderState& state) const;
+
+public:
+    double x;
+    double y;
+    double width;
+    double height;
+    Transform transform;
+    Units units;
+    Units contentUnits;
+    Rect viewBox;
+    PreserveAspectRatio preserveAspectRatio;
 };
 
 class LayoutGradient : public LayoutObject
@@ -151,10 +188,10 @@ public:
     void apply(RenderState& state) const;
 
 public:
-    double x1{0};
-    double y1{0};
-    double x2{1};
-    double y2{0};
+    double x1;
+    double y1;
+    double x2;
+    double y2;
 };
 
 class LayoutRadialGradient : public LayoutGradient
@@ -170,25 +207,6 @@ public:
     double r;
     double fx;
     double fy;
-};
-
-class LayoutPattern : public LayoutContainer
-{
-public:
-    LayoutPattern();
-
-    void apply(RenderState& state) const;
-
-public:
-    double x;
-    double y;
-    double width;
-    double height;
-    Transform transform;
-    Units units;
-    Units contentUnits;
-    Rect viewBox;
-    PreserveAspectRatio preserveAspectRatio;
 };
 
 class LayoutSolidColor : public LayoutObject
@@ -207,7 +225,7 @@ class FillData
 public:
     FillData() = default;
 
-    void render(RenderState& state, const Path& path) const;
+    void fill(RenderState& state, const Path& path) const;
 
 public:
     const LayoutObject* painter{nullptr};
@@ -221,7 +239,8 @@ class StrokeData
 public:
     StrokeData() = default;
 
-    void render(RenderState& state, const Path& path) const;
+    void stroke(RenderState& state, const Path& path) const;
+    void inflate(Rect& box) const;
 
 public:
     const LayoutObject* painter{nullptr};
@@ -239,12 +258,26 @@ class MarkerPosition
 public:
     MarkerPosition(const LayoutMarker* marker, const Point& origin, double angle);
 
-    void render(RenderState& state, double strokeWidth) const;
+public:
+    const LayoutMarker* marker;
+    Point origin;
+    double angle;
+};
+
+using MarkerPositionList = std::vector<MarkerPosition>;
+
+class MarkerData
+{
+public:
+    MarkerData() = default;
+
+    void add(const LayoutMarker* marker, const Point& origin, double angle);
+    void render(RenderState& state) const;
+    void inflate(Rect& box) const;
 
 public:
-    const LayoutMarker* marker{nullptr};
-    Point origin;
-    double angle{0};
+    MarkerPositionList positions;
+    double strokeWidth{1};
 };
 
 class LayoutShape : public LayoutObject
@@ -262,32 +295,15 @@ public:
     Transform transform;
     FillData fillData;
     StrokeData strokeData;
+    MarkerData markerData;
     Visibility visibility;
     WindRule clipRule;
     const LayoutMask* masker;
     const LayoutClipPath* clipper;
-    std::vector<MarkerPosition> markers;
 
 protected:
     mutable Rect m_fillBoundingBox{Rect::Invalid};
     mutable Rect m_strokeBoundingBox{Rect::Invalid};
-};
-
-class LayoutRoot : public LayoutContainer
-{
-public:
-    LayoutRoot();
-
-    void render(RenderState& state) const;
-    Rect map(const Rect& rect) const;
-
-public:
-    double width;
-    double height;
-    Transform transform;
-    double opacity;
-    const LayoutMask* masker;
-    const LayoutClipPath* clipper;
 };
 
 enum class RenderMode
@@ -319,6 +335,7 @@ private:
 
 class ParseDocument;
 class StyledElement;
+class GeometryElement;
 
 class LayoutContext
 {
@@ -336,6 +353,7 @@ public:
     FillData fillData(const StyledElement* element);
     DashData dashData(const StyledElement* element);
     StrokeData strokeData(const StyledElement* element);
+    MarkerData markerData(const GeometryElement* element, const Path& path);
 
 private:
     const ParseDocument* m_document;

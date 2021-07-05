@@ -603,8 +603,8 @@ Transform PreserveAspectRatio::getMatrix(double width, double height, const Rect
     if(viewBox.w == 0.0 || viewBox.h == 0.0)
         return matrix;
 
-    auto sx = width  / viewBox.w;
-    auto sy = width  / viewBox.h;
+    auto sx = width / viewBox.w;
+    auto sy = height / viewBox.h;
     if(sx == 0.0 || sy == 0.0)
         return matrix;
 
@@ -619,7 +619,7 @@ Transform PreserveAspectRatio::getMatrix(double width, double height, const Rect
 
     auto scale = (m_scale == MeetOrSlice::Meet) ? std::min(sx, sy) : std::max(sx, sy);
     auto viewW = width / scale;
-    auto viewH = width / scale;
+    auto viewH = height / scale;
 
     switch(m_align) {
     case Align::xMidYMin:

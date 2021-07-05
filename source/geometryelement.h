@@ -13,7 +13,6 @@ public:
     GeometryElement(ElementId id);
 
     virtual void layout(LayoutContext* context, LayoutContainer* current) const;
-    virtual void layoutMarkers(LayoutContext* context, LayoutShape* shape) const;
     virtual Path path() const = 0;
 };
 

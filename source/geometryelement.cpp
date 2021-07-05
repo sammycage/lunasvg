@@ -25,97 +25,12 @@ void GeometryElement::layout(LayoutContext* context, LayoutContainer* current) c
     shape->transform = transform();
     shape->fillData = context->fillData(this);
     shape->strokeData = context->strokeData(this);
+    shape->markerData = context->markerData(this, shape->path);
     shape->visibility = visibility();
     shape->clipRule = clip_rule();
     shape->masker = context->getMasker(mask());
     shape->clipper = context->getClipper(clip_path());
-    layoutMarkers(context, shape.get());
     current->addChild(std::move(shape));
-}
-
-static const double pi = 3.14159265358979323846;
-
-void GeometryElement::layoutMarkers(LayoutContext* context, LayoutShape* shape) const
-{
-    auto markerStart = context->getMarker(marker_start());
-    auto markerMid = context->getMarker(marker_mid());
-    auto markerEnd = context->getMarker(marker_end());
-
-    if(markerStart == nullptr && markerMid == nullptr && markerEnd == nullptr)
-        return;
-
-    PathIterator it(shape->path);
-    Point origin;
-    Point startPoint;
-    Point inslopePoints[2];
-    Point outslopePoints[2];
-
-    int index = 0;
-    std::array<Point, 3> points;
-    while(!it.isDone())
-    {
-        switch(it.currentSegment(points)) {
-        case PathCommand::MoveTo:
-            startPoint = points[0];
-            inslopePoints[0] = origin;
-            inslopePoints[1] = points[0];
-            origin = points[0];
-            break;
-        case PathCommand::LineTo:
-            inslopePoints[0] = origin;
-            inslopePoints[1] = points[0];
-            origin = points[0];
-            break;
-        case PathCommand::CubicTo:
-            inslopePoints[0] = points[1];
-            inslopePoints[1] = points[2];
-            origin = points[2];
-            break;
-        case PathCommand::Close:
-            inslopePoints[0] = origin;
-            inslopePoints[1] = points[0];
-            origin = startPoint;
-            startPoint = Point{};
-            break;
-        }
-
-        index += 1;
-        it.next();
-
-        if(!it.isDone() && (markerStart || markerMid))
-        {
-            it.currentSegment(points);
-            outslopePoints[0] = origin;
-            outslopePoints[1] = points[0];
-
-            if(index == 1 && markerStart)
-            {
-                Point slope{outslopePoints[1].x - outslopePoints[0].x, outslopePoints[1].y - outslopePoints[0].y};
-                auto angle = 180.0 * std::atan2(slope.y, slope.x) / pi;
-
-                shape->markers.emplace_back(markerStart, origin, angle);
-            }
-
-            if(index > 1 && markerMid)
-            {
-                Point inslope{inslopePoints[1].x - inslopePoints[0].x, inslopePoints[1].y - inslopePoints[0].y};
-                Point outslope{outslopePoints[1].x - outslopePoints[0].x, outslopePoints[1].y - outslopePoints[0].y};
-                auto inangle = 180.0 * std::atan2(inslope.y, inslope.x) / pi;
-                auto outangle = 180.0 * std::atan2(outslope.y, outslope.x) / pi;
-                auto angle = (inangle + outangle) * 0.5;
-
-                shape->markers.emplace_back(markerMid, origin, angle);
-            }
-        }
-
-        if(it.isDone() && markerEnd)
-        {
-            Point slope{inslopePoints[1].x - inslopePoints[0].x, inslopePoints[1].y - inslopePoints[0].y};
-            auto angle = 180.0 * std::atan2(slope.y, slope.x) / pi;
-
-            shape->markers.emplace_back(markerEnd, origin, angle);
-        }
-    }
 }
 
 PathElement::PathElement()
