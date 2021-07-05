@@ -373,7 +373,7 @@ std::string Parser::parseUrl(const std::string& string)
 
 std::string Parser::parseHref(const std::string& string)
 {
-    if(string.size() > 1 && string.back() == '#')
+    if(string.size() > 1 && string.front() == '#')
         return string.substr(1);
 
     return std::string{};
