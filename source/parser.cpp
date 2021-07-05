@@ -114,6 +114,9 @@ PointList Parser::parsePointList(const std::string& string)
 
 Transform Parser::parseTransform(const std::string& string)
 {
+    if(string.empty())
+        return Transform{};
+
     auto ptr = string.data();
     auto end = ptr + string.size();
 
@@ -737,7 +740,7 @@ Paint Parser::parsePaint(const std::string& string, const StyledElement* element
 
     std::string value;
     if(!Utils::readUntil(ptr, end, ')', value))
-        return Color::Black;
+        return defaultValue;
 
     return value;
 }
