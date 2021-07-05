@@ -11,10 +11,7 @@ StopElement::StopElement()
 double StopElement::offset() const
 {
     auto& value = get(PropertyId::Offset);
-    if(value.empty())
-        return 1.0;
-
-    return Parser::parseNumberPercentage(value);
+    return Parser::parseNumberPercentage(value, 1.0);
 }
 
 Color StopElement::stopColorWithOpacity() const

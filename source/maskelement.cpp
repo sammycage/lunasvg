@@ -12,55 +12,37 @@ MaskElement::MaskElement()
 Length MaskElement::x() const
 {
     auto& value = get(PropertyId::X);
-    if(value.empty())
-        return Length{-10, LengthUnits::Percent};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::MinusTenPercent);
 }
 
 Length MaskElement::y() const
 {
     auto& value = get(PropertyId::Y);
-    if(value.empty())
-        return Length{-10, LengthUnits::Percent};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::MinusTenPercent);
 }
 
 Length MaskElement::width() const
 {
     auto& value = get(PropertyId::Width);
-    if(value.empty())
-        return Length{20, LengthUnits::Percent};
-
-    return Parser::parseLength(value, ForbidNegativeLengths);
+    return Parser::parseLength(value, ForbidNegativeLengths, Length::OneTwentyPercent);
 }
 
 Length MaskElement::height() const
 {
     auto& value = get(PropertyId::Height);
-    if(value.empty())
-        return Length{20, LengthUnits::Percent};
-
-    return Parser::parseLength(value, ForbidNegativeLengths);
+    return Parser::parseLength(value, ForbidNegativeLengths, Length::OneTwentyPercent);
 }
 
 Units MaskElement::maskUnits() const
 {
     auto& value = get(PropertyId::MaskUnits);
-    if(value.empty())
-        return Units::ObjectBoundingBox;
-
-    return Parser::parseUnits(value);
+    return Parser::parseUnits(value, Units::ObjectBoundingBox);
 }
 
 Units MaskElement::maskContentUnits() const
 {
     auto& value = get(PropertyId::MaskContentUnits);
-    if(value.empty())
-        return Units::UserSpaceOnUse;
-
-    return Parser::parseUnits(value);
+    return Parser::parseUnits(value, Units::UserSpaceOnUse);
 }
 
 std::unique_ptr<LayoutMask> MaskElement::getMasker(LayoutContext* context) const

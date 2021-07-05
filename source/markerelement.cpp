@@ -12,72 +12,48 @@ MarkerElement::MarkerElement()
 Length MarkerElement::refX() const
 {
     auto& value = get(PropertyId::RefX);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length MarkerElement::refY() const
 {
     auto& value = get(PropertyId::RefY);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length MarkerElement::markerWidth() const
 {
     auto& value = get(PropertyId::MarkerWidth);
-    if(value.empty())
-        return Length{3, LengthUnits::Number};
-
-    return Parser::parseLength(value, ForbidNegativeLengths);
+    return Parser::parseLength(value, ForbidNegativeLengths, Length::ThreePercent);
 }
 
 Length MarkerElement::markerHeight() const
 {
     auto& value = get(PropertyId::MarkerHeight);
-    if(value.empty())
-        return Length{3, LengthUnits::Number};
-
-    return Parser::parseLength(value, ForbidNegativeLengths);
+    return Parser::parseLength(value, ForbidNegativeLengths, Length::ThreePercent);
 }
 
 Angle MarkerElement::orient() const
 {
     auto& value = get(PropertyId::Orient);
-    if(value.empty())
-        return Angle{};
-
     return Parser::parseAngle(value);
 }
 
 MarkerUnits MarkerElement::markerUnits() const
 {
     auto& value = get(PropertyId::MarkerUnits);
-    if(value.empty())
-        return MarkerUnits::StrokeWidth;
-
     return Parser::parseMarkerUnits(value);
 }
 
 Rect MarkerElement::viewBox() const
 {
     auto& value = get(PropertyId::ViewBox);
-    if(value.empty())
-        return Rect{};
-
     return Parser::parseViewBox(value);
 }
 
 PreserveAspectRatio MarkerElement::preserveAspectRatio() const
 {
     auto& value = get(PropertyId::PreserveAspectRatio);
-    if(value.empty())
-        return PreserveAspectRatio{};
-
     return Parser::parsePreserveAspectRatio(value);
 }
 

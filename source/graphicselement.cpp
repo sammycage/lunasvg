@@ -11,8 +11,5 @@ GraphicsElement::GraphicsElement(ElementId id)
 Transform GraphicsElement::transform() const
 {
     auto& value = get(PropertyId::Transform);
-    if(value.empty())
-        return Transform{};
-
     return Parser::parseTransform(value);
 }

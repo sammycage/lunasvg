@@ -265,6 +265,15 @@ public:
     bool isZero() const { return m_value == 0.0; }
     bool isRelative() const { return m_units == LengthUnits::Percent || m_units == LengthUnits::Em || m_units == LengthUnits::Ex; }
 
+    static const Length Unknown;
+    static const Length Zero;
+    static const Length One;
+    static const Length ThreePercent;
+    static const Length HundredPercent;
+    static const Length FiftyPercent;
+    static const Length OneTwentyPercent;
+    static const Length MinusTenPercent;
+
 private:
     double m_value{0};
     LengthUnits m_units{LengthUnits::Px};

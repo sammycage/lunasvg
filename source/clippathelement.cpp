@@ -12,10 +12,7 @@ ClipPathElement::ClipPathElement()
 Units ClipPathElement::clipPathUnits() const
 {
     auto& value = get(PropertyId::ClipPathUnits);
-    if(value.empty())
-        return Units::UserSpaceOnUse;
-
-    return Parser::parseUnits(value);
+    return Parser::parseUnits(value, Units::UserSpaceOnUse);
 }
 
 std::unique_ptr<LayoutClipPath> ClipPathElement::getClipper(LayoutContext* context) const

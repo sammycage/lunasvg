@@ -41,9 +41,6 @@ PathElement::PathElement()
 Path PathElement::d() const
 {
     auto& value = get(PropertyId::D);
-    if(value.empty())
-        return Path{};
-
     return Parser::parsePath(value);
 }
 
@@ -65,9 +62,6 @@ PolyElement::PolyElement(ElementId id)
 PointList PolyElement::points() const
 {
     auto& value = get(PropertyId::Points);
-    if(value.empty())
-        return PointList{};
-
     return Parser::parsePointList(value);
 }
 
@@ -128,28 +122,19 @@ CircleElement::CircleElement()
 Length CircleElement::cx() const
 {
     auto& value = get(PropertyId::Cx);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length CircleElement::cy() const
 {
     auto& value = get(PropertyId::Cy);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length CircleElement::r() const
 {
     auto& value = get(PropertyId::R);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, ForbidNegativeLengths);
+    return Parser::parseLength(value, ForbidNegativeLengths, Length::Zero);
 }
 
 Path CircleElement::path() const
@@ -181,37 +166,25 @@ EllipseElement::EllipseElement()
 Length EllipseElement::cx() const
 {
     auto& value = get(PropertyId::Cx);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length EllipseElement::cy() const
 {
     auto& value = get(PropertyId::Cy);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length EllipseElement::rx() const
 {
     auto& value = get(PropertyId::Rx);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, ForbidNegativeLengths);
+    return Parser::parseLength(value, ForbidNegativeLengths, Length::Zero);
 }
 
 Length EllipseElement::ry() const
 {
     auto& value = get(PropertyId::Ry);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, ForbidNegativeLengths);
+    return Parser::parseLength(value, ForbidNegativeLengths, Length::Zero);
 }
 
 Path EllipseElement::path() const
@@ -245,37 +218,25 @@ LineElement::LineElement()
 Length LineElement::x1() const
 {
     auto& value = get(PropertyId::X1);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length LineElement::y1() const
 {
     auto& value = get(PropertyId::Y1);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length LineElement::x2() const
 {
     auto& value = get(PropertyId::X2);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length LineElement::y2() const
 {
     auto& value = get(PropertyId::Y2);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Path LineElement::path() const
@@ -305,55 +266,37 @@ RectElement::RectElement()
 Length RectElement::x() const
 {
     auto& value = get(PropertyId::X);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length RectElement::y() const
 {
     auto& value = get(PropertyId::Y);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length RectElement::rx() const
 {
     auto& value = get(PropertyId::Rx);
-    if(value.empty())
-        return Length{0, LengthUnits::Unknown};
-
-    return Parser::parseLength(value, ForbidNegativeLengths);
+    return Parser::parseLength(value, ForbidNegativeLengths, Length::Unknown);
 }
 
 Length RectElement::ry() const
 {
     auto& value = get(PropertyId::Ry);
-    if(value.empty())
-        return Length{0, LengthUnits::Unknown};
-
-    return Parser::parseLength(value, ForbidNegativeLengths);
+    return Parser::parseLength(value, ForbidNegativeLengths, Length::Unknown);
 }
 
 Length RectElement::width() const
 {
     auto& value = get(PropertyId::Width);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, ForbidNegativeLengths);
+    return Parser::parseLength(value, ForbidNegativeLengths, Length::Zero);
 }
 
 Length RectElement::height() const
 {
     auto& value = get(PropertyId::Height);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, ForbidNegativeLengths);
+    return Parser::parseLength(value, ForbidNegativeLengths, Length::Zero);
 }
 
 Path RectElement::path() const

@@ -15,45 +15,30 @@ UseElement::UseElement()
 Length UseElement::x() const
 {
     auto& value = get(PropertyId::X);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length UseElement::y() const
 {
     auto& value = get(PropertyId::Y);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length UseElement::width() const
 {
     auto& value = get(PropertyId::Width);
-    if(value.empty())
-        return Length{100, LengthUnits::Percent};
-
-    return Parser::parseLength(value, ForbidNegativeLengths);
+    return Parser::parseLength(value, ForbidNegativeLengths, Length::HundredPercent);
 }
 
 Length UseElement::height() const
 {
     auto& value = get(PropertyId::Height);
-    if(value.empty())
-        return Length{100, LengthUnits::Percent};
-
-    return Parser::parseLength(value, ForbidNegativeLengths);
+    return Parser::parseLength(value, ForbidNegativeLengths, Length::HundredPercent);
 }
 
 std::string UseElement::href() const
 {
     auto& value = get(PropertyId::Href);
-    if(value.empty())
-        return std::string{};
-
     return Parser::parseHref(value);
 }
 

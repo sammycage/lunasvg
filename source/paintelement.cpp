@@ -20,36 +20,24 @@ GradientElement::GradientElement(ElementId id)
 Transform GradientElement::gradientTransform() const
 {
     auto& value = get(PropertyId::GradientTransform);
-    if(value.empty())
-        return Transform{};
-
     return Parser::parseTransform(value);
 }
 
 SpreadMethod GradientElement::spreadMethod() const
 {
     auto& value = get(PropertyId::SpreadMethod);
-    if(value.empty())
-        return SpreadMethod::Pad;
-
     return Parser::parseSpreadMethod(value);
 }
 
 Units GradientElement::gradientUnits() const
 {
     auto& value = get(PropertyId::GradientUnits);
-    if(value.empty())
-        return Units::ObjectBoundingBox;
-
-    return Parser::parseUnits(value);
+    return Parser::parseUnits(value, Units::ObjectBoundingBox);
 }
 
 std::string GradientElement::href() const
 {
     auto& value = get(PropertyId::Href);
-    if(value.empty())
-        return std::string{};
-
     return Parser::parseHref(value);
 }
 
@@ -79,37 +67,25 @@ LinearGradientElement::LinearGradientElement()
 Length LinearGradientElement::x1() const
 {
     auto& value = get(PropertyId::X1);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length LinearGradientElement::y1() const
 {
     auto& value = get(PropertyId::Y1);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length LinearGradientElement::x2() const
 {
     auto& value = get(PropertyId::X2);
-    if(value.empty())
-        return Length{100, LengthUnits::Percent};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::HundredPercent);
 }
 
 Length LinearGradientElement::y2() const
 {
     auto& value = get(PropertyId::Y2);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 std::unique_ptr<LayoutObject> LinearGradientElement::getPainter(LayoutContext* context) const
@@ -195,46 +171,31 @@ RadialGradientElement::RadialGradientElement()
 Length RadialGradientElement::cx() const
 {
     auto& value = get(PropertyId::Cx);
-    if(value.empty())
-        return Length{50, LengthUnits::Percent};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::FiftyPercent);
 }
 
 Length RadialGradientElement::cy() const
 {
     auto& value = get(PropertyId::Cy);
-    if(value.empty())
-        return Length{50, LengthUnits::Percent};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::FiftyPercent);
 }
 
 Length RadialGradientElement::r() const
 {
     auto& value = get(PropertyId::R);
-    if(value.empty())
-        return Length{50, LengthUnits::Percent};
-
-    return Parser::parseLength(value, ForbidNegativeLengths);
+    return Parser::parseLength(value, ForbidNegativeLengths, Length::FiftyPercent);
 }
 
 Length RadialGradientElement::fx() const
 {
     auto& value = get(PropertyId::Fx);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length RadialGradientElement::fy() const
 {
     auto& value = get(PropertyId::Fy);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 std::unique_ptr<LayoutObject> RadialGradientElement::getPainter(LayoutContext* context) const
@@ -325,90 +286,60 @@ PatternElement::PatternElement()
 Length PatternElement::x() const
 {
     auto& value = get(PropertyId::X);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length PatternElement::y() const
 {
     auto& value = get(PropertyId::Y);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, AllowNegativeLengths);
+    return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
 Length PatternElement::width() const
 {
     auto& value = get(PropertyId::Width);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, ForbidNegativeLengths);
+    return Parser::parseLength(value, ForbidNegativeLengths, Length::Zero);
 }
 
 Length PatternElement::height() const
 {
     auto& value = get(PropertyId::Height);
-    if(value.empty())
-        return Length{};
-
-    return Parser::parseLength(value, ForbidNegativeLengths);
+    return Parser::parseLength(value, ForbidNegativeLengths, Length::Zero);
 }
 
 Transform PatternElement::patternTransform() const
 {
     auto& value = get(PropertyId::PatternTransform);
-    if(value.empty())
-        return Transform{};
-
     return Parser::parseTransform(value);
 }
 
 Units PatternElement::patternUnits() const
 {
     auto& value = get(PropertyId::PatternUnits);
-    if(value.empty())
-        return Units::ObjectBoundingBox;
-
-    return Parser::parseUnits(value);
+    return Parser::parseUnits(value, Units::ObjectBoundingBox);
 }
 
 Units PatternElement::patternContentUnits() const
 {
     auto& value = get(PropertyId::PatternContentUnits);
-    if(value.empty())
-        return Units::UserSpaceOnUse;
-
-    return Parser::parseUnits(value);
+    return Parser::parseUnits(value, Units::UserSpaceOnUse);
 }
 
 Rect PatternElement::viewBox() const
 {
     auto& value = get(PropertyId::ViewBox);
-    if(value.empty())
-        return Rect{};
-
     return Parser::parseViewBox(value);
 }
 
 PreserveAspectRatio PatternElement::preserveAspectRatio() const
 {
     auto& value = get(PropertyId::PreserveAspectRatio);
-    if(value.empty())
-        return PreserveAspectRatio{};
-
     return Parser::parsePreserveAspectRatio(value);
 }
 
 std::string PatternElement::href() const
 {
     auto& value = get(PropertyId::Href);
-    if(value.empty())
-        return std::string{};
-
     return Parser::parseHref(value);
 }
 

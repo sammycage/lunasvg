@@ -16,15 +16,18 @@
 
 using namespace lunasvg;
 
-Length Parser::parseLength(const std::string& string, LengthNegativeValuesMode mode)
+Length Parser::parseLength(const std::string& string, LengthNegativeValuesMode mode, const Length& defaultValue)
 {
+    if(string.empty())
+        return defaultValue;
+
     auto ptr = string.data();
     auto end = ptr + string.size();
 
     double value;
     LengthUnits units;
     if(!parseLength(ptr, end, value, units, mode))
-        return Length{0, LengthUnits::Unknown};
+        return defaultValue;
 
     return Length{value, units};
 }
@@ -49,26 +52,32 @@ LengthList Parser::parseLengthList(const std::string& string, LengthNegativeValu
     return values;
 }
 
-double Parser::parseNumber(const std::string &string)
+double Parser::parseNumber(const std::string& string, double defaultValue)
 {
+    if(string.empty())
+        return defaultValue;
+
     auto ptr = string.data();
     auto end = ptr + string.size();
 
     double value;
     if(!Utils::parseNumber(ptr, end, value))
-        return 0.0;
+        return defaultValue;
 
     return value;
 }
 
-double Parser::parseNumberPercentage(const std::string& string)
+double Parser::parseNumberPercentage(const std::string& string, double defaultValue)
 {
+    if(string.empty())
+        return defaultValue;
+
     auto ptr = string.data();
     auto end = ptr + string.size();
 
     double value;
     if(!Utils::parseNumber(ptr, end, value))
-        return 0.0;
+        return defaultValue;
 
     if(Utils::skipDesc(ptr, end, "%"))
         value /= 100.0;
@@ -77,6 +86,9 @@ double Parser::parseNumberPercentage(const std::string& string)
 
 PointList Parser::parsePointList(const std::string& string)
 {
+    if(string.empty())
+        return PointList{};
+
     auto ptr = string.data();
     auto end = ptr + string.size();
 
@@ -99,6 +111,9 @@ PointList Parser::parsePointList(const std::string& string)
 
 Transform Parser::parseTransform(const std::string& string)
 {
+    if(string.empty())
+        return Transform{};
+
     auto ptr = string.data();
     auto end = ptr + string.size();
 
@@ -148,9 +163,12 @@ Transform Parser::parseTransform(const std::string& string)
 
 Path Parser::parsePath(const std::string& string)
 {
+    if(string.empty())
+        return Path{};
+
     auto ptr = string.data();
     auto end = ptr + string.size();
-    if(ptr >= end || !(*ptr == 'M' || *ptr == 'm'))
+    if(*ptr != 'M' || *ptr != 'm')
         return Path{};
 
     auto command = *ptr++;
@@ -340,16 +358,15 @@ Path Parser::parsePath(const std::string& string)
 
 std::string Parser::parseUrl(const std::string& string)
 {
+    if(string.empty())
+        return std::string{};
+
     auto ptr = string.data();
     auto end = ptr + string.size();
 
-    if(!Utils::skipDesc(ptr, end, "url("))
+    if(!Utils::skipDesc(ptr, end, "url(#"))
         return std::string{};
 
-    if(ptr >= end || *ptr != '#')
-        return std::string{};
-
-    ++ptr;
     std::string value;
     if(!Utils::readUntil(ptr, end, ')', value))
         return std::string{};
@@ -359,6 +376,9 @@ std::string Parser::parseUrl(const std::string& string)
 
 std::string Parser::parseHref(const std::string& string)
 {
+    if(string.empty())
+        return std::string{};
+
     if(string.size() > 1 && string[0] == '#')
         return string.substr(1);
 
@@ -367,6 +387,9 @@ std::string Parser::parseHref(const std::string& string)
 
 Rect Parser::parseViewBox(const std::string& string)
 {
+    if(string.empty())
+        return Rect{};
+
     auto ptr = string.data();
     auto end = ptr + string.size();
 
@@ -391,6 +414,9 @@ Rect Parser::parseViewBox(const std::string& string)
 
 PreserveAspectRatio Parser::parsePreserveAspectRatio(const std::string& string)
 {
+    if(string.empty())
+        return PreserveAspectRatio{};
+
     auto ptr = string.data();
     auto end = ptr + string.size();
 
@@ -432,6 +458,9 @@ static const double pi = 3.14159265358979323846;
 
 Angle Parser::parseAngle(const std::string& string)
 {
+    if(string.empty())
+        return Angle{};
+
     auto ptr = string.data();
     auto end = ptr + string.size();
 
@@ -452,6 +481,9 @@ Angle Parser::parseAngle(const std::string& string)
 
 MarkerUnits Parser::parseMarkerUnits(const std::string& string)
 {
+    if(string.empty())
+        return MarkerUnits::StrokeWidth;
+
     if(string.compare("userSpaceOnUse") == 0)
         return MarkerUnits::UserSpaceOnUse;
     return MarkerUnits::StrokeWidth;
@@ -459,6 +491,9 @@ MarkerUnits Parser::parseMarkerUnits(const std::string& string)
 
 SpreadMethod Parser::parseSpreadMethod(const std::string& string)
 {
+    if(string.empty())
+        return SpreadMethod::Pad;
+
     if(string.compare("repeat") == 0)
         return SpreadMethod::Repeat;
     if(string.compare("reflect") == 0)
@@ -466,11 +501,16 @@ SpreadMethod Parser::parseSpreadMethod(const std::string& string)
     return SpreadMethod::Pad;
 }
 
-Units Parser::parseUnits(const std::string& string)
+Units Parser::parseUnits(const std::string& string, Units defaultValue)
 {
+    if(string.empty())
+        return defaultValue;
+
     if(string.compare("userSpaceOnUse") == 0)
         return Units::UserSpaceOnUse;
-    return Units::ObjectBoundingBox;
+    if(string.compare("objectBoundingBox") == 0)
+        return Units::UserSpaceOnUse;
+    return defaultValue;
 }
 
 static const std::map<std::string, unsigned int> colormap = {
@@ -624,8 +664,11 @@ static const std::map<std::string, unsigned int> colormap = {
     {"yellowgreen", 0x9ACD32}
 };
 
-Color Parser::parseColor(const std::string& string, const StyledElement* element)
+Color Parser::parseColor(const std::string& string, const StyledElement* element, const Color& defaultValue)
 {
+    if(string.empty())
+        return defaultValue;
+
     auto ptr = string.data();
     auto end = ptr + string.size();
 
@@ -634,11 +677,11 @@ Color Parser::parseColor(const std::string& string, const StyledElement* element
         auto start = ptr;
         unsigned int value;
         if(!Utils::parseInteger(ptr, end, value, 16))
-            return Color::Black;
+            return defaultValue;
 
         auto n = ptr - start;
         if(n != 3 && n != 6)
-            return Color::Black;
+            return defaultValue;
 
         if(n == 3)
         {
@@ -664,7 +707,7 @@ Color Parser::parseColor(const std::string& string, const StyledElement* element
             || !parseColorComponent(ptr, end, b)
             || !Utils::skipWs(ptr, end)
             || !Utils::skipDesc(ptr, end, ")"))
-            return Color::Black;
+            return defaultValue;
 
         return Color{r / 255.0, g / 255.0, b / 255.0};
     }
@@ -677,7 +720,7 @@ Color Parser::parseColor(const std::string& string, const StyledElement* element
 
     auto it = colormap.find(string);
     if(it == colormap.end())
-        return Color::Black;
+        return defaultValue;
 
     auto value = it->second;
     auto r = (value&0xff0000)>>16;
@@ -687,18 +730,17 @@ Color Parser::parseColor(const std::string& string, const StyledElement* element
     return Color{r / 255.0, g / 255.0, b / 255.0};
 }
 
-Paint Parser::parsePaint(const std::string& string, const StyledElement* element)
+Paint Parser::parsePaint(const std::string& string, const StyledElement* element, const Color& defaultValue)
 {
+    if(string.empty())
+        return defaultValue;
+
     auto ptr = string.data();
     auto end = ptr + string.size();
 
-    if(!Utils::skipDesc(ptr, end, "url("))
-        return parseColor(string, element);
+    if(!Utils::skipDesc(ptr, end, "url(#"))
+        return parseColor(string, element, defaultValue);
 
-    if(ptr >= end || *ptr != '#')
-        return Color::Black;
-
-    ++ptr;
     std::string value;
     if(!Utils::readUntil(ptr, end, ')', value))
         return Color::Black;
@@ -708,6 +750,9 @@ Paint Parser::parsePaint(const std::string& string, const StyledElement* element
 
 WindRule Parser::parseWindRule(const std::string& string)
 {
+    if(string.empty())
+        return WindRule::NonZero;
+
     if(string.compare("evenodd") == 0)
         return WindRule::EvenOdd;
     return WindRule::NonZero;
@@ -715,6 +760,9 @@ WindRule Parser::parseWindRule(const std::string& string)
 
 LineCap Parser::parseLineCap(const std::string& string)
 {
+    if(string.empty())
+        return LineCap::Butt;
+
     if(string.compare("round") == 0)
         return LineCap::Round;
     if(string.compare("square") == 0)
@@ -724,6 +772,9 @@ LineCap Parser::parseLineCap(const std::string& string)
 
 LineJoin Parser::parseLineJoin(const std::string& string)
 {
+    if(string.empty())
+        return LineJoin::Miter;
+
     if(string.compare("bevel") == 0)
         return LineJoin::Bevel;
     if(string.compare("round") == 0)
@@ -733,6 +784,9 @@ LineJoin Parser::parseLineJoin(const std::string& string)
 
 Display Parser::parseDisplay(const std::string& string)
 {
+    if(string.empty())
+        return Display::Inline;
+
     if(string.compare("none") == 0)
         return Display::None;
     return Display::Inline;
@@ -740,6 +794,9 @@ Display Parser::parseDisplay(const std::string& string)
 
 Visibility Parser::parseVisibility(const std::string& string)
 {
+    if(string.empty())
+        return Visibility::Visible;
+
     if(string.compare("visible") == 0)
         return Visibility::Visible;
     return Visibility::Hidden;

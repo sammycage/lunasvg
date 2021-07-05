@@ -522,6 +522,15 @@ void PathIterator::next()
     m_index += 1;
 }
 
+const Length Length::Unknown{0, LengthUnits::Unknown};
+const Length Length::Zero{0, LengthUnits::Number};
+const Length Length::One{1, LengthUnits::Number};
+const Length Length::ThreePercent{3, LengthUnits::Percent};
+const Length Length::HundredPercent{100, LengthUnits::Percent};
+const Length Length::FiftyPercent{50, LengthUnits::Percent};
+const Length Length::OneTwentyPercent{120, LengthUnits::Percent};
+const Length Length::MinusTenPercent{-10, LengthUnits::Percent};
+
 Length::Length(double value)
     : m_value(value)
 {

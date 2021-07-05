@@ -32,10 +32,10 @@ enum class TransformType
 class Parser
 {
 public:
-    static Length parseLength(const std::string& string, LengthNegativeValuesMode mode);
+    static Length parseLength(const std::string& string, LengthNegativeValuesMode mode, const Length& defaultValue);
     static LengthList parseLengthList(const std::string& string, LengthNegativeValuesMode mode);
-    static double parseNumber(const std::string& string);
-    static double parseNumberPercentage(const std::string& string);
+    static double parseNumber(const std::string& string, double defaultValue);
+    static double parseNumberPercentage(const std::string& string, double defaultValue);
     static PointList parsePointList(const std::string& string);
     static Transform parseTransform(const std::string& string);
     static Path parsePath(const std::string& string);
@@ -46,9 +46,9 @@ public:
     static Angle parseAngle(const std::string& string);
     static MarkerUnits parseMarkerUnits(const std::string& string);
     static SpreadMethod parseSpreadMethod(const std::string& string);
-    static Units parseUnits(const std::string& string);
-    static Color parseColor(const std::string& string, const StyledElement* element);
-    static Paint parsePaint(const std::string& string, const StyledElement* element);
+    static Units parseUnits(const std::string& string, Units defaultValue);
+    static Color parseColor(const std::string& string, const StyledElement* element, const Color& defaultValue);
+    static Paint parsePaint(const std::string& string, const StyledElement* element, const Color& defaultValue);
     static WindRule parseWindRule(const std::string& string);
     static LineCap parseLineCap(const std::string& string);
     static LineJoin parseLineJoin(const std::string& string);
