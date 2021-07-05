@@ -1,7 +1,7 @@
 #include "symbolelement.h"
 #include "parser.h"
 
-using namespace lunasvg;
+namespace lunasvg {
 
 SymbolElement::SymbolElement()
     : StyledElement(ElementId::Symbol)
@@ -48,3 +48,5 @@ std::unique_ptr<Node> SymbolElement::clone() const
 {
     return cloneElement<SymbolElement>();
 }
+
+} // namespace lunasvg

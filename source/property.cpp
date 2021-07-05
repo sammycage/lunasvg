@@ -3,7 +3,7 @@
 
 #include <cmath>
 
-using namespace lunasvg;
+namespace lunasvg {
 
 const Color Color::Black = {0, 0, 0, 1};
 const Color Color::White = {1, 1, 1, 1};
@@ -674,3 +674,5 @@ Angle::Angle(double value, MarkerOrient type)
     : m_value(value), m_type(type)
 {
 }
+
+} // namespace lunasvg

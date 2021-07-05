@@ -2,7 +2,7 @@
 #include "parser.h"
 #include "svgelement.h"
 
-using namespace lunasvg;
+namespace lunasvg {
 
 static const std::string KEmptyString;
 
@@ -86,3 +86,5 @@ std::unique_ptr<Node> TextNode::clone() const
     node->text = text;
     return std::move(node);
 }
+
+} // namespace lunasvg

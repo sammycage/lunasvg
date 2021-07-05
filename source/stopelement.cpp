@@ -1,7 +1,7 @@
 #include "stopelement.h"
 #include "parser.h"
 
-using namespace lunasvg;
+namespace lunasvg {
 
 StopElement::StopElement()
     : StyledElement(ElementId::Stop)
@@ -25,3 +25,5 @@ std::unique_ptr<Node> StopElement::clone() const
 {
     return cloneElement<StopElement>();
 }
+
+} // namespace lunasvg

@@ -1,7 +1,7 @@
 ﻿#include "styledelement.h"
 #include "parser.h"
 
-using namespace lunasvg;
+namespace lunasvg {
 
 StyledElement::StyledElement(ElementId id)
     : Element(id)
@@ -162,3 +162,5 @@ bool StyledElement::isDisplayNone() const
 {
     return display() == Display::None;
 }
+
+} // namespace lunasvg

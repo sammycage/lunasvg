@@ -9,7 +9,7 @@
 
 #include <cmath>
 
-using namespace lunasvg;
+namespace lunasvg {
 
 LayoutObject::LayoutObject(LayoutId id)
     : id(id)
@@ -729,3 +729,5 @@ MarkerData LayoutContext::markerData(const GeometryElement* element, const Path&
 
     return markerData;
 }
+
+} // namespace lunasvg

@@ -2,7 +2,7 @@
 #include "parser.h"
 #include "layoutcontext.h"
 
-using namespace lunasvg;
+namespace lunasvg {
 
 MaskElement::MaskElement()
     : StyledElement(ElementId::Mask)
@@ -67,3 +67,5 @@ std::unique_ptr<Node> MaskElement::clone() const
 {
     return cloneElement<MaskElement>();
 }
+
+} // namespace lunasvg

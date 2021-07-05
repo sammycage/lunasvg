@@ -5,7 +5,7 @@
 #include "gelement.h"
 #include "svgelement.h"
 
-using namespace lunasvg;
+namespace lunasvg {
 
 UseElement::UseElement()
     : GraphicsElement(ElementId::Use)
@@ -94,3 +94,5 @@ std::unique_ptr<Node> UseElement::clone() const
 {
     return cloneElement<UseElement>();
 }
+
+} // namespace lunasvg

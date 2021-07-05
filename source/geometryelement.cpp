@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-using namespace lunasvg;
+namespace lunasvg {
 
 GeometryElement::GeometryElement(ElementId id)
     : GraphicsElement(id)
@@ -330,3 +330,5 @@ std::unique_ptr<Node> RectElement::clone() const
 {
     return cloneElement<RectElement>();
 }
+
+} // namespace lunasvg

@@ -2,7 +2,7 @@
 #include "parser.h"
 #include "layoutcontext.h"
 
-using namespace lunasvg;
+namespace lunasvg {
 
 MarkerElement::MarkerElement()
     : StyledElement(ElementId::Marker)
@@ -86,3 +86,5 @@ std::unique_ptr<Node> MarkerElement::clone() const
 {
     return cloneElement<MarkerElement>();
 }
+
+} // namespace lunasvg

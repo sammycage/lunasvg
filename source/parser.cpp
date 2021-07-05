@@ -14,7 +14,7 @@
 #include "symbolelement.h"
 #include "useelement.h"
 
-using namespace lunasvg;
+namespace lunasvg {
 
 Length Parser::parseLength(const std::string& string, LengthNegativeValuesMode mode, const Length& defaultValue)
 {
@@ -1411,3 +1411,5 @@ std::unique_ptr<LayoutRoot> ParseDocument::layout() const
 {
     return m_rootElement->layoutDocument(this);
 }
+
+} // namespace lunasvg

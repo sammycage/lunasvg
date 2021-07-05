@@ -5,7 +5,7 @@
 
 #include <set>
 
-using namespace lunasvg;
+namespace lunasvg {
 
 PaintElement::PaintElement(ElementId id)
     : StyledElement(id)
@@ -427,3 +427,5 @@ std::unique_ptr<Node> SolidColorElement::clone() const
 {
     return cloneElement<SolidColorElement>();
 }
+
+} // namespace lunasvg

@@ -2,7 +2,7 @@
 #include "parser.h"
 #include "layoutcontext.h"
 
-using namespace lunasvg;
+namespace lunasvg {
 
 ClipPathElement::ClipPathElement()
     : GraphicsElement(ElementId::ClipPath)
@@ -29,3 +29,5 @@ std::unique_ptr<Node> ClipPathElement::clone() const
 {
     return cloneElement<ClipPathElement>();
 }
+
+} // namespace lunasvg

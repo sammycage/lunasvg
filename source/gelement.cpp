@@ -1,7 +1,7 @@
 #include "gelement.h"
 #include "layoutcontext.h"
 
-using namespace lunasvg;
+namespace lunasvg {
 
 GElement::GElement()
     : GraphicsElement(ElementId::G)
@@ -26,3 +26,5 @@ std::unique_ptr<Node> GElement::clone() const
 {
     return cloneElement<GElement>();
 }
+
+} // namespace lunasvg

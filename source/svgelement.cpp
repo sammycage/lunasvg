@@ -2,7 +2,7 @@
 #include "parser.h"
 #include "layoutcontext.h"
 
-using namespace lunasvg;
+namespace lunasvg {
 
 SVGElement::SVGElement()
     : GraphicsElement(ElementId::Svg)
@@ -111,3 +111,5 @@ std::unique_ptr<Node> SVGElement::clone() const
 {
     return cloneElement<SVGElement>();
 }
+
+} // namespace lunasvg
