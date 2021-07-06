@@ -900,7 +900,7 @@ bool Parser::parseColorComponent(const char*& ptr, const char* end, double& valu
         value *= 2.55;
 
     value = (value < 0.0) ? 0.0 : (value > 255.0) ? 255.0 : std::round(value);
-    return 1;
+    return true;
 }
 
 bool Parser::parseTransform(const char*& ptr, const char* end, TransformType& type, double* values, int& count)
