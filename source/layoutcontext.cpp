@@ -62,7 +62,7 @@ const Rect& LayoutContainer::strokeBoundingBox() const
     {
         if(child->isHidden())
             continue;
-        m_strokeBoundingBox.unite(child->map(child->fillBoundingBox()));
+        m_strokeBoundingBox.unite(child->map(child->strokeBoundingBox()));
     }
 
     return m_strokeBoundingBox;
