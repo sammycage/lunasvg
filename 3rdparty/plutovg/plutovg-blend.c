@@ -697,7 +697,12 @@ void plutovg_blend_color(plutovg_t* pluto, const plutovg_rle_t* rle, const pluto
 {
     plutovg_state_t* state = pluto->state;
     uint32_t solid = premultiply_color(color, state->opacity);
-    blend_solid(pluto->surface, state->op, rle, solid);
+
+    uint32_t alpha = solid >> 24;
+    if(alpha == 255 && state->op == plutovg_operator_src_over)
+        blend_solid(pluto->surface, plutovg_operator_src, rle, solid);
+    else
+        blend_solid(pluto->surface, state->op, rle, solid);
 }
 
 void plutovg_blend_gradient(plutovg_t* pluto, const plutovg_rle_t* rle, const plutovg_gradient_t* gradient)
