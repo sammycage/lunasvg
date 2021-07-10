@@ -238,15 +238,16 @@ void LayoutPattern::apply(RenderState& state) const
         rect.h = rect.h * box.h;
     }
 
-    auto scalex = std::sqrt(state.matrix.m00 * state.matrix.m00 + state.matrix.m01 * state.matrix.m01);
-    auto scaley = std::sqrt(state.matrix.m10 * state.matrix.m10 + state.matrix.m11 * state.matrix.m11);
+    auto ctm = state.matrix * transform;
+    auto scalex = std::sqrt(ctm.m00 * ctm.m00 + ctm.m01 * ctm.m01);
+    auto scaley = std::sqrt(ctm.m10 * ctm.m10 + ctm.m11 * ctm.m11);
 
     auto width = static_cast<std::uint32_t>(std::ceil(rect.w * scalex));
     auto height = static_cast<std::uint32_t>(std::ceil(rect.h * scaley));
 
     RenderState newState(this, RenderMode::Display);
     newState.canvas = Canvas::create(width, height);
-    newState.matrix.scale(scalex, scaley);
+    newState.matrix = Transform::scaled(scalex, scaley);
 
     if(viewBox.valid())
     {
@@ -259,9 +260,12 @@ void LayoutPattern::apply(RenderState& state) const
         newState.matrix.scale(box.w, box.h);
     }
 
+    auto transform = this->transform;
+    transform.translate(rect.x, rect.y);
+    transform.scale(1.0/scalex, 1.0/scaley);
+
     renderChildren(newState);
-    Transform matrix{1.0/scalex, 0, 0, 1.0/scaley, rect.x, rect.y};
-    state.canvas->setPattern(*newState.canvas, matrix * transform, TileMode::Tiled);
+    state.canvas->setPattern(*newState.canvas, transform, TileMode::Tiled);
 }
 
 LayoutGradient::LayoutGradient(LayoutId id)
