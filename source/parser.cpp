@@ -1429,7 +1429,7 @@ static inline void parseStyle(const std::string& string, Element* element)
     while(ptr < end && readCSSIdentifier(ptr, end, name))
     {
         Utils::skipWs(ptr, end);
-        if(!Utils::skipDesc(ptr, end, ','))
+        if(!Utils::skipDesc(ptr, end, ':'))
             return;
         Utils::skipWs(ptr, end);
         auto start = ptr;
