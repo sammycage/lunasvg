@@ -301,7 +301,7 @@ public:
     const LayoutMask* masker;
     const LayoutClipPath* clipper;
 
-protected:
+private:
     mutable Rect m_fillBoundingBox{Rect::Invalid};
     mutable Rect m_strokeBoundingBox{Rect::Invalid};
 };
