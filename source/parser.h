@@ -113,15 +113,15 @@ class RuleMatchContext
 public:
     RuleMatchContext(const std::vector<Rule>& rules);
 
-    std::multimap<int, const PropertyMap*> match(const Element* element) const;
+    std::vector<const PropertyMap*> match(const Element* element) const;
 
 private:
     bool attributeSelectorMatch(const AttributeSelector& selector, const Element* element) const;
     bool simpleSelectorMatch(const SimpleSelector& selector, const Element* element) const;
-    bool selectorMatch(const Selector& selector, const Element* element) const;
+    bool selectorMatch(const Selector* selector, const Element* element) const;
 
 private:
-    const std::vector<Rule>& m_rules;
+    std::multimap<int, std::pair<const Selector*, const PropertyMap*>, std::greater<int>> m_selectors;
 };
 
 class CSSParser

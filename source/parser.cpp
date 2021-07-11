@@ -1201,6 +1201,11 @@ bool CSSParser::parseSelector(const char*& ptr, const char* end, Selector& selec
         SimpleSelector simpleSelector;
         if(!parseSimpleSelector(ptr, end, simpleSelector))
             return false;
+
+        selector.specificity += (simpleSelector.id == ElementId::Star) ? 0x0 : 0x1;
+        for(auto& attributeSelector : simpleSelector.attributeSelectors)
+            selector.specificity += (attributeSelector.id == PropertyId::Id) ? 0x10000 : 0x100;
+
         selector.simpleSelectors.push_back(simpleSelector);
         Utils::skipWs(ptr, end);
     } while(ptr < end && !(*ptr == ',' || *ptr == '{'));
@@ -1328,21 +1333,28 @@ bool CSSParser::parseDeclarations(const char*& ptr, const char* end, PropertyMap
 }
 
 RuleMatchContext::RuleMatchContext(const std::vector<Rule>& rules)
-    : m_rules(rules)
 {
-}
-
-std::multimap<int, const PropertyMap*> RuleMatchContext::match(const Element* element) const
-{
-    std::multimap<int, const PropertyMap*> declarations;
-    for(auto& rule : m_rules)
+    for(auto& rule : rules)
     {
         for(auto& selector : rule.selectors)
         {
-            if(!selectorMatch(selector, element))
-                continue;
-            declarations.emplace(selector.specificity, &rule.declarations);
+             auto key = std::make_pair(&selector, &rule.declarations);
+             m_selectors.emplace(selector.specificity, key);
         }
+    }
+}
+
+std::vector<const PropertyMap*> RuleMatchContext::match(const Element* element) const
+{
+    std::vector<const PropertyMap*> declarations;
+    auto it = m_selectors.begin();
+    auto end = m_selectors.end();
+    for(;it != end;++it)
+    {
+        auto key = it->second;
+        if(!selectorMatch(std::get<0>(key), element))
+            continue;
+        declarations.push_back(std::get<1>(key));
     }
 
     return declarations;
@@ -1411,10 +1423,10 @@ bool RuleMatchContext::simpleSelectorMatch(const SimpleSelector& selector, const
     return true;
 }
 
-bool RuleMatchContext::selectorMatch(const Selector& selector, const Element* element) const
+bool RuleMatchContext::selectorMatch(const Selector* selector, const Element* element) const
 {
-    if(selector.simpleSelectors.size() == 1)
-        return simpleSelectorMatch(selector.simpleSelectors.back(), element);
+    if(selector->simpleSelectors.size() == 1)
+        return simpleSelectorMatch(selector->simpleSelectors.back(), element);
     return false;
 }
 
@@ -1711,11 +1723,8 @@ bool ParseDocument::parse(const char* data, std::size_t size)
 
             auto element = static_cast<Element*>(node);
             auto declarations = context.match(element);
-
-            auto it = declarations.begin();
-            auto end = declarations.end();
-            for(;it != end;++it)
-                element->properties.insert(it->second->begin(), it->second->end());
+            for(auto& declaration : declarations)
+                element->properties.insert(declaration->begin(), declaration->end());
             return false;
         });
     }
