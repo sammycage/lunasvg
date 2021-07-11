@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Nwutobo Samuel Ugochukwu
+ * Copyright (c) 2020 Nwutobo Samuel Ugochukwu <sammycageagle@gmail.com>
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
