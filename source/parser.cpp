@@ -1335,13 +1335,8 @@ bool CSSParser::parseDeclarations(const char*& ptr, const char* end, PropertyMap
 RuleMatchContext::RuleMatchContext(const std::vector<Rule>& rules)
 {
     for(auto& rule : rules)
-    {
         for(auto& selector : rule.selectors)
-        {
-             auto key = std::make_pair(&selector, &rule.declarations);
-             m_selectors.emplace(selector.specificity, key);
-        }
-    }
+             m_selectors.emplace(selector.specificity, std::make_pair(&selector, &rule.declarations));
 }
 
 std::vector<const PropertyMap*> RuleMatchContext::match(const Element* element) const
@@ -1351,10 +1346,9 @@ std::vector<const PropertyMap*> RuleMatchContext::match(const Element* element) 
     auto end = m_selectors.end();
     for(;it != end;++it)
     {
-        auto key = it->second;
-        if(!selectorMatch(std::get<0>(key), element))
+        if(!selectorMatch(std::get<0>(it->second), element))
             continue;
-        declarations.push_back(std::get<1>(key));
+        declarations.push_back(std::get<1>(it->second));
     }
 
     return declarations;
