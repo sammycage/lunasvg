@@ -13,6 +13,7 @@
 #include "svgelement.h"
 #include "symbolelement.h"
 #include "useelement.h"
+#include "styleelement.h"
 
 namespace lunasvg {
 
@@ -82,7 +83,7 @@ double Parser::parseNumberPercentage(const std::string& string, double defaultVa
     if(!Utils::parseNumber(ptr, end, value))
         return defaultValue;
 
-    if(Utils::skipDesc(ptr, end, "%"))
+    if(Utils::skipDesc(ptr, end, '%'))
         value /= 100.0;
     return value < 0.0 ? 0.0 : value > 1.0 ? 1.0 : value;
 }
@@ -669,7 +670,7 @@ Color Parser::parseColor(const std::string& string, const StyledElement* element
     auto ptr = string.data();
     auto end = ptr + string.size();
 
-    if(Utils::skipDesc(ptr, end, "#"))
+    if(Utils::skipDesc(ptr, end, '#'))
     {
         auto start = ptr;
         unsigned int value;
@@ -703,7 +704,7 @@ Color Parser::parseColor(const std::string& string, const StyledElement* element
             || !Utils::skipWsComma(ptr, end)
             || !parseColorComponent(ptr, end, b)
             || !Utils::skipWs(ptr, end)
-            || !Utils::skipDesc(ptr, end, ")"))
+            || !Utils::skipDesc(ptr, end, ')'))
             return defaultValue;
 
         return Color{r / 255.0, g / 255.0, b / 255.0};
@@ -896,7 +897,7 @@ bool Parser::parseColorComponent(const char*& ptr, const char* end, double& valu
     if(!Utils::parseNumber(ptr, end, value))
         return false;
 
-    if(Utils::skipDesc(ptr, end, "%"))
+    if(Utils::skipDesc(ptr, end, '%'))
         value *= 2.55;
 
     value = (value < 0.0) ? 0.0 : (value > 255.0) ? 255.0 : std::round(value);
@@ -988,6 +989,7 @@ static const std::map<std::string, ElementId> elementmap = {
     {"radialGradient", ElementId::RadialGradient},
     {"rect", ElementId::Rect},
     {"stop", ElementId::Stop},
+    {"style", ElementId::Style},
     {"solidColor", ElementId::SolidColor},
     {"svg", ElementId::Svg},
     {"symbol", ElementId::Symbol},
@@ -995,6 +997,7 @@ static const std::map<std::string, ElementId> elementmap = {
 };
 
 static const std::map<std::string, PropertyId> propertymap = {
+    {"class", PropertyId::Class},
     {"clipPathUnits", PropertyId::ClipPathUnits},
     {"cx", PropertyId::Cx},
     {"cy", PropertyId::Cy},
@@ -1091,6 +1094,355 @@ static inline PropertyId propertyId(const std::string& name)
     return it->second;
 }
 
+#define IS_STARTNAMECHAR(c) (IS_ALPHA(c) ||  (c) == '_' || (c) == ':')
+#define IS_NAMECHAR(c) (IS_STARTNAMECHAR(c) || IS_NUM(c) || (c) == '-' || (c) == '.')
+static inline bool readIdentifier(const char*& ptr, const char* end, std::string& value)
+{
+    if(ptr >= end || !IS_STARTNAMECHAR(*ptr))
+        return false;
+
+    auto start = ptr;
+    ++ptr;
+    while(ptr < end && IS_NAMECHAR(*ptr))
+        ++ptr;
+
+    value.assign(start, ptr);
+    return true;
+}
+
+#define IS_CSS_STARTNAMECHAR(c) (IS_ALPHA(c) || (c) == '_')
+#define IS_CSS_NAMECHAR(c) (IS_CSS_STARTNAMECHAR(c) || IS_NUM(c) || (c) == '-')
+static inline bool readCSSIdentifier(const char*& ptr, const char* end, std::string& value)
+{
+    if(ptr >= end || !IS_CSS_STARTNAMECHAR(*ptr))
+        return false;
+
+    auto start = ptr;
+    ++ptr;
+    while(ptr < end && IS_CSS_NAMECHAR(*ptr))
+        ++ptr;
+
+    value.assign(start, ptr);
+    return true;
+}
+
+bool CSSParser::parseMore(const std::string& value)
+{
+    auto ptr = value.data();
+    auto end = ptr + value.size();
+
+    Utils::skipWs(ptr, end);
+    while(ptr < end)
+    {
+        if(Utils::skipDesc(ptr, end, '@'))
+        {
+            int depth = 0;
+            while(ptr < end)
+            {
+                auto ch = *ptr;
+                ++ptr;
+                if(ch == ';' && depth == 0)
+                    break;
+                if(ch == '{') ++depth;
+                else if(ch == '}' && depth > 0)
+                {
+                    if(depth == 1)
+                        break;
+                    --depth;
+                }
+            }
+
+            Utils::skipWs(ptr, end);
+            continue;
+        }
+
+        Rule rule;
+        if(!parseRule(ptr, end, rule))
+            return false;
+        m_rules.push_back(rule);
+    }
+
+    return true;
+}
+
+bool CSSParser::parseRule(const char*& ptr, const char* end, Rule& rule) const
+{
+    Selector selector;
+    if(!parseSelector(ptr, end, selector))
+        return false;
+    rule.selectors.push_back(selector);
+
+    while(Utils::skipDesc(ptr, end, ','))
+    {
+        Utils::skipWs(ptr, end);
+        Selector selector;
+        if(!parseSelector(ptr, end, selector))
+            return false;
+        rule.selectors.push_back(selector);
+    }
+
+    if(!Utils::skipDesc(ptr, end, '{'))
+        return false;
+
+    Utils::skipWs(ptr, end);
+    if(!parseDeclarations(ptr, end, rule.declarations))
+        return false;
+
+    if(!Utils::skipDesc(ptr, end, '}'))
+        return false;
+
+    Utils::skipWs(ptr, end);
+    return true;
+}
+
+bool CSSParser::parseSelector(const char*& ptr, const char* end, Selector& selector) const
+{
+    do {
+        SimpleSelector simpleSelector;
+        if(!parseSimpleSelector(ptr, end, simpleSelector))
+            return false;
+        selector.simpleSelectors.push_back(simpleSelector);
+        Utils::skipWs(ptr, end);
+    } while(ptr < end && !(*ptr == ',' || *ptr == '{'));
+
+    return true;
+}
+
+bool CSSParser::parseSimpleSelector(const char*& ptr, const char* end, SimpleSelector& simpleSelector) const
+{
+    std::string name;
+    if(Utils::skipDesc(ptr, end, '*'))
+        simpleSelector.id = ElementId::Star;
+    else if(readCSSIdentifier(ptr, end, name))
+        simpleSelector.id = elementId(name);
+
+    while(ptr < end)
+    {
+        if(Utils::skipDesc(ptr, end, '#'))
+        {
+            AttributeSelector a;
+            a.id = PropertyId::Id;
+            a.matchType = AttributeSelector::MatchType::Equal;
+            if(!readCSSIdentifier(ptr, end, a.value))
+                return false;
+            simpleSelector.attributeSelectors.push_back(a);
+            continue;
+        }
+
+        if(Utils::skipDesc(ptr, end, '.'))
+        {
+            AttributeSelector a;
+            a.id = PropertyId::Class;
+            a.matchType = AttributeSelector::MatchType::Includes;
+            if(!readCSSIdentifier(ptr, end, a.value))
+                return false;
+            simpleSelector.attributeSelectors.push_back(a);
+            continue;
+        }
+
+        if(Utils::skipDesc(ptr, end, '['))
+        {
+            Utils::skipWs(ptr, end);
+            if(!readCSSIdentifier(ptr, end, name))
+                return false;
+            AttributeSelector a;
+            a.id = propertyId(name);
+            if(Utils::skipDesc(ptr, end, '='))
+                a.matchType = AttributeSelector::MatchType::Equal;
+            else if(Utils::skipDesc(ptr, end, "~="))
+                a.matchType = AttributeSelector::MatchType::Includes;
+            else if(Utils::skipDesc(ptr, end, "|="))
+                a.matchType = AttributeSelector::MatchType::DashMatch;
+            else if(Utils::skipDesc(ptr, end, "^="))
+                a.matchType = AttributeSelector::MatchType::StartsWith;
+            else if(Utils::skipDesc(ptr, end, "$="))
+                a.matchType = AttributeSelector::MatchType::EndsWith;
+            else if(Utils::skipDesc(ptr, end, "*="))
+                a.matchType = AttributeSelector::MatchType::Contains;
+            if(a.matchType != AttributeSelector::MatchType::None)
+            {
+                Utils::skipWs(ptr, end);
+                if(!readCSSIdentifier(ptr, end, a.value))
+                {
+                    if(ptr >= end || !(*ptr == '\"' || *ptr == '\''))
+                        return false;
+
+                    auto quote = *ptr;
+                    ++ptr;
+                    if(!Utils::readUntil(ptr, end, quote, a.value))
+                        return false;
+                    ++ptr;
+                }
+            }
+
+            Utils::skipWs(ptr, end);
+            if(!Utils::skipDesc(ptr, end, ']'))
+                return false;
+            simpleSelector.attributeSelectors.push_back(a);
+            continue;
+        }
+
+        break;
+    }
+
+    Utils::skipWs(ptr, end);
+    if(Utils::skipDesc(ptr, end, '>'))
+        simpleSelector.combinator = SimpleSelector::Combinator::Child;
+    else if(Utils::skipDesc(ptr, end, '+'))
+        simpleSelector.combinator = SimpleSelector::Combinator::DirectAdjacent;
+    else if(Utils::skipDesc(ptr, end, '~'))
+        simpleSelector.combinator = SimpleSelector::Combinator::InDirectAdjacent;
+
+    return true;
+}
+
+bool CSSParser::parseDeclarations(const char*& ptr, const char* end, PropertyMap& declarations) const
+{
+    std::string name;
+    std::string value;
+    do {
+        if(!readCSSIdentifier(ptr, end, name))
+            return false;
+        Utils::skipWs(ptr, end);
+        if(!Utils::skipDesc(ptr, end, ':'))
+            return false;
+        Utils::skipWs(ptr, end);
+        auto start = ptr;
+        while(ptr < end && !(*ptr == '!' || *ptr == ';' || *ptr == '}'))
+            ++ptr;
+        value.assign(start, Utils::rtrim(start, ptr));
+        if(Utils::skipDesc(ptr, end, '!'))
+        {
+            if(!Utils::skipDesc(ptr, end, "important"))
+                return false;
+            Utils::skipWs(ptr, end);
+        }
+
+        auto id = cssPropertyId(name);
+        if(id != PropertyId::Unknown)
+            declarations.emplace(id, value);
+        Utils::skipWsDelimiter(ptr, end, ';');
+    } while(ptr < end && *ptr != '}');
+
+    return true;
+}
+
+RuleMatchContext::RuleMatchContext(const std::vector<Rule>& rules)
+    : m_rules(rules)
+{
+}
+
+std::multimap<int, const PropertyMap*> RuleMatchContext::match(const Element* element) const
+{
+    std::multimap<int, const PropertyMap*> declarations;
+    for(auto& rule : m_rules)
+    {
+        for(auto& selector : rule.selectors)
+        {
+            if(!selectorMatch(selector, element))
+                continue;
+            declarations.emplace(selector.specificity, &rule.declarations);
+        }
+    }
+
+    return declarations;
+}
+
+bool RuleMatchContext::attributeSelectorMatch(const AttributeSelector& selector, const Element* element) const
+{
+    auto& value = element->get(selector.id);
+    if(value.empty())
+        return false;
+
+    if(selector.matchType == AttributeSelector::MatchType::None)
+        return true;
+
+    if(selector.matchType == AttributeSelector::MatchType::Equal)
+        return selector.value == value;
+
+    if(selector.matchType == AttributeSelector::MatchType::Includes)
+    {
+         auto ptr = value.data();
+         auto end = ptr + value.size();
+         while(ptr < end)
+         {
+             auto start = ptr;
+             while(ptr < end && !IS_WS(*ptr))
+                 ++ptr;
+
+             if(selector.value == std::string(start, ptr))
+                 return true;
+             Utils::skipWs(ptr, end);
+         }
+
+        return false;
+    }
+
+    if(selector.matchType == AttributeSelector::MatchType::DashMatch)
+    {
+        if(selector.value == value)
+            return true;
+
+        auto dashprefix = selector.value + '-';
+        return value.size() >= dashprefix.size() && value.compare(0, dashprefix.size(), dashprefix) == 0;
+    }
+
+    if(selector.matchType == AttributeSelector::MatchType::StartsWith)
+        return value.size() >= selector.value.size() && value.compare(0, selector.value.size(), selector.value) == 0;
+
+    if(selector.matchType == AttributeSelector::MatchType::EndsWith)
+        return value.size() >= selector.value.size() && value.compare(value.size() - selector.value.size(), selector.value.size(), selector.value) == 0;
+
+    if(selector.matchType == AttributeSelector::MatchType::Contains)
+        return value.find(selector.value) != std::string::npos;
+
+    return false;
+}
+
+bool RuleMatchContext::simpleSelectorMatch(const SimpleSelector& selector, const Element* element) const
+{
+    if(selector.id != ElementId::Star && selector.id != element->id)
+        return false;
+
+    for(auto& attributeSelector : selector.attributeSelectors)
+        if(!attributeSelectorMatch(attributeSelector, element))
+            return false;
+
+    return true;
+}
+
+bool RuleMatchContext::selectorMatch(const Selector& selector, const Element* element) const
+{
+    if(selector.simpleSelectors.size() == 1)
+        return simpleSelectorMatch(selector.simpleSelectors.back(), element);
+    return false;
+}
+
+static inline void parseStyle(const std::string& string, Element* element)
+{
+    auto ptr = string.data();
+    auto end = ptr + string.size();
+
+    std::string name;
+    std::string value;
+    Utils::skipWs(ptr, end);
+    while(ptr < end && readCSSIdentifier(ptr, end, name))
+    {
+        Utils::skipWs(ptr, end);
+        if(!Utils::skipDesc(ptr, end, ','))
+            return;
+        Utils::skipWs(ptr, end);
+        auto start = ptr;
+        while(ptr < end && *ptr != ';')
+            ++ptr;
+        value.assign(start, Utils::rtrim(start, ptr));
+        auto id = cssPropertyId(name);
+        if(id != PropertyId::Unknown)
+            element->set(id, value);
+        Utils::skipWsDelimiter(ptr, end, ';');
+    }
+}
+
 static inline std::unique_ptr<Element> createElement(ElementId id)
 {
     switch(id) {
@@ -1134,60 +1486,13 @@ static inline std::unique_ptr<Element> createElement(ElementId id)
         return std::make_unique<SolidColorElement>();
     case ElementId::Marker:
         return std::make_unique<MarkerElement>();
+    case ElementId::Style:
+        return std::make_unique<StyleElement>();
     default:
         break;
     }
 
     return nullptr;
-}
-
-#define IS_STARTNAMECHAR(c) (IS_ALPHA(c) ||  c == '_' || c == ':')
-#define IS_NAMECHAR(c) (IS_STARTNAMECHAR(c) || IS_NUM(c) || c == '-' || c == '.')
-static inline bool readTagName(const char*& ptr, const char* end, std::string& name)
-{
-    if(ptr >= end || !IS_STARTNAMECHAR(*ptr))
-        return false;
-
-    auto start = ptr;
-    ++ptr;
-    while(ptr < end && IS_NAMECHAR(*ptr))
-        ++ptr;
-
-    name.assign(start, ptr);
-    return ptr < end;
-}
-
-#define IS_CSS_STARTNAMECHAR(c) (IS_ALPHA(c) || c == '_')
-#define IS_CSS_NAMECHAR(c) (IS_CSS_STARTNAMECHAR(c) || IS_NUM(c) || c == '-')
-static inline void parseStyle(const std::string& string, Element* element)
-{
-    auto ptr = string.data();
-    auto end = ptr + string.size();
-
-    std::string name;
-    std::string value;
-    Utils::skipWs(ptr, end);
-    while(ptr < end && IS_CSS_STARTNAMECHAR(*ptr))
-    {
-        auto start = ptr;
-        ++ptr;
-        while(ptr < end && IS_CSS_NAMECHAR(*ptr))
-            ++ptr;
-        name.assign(start, ptr);
-        Utils::skipWs(ptr, end);
-        if(ptr >= end || *ptr != ':')
-            return;
-        ++ptr;
-        Utils::skipWs(ptr, end);
-        start = ptr;
-        while(ptr < end && *ptr != ';')
-            ++ptr;
-        value.assign(start, Utils::rtrim(start, ptr));
-        auto id = cssPropertyId(name);
-        if(id != PropertyId::Unknown)
-            element->set(id, value);
-        Utils::skipWsDelimiter(ptr, end, ';');
-    }
 }
 
 ParseDocument::ParseDocument()
@@ -1203,14 +1508,18 @@ bool ParseDocument::parse(const char* data, std::size_t size)
     auto ptr = data;
     auto end = ptr + size;
 
+    CSSParser cssparser;
     Element* current = nullptr;
     std::string name;
     std::string value;
     int ignoring = 0;
     while(ptr < end)
     {
-        if(!Utils::skipUntil(ptr, end, '<'))
+        if(!Utils::readUntil(ptr, end, '<', value))
             break;
+
+        if(ignoring == 0 && current && current->id == ElementId::Style)
+            cssparser.parseMore(value);
 
         ++ptr;
         if(ptr < end && *ptr == '/')
@@ -1219,7 +1528,7 @@ bool ParseDocument::parse(const char* data, std::size_t size)
                 return false;
 
             ++ptr;
-            if(!readTagName(ptr, end, name))
+            if(!readIdentifier(ptr, end, name))
                 return false;
 
             if(ptr >= end || *ptr != '>')
@@ -1237,7 +1546,7 @@ bool ParseDocument::parse(const char* data, std::size_t size)
         if(ptr < end && *ptr == '?')
         {
             ++ptr;
-            if(!readTagName(ptr, end, name))
+            if(!readIdentifier(ptr, end, name))
                 return false;
 
             if(!Utils::skipUntil(ptr, end, "?>"))
@@ -1261,8 +1570,11 @@ bool ParseDocument::parse(const char* data, std::size_t size)
 
             if(Utils::skipDesc(ptr, end, "[CDATA["))
             {
-                if(!Utils::skipUntil(ptr, end, "]]>"))
+                if(!Utils::readUntil(ptr, end, "]]>", value))
                     return false;
+
+                if(ignoring == 0 && current && current->id == ElementId::Style)
+                    cssparser.parseMore(value);
 
                 ptr += 3;
                 continue;
@@ -1299,7 +1611,7 @@ bool ParseDocument::parse(const char* data, std::size_t size)
             return false;
         }
 
-        if(!readTagName(ptr, end, name))
+        if(!readIdentifier(ptr, end, name))
             return false;
 
         auto id = ignoring == 0 ? elementId(name) : ElementId::Unknown;
@@ -1329,21 +1641,15 @@ bool ParseDocument::parse(const char* data, std::size_t size)
         }
 
         Utils::skipWs(ptr, end);
-        while(ptr < end && IS_STARTNAMECHAR(*ptr))
+        while(ptr < end && readIdentifier(ptr, end, name))
         {
-            auto start = ptr;
-            ++ptr;
-            while(ptr < end && IS_NAMECHAR(*ptr))
-                ++ptr;
-
-            name.assign(start, ptr);
             Utils::skipWs(ptr, end);
             if(ptr >= end || *ptr != '=')
                 return false;
             ++ptr;
 
             Utils::skipWs(ptr, end);
-            if(ptr >= end || (*ptr != '"' && *ptr != '\''))
+            if(ptr >= end || !(*ptr == '\"' || *ptr == '\''))
                 return false;
 
             auto quote = *ptr;
@@ -1355,10 +1661,10 @@ bool ParseDocument::parse(const char* data, std::size_t size)
             auto id = element ? propertyId(name) : PropertyId::Unknown;
             if(id != PropertyId::Unknown)
             {
+                if(id == PropertyId::Id)
+                    m_idCache.emplace(value, element);
                 if(id == PropertyId::Style)
                     parseStyle(value, element);
-                else if(id == PropertyId::Id)
-                    m_idCache.emplace(value, element);
                 else
                     element->insert(id, value);
             }
@@ -1392,7 +1698,29 @@ bool ParseDocument::parse(const char* data, std::size_t size)
         return false;
     }
 
-    return m_rootElement && ptr == end && ignoring == 0;
+    if(!m_rootElement || ptr < end || ignoring > 0)
+        return true;
+
+    const auto& rules = cssparser.rules();
+    if(!rules.empty())
+    {
+        RuleMatchContext context(rules);
+        m_rootElement->transverse([&context](Node* node) {
+            if(node->isText())
+                return false;
+
+            auto element = static_cast<Element*>(node);
+            auto declarations = context.match(element);
+
+            auto it = declarations.begin();
+            auto end = declarations.end();
+            for(;it != end;++it)
+                element->properties.insert(it->second->begin(), it->second->end());
+            return false;
+        });
+    }
+
+    return true;
 }
 
 Element* ParseDocument::getElementById(const std::string& id) const

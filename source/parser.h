@@ -6,10 +6,10 @@
 #include <memory>
 
 #include "property.h"
+#include "element.h"
 
 namespace lunasvg {
 
-class Element;
 class SVGElement;
 class StyledElement;
 
@@ -61,6 +61,86 @@ private:
     static bool parseArcFlag(const char*& ptr, const char* end, bool& flag);
     static bool parseColorComponent(const char*& ptr, const char* end, double& value);
     static bool parseTransform(const char*& ptr, const char* end, TransformType& type, double* values, int& count);
+};
+
+struct AttributeSelector
+{
+    enum class MatchType
+    {
+        None,
+        Equal,
+        Includes,
+        DashMatch,
+        StartsWith,
+        EndsWith,
+        Contains
+    };
+
+    PropertyId id{PropertyId::Unknown};
+    std::string value;
+    MatchType matchType{MatchType::None};
+};
+
+struct SimpleSelector
+{
+    enum class Combinator
+    {
+        Descendant,
+        Child,
+        DirectAdjacent,
+        InDirectAdjacent
+    };
+
+    ElementId id{ElementId::Star};
+    std::vector<AttributeSelector> attributeSelectors;
+    Combinator combinator{Combinator::Descendant};
+};
+
+struct Selector
+{
+    std::vector<SimpleSelector> simpleSelectors;
+    int specificity{0};
+};
+
+struct Rule
+{
+    std::vector<Selector> selectors;
+    PropertyMap declarations;
+};
+
+class RuleMatchContext
+{
+public:
+    RuleMatchContext(const std::vector<Rule>& rules);
+
+    std::multimap<int, const PropertyMap*> match(const Element* element) const;
+
+private:
+    bool attributeSelectorMatch(const AttributeSelector& selector, const Element* element) const;
+    bool simpleSelectorMatch(const SimpleSelector& selector, const Element* element) const;
+    bool selectorMatch(const Selector& selector, const Element* element) const;
+
+private:
+    const std::vector<Rule>& m_rules;
+};
+
+class CSSParser
+{
+public:
+    CSSParser() = default;
+
+    bool parseMore(const std::string& value);
+
+    const std::vector<Rule>& rules() const { return m_rules; }
+
+private:
+    bool parseRule(const char*& ptr, const char* end, Rule& rule) const;
+    bool parseSelector(const char*& ptr, const char* end, Selector& selector) const;
+    bool parseSimpleSelector(const char*& ptr, const char* end, SimpleSelector& simpleSelector) const;
+    bool parseDeclarations(const char*& ptr, const char* end, PropertyMap& declarations) const;
+
+private:
+    std::vector<Rule> m_rules;
 };
 
 class LayoutRoot;

@@ -12,6 +12,7 @@ namespace lunasvg {
 enum class ElementId
 {
     Unknown = 0,
+    Star,
     Circle,
     ClipPath,
     Defs,
@@ -29,6 +30,7 @@ enum class ElementId
     Rect,
     SolidColor,
     Stop,
+    Style,
     Svg,
     Symbol,
     Use
@@ -37,6 +39,7 @@ enum class ElementId
 enum class PropertyId
 {
     Unknown = 0,
+    Class,
     Clip_Path,
     Clip_Rule,
     ClipPathUnits,
@@ -150,6 +153,26 @@ public:
     Node* addChild(std::unique_ptr<Node> child);
     Rect nearestViewBox() const;
     void layoutChildren(LayoutContext* context, LayoutContainer* current) const;
+
+    template<typename T>
+    void transverse(T callback)
+    {
+        if(callback(this))
+            return;
+
+        for(auto& child : children)
+        {
+            if(child->isText())
+            {
+                if(callback(child.get()))
+                    return;
+                continue;
+            }
+
+            auto element = static_cast<Element*>(child.get());
+            element->transverse(callback);
+        }
+    }
 
     template<typename T>
     std::unique_ptr<T> cloneElement() const

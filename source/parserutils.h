@@ -9,9 +9,9 @@
 
 namespace lunasvg {
 
-#define IS_ALPHA(c) (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
-#define IS_NUM(c) (c >= '0' && c <= '9')
-#define IS_WS(c) (c == ' ' || c == '\t' || c == '\n' || c == '\r')
+#define IS_ALPHA(c) ((c) >= 'a' && (c) <= 'z') || ((c) >= 'A' && (c) <= 'Z')
+#define IS_NUM(c) ((c) >= '0' && (c) <= '9')
+#define IS_WS(c) ((c) == ' ' || (c) == '\t' || (c) == '\n' || (c) == '\r')
 
 namespace Utils {
 
@@ -29,6 +29,15 @@ inline const char* ltrim(const char* start, const char* end)
         ++start;
 
     return start;
+}
+
+inline bool skipDesc(const char*& ptr, const char* end, const char ch)
+{
+    if(ptr >= end || *ptr != ch)
+        return false;
+
+    ++ptr;
+    return true;
 }
 
 inline bool skipDesc(const char*& ptr, const char* end, const char* data)
@@ -49,20 +58,20 @@ inline bool skipDesc(const char*& ptr, const char* end, const char* data)
     return true;
 }
 
-inline bool skipUntil(const char*& ptr, const char* end, char delimiter)
+inline bool skipUntil(const char*& ptr, const char* end, const char ch)
 {
-    while(ptr < end && *ptr != delimiter)
+    while(ptr < end && *ptr != ch)
         ++ptr;
 
     return ptr < end;
 }
 
-inline bool skipUntil(const char*& ptr, const char* end, const char* delimiter)
+inline bool skipUntil(const char*& ptr, const char* end, const char* data)
 {
     while(ptr < end)
     {
         auto start = ptr;
-        if(skipDesc(start, end, delimiter))
+        if(skipDesc(start, end, data))
             break;
         ++ptr;
     }
@@ -70,20 +79,20 @@ inline bool skipUntil(const char*& ptr, const char* end, const char* delimiter)
     return ptr < end;
 }
 
-inline bool readUntil(const char*& ptr, const char* end, char delimiter, std::string& value)
+inline bool readUntil(const char*& ptr, const char* end, const char ch, std::string& value)
 {
     auto start = ptr;
-    if(!skipUntil(ptr, end, delimiter))
+    if(!skipUntil(ptr, end, ch))
         return false;
 
     value.assign(start, ptr);
     return true;
 }
 
-inline bool readUntil(const char*& ptr, const char* end, const char* delimiter, std::string& value)
+inline bool readUntil(const char*& ptr, const char* end, const char* data, std::string& value)
 {
     auto start = ptr;
-    if(!skipUntil(ptr, end, delimiter))
+    if(!skipUntil(ptr, end, data))
         return false;
 
     value.assign(start, ptr);
@@ -98,7 +107,7 @@ inline bool skipWs(const char*& ptr, const char* end)
     return ptr < end;
 }
 
-inline bool skipWsDelimiter(const char*& ptr, const char* end, char delimiter)
+inline bool skipWsDelimiter(const char*& ptr, const char* end, const char delimiter)
 {
     if(ptr < end && !IS_WS(*ptr) && *ptr != delimiter)
         return false;
