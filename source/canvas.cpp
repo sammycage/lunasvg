@@ -157,8 +157,9 @@ void Canvas::clear(unsigned int value)
     auto b = (value >> 8) & 0xFF;
     auto a = (value >> 0) & 0xFF;
 
+    plutovg_set_source_rgba(d->pluto, r / 255.0, g / 255.0, b / 255.0, a / 255.0);
+    plutovg_set_opacity(d->pluto, 1.0);
     plutovg_set_operator(d->pluto, plutovg_operator_src);
-    plutovg_set_source_rgba(d->pluto, r, g, b, a);
     plutovg_paint(d->pluto);
 }
 
