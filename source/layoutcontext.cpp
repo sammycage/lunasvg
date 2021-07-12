@@ -110,7 +110,7 @@ void LayoutClipPath::apply(RenderState& state) const
     if(clipper != nullptr)
         clipper->apply(newState);
 
-    state.canvas->blend(*newState.canvas, BlendMode::Dst_In, 1.0);
+    state.canvas->blend(newState.canvas.get(), BlendMode::Dst_In, 1.0);
 }
 
 LayoutMask::LayoutMask()
@@ -138,7 +138,7 @@ void LayoutMask::apply(RenderState& state) const
         masker->apply(newState);
 
     newState.canvas->luminance();
-    state.canvas->blend(*newState.canvas, BlendMode::Dst_In, opacity);
+    state.canvas->blend(newState.canvas.get(), BlendMode::Dst_In, opacity);
 }
 
 LayoutRoot::LayoutRoot()
@@ -265,7 +265,7 @@ void LayoutPattern::apply(RenderState& state) const
     transform.scale(1.0/scalex, 1.0/scaley);
 
     renderChildren(newState);
-    state.canvas->setPattern(*newState.canvas, transform, TileMode::Tiled);
+    state.canvas->setTexture(newState.canvas.get(), TextureType::Tiled, transform);
 }
 
 LayoutGradient::LayoutGradient(LayoutId id)
@@ -289,7 +289,7 @@ void LayoutLinearGradient::apply(RenderState& state) const
     }
 
     LinearGradientValues values{x1, y1, x2, y2};
-    state.canvas->setGradient(values, transform * matrix, spreadMethod, stops);
+    state.canvas->setLinearGradient(values, transform * matrix, spreadMethod, stops);
 }
 
 LayoutRadialGradient::LayoutRadialGradient()
@@ -308,7 +308,7 @@ void LayoutRadialGradient::apply(RenderState& state) const
     }
 
     RadialGradientValues values{cx, cy, r, fx, fy};
-    state.canvas->setGradient(values, transform * matrix, spreadMethod, stops);
+    state.canvas->setRadialGradient(values, transform * matrix, spreadMethod, stops);
 }
 
 LayoutSolidColor::LayoutSolidColor()
@@ -350,7 +350,7 @@ void StrokeData::stroke(RenderState& state, const Path& path) const
     state.canvas->setMatrix(state.matrix);
     state.canvas->setOpacity(opacity);
     state.canvas->setLineWidth(width);
-    state.canvas->setMiterlimit(miterlimit);
+    state.canvas->setMiterLimit(miterlimit);
     state.canvas->setLineCap(cap);
     state.canvas->setLineJoin(join);
     state.canvas->setDash(dash);
@@ -485,7 +485,7 @@ void RenderState::endGroup(RenderState& state, const LayoutClipPath* clipper, co
     if(masker && m_mode == RenderMode::Display)
         masker->apply(*this);
 
-    state.canvas->blend(*canvas, BlendMode::Src_Over, m_mode == RenderMode::Display ? opacity : 1.0);
+    state.canvas->blend(canvas.get(), BlendMode::Src_Over, m_mode == RenderMode::Display ? opacity : 1.0);
 }
 
 LayoutContext::LayoutContext(const ParseDocument* document, LayoutRoot* root)

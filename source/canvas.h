@@ -47,7 +47,7 @@ public:
     double offset{1.0};
 };
 
-enum class TileMode
+enum class TextureType
 {
     Plain,
     Tiled
@@ -72,19 +72,19 @@ public:
     void setMatrix(const Transform& matrix);
     void setOpacity(double opacity);
     void setColor(const Color& color);
-    void setGradient(const LinearGradientValues& values, const Transform& matrix, SpreadMethod spread, const GradientStops& stops);
-    void setGradient(const RadialGradientValues& values, const Transform& matrix, SpreadMethod spread, const GradientStops& stops);
-    void setPattern(const Canvas& tile, const Transform& matrix, TileMode mode);
+    void setLinearGradient(const LinearGradientValues& values, const Transform& matrix, SpreadMethod spread, const GradientStops& stops);
+    void setRadialGradient(const RadialGradientValues& values, const Transform& matrix, SpreadMethod spread, const GradientStops& stops);
+    void setTexture(const Canvas* source, TextureType type, const Transform& matrix);
     void setWinding(WindRule winding);
     void setLineWidth(double width);
     void setLineCap(LineCap cap);
     void setLineJoin(LineJoin join);
-    void setMiterlimit(double miterlimit);
+    void setMiterLimit(double miterlimit);
     void setDash(const DashData& dash);
 
     void fill(const Path& path);
     void stroke(const Path& path);
-    void blend(const Canvas& source, BlendMode mode, double opacity);
+    void blend(const Canvas* source, BlendMode mode, double opacity);
 
     void clear(unsigned int value);
     void rgba();
@@ -96,7 +96,6 @@ public:
     unsigned char* data() const;
 
     ~Canvas();
-
 private:
     Canvas(unsigned int width, unsigned int height);
     Canvas(unsigned char* data, unsigned int width, unsigned int height, unsigned int stride);

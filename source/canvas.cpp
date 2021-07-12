@@ -9,7 +9,9 @@ static plutovg_fill_rule_t to_plutovg_fill_rule(WindRule winding);
 static plutovg_operator_t to_plutovg_operator(BlendMode mode);
 static plutovg_line_cap_t to_plutovg_line_cap(LineCap cap);
 static plutovg_line_join_t to_plutovg_line_join(LineJoin join);
-static void to_pluto_path(plutovg_t* pluto, const Path& path);
+static plutovg_spread_method_t to_plutovg_spread_methood(SpreadMethod spread);
+static void to_plutovg_stops(plutovg_gradient_t* gradient, const GradientStops& stops);
+static void to_plutovg_path(plutovg_t* pluto, const Path& path);
 
 class CanvasImpl
 {
@@ -57,71 +59,37 @@ void Canvas::setColor(const Color &color)
     plutovg_set_source_rgba(d->pluto, color.r, color.g, color.b, color.a);
 }
 
-void Canvas::setGradient(const LinearGradientValues& values, const Transform& matrix, SpreadMethod spread, const GradientStops& stops)
+void Canvas::setLinearGradient(const LinearGradientValues& values, const Transform& matrix, SpreadMethod spread, const GradientStops& stops)
 {
     auto gradient = plutovg_gradient_create_linear(values.x1, values.y1, values.x2, values.y2);
-    switch(spread) {
-    case SpreadMethod::Pad:
-        plutovg_gradient_set_spread(gradient, plutovg_spread_method_pad);
-        break;
-    case SpreadMethod::Reflect:
-        plutovg_gradient_set_spread(gradient, plutovg_spread_method_reflect);
-        break;
-    case SpreadMethod::Repeat:
-        plutovg_gradient_set_spread(gradient, plutovg_spread_method_repeat);
-        break;
-    }
-
-    for(auto& stop : stops)
-    {
-        auto offset = std::get<0>(stop);
-        auto& color = std::get<1>(stop);
-        plutovg_gradient_add_stop_rgba(gradient, offset, color.r, color.g, color.b, color.a);
-    }
-
-    plutovg_matrix_t transform = to_plutovg_matrix(matrix);
+    auto transform = to_plutovg_matrix(matrix);
+    to_plutovg_stops(gradient, stops);
+    plutovg_gradient_set_spread(gradient, to_plutovg_spread_methood(spread));
     plutovg_gradient_set_matrix(gradient, &transform);
     plutovg_set_source_gradient(d->pluto, gradient);
     plutovg_gradient_destroy(gradient);
 }
 
-void Canvas::setGradient(const RadialGradientValues& values, const Transform& matrix, SpreadMethod spread, const GradientStops& stops)
+void Canvas::setRadialGradient(const RadialGradientValues& values, const Transform& matrix, SpreadMethod spread, const GradientStops& stops)
 {
     auto gradient = plutovg_gradient_create_radial(values.cx, values.cy, values.r, values.fx, values.fy, 0);
-    switch(spread) {
-    case SpreadMethod::Pad:
-        plutovg_gradient_set_spread(gradient, plutovg_spread_method_pad);
-        break;
-    case SpreadMethod::Reflect:
-        plutovg_gradient_set_spread(gradient, plutovg_spread_method_reflect);
-        break;
-    case SpreadMethod::Repeat:
-        plutovg_gradient_set_spread(gradient, plutovg_spread_method_repeat);
-        break;
-    }
-
-    for(auto& stop : stops)
-    {
-        auto offset = stop.first;
-        auto& color = stop.second;
-        plutovg_gradient_add_stop_rgba(gradient, offset, color.r, color.g, color.b, color.a);
-    }
-
-    plutovg_matrix_t transform = to_plutovg_matrix(matrix);
+    auto transform = to_plutovg_matrix(matrix);
+    to_plutovg_stops(gradient, stops);
+    plutovg_gradient_set_spread(gradient, to_plutovg_spread_methood(spread));
     plutovg_gradient_set_matrix(gradient, &transform);
     plutovg_set_source_gradient(d->pluto, gradient);
     plutovg_gradient_destroy(gradient);
 }
 
-void Canvas::setPattern(const Canvas& tile, const Transform& matrix, TileMode mode)
+void Canvas::setTexture(const Canvas* source, TextureType type, const Transform& matrix)
 {
-    auto texture = plutovg_texture_create(tile.d->surface);
-    if(mode == TileMode::Plain)
+    auto texture = plutovg_texture_create(source->d->surface);
+    auto transform = to_plutovg_matrix(matrix);
+    if(type == TextureType::Plain)
         plutovg_texture_set_type(texture, plutovg_texture_type_plain);
     else
         plutovg_texture_set_type(texture, plutovg_texture_type_tiled);
 
-    plutovg_matrix_t transform = to_plutovg_matrix(matrix);
     plutovg_texture_set_matrix(texture, &transform);
     plutovg_set_source_texture(d->pluto, texture);
     plutovg_texture_destroy(texture);
@@ -147,7 +115,7 @@ void Canvas::setLineJoin(LineJoin join)
     plutovg_set_line_join(d->pluto, to_plutovg_line_join(join));
 }
 
-void Canvas::setMiterlimit(double miterlimit)
+void Canvas::setMiterLimit(double miterlimit)
 {
     plutovg_set_miter_limit(d->pluto, miterlimit);
 }
@@ -160,7 +128,7 @@ void Canvas::setDash(const DashData& dash)
 void Canvas::fill(const Path& path)
 {
     plutovg_new_path(d->pluto);
-    to_pluto_path(d->pluto, path);
+    to_plutovg_path(d->pluto, path);
     plutovg_set_operator(d->pluto, plutovg_operator_src_over);
     plutovg_fill(d->pluto);
 }
@@ -168,14 +136,14 @@ void Canvas::fill(const Path& path)
 void Canvas::stroke(const Path& path)
 {
     plutovg_new_path(d->pluto);
-    to_pluto_path(d->pluto, path);
+    to_plutovg_path(d->pluto, path);
     plutovg_set_operator(d->pluto, plutovg_operator_src_over);
     plutovg_stroke(d->pluto);
 }
 
-void Canvas::blend(const Canvas& source, BlendMode mode, double opacity)
+void Canvas::blend(const Canvas* source, BlendMode mode, double opacity)
 {
-    plutovg_set_source_surface(d->pluto, source.d->surface, 0, 0);
+    plutovg_set_source_surface(d->pluto, source->d->surface, 0, 0);
     plutovg_set_operator(d->pluto, to_plutovg_operator(mode));
     plutovg_set_opacity(d->pluto, opacity);
     plutovg_identity_matrix(d->pluto);
@@ -189,23 +157,9 @@ void Canvas::clear(unsigned int value)
     auto b = (value >> 8) & 0xFF;
     auto a = (value >> 0) & 0xFF;
 
-    auto pr = (r * a) / 255;
-    auto pg = (g * a) / 255;
-    auto pb = (b * a) / 255;
-    auto solid = (a << 24) | (pr << 16) | (pg << 8) | (pb);
-
-    auto data = plutovg_surface_get_data(d->surface);
-    auto width = plutovg_surface_get_width(d->surface);
-    auto height = plutovg_surface_get_height(d->surface);
-    auto stride = plutovg_surface_get_stride(d->surface);
-    for(auto y = 0;y < height;y++)
-    {
-        uint32_t* row = reinterpret_cast<uint32_t*>(data + stride * y);
-        for(int x = 0;x < width;x++)
-        {
-            row[x] = solid;
-        }
-    }
+    plutovg_set_operator(d->pluto, plutovg_operator_src);
+    plutovg_set_source_rgba(d->pluto, r, g, b, a);
+    plutovg_paint(d->pluto);
 }
 
 void Canvas::rgba()
@@ -214,7 +168,7 @@ void Canvas::rgba()
     auto width = plutovg_surface_get_width(d->surface);
     auto height = plutovg_surface_get_height(d->surface);
     auto stride = plutovg_surface_get_stride(d->surface);
-    for(auto y = 0;y < height;y++)
+    for(int y = 0;y < height;y++)
     {
         auto row = reinterpret_cast<uint32_t*>(data + stride * y);
         for(int x = 0;x < width;x++)
@@ -245,7 +199,7 @@ void Canvas::luminance()
     auto width = plutovg_surface_get_width(d->surface);
     auto height = plutovg_surface_get_height(d->surface);
     auto stride = plutovg_surface_get_stride(d->surface);
-    for(auto y = 0;y < height;y++)
+    for(int y = 0;y < height;y++)
     {
         auto row = reinterpret_cast<uint32_t*>(data + stride * y);
         for(int x = 0;x < width;x++)
@@ -342,10 +296,24 @@ plutovg_line_join_t to_plutovg_line_join(LineJoin join)
     return join == LineJoin::Miter ? plutovg_line_join_miter : join == LineJoin::Round ? plutovg_line_join_round : plutovg_line_join_bevel;
 }
 
-void to_pluto_path(plutovg_t* pluto, const Path& path)
+static plutovg_spread_method_t to_plutovg_spread_methood(SpreadMethod spread)
+{
+    return spread == SpreadMethod::Pad ? plutovg_spread_method_pad : spread == SpreadMethod::Reflect ? plutovg_spread_method_reflect : plutovg_spread_method_repeat;
+}
+
+static void to_plutovg_stops(plutovg_gradient_t* gradient, const GradientStops& stops)
+{
+    for(auto& stop : stops)
+    {
+        auto offset = std::get<0>(stop);
+        auto& color = std::get<1>(stop);
+        plutovg_gradient_add_stop_rgba(gradient, offset, color.r, color.g, color.b, color.a);
+    }
+}
+
+void to_plutovg_path(plutovg_t* pluto, const Path& path)
 {
     PathIterator it(path);
-
     std::array<Point, 3> p;
     while(!it.isDone())
     {
