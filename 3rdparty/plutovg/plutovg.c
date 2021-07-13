@@ -328,7 +328,7 @@ void plutovg_transform(plutovg_t* pluto, const plutovg_matrix_t* matrix)
 
 void plutovg_set_matrix(plutovg_t* pluto, const plutovg_matrix_t* matrix)
 {
-    memcpy(&pluto->state->matrix, matrix, sizeof(plutovg_matrix_t));
+    pluto->state->matrix = *matrix;
 }
 
 void plutovg_identity_matrix(plutovg_t* pluto)
@@ -338,7 +338,7 @@ void plutovg_identity_matrix(plutovg_t* pluto)
 
 void plutovg_get_matrix(const plutovg_t* pluto, plutovg_matrix_t* matrix)
 {
-    memcpy(matrix, &pluto->state->matrix, sizeof(plutovg_matrix_t));
+    *matrix = pluto->state->matrix;
 }
 
 void plutovg_move_to(plutovg_t* pluto, double x, double y)
