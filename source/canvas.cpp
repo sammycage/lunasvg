@@ -105,6 +105,7 @@ void Canvas::stroke(const Path& path, const Transform& transform, double width, 
     plutovg_set_line_join(d->pluto, to_plutovg_line_join(join));
     plutovg_set_miter_limit(d->pluto, miterlimit);
     plutovg_set_dash(d->pluto, dash.offset, dash.array.data(), static_cast<int>(dash.array.size()));
+    plutovg_set_opacity(d->pluto, opacity);
     plutovg_set_operator(d->pluto, plutovg_operator_src_over);
     plutovg_stroke(d->pluto);
 }
