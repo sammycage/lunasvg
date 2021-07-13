@@ -1419,9 +1419,43 @@ bool RuleMatchContext::simpleSelectorMatch(const SimpleSelector& selector, const
 
 bool RuleMatchContext::selectorMatch(const Selector* selector, const Element* element) const
 {
+    if(selector->simpleSelectors.empty())
+        return false;
+
     if(selector->simpleSelectors.size() == 1)
-        return simpleSelectorMatch(selector->simpleSelectors.back(), element);
-    return false;
+        return simpleSelectorMatch(selector->simpleSelectors.front(), element);
+
+    auto it = selector->simpleSelectors.rbegin();
+    auto end = selector->simpleSelectors.rend();
+    if(!simpleSelectorMatch(*it, element))
+        return false;
+    ++it;
+
+    while(it != end)
+    {
+        switch(it->combinator) {
+        case SimpleSelector::Combinator::Child:
+        case SimpleSelector::Combinator::Descendant:
+            element = element->parent;
+            break;
+        case SimpleSelector::Combinator::DirectAdjacent:
+        case SimpleSelector::Combinator::InDirectAdjacent:
+            element = element->previousSibling();
+            break;
+        }
+
+        if(element == nullptr)
+            return false;
+
+        auto match = simpleSelectorMatch(*it, element);
+        if(!match && (it->combinator != SimpleSelector::Combinator::Descendant && it->combinator != SimpleSelector::Combinator::InDirectAdjacent))
+            return false;
+
+        if(match || (it->combinator != SimpleSelector::Combinator::Descendant && it->combinator != SimpleSelector::Combinator::InDirectAdjacent))
+            ++it;
+    }
+
+    return true;
 }
 
 static inline void parseStyle(const std::string& string, Element* element)

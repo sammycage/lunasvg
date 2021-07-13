@@ -41,6 +41,50 @@ bool Element::has(PropertyId id) const
     return it != properties.end();
 }
 
+Element* Element::previousSibling() const
+{
+    if(parent == nullptr)
+        return nullptr;
+
+    Element* element = nullptr;
+    auto it = parent->children.begin();
+    auto end = parent->children.end();
+    for(;it != end;++it)
+    {
+        auto node = it->get();
+        if(node->isText())
+            continue;
+
+        if(node == this)
+            return element;
+        element = static_cast<Element*>(node);
+    }
+
+    return nullptr;
+}
+
+Element* Element::nextSibling() const
+{
+    if(parent == nullptr)
+        return nullptr;
+
+    Element* element = nullptr;
+    auto it = parent->children.rbegin();
+    auto end = parent->children.rend();
+    for(;it != end;++it)
+    {
+        auto node = it->get();
+        if(node->isText())
+            continue;
+
+        if(node == this)
+            return element;
+        element = static_cast<Element*>(node);
+    }
+
+    return nullptr;
+}
+
 Node* Element::addChild(std::unique_ptr<Node> child)
 {
     child->parent = this;

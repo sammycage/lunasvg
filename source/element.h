@@ -150,6 +150,9 @@ public:
     const std::string& find(PropertyId id) const;
     bool has(PropertyId id) const;
 
+    Element* previousSibling() const;
+    Element* nextSibling() const;
+
     Node* addChild(std::unique_ptr<Node> child);
     Rect nearestViewBox() const;
     void layoutChildren(LayoutContext* context, LayoutContainer* current) const;
