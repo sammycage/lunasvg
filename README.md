@@ -1,8 +1,25 @@
-# LunaSVG
-
-lunasvg is a standalone SVG rendering library in C++
-
-![svg2png generated PNG](luna.png)
+<div align="center">
+    <span align="center">
+        <img height="128" class="center" src="https://github.com/sammycage/lunasvg/blob/master/luna.png" alt="Icon">
+    </span>
+    <h1 align="center">LunaSVG</h1>
+    <h3 align="center">LunaSVG is a standalone SVG rendering library in C++</h3>
+</div>
+<br>
+<p align="center">
+    <img src="https://dev.w3.org/SVG/tools/svgweb/samples/svg-files/tommek_Car.svg">
+    <a href="https://github.com/sammycage/lunasvg/releases">
+        <img src="https://img.shields.io/badge/Version-2.1.4-orange.svg">
+    </a>
+    <a href="https://github.com/sammycage/lunasvg/blob/master/LICENSE">
+        <img src="https://img.shields.io/badge/License-MIT-blue.svg">
+    </a>
+    <a href="https://github.com/sammycage/lunasvg/actions/workflows">
+        <img src="https://github.com/sammycage/lunasvg/actions/workflows/ci.yml/badge.svg">
+    </a>
+    <br>
+    <a href="https://github.com/sammycage/lunasvg/issues/new">Report a problem!</a>
+</p>
 
 ## Example
 
@@ -34,13 +51,13 @@ int main()
 - Masks
 - ClipPaths
 - Markers
+- StyleSheet
 
 ## TODO
 
 - Texts
 - Filters
 - Images
-- StyleSheet
 
 ## Build
 
