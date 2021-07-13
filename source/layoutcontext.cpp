@@ -289,7 +289,7 @@ void LayoutLinearGradient::apply(RenderState& state) const
     }
 
     LinearGradientValues values{x1, y1, x2, y2};
-    state.canvas->setLinearGradient(values, transform * matrix, spreadMethod, stops);
+    state.canvas->setLinearGradient(values, spreadMethod, stops, transform * matrix);
 }
 
 LayoutRadialGradient::LayoutRadialGradient()
@@ -308,7 +308,7 @@ void LayoutRadialGradient::apply(RenderState& state) const
     }
 
     RadialGradientValues values{cx, cy, r, fx, fy};
-    state.canvas->setRadialGradient(values, transform * matrix, spreadMethod, stops);
+    state.canvas->setRadialGradient(values, spreadMethod, stops, transform * matrix);
 }
 
 LayoutSolidColor::LayoutSolidColor()
@@ -331,10 +331,7 @@ void FillData::fill(RenderState& state, const Path& path) const
     else
         painter->apply(state);
 
-    state.canvas->setMatrix(state.matrix);
-    state.canvas->setOpacity(opacity);
-    state.canvas->setWinding(fillRule);
-    state.canvas->fill(path);
+    state.canvas->fill(path, state.matrix, fillRule, opacity);
 }
 
 void StrokeData::stroke(RenderState& state, const Path& path) const
@@ -347,14 +344,7 @@ void StrokeData::stroke(RenderState& state, const Path& path) const
     else
         painter->apply(state);
 
-    state.canvas->setMatrix(state.matrix);
-    state.canvas->setOpacity(opacity);
-    state.canvas->setLineWidth(width);
-    state.canvas->setMiterLimit(miterlimit);
-    state.canvas->setLineCap(cap);
-    state.canvas->setLineJoin(join);
-    state.canvas->setDash(dash);
-    state.canvas->stroke(path);
+    state.canvas->stroke(path, state.matrix, width, cap, join, miterlimit, dash, opacity);
 }
 
 static const double sqrt2 = 1.41421356237309504880;
@@ -426,11 +416,8 @@ void LayoutShape::render(RenderState& state) const
     }
     else
     {
-        newState.canvas->setMatrix(newState.matrix);
         newState.canvas->setColor(Color::Black);
-        newState.canvas->setOpacity(1.0);
-        newState.canvas->setWinding(clipRule);
-        newState.canvas->fill(path);
+        newState.canvas->fill(path, newState.matrix, clipRule, 1.0);
     }
 
     newState.endGroup(state, clipper, masker, 1.0);

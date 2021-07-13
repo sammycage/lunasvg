@@ -4,7 +4,7 @@
 
 namespace lunasvg {
 
-static plutovg_matrix_t to_plutovg_matrix(const Transform& matrix);
+static plutovg_matrix_t to_plutovg_matrix(const Transform& transform);
 static plutovg_fill_rule_t to_plutovg_fill_rule(WindRule winding);
 static plutovg_operator_t to_plutovg_operator(BlendMode mode);
 static plutovg_line_cap_t to_plutovg_line_cap(LineCap cap);
@@ -43,100 +43,68 @@ CanvasImpl::~CanvasImpl()
     plutovg_destroy(pluto);
 }
 
-void Canvas::setMatrix(const Transform& matrix)
-{
-    auto transform = to_plutovg_matrix(matrix);
-    plutovg_set_matrix(d->pluto, &transform);
-}
-
-void Canvas::setOpacity(double opacity)
-{
-    plutovg_set_opacity(d->pluto, opacity);
-}
-
-void Canvas::setColor(const Color &color)
+void Canvas::setColor(const Color& color)
 {
     plutovg_set_source_rgba(d->pluto, color.r, color.g, color.b, color.a);
 }
 
-void Canvas::setLinearGradient(const LinearGradientValues& values, const Transform& matrix, SpreadMethod spread, const GradientStops& stops)
+void Canvas::setLinearGradient(const LinearGradientValues& values, SpreadMethod spread, const GradientStops& stops, const Transform& transform)
 {
     auto gradient = plutovg_gradient_create_linear(values.x1, values.y1, values.x2, values.y2);
-    auto transform = to_plutovg_matrix(matrix);
+    auto matrix = to_plutovg_matrix(transform);
     to_plutovg_stops(gradient, stops);
     plutovg_gradient_set_spread(gradient, to_plutovg_spread_methood(spread));
-    plutovg_gradient_set_matrix(gradient, &transform);
+    plutovg_gradient_set_matrix(gradient, &matrix);
     plutovg_set_source_gradient(d->pluto, gradient);
     plutovg_gradient_destroy(gradient);
 }
 
-void Canvas::setRadialGradient(const RadialGradientValues& values, const Transform& matrix, SpreadMethod spread, const GradientStops& stops)
+void Canvas::setRadialGradient(const RadialGradientValues& values, SpreadMethod spread, const GradientStops& stops, const Transform& transform)
 {
     auto gradient = plutovg_gradient_create_radial(values.cx, values.cy, values.r, values.fx, values.fy, 0);
-    auto transform = to_plutovg_matrix(matrix);
+    auto matrix = to_plutovg_matrix(transform);
     to_plutovg_stops(gradient, stops);
     plutovg_gradient_set_spread(gradient, to_plutovg_spread_methood(spread));
-    plutovg_gradient_set_matrix(gradient, &transform);
+    plutovg_gradient_set_matrix(gradient, &matrix);
     plutovg_set_source_gradient(d->pluto, gradient);
     plutovg_gradient_destroy(gradient);
 }
 
-void Canvas::setTexture(const Canvas* source, TextureType type, const Transform& matrix)
+void Canvas::setTexture(const Canvas* source, TextureType type, const Transform& transform)
 {
     auto texture = plutovg_texture_create(source->d->surface);
-    auto transform = to_plutovg_matrix(matrix);
+    auto matrix = to_plutovg_matrix(transform);
     if(type == TextureType::Plain)
         plutovg_texture_set_type(texture, plutovg_texture_type_plain);
     else
         plutovg_texture_set_type(texture, plutovg_texture_type_tiled);
 
-    plutovg_texture_set_matrix(texture, &transform);
+    plutovg_texture_set_matrix(texture, &matrix);
     plutovg_set_source_texture(d->pluto, texture);
     plutovg_texture_destroy(texture);
 }
 
-void Canvas::setWinding(WindRule winding)
+void Canvas::fill(const Path& path, const Transform& transform, WindRule winding, double opacity)
 {
-    plutovg_set_fill_rule(d->pluto, to_plutovg_fill_rule(winding));
-}
-
-void Canvas::setLineWidth(double width)
-{
-    plutovg_set_line_width(d->pluto, width);
-}
-
-void Canvas::setLineCap(LineCap cap)
-{
-    plutovg_set_line_cap(d->pluto, to_plutovg_line_cap(cap));
-}
-
-void Canvas::setLineJoin(LineJoin join)
-{
-    plutovg_set_line_join(d->pluto, to_plutovg_line_join(join));
-}
-
-void Canvas::setMiterLimit(double miterlimit)
-{
-    plutovg_set_miter_limit(d->pluto, miterlimit);
-}
-
-void Canvas::setDash(const DashData& dash)
-{
-    plutovg_set_dash(d->pluto, dash.offset, dash.array.data(), static_cast<int>(dash.array.size()));
-}
-
-void Canvas::fill(const Path& path)
-{
-    plutovg_new_path(d->pluto);
+    auto matrix = to_plutovg_matrix(transform);
     to_plutovg_path(d->pluto, path);
+    plutovg_set_matrix(d->pluto, &matrix);
+    plutovg_set_fill_rule(d->pluto, to_plutovg_fill_rule(winding));
+    plutovg_set_opacity(d->pluto, opacity);
     plutovg_set_operator(d->pluto, plutovg_operator_src_over);
     plutovg_fill(d->pluto);
 }
 
-void Canvas::stroke(const Path& path)
+void Canvas::stroke(const Path& path, const Transform& transform, double width, LineCap cap, LineJoin join, double miterlimit, const DashData& dash, double opacity)
 {
-    plutovg_new_path(d->pluto);
+    auto matrix = to_plutovg_matrix(transform);
     to_plutovg_path(d->pluto, path);
+    plutovg_set_matrix(d->pluto, &matrix);
+    plutovg_set_line_width(d->pluto, width);
+    plutovg_set_line_cap(d->pluto, to_plutovg_line_cap(cap));
+    plutovg_set_line_join(d->pluto, to_plutovg_line_join(join));
+    plutovg_set_miter_limit(d->pluto, miterlimit);
+    plutovg_set_dash(d->pluto, dash.offset, dash.array.data(), static_cast<int>(dash.array.size()));
     plutovg_set_operator(d->pluto, plutovg_operator_src_over);
     plutovg_stroke(d->pluto);
 }
@@ -270,11 +238,11 @@ RadialGradientValues::RadialGradientValues(double cx, double cy, double r, doubl
 {
 }
 
-plutovg_matrix_t to_plutovg_matrix(const Transform& matrix)
+plutovg_matrix_t to_plutovg_matrix(const Transform& transform)
 {
-    plutovg_matrix_t m;
-    plutovg_matrix_init(&m, matrix.m00, matrix.m10, matrix.m01, matrix.m11, matrix.m02, matrix.m12);
-    return m;
+    plutovg_matrix_t matrix;
+    plutovg_matrix_init(&matrix, transform.m00, transform.m10, transform.m01, transform.m11, transform.m02, transform.m12);
+    return matrix;
 }
 
 plutovg_fill_rule_t to_plutovg_fill_rule(WindRule winding)
