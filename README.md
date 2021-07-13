@@ -14,7 +14,7 @@
     <a href="https://github.com/sammycage/lunasvg/blob/master/LICENSE">
         <img src="https://img.shields.io/badge/License-MIT-blue.svg">
     </a>
-    <a href="https://github.com/sammycage/lunasvg/actions/workflows">
+    <a href="https://github.com/sammycage/lunasvg/actions">
         <img src="https://github.com/sammycage/lunasvg/actions/workflows/ci.yml/badge.svg">
     </a>
     <br>
