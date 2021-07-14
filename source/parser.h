@@ -119,7 +119,7 @@ private:
     bool attributeSelectorMatch(const AttributeSelector& selector, const Element* element) const;
 
 private:
-    std::multimap<int, std::pair<const Selector*, const PropertyList*>, std::greater<int>> m_selectors;
+    std::multimap<int, std::pair<const Selector*, const PropertyList*>, std::less<int>> m_selectors;
 };
 
 class CSSParser
