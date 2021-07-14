@@ -7,9 +7,9 @@
 </div>
 <br>
 <p align="center">
-    <img src="https://dev.w3.org/SVG/tools/svgweb/samples/svg-files/tommek_Car.svg">
+    <img src="https://dev.w3.org/SVG/tools/svgweb/samples/svg-files/cartman.svg">
     <a href="https://github.com/sammycage/lunasvg/releases">
-        <img src="https://img.shields.io/badge/Version-2.1.4-orange.svg">
+        <img src="https://img.shields.io/badge/Version-2.1.5-orange.svg">
     </a>
     <a href="https://github.com/sammycage/lunasvg/blob/master/LICENSE">
         <img src="https://img.shields.io/badge/License-MIT-blue.svg">
