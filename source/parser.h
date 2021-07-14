@@ -1,9 +1,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <string>
 #include <map>
-#include <memory>
 
 #include "property.h"
 #include "element.h"
@@ -105,7 +103,7 @@ struct Selector
 struct Rule
 {
     std::vector<Selector> selectors;
-    PropertyMap declarations;
+    PropertyList declarations;
 };
 
 class RuleMatchContext
@@ -113,7 +111,7 @@ class RuleMatchContext
 public:
     RuleMatchContext(const std::vector<Rule>& rules);
 
-    std::vector<const PropertyMap*> match(const Element* element) const;
+    std::vector<const PropertyList*> match(const Element* element) const;
 
 private:
     bool attributeSelectorMatch(const AttributeSelector& selector, const Element* element) const;
@@ -121,7 +119,7 @@ private:
     bool selectorMatch(const Selector* selector, const Element* element) const;
 
 private:
-    std::multimap<int, std::pair<const Selector*, const PropertyMap*>, std::greater<int>> m_selectors;
+    std::multimap<int, std::pair<const Selector*, const PropertyList*>, std::greater<int>> m_selectors;
 };
 
 class CSSParser
@@ -137,7 +135,7 @@ private:
     bool parseRule(const char*& ptr, const char* end, Rule& rule) const;
     bool parseSelector(const char*& ptr, const char* end, Selector& selector) const;
     bool parseSimpleSelector(const char*& ptr, const char* end, SimpleSelector& simpleSelector) const;
-    bool parseDeclarations(const char*& ptr, const char* end, PropertyMap& declarations) const;
+    bool parseDeclarations(const char*& ptr, const char* end, PropertyList& declarations) const;
 
 private:
     std::vector<Rule> m_rules;

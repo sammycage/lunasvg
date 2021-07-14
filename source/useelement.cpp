@@ -47,8 +47,8 @@ void UseElement::transferWidthAndHeight(Element* element) const
     auto& width = get(PropertyId::Width);
     auto& height = get(PropertyId::Height);
 
-    element->insert(PropertyId::Width, width);
-    element->insert(PropertyId::Height, height);
+    element->set(PropertyId::Width, width, 0x0);
+    element->set(PropertyId::Height, height, 0x0);
 }
 
 void UseElement::layout(LayoutContext* context, LayoutContainer* current) const
@@ -74,7 +74,7 @@ void UseElement::layout(LayoutContext* context, LayoutContainer* current) const
     transform += ' ';
     transform += std::to_string(_y);
     transform += ')';
-    group->set(PropertyId::Transform, transform);
+    group->set(PropertyId::Transform, transform, 0x10);
 
     if(ref->id == ElementId::Svg || ref->id == ElementId::Symbol)
     {

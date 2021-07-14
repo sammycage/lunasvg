@@ -1301,7 +1301,7 @@ bool CSSParser::parseSimpleSelector(const char*& ptr, const char* end, SimpleSel
     return true;
 }
 
-bool CSSParser::parseDeclarations(const char*& ptr, const char* end, PropertyMap& declarations) const
+bool CSSParser::parseDeclarations(const char*& ptr, const char* end, PropertyList& declarations) const
 {
     std::string name;
     std::string value;
@@ -1316,16 +1316,18 @@ bool CSSParser::parseDeclarations(const char*& ptr, const char* end, PropertyMap
         while(ptr < end && !(*ptr == '!' || *ptr == ';' || *ptr == '}'))
             ++ptr;
         value.assign(start, Utils::rtrim(start, ptr));
+        int specificity = 0x10;
         if(Utils::skipDesc(ptr, end, '!'))
         {
             if(!Utils::skipDesc(ptr, end, "important"))
                 return false;
+            specificity = 0x1000;
             Utils::skipWs(ptr, end);
         }
 
         auto id = cssPropertyId(name);
         if(id != PropertyId::Unknown)
-            declarations.emplace(id, value);
+            declarations.set(id, value, specificity);
         Utils::skipWsDelimiter(ptr, end, ';');
     } while(ptr < end && *ptr != '}');
 
@@ -1339,9 +1341,9 @@ RuleMatchContext::RuleMatchContext(const std::vector<Rule>& rules)
              m_selectors.emplace(selector.specificity, std::make_pair(&selector, &rule.declarations));
 }
 
-std::vector<const PropertyMap*> RuleMatchContext::match(const Element* element) const
+std::vector<const PropertyList*> RuleMatchContext::match(const Element* element) const
 {
-    std::vector<const PropertyMap*> declarations;
+    std::vector<const PropertyList*> declarations;
     auto it = m_selectors.begin();
     auto end = m_selectors.end();
     for(;it != end;++it)
@@ -1478,7 +1480,7 @@ static inline void parseStyle(const std::string& string, Element* element)
         value.assign(start, Utils::rtrim(start, ptr));
         auto id = cssPropertyId(name);
         if(id != PropertyId::Unknown)
-            element->set(id, value);
+            element->set(id, value, 0x100);
         Utils::skipWsDelimiter(ptr, end, ';');
     }
 }
@@ -1706,7 +1708,7 @@ bool ParseDocument::parse(const char* data, std::size_t size)
                 if(id == PropertyId::Style)
                     parseStyle(value, element);
                 else
-                    element->insert(id, value);
+                    element->set(id, value, 0x1);
             }
 
             ++ptr;
@@ -1752,7 +1754,7 @@ bool ParseDocument::parse(const char* data, std::size_t size)
             auto element = static_cast<Element*>(node);
             auto declarations = context.match(element);
             for(auto& declaration : declarations)
-                element->properties.insert(declaration->begin(), declaration->end());
+                element->properties.add(*declaration);
             return false;
         });
     }

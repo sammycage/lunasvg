@@ -3,7 +3,6 @@
 
 #include <memory>
 #include <list>
-#include <map>
 
 #include "property.h"
 
@@ -106,6 +105,35 @@ enum class PropertyId
     Y2
 };
 
+class Property
+{
+public:
+    Property() = default;
+    Property(PropertyId id, const std::string& value, int specificity);
+
+public:
+    PropertyId id{PropertyId::Unknown};
+    std::string value;
+    int specificity{0};
+};
+
+class PropertyList
+{
+public:
+    PropertyList() = default;
+
+    void set(PropertyId id, const std::string& value, int specificity);
+    const std::string& get(PropertyId id) const;
+    bool has(PropertyId id) const;
+    Property* find(PropertyId id) const;
+
+    void add(const Property& property);
+    void add(const PropertyList& properties);
+
+private:
+    std::vector<Property> m_properties;
+};
+
 class LayoutContext;
 class LayoutContainer;
 class Element;
@@ -137,15 +165,13 @@ public:
 };
 
 using NodeList = std::list<std::unique_ptr<Node>>;
-using PropertyMap = std::map<PropertyId, std::string>;
 
 class Element : public Node
 {
 public:
     Element(ElementId id);
 
-    void insert(PropertyId id, const std::string& value);
-    void set(PropertyId id, const std::string& value);
+    void set(PropertyId id, const std::string& value, int specificity);
     const std::string& get(PropertyId id) const;
     const std::string& find(PropertyId id) const;
     bool has(PropertyId id) const;
@@ -190,7 +216,7 @@ public:
 public:
     ElementId id;
     NodeList children;
-    PropertyMap properties;
+    PropertyList properties;
 };
 
 } // namespace lunasvg

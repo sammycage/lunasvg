@@ -6,25 +6,78 @@ namespace lunasvg {
 
 static const std::string KEmptyString;
 
+Property::Property(PropertyId id, const std::string& value, int specificity)
+    : id(id), value(value), specificity(specificity)
+{
+}
+
+void PropertyList::set(PropertyId id, const std::string& value, int specificity)
+{
+    auto property = find(id);
+    if(property == nullptr)
+    {
+        m_properties.emplace_back(id, value, specificity);
+        return;
+    }
+
+    if(property->specificity > specificity)
+        return;
+
+    property->specificity = specificity;
+    property->value = value;
+}
+
+const std::string& PropertyList::get(PropertyId id) const
+{
+    auto property = find(id);
+    if(property == nullptr)
+        return KEmptyString;
+
+    return property->value;
+}
+
+bool PropertyList::has(PropertyId id) const
+{
+    return find(id);
+}
+
+Property* PropertyList::find(PropertyId id) const
+{
+    auto size = m_properties.size();
+    for(std::size_t i = 0;i < size;i++)
+    {
+        auto& property = m_properties[i];
+        if(property.id == id)
+            return const_cast<Property*>(&property);
+    }
+
+    return nullptr;
+}
+
+void PropertyList::add(const Property& property)
+{
+    set(property.id, property.value, property.specificity);
+}
+
+void PropertyList::add(const PropertyList& properties)
+{
+    for(auto& property : properties.m_properties)
+        add(property);
+}
+
 Element::Element(ElementId id)
     : id(id)
 {
 }
 
-void Element::insert(PropertyId id, const std::string& value)
+void Element::set(PropertyId id, const std::string& value, int specificity)
 {
-    properties.emplace(id, value);
-}
-
-void Element::set(PropertyId id, const std::string& value)
-{
-    properties[id] = value;
+    properties.set(id, value, specificity);
 }
 
 const std::string& Element::get(PropertyId id) const
 {
-    auto it = properties.find(id);
-    return it == properties.end() ? KEmptyString : it->second;
+    return properties.get(id);
 }
 
 const std::string& Element::find(PropertyId id) const
@@ -37,8 +90,7 @@ const std::string& Element::find(PropertyId id) const
 
 bool Element::has(PropertyId id) const
 {
-    auto it = properties.find(id);
-    return it != properties.end();
+    return properties.has(id);
 }
 
 Element* Element::previousSibling() const
