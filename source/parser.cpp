@@ -1215,6 +1215,9 @@ bool CSSParser::parseSelector(const char*& ptr, const char* end, Selector& selec
 
 bool CSSParser::parseSimpleSelector(const char*& ptr, const char* end, SimpleSelector& simpleSelector) const
 {
+    if(ptr >= end || !(IS_ALPHA(*ptr) || *ptr == '_' || *ptr == '*' || *ptr == '#' || *ptr == '.' || *ptr == '['))
+        return false;
+
     std::string name;
     if(Utils::skipDesc(ptr, end, '*'))
         simpleSelector.id = ElementId::Star;
