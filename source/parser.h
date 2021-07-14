@@ -114,9 +114,9 @@ public:
     std::vector<const PropertyList*> match(const Element* element) const;
 
 private:
-    bool attributeSelectorMatch(const AttributeSelector& selector, const Element* element) const;
-    bool simpleSelectorMatch(const SimpleSelector& selector, const Element* element) const;
     bool selectorMatch(const Selector* selector, const Element* element) const;
+    bool simpleSelectorMatch(const SimpleSelector& selector, const Element* element) const;
+    bool attributeSelectorMatch(const AttributeSelector& selector, const Element* element) const;
 
 private:
     std::multimap<int, std::pair<const Selector*, const PropertyList*>, std::greater<int>> m_selectors;

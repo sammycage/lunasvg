@@ -1348,75 +1348,13 @@ std::vector<const PropertyList*> RuleMatchContext::match(const Element* element)
     auto end = m_selectors.end();
     for(;it != end;++it)
     {
-        if(!selectorMatch(std::get<0>(it->second), element))
+        auto& value = it->second;
+        if(!selectorMatch(std::get<0>(value), element))
             continue;
-        declarations.push_back(std::get<1>(it->second));
+        declarations.push_back(std::get<1>(value));
     }
 
     return declarations;
-}
-
-bool RuleMatchContext::attributeSelectorMatch(const AttributeSelector& selector, const Element* element) const
-{
-    auto& value = element->get(selector.id);
-    if(value.empty())
-        return false;
-
-    if(selector.matchType == AttributeSelector::MatchType::None)
-        return true;
-
-    if(selector.matchType == AttributeSelector::MatchType::Equal)
-        return selector.value == value;
-
-    if(selector.matchType == AttributeSelector::MatchType::Includes)
-    {
-         auto ptr = value.data();
-         auto end = ptr + value.size();
-         while(ptr < end)
-         {
-             auto start = ptr;
-             while(ptr < end && !IS_WS(*ptr))
-                 ++ptr;
-
-             if(selector.value == std::string(start, ptr))
-                 return true;
-             Utils::skipWs(ptr, end);
-         }
-
-        return false;
-    }
-
-    if(selector.matchType == AttributeSelector::MatchType::DashMatch)
-    {
-        if(selector.value == value)
-            return true;
-
-        auto dashprefix = selector.value + '-';
-        return value.size() >= dashprefix.size() && value.compare(0, dashprefix.size(), dashprefix) == 0;
-    }
-
-    if(selector.matchType == AttributeSelector::MatchType::StartsWith)
-        return value.size() >= selector.value.size() && value.compare(0, selector.value.size(), selector.value) == 0;
-
-    if(selector.matchType == AttributeSelector::MatchType::EndsWith)
-        return value.size() >= selector.value.size() && value.compare(value.size() - selector.value.size(), selector.value.size(), selector.value) == 0;
-
-    if(selector.matchType == AttributeSelector::MatchType::Contains)
-        return value.find(selector.value) != std::string::npos;
-
-    return false;
-}
-
-bool RuleMatchContext::simpleSelectorMatch(const SimpleSelector& selector, const Element* element) const
-{
-    if(selector.id != ElementId::Star && selector.id != element->id)
-        return false;
-
-    for(auto& attributeSelector : selector.attributeSelectors)
-        if(!attributeSelectorMatch(attributeSelector, element))
-            return false;
-
-    return true;
 }
 
 bool RuleMatchContext::selectorMatch(const Selector* selector, const Element* element) const
@@ -1458,6 +1396,69 @@ bool RuleMatchContext::selectorMatch(const Selector* selector, const Element* el
     }
 
     return true;
+}
+
+bool RuleMatchContext::simpleSelectorMatch(const SimpleSelector& selector, const Element* element) const
+{
+    if(selector.id != ElementId::Star && selector.id != element->id)
+        return false;
+
+    for(auto& attributeSelector : selector.attributeSelectors)
+        if(!attributeSelectorMatch(attributeSelector, element))
+            return false;
+
+    return true;
+}
+
+bool RuleMatchContext::attributeSelectorMatch(const AttributeSelector& selector, const Element* element) const
+{
+    auto& value = element->get(selector.id);
+    if(value.empty())
+        return false;
+
+    if(selector.matchType == AttributeSelector::MatchType::None)
+        return true;
+
+    if(selector.matchType == AttributeSelector::MatchType::Equal)
+        return selector.value == value;
+
+    if(selector.matchType == AttributeSelector::MatchType::Includes)
+    {
+        auto ptr = value.data();
+        auto end = ptr + value.size();
+        while(ptr < end)
+        {
+            auto start = ptr;
+            while(ptr < end && !IS_WS(*ptr))
+                ++ptr;
+
+            if(selector.value == std::string(start, ptr))
+                return true;
+            Utils::skipWs(ptr, end);
+        }
+
+        return false;
+    }
+
+    if(selector.matchType == AttributeSelector::MatchType::DashMatch)
+    {
+        if(selector.value == value)
+            return true;
+
+        auto dashprefix = selector.value + '-';
+        return value.size() >= dashprefix.size() && value.compare(0, dashprefix.size(), dashprefix) == 0;
+    }
+
+    if(selector.matchType == AttributeSelector::MatchType::StartsWith)
+        return value.size() >= selector.value.size() && value.compare(0, selector.value.size(), selector.value) == 0;
+
+    if(selector.matchType == AttributeSelector::MatchType::EndsWith)
+        return value.size() >= selector.value.size() && value.compare(value.size() - selector.value.size(), selector.value.size(), selector.value) == 0;
+
+    if(selector.matchType == AttributeSelector::MatchType::Contains)
+        return value.find(selector.value) != std::string::npos;
+
+    return false;
 }
 
 static inline void parseStyle(const std::string& string, Element* element)

@@ -61,8 +61,10 @@ void PropertyList::add(const Property& property)
 
 void PropertyList::add(const PropertyList& properties)
 {
-    for(auto& property : properties.m_properties)
-        add(property);
+    auto it = properties.m_properties.begin();
+    auto end = properties.m_properties.end();
+    for(;it != end;++it)
+        add(*it);
 }
 
 Element::Element(ElementId id)
@@ -82,7 +84,7 @@ const std::string& Element::get(PropertyId id) const
 
 const std::string& Element::find(PropertyId id) const
 {
-    auto& value = get(id);
+    auto& value = properties.get(id);
     if(value.empty() || value.compare("inherit") == 0)
         return parent ? parent->find(id) : KEmptyString;
     return value;
