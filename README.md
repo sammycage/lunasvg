@@ -7,7 +7,8 @@
 </div>
 <br>
 <p align="center">
-    <img src="https://dev.w3.org/SVG/tools/svgweb/samples/svg-files/cartman.svg">
+    <img height="480" src="https://dev.w3.org/SVG/tools/svgweb/samples/svg-files/cartman.svg">
+    <br>
     <a href="https://github.com/sammycage/lunasvg/releases">
         <img src="https://img.shields.io/badge/Version-2.1.5-orange.svg">
     </a>
