@@ -123,9 +123,7 @@ public:
     PropertyList() = default;
 
     void set(PropertyId id, const std::string& value, int specificity);
-    const std::string& get(PropertyId id) const;
-    bool has(PropertyId id) const;
-    Property* find(PropertyId id) const;
+    Property* get(PropertyId id) const;
 
     void add(const Property& property);
     void add(const PropertyList& properties);

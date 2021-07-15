@@ -4,7 +4,8 @@
 
 namespace lunasvg {
 
-static const std::string KEmptyString;
+static const std::string EmptyString;
+static const std::string InheritString{"inherit"};
 
 Property::Property(PropertyId id, const std::string& value, int specificity)
     : id(id), value(value), specificity(specificity)
@@ -13,7 +14,7 @@ Property::Property(PropertyId id, const std::string& value, int specificity)
 
 void PropertyList::set(PropertyId id, const std::string& value, int specificity)
 {
-    auto property = find(id);
+    auto property = get(id);
     if(property == nullptr)
     {
         m_properties.emplace_back(id, value, specificity);
@@ -27,21 +28,7 @@ void PropertyList::set(PropertyId id, const std::string& value, int specificity)
     property->value = value;
 }
 
-const std::string& PropertyList::get(PropertyId id) const
-{
-    auto property = find(id);
-    if(property == nullptr)
-        return KEmptyString;
-
-    return property->value;
-}
-
-bool PropertyList::has(PropertyId id) const
-{
-    return find(id);
-}
-
-Property* PropertyList::find(PropertyId id) const
+Property* PropertyList::get(PropertyId id) const
 {
     auto size = m_properties.size();
     for(std::size_t i = 0;i < size;i++)
@@ -79,20 +66,30 @@ void Element::set(PropertyId id, const std::string& value, int specificity)
 
 const std::string& Element::get(PropertyId id) const
 {
-    return properties.get(id);
+    auto property = properties.get(id);
+    if(property == nullptr)
+        return EmptyString;
+
+    return property->value;
 }
 
 const std::string& Element::find(PropertyId id) const
 {
-    auto& value = properties.get(id);
-    if(value.empty() || value.compare("inherit") == 0)
-        return parent ? parent->find(id) : KEmptyString;
-    return value;
+    auto element = this;
+    while(element)
+    {
+        auto& value = element->get(id);
+        if(!value.empty() && value != InheritString)
+            return value;
+        element = element->parent;
+    }
+
+    return EmptyString;
 }
 
 bool Element::has(PropertyId id) const
 {
-    return properties.has(id);
+    return properties.get(id);
 }
 
 Element* Element::previousSibling() const
