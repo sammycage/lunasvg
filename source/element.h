@@ -176,10 +176,9 @@ public:
 
     Element* previousSibling() const;
     Element* nextSibling() const;
-
     Node* addChild(std::unique_ptr<Node> child);
-    Rect nearestViewBox() const;
     void layoutChildren(LayoutContext* context, LayoutContainer* current) const;
+    Rect currentViewport() const;
 
     template<typename T>
     void transverse(T callback)

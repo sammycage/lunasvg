@@ -574,9 +574,9 @@ double Length::value(const Element* element, LengthMode mode) const
 {
     if(m_units == LengthUnits::Percent)
     {
-        auto viewBox = element->nearestViewBox();
-        auto w = viewBox.w;
-        auto h = viewBox.h;
+        auto viewport = element->currentViewport();
+        auto w = viewport.w;
+        auto h = viewport.h;
         auto max = (mode == LengthMode::Width) ? w : (mode == LengthMode::Height) ? h : std::sqrt(w*w+h*h) / sqrt2;
         return m_value * max / 100.0;
     }

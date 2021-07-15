@@ -54,6 +54,17 @@ void PropertyList::add(const PropertyList& properties)
         add(*it);
 }
 
+void Node::layout(LayoutContext*, LayoutContainer*) const
+{
+}
+
+std::unique_ptr<Node> TextNode::clone() const
+{
+    auto node = std::make_unique<TextNode>();
+    node->text = text;
+    return std::move(node);
+}
+
 Element::Element(ElementId id)
     : id(id)
 {
@@ -143,10 +154,21 @@ Node* Element::addChild(std::unique_ptr<Node> child)
     return &*children.back();
 }
 
-Rect Element::nearestViewBox() const
+void Element::layoutChildren(LayoutContext* context, LayoutContainer* current) const
+{
+    for(auto& child : children)
+        child->layout(context, current);
+}
+
+Rect Element::currentViewport() const
 {
     if(parent == nullptr)
+    {
+        auto element = static_cast<const SVGElement*>(this);
+        if(element->has(PropertyId::ViewBox))
+            return element->viewBox(); 
         return Rect{0, 0, 512, 512};
+    }
 
     if(parent->id == ElementId::Svg)
     {
@@ -154,7 +176,7 @@ Rect Element::nearestViewBox() const
         if(element->has(PropertyId::ViewBox))
             return element->viewBox();
 
-        LengthContext lengthContext(this);
+        LengthContext lengthContext(element);
         auto _x = lengthContext.valueForLength(element->x(), LengthMode::Width);
         auto _y = lengthContext.valueForLength(element->y(), LengthMode::Height);
         auto _w = lengthContext.valueForLength(element->width(), LengthMode::Width);
@@ -162,24 +184,7 @@ Rect Element::nearestViewBox() const
         return Rect{_x, _y, _w, _h};
     }
 
-    return parent->nearestViewBox();
-}
-
-void Element::layoutChildren(LayoutContext* context, LayoutContainer* current) const
-{
-    for(auto& child : children)
-        child->layout(context, current);
-}
-
-void Node::layout(LayoutContext*, LayoutContainer*) const
-{
-}
-
-std::unique_ptr<Node> TextNode::clone() const
-{
-    auto node = std::make_unique<TextNode>();
-    node->text = text;
-    return std::move(node);
+    return parent->currentViewport();
 }
 
 } // namespace lunasvg
