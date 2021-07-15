@@ -1,26 +1,10 @@
-<div align="center">
-    <span align="center">
-        <img height="128" class="center" src="https://github.com/sammycage/lunasvg/blob/master/luna.png" alt="Icon">
-    </span>
-    <h1 align="center">LunaSVG</h1>
-    <h3 align="center">LunaSVG is a standalone SVG rendering library in C++</h3>
-</div>
-<br>
-<p align="center">
-    <img height="480" src="https://dev.w3.org/SVG/tools/svgweb/samples/svg-files/cartman.svg">
-    <br>
-    <a href="https://github.com/sammycage/lunasvg/releases">
-        <img src="https://img.shields.io/badge/Version-2.1.5-orange.svg">
-    </a>
-    <a href="https://github.com/sammycage/lunasvg/blob/master/LICENSE">
-        <img src="https://img.shields.io/badge/License-MIT-blue.svg">
-    </a>
-    <a href="https://github.com/sammycage/lunasvg/actions">
-        <img src="https://github.com/sammycage/lunasvg/actions/workflows/ci.yml/badge.svg">
-    </a>
-    <br>
-    <a href="https://github.com/sammycage/lunasvg/issues/new">Report a problem!</a>
-</p>
+[![Releases](https://img.shields.io/badge/Version-2.1.5-orange.svg)](https://github.com/sammycage/lunasvg/releases)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/sammycage/lunasvg/blob/master/LICENSE)
+[![Build Status](https://github.com/sammycage/lunasvg/actions/workflows/ci.yml/badge.svg)](https://github.com/sammycage/lunasvg/actions)
+
+# LunaSVG - SVG rendering library in C++
+
+![LunaSVG](https://github.com/sammycage/lunasvg/blob/master/luna.png)
 
 ## Example
 
@@ -86,8 +70,17 @@ Run Demo.
 svg2png [filename] [resolution] [bgColor]
 ```
 
-## Support
+## Projects Using LunaSVG
 
-If you like the work lunasvg is doing please consider a small donation:
+- [OpenSiv3D](https://github.com/Siv3D/OpenSiv3D)
+- [PICsimLab](https://github.com/lcgamboa/picsimlab)
+- [MoneyManagerEx](https://github.com/moneymanagerex/moneymanagerex)
+- [RmlUi](https://github.com/mikke89/RmlUi)
 
-<a href="https://www.buymeacoffee.com/sammycage"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=sammycage&button_colour=FFDD00&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=ffffff"></a>
+## Support Me
+
+If you like the work lunasvg is doing please consider a small donation :
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/sammycage)
+[![Donate](https://img.shields.io/badge/Donate-BuyMeACoffee-yellow.svg)](https://www.buymeacoffee.com/sammycage)
+[![Sponsor](https://img.shields.io/badge/Sponsor-Patreon-orange.svg)](https://patreon.com/sammycage)
