@@ -57,7 +57,7 @@ void UseElement::layout(LayoutContext* context, LayoutContainer* current) const
         return;
 
     auto ref = context->getElementById(href());
-    if(ref == nullptr || (current->id == LayoutId::ClipPath && !ref->isGeometry()))
+    if(ref == nullptr || context->hasReference(ref) || (current->id == LayoutId::ClipPath && !ref->isGeometry()))
         return;
 
     auto group = std::make_unique<GElement>();
@@ -87,7 +87,9 @@ void UseElement::layout(LayoutContext* context, LayoutContainer* current) const
         group->addChild(ref->clone());
     }
 
+    context->addReference(ref);
     group->layout(context, current);
+    context->removeReference(ref);
 }
 
 std::unique_ptr<Node> UseElement::clone() const

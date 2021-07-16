@@ -347,6 +347,9 @@ std::string PatternElement::href() const
 
 std::unique_ptr<LayoutObject> PatternElement::getPainter(LayoutContext* context) const
 {
+    if(context->hasReference(this))
+        return nullptr;
+
     PatternAttributes attributes;
     std::set<const PatternElement*> processedPatterns;
     const PatternElement* current = this;
@@ -402,7 +405,10 @@ std::unique_ptr<LayoutObject> PatternElement::getPainter(LayoutContext* context)
     pattern->y = lengthContext.valueForLength(attributes.y(), LengthMode::Height);
     pattern->width = lengthContext.valueForLength(attributes.width(), LengthMode::Width);
     pattern->height = lengthContext.valueForLength(attributes.height(), LengthMode::Height);
+
+    context->addReference(this);
     element->layoutChildren(context, pattern.get());
+    context->removeReference(this);
 
     return std::move(pattern);
 }

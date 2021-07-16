@@ -47,6 +47,11 @@ Units MaskElement::maskContentUnits() const
 
 std::unique_ptr<LayoutMask> MaskElement::getMasker(LayoutContext* context) const
 {
+    auto w = this->width();
+    auto h = this->height();
+    if(w.isZero() || h.isZero() || context->hasReference(this))
+        return nullptr;
+
     auto masker = std::make_unique<LayoutMask>();
     masker->units = maskUnits();
     masker->contentUnits = maskContentUnits();
@@ -59,7 +64,11 @@ std::unique_ptr<LayoutMask> MaskElement::getMasker(LayoutContext* context) const
     masker->y = lengthContext.valueForLength(y(), LengthMode::Height);
     masker->width = lengthContext.valueForLength(width(), LengthMode::Width);
     masker->height = lengthContext.valueForLength(height(), LengthMode::Height);
+
+    context->addReference(this);
     layoutChildren(context, masker.get());
+    context->removeReference(this);
+
     return masker;
 }
 

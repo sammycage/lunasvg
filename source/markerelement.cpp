@@ -59,6 +59,9 @@ PreserveAspectRatio MarkerElement::preserveAspectRatio() const
 
 std::unique_ptr<LayoutMarker> MarkerElement::getMarker(LayoutContext* context) const
 {
+    if(context->hasReference(this))
+        return nullptr;
+
     LengthContext lengthContext(this);
     auto _refX = lengthContext.valueForLength(refX(), LengthMode::Width);
     auto _refY = lengthContext.valueForLength(refY(), LengthMode::Height);
@@ -78,7 +81,11 @@ std::unique_ptr<LayoutMarker> MarkerElement::getMarker(LayoutContext* context) c
     marker->opacity = opacity();
     marker->masker = context->getMasker(mask());
     marker->clipper = context->getClipper(clip_path());
+
+    context->addReference(this);
     layoutChildren(context, marker.get());
+    context->removeReference(this);
+
     return marker;
 }
 

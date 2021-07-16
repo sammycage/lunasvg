@@ -6,6 +6,7 @@
 
 #include <list>
 #include <map>
+#include <set>
 
 namespace lunasvg {
 
@@ -355,10 +356,15 @@ public:
     StrokeData strokeData(const StyledElement* element);
     MarkerData markerData(const GeometryElement* element, const Path& path);
 
+    void addReference(const Element* element);
+    void removeReference(const Element* element);
+    bool hasReference(const Element* element) const;
+
 private:
     const ParseDocument* m_document;
     LayoutRoot* m_root;
     std::map<std::string, LayoutObject*> m_resourcesCache;
+    std::set<const Element*> m_references;
 };
 
 } // namespace lunasvg

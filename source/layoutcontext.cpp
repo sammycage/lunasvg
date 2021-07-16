@@ -733,4 +733,22 @@ MarkerData LayoutContext::markerData(const GeometryElement* element, const Path&
     return markerData;
 }
 
+void LayoutContext::addReference(const Element* element)
+{
+    m_references.insert(element);
+}
+
+void LayoutContext::removeReference(const Element* element)
+{
+    m_references.erase(element);
+}
+
+bool LayoutContext::hasReference(const Element* element) const
+{
+    auto it = m_references.find(element);
+    if(it == m_references.end())
+        return false;
+    return true;
+}
+
 } // namespace lunasvg

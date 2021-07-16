@@ -17,11 +17,18 @@ Units ClipPathElement::clipPathUnits() const
 
 std::unique_ptr<LayoutClipPath> ClipPathElement::getClipper(LayoutContext* context) const
 {
+    if(context->hasReference(this))
+        return nullptr;
+
     auto clipper = std::make_unique<LayoutClipPath>();
     clipper->units = clipPathUnits();
     clipper->transform = transform();
     clipper->clipper = context->getClipper(clip_path());
+
+    context->addReference(this);
     layoutChildren(context, clipper.get());
+    context->removeReference(this);
+
     return clipper;
 }
 
