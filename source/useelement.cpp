@@ -57,7 +57,7 @@ void UseElement::layout(LayoutContext* context, LayoutContainer* current) const
         return;
 
     auto ref = context->getElementById(href());
-    if(ref == nullptr)
+    if(ref == nullptr || (current->id == LayoutId::ClipPath && !ref->isGeometry()))
         return;
 
     auto group = std::make_unique<GElement>();
