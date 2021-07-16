@@ -1467,6 +1467,107 @@ bool RuleMatchContext::attributeSelectorMatch(const AttributeSelector& selector,
     return false;
 }
 
+static inline void encodeUtf8(unsigned int ch, std::string& value)
+{
+    char c[5] = {0, 0, 0, 0, 0};
+    if(ch < 0x80)
+    {
+        c[1] = 0;
+        c[0] = ch;
+    }
+    else if(ch < 0x800)
+    {
+        c[2] = 0;
+        c[1] = (ch & 0x3F) | 0x80;
+        ch >>= 6;
+        c[0] = ch | 0xC0;
+    }
+    else if(ch < 0x10000)
+    {
+        c[3] = 0;
+        c[2] = (ch & 0x3F) | 0x80;
+        ch >>= 6;
+        c[1] = (ch & 0x3F) | 0x80;
+        ch >>= 6;
+        c[0] = ch | 0xE0;
+    }
+    else if(ch < 200000)
+    {
+        c[4] = 0;
+        c[3] = (ch & 0x3F) | 0x80;
+        ch >>= 6;
+        c[2] = (ch & 0x3F) | 0x80;
+        ch >>= 6;
+        c[1] = (ch & 0x3F) | 0x80;
+        ch >>= 6;
+        c[0] = ch | 0xF0;
+    }
+
+    value.append(c);
+}
+
+static const std::map<std::string, unsigned int> entitymap = {
+    {"amp", 38},
+    {"lt", 60},
+    {"gt", 62},
+    {"quot", 34},
+    {"apos", 39},
+};
+
+static inline bool decodeText(const char* ptr, const char* end, std::string& value)
+{
+    value.clear();
+    while(ptr < end)
+    {
+        auto ch = *ptr;
+        ++ptr;
+        if(ch != '&')
+        {
+            value.push_back(ch);
+            continue;
+        }
+
+        if(Utils::skipDesc(ptr, end, '#'))
+        {
+            int base = 10;
+            if(Utils::skipDesc(ptr, end, 'x'))
+                base = 16;
+
+            unsigned int codepoint;
+            if(!Utils::parseInteger(ptr, end, codepoint, base))
+                return false;
+            encodeUtf8(codepoint, value);
+        }
+        else
+        {
+            std::string name;
+            if(!Utils::readUntil(ptr, end, ';', name))
+                return false;
+            auto it = entitymap.find(name);
+            if(it == entitymap.end())
+                return false;
+            encodeUtf8(it->second, value);
+        }
+
+        if(ptr >= end || *ptr != ';')
+            return false;
+        ++ptr;
+    }
+
+    return true;
+}
+
+static inline void removeComments(std::string& value)
+{
+    auto start = value.find("/*");
+    while(start != std::string::npos)
+    {
+        auto end = value.find("*/", start + 2);
+        value.erase(start, end - start + 2);
+        start = value.find("/*");
+    }
+}
+
 static inline void parseStyle(const std::string& string, Element* element)
 {
     auto ptr = string.data();
@@ -1562,15 +1663,25 @@ bool ParseDocument::parse(const char* data, std::size_t size)
     std::string name;
     std::string value;
     int ignoring = 0;
+
+    auto handle_text = [&](const char* start, const char* end) {
+        if(ignoring > 0 || current == nullptr || current->id != ElementId::Style)
+            return;
+
+        decodeText(start, end, value);
+        removeComments(value);
+        cssparser.parseMore(value);
+    };
+
     while(ptr < end)
     {
-        if(!Utils::readUntil(ptr, end, '<', value))
+        auto start = ptr;
+        if(!Utils::skipUntil(ptr, end, '<'))
             break;
 
-        if(ignoring == 0 && current && current->id == ElementId::Style)
-            cssparser.parseMore(value);
+        handle_text(start, ptr);
+        ptr += 1;
 
-        ++ptr;
         if(ptr < end && *ptr == '/')
         {
             if(current == nullptr && ignoring == 0)
@@ -1610,21 +1721,22 @@ bool ParseDocument::parse(const char* data, std::size_t size)
             ++ptr;
             if(Utils::skipDesc(ptr, end, "--"))
             {
+                start = ptr;
                 if(!Utils::skipUntil(ptr, end, "-->"))
                     return false;
 
+                handle_text(start, ptr);
                 ptr += 3;
                 continue;
             }
 
             if(Utils::skipDesc(ptr, end, "[CDATA["))
             {
-                if(!Utils::readUntil(ptr, end, "]]>", value))
+                start = ptr;
+                if(!Utils::skipUntil(ptr, end, "]]>"))
                     return false;
 
-                if(ignoring == 0 && current && current->id == ElementId::Style)
-                    cssparser.parseMore(value);
-
+                handle_text(start, ptr);
                 ptr += 3;
                 continue;
             }
@@ -1704,18 +1816,28 @@ bool ParseDocument::parse(const char* data, std::size_t size)
             auto quote = *ptr;
             ++ptr;
             Utils::skipWs(ptr, end);
-            if(!Utils::readUntil(ptr, end, quote, value))
+            start = ptr;
+            while(ptr < end && *ptr != quote)
+                ++ptr;
+
+            if(ptr >= end || *ptr != quote)
                 return false;
 
             auto id = element ? propertyId(name) : PropertyId::Unknown;
             if(id != PropertyId::Unknown)
             {
-                if(id == PropertyId::Id)
-                    m_idCache.emplace(value, element);
+                decodeText(start, Utils::rtrim(start, ptr), value);
                 if(id == PropertyId::Style)
+                {
+                    removeComments(value);
                     parseStyle(value, element);
+                }
                 else
+                {
+                    if(id == PropertyId::Id)
+                        m_idCache.emplace(value, element);
                     element->set(id, value, 0x1);
+                }
             }
 
             ++ptr;
