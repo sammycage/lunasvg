@@ -739,11 +739,14 @@ Paint Parser::parsePaint(const std::string& string, const StyledElement* element
     if(!Utils::skipDesc(ptr, end, "url(#"))
         return parseColor(string, element, defaultValue);
 
-    std::string value;
-    if(!Utils::readUntil(ptr, end, ')', value))
+    std::string ref;
+    if(!Utils::readUntil(ptr, end, ')', ref))
         return defaultValue;
 
-    return value;
+    std::string fallback{ptr, end};
+    if(fallback.empty())
+        return Paint{ref, defaultValue};
+    return Paint{ref, Parser::parseColor(fallback, element, defaultValue)};
 }
 
 WindRule Parser::parseWindRule(const std::string& string)

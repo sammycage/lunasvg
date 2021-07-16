@@ -86,7 +86,7 @@ class Paint
 public:
     Paint() = default;
     Paint(const Color& color);
-    Paint(const std::string& ref);
+    Paint(const std::string& ref, const Color& color);
 
     const Color& color() const { return m_color; }
     const std::string& ref() const { return m_ref; }

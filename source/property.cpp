@@ -23,8 +23,8 @@ Paint::Paint(const Color& color)
 {
 }
 
-Paint::Paint(const std::string& ref)
-    : m_ref(ref)
+Paint::Paint(const std::string& ref, const Color& color)
+    : m_ref(ref), m_color(color)
 {
 }
 
