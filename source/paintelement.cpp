@@ -47,11 +47,13 @@ GradientStops GradientElement::buildGradientStops() const
     double prevOffset = 0.0;
     for(auto& child : children)
     {
+        if(child->isText())
+            continue;
         auto element = static_cast<Element*>(child.get());
-        if(child->isText() || element->id != ElementId::Stop)
+        if(element->id != ElementId::Stop)
             continue;
         auto stop = static_cast<StopElement*>(element);
-        auto offset = std::min(std::max(prevOffset, stop->offset()), 1.0);
+        auto offset = std::max(prevOffset, stop->offset());
         prevOffset = offset;
         gradientStops.emplace_back(offset, stop->stopColorWithOpacity());
     }

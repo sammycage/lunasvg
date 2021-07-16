@@ -124,7 +124,6 @@ public:
 
     void set(PropertyId id, const std::string& value, int specificity);
     Property* get(PropertyId id) const;
-
     void add(const Property& property);
     void add(const PropertyList& properties);
 
@@ -143,6 +142,8 @@ public:
     virtual ~Node() = default;
 
     virtual bool isText() const { return false; }
+    virtual bool isPaint() const { return false; }
+    virtual bool isGeometry() const { return false; }
     virtual void layout(LayoutContext*, LayoutContainer*) const;
     virtual std::unique_ptr<Node> clone() const = 0;
 

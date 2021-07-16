@@ -5,13 +5,13 @@
 
 namespace lunasvg {
 
-const Color Color::Black = {0, 0, 0, 1};
-const Color Color::White = {1, 1, 1, 1};
-const Color Color::Red = {1, 0, 0, 1};
-const Color Color::Green = {0, 1, 0, 1};
-const Color Color::Blue = {0, 0, 1, 1};
-const Color Color::Yellow = {1, 1, 0, 1};
-const Color Color::Transparent = {0, 0, 0, 0};
+const Color Color::Black{0, 0, 0, 1};
+const Color Color::White{1, 1, 1, 1};
+const Color Color::Red{1, 0, 0, 1};
+const Color Color::Green{0, 1, 0, 1};
+const Color Color::Blue{0, 0, 1, 1};
+const Color Color::Yellow{1, 1, 0, 1};
+const Color Color::Transparent{0, 0, 0, 0};
 
 Color::Color(double r, double g, double b, double a)
     : r(r), g(g), b(b), a(a)
@@ -33,8 +33,8 @@ Point::Point(double x, double y)
 {
 }
 
-const Rect Rect::Empty = {0, 0, 0, 0};
-const Rect Rect::Invalid = {0, 0, -1, -1};
+const Rect Rect::Empty{0, 0, 0, 0};
+const Rect Rect::Invalid{0, 0, -1, -1};
 
 Rect::Rect(double x, double y, double w, double h)
     : x(x), y(y), w(w), h(h)

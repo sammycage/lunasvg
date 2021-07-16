@@ -490,6 +490,7 @@ LayoutObject* LayoutContext::getResourcesById(const std::string& id) const
     auto it = m_resourcesCache.find(id);
     if(it == m_resourcesCache.end())
         return nullptr;
+
     return it->second;
 }
 
@@ -563,7 +564,7 @@ LayoutObject* LayoutContext::getPainter(const std::string& id)
         return ref;
 
     auto element = getElementById(id);
-    if(element == nullptr || !(element->id == ElementId::LinearGradient || element->id == ElementId::RadialGradient || element->id == ElementId::Pattern || element->id == ElementId::SolidColor))
+    if(element == nullptr || !element->isPaint())
         return nullptr;
 
     auto painter = static_cast<PaintElement*>(element)->getPainter(this);

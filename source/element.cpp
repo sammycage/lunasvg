@@ -4,9 +4,6 @@
 
 namespace lunasvg {
 
-static const std::string EmptyString;
-static const std::string InheritString{"inherit"};
-
 Property::Property(PropertyId id, const std::string& value, int specificity)
     : id(id), value(value), specificity(specificity)
 {
@@ -75,6 +72,7 @@ void Element::set(PropertyId id, const std::string& value, int specificity)
     properties.set(id, value, specificity);
 }
 
+static const std::string EmptyString;
 const std::string& Element::get(PropertyId id) const
 {
     auto property = properties.get(id);
@@ -86,6 +84,7 @@ const std::string& Element::get(PropertyId id) const
 
 const std::string& Element::find(PropertyId id) const
 {
+    static const std::string InheritString{"inherit"};
     auto element = this;
     while(element)
     {
