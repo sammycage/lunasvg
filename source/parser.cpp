@@ -1171,11 +1171,17 @@ bool CSSParser::parseMore(const std::string& value)
 
 bool CSSParser::parseRule(const char*& ptr, const char* end, Rule& rule) const
 {
-    if(!parseSelectors(ptr, end, rule.selectors)
-        || !Utils::skipDesc(ptr, end, '{')
-        || !Utils::skipWs(ptr, end)
-        || !parseDeclarations(ptr, end, rule.declarations)
-        || !Utils::skipDesc(ptr, end, '}'))
+    if(!parseSelectors(ptr, end, rule.selectors))
+        return false;
+
+    if(!Utils::skipDesc(ptr, end, '{'))
+        return false;
+
+    Utils::skipWs(ptr, end);
+    if(!parseDeclarations(ptr, end, rule.declarations))
+        return false;
+
+    if(!Utils::skipDesc(ptr, end, '}'))
         return false;
 
     return true;
@@ -1187,6 +1193,7 @@ bool CSSParser::parseSelectors(const char*& ptr, const char* end, SelectorList& 
     if(!parseSelector(ptr, end, selector))
         return false;
     selectors.push_back(selector);
+
     while(Utils::skipDesc(ptr, end, ','))
     {
         Utils::skipWs(ptr, end);
@@ -1232,6 +1239,7 @@ bool CSSParser::parseDeclarations(const char*& ptr, const char* end, PropertyLis
     return true;
 }
 
+#define IS_SELECTOR_STARTNAMECHAR(c) (IS_CSS_STARTNAMECHAR(c) || (c) == '*' || (c) == '#' || (c) == '.' || (c) == '[' || (c) == ':')
 bool CSSParser::parseSelector(const char*& ptr, const char* end, Selector& selector) const
 {
     do {
@@ -1245,16 +1253,13 @@ bool CSSParser::parseSelector(const char*& ptr, const char* end, Selector& selec
 
         selector.simpleSelectors.push_back(simpleSelector);
         Utils::skipWs(ptr, end);
-    } while(ptr < end && !(*ptr == ',' || *ptr == '{'));
+    } while(ptr < end && IS_SELECTOR_STARTNAMECHAR(*ptr));
 
     return true;
 }
 
 bool CSSParser::parseSimpleSelector(const char*& ptr, const char* end, SimpleSelector& simpleSelector) const
 {
-    if(ptr >= end || !(IS_ALPHA(*ptr) || *ptr == '_' || *ptr == '*' || *ptr == '#' || *ptr == '.' || *ptr == '[' || *ptr == ':'))
-        return false;
-
     std::string name;
     if(Utils::skipDesc(ptr, end, '*'))
         simpleSelector.id = ElementId::Star;
@@ -1350,14 +1355,17 @@ bool CSSParser::parseSimpleSelector(const char*& ptr, const char* end, SimpleSel
                 pseudo.type = PseudoClass::Type::LastOfType;
             else if(name.compare("only-of-type") == 0)
                 pseudo.type = PseudoClass::Type::OnlyOfType;
-
             if(pseudo.type == PseudoClass::Type::Not)
             {
-                if(!Utils::skipDesc(ptr, end, '(')
-                    || !Utils::skipWs(ptr, end)
-                    || !parseSelectors(ptr, end, pseudo.notSelectors)
-                    || !Utils::skipWs(ptr, end)
-                    || !Utils::skipDesc(ptr, end, ')'))
+                if(!Utils::skipDesc(ptr, end, '('))
+                    return false;
+
+                Utils::skipWs(ptr, end);
+                if(!parseSelectors(ptr, end, pseudo.notSelectors))
+                    return false;
+
+                Utils::skipWs(ptr, end);
+                if(!Utils::skipDesc(ptr, end, ')'))
                     return false;
             }
 
