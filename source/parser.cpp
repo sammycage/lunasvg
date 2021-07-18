@@ -1163,6 +1163,7 @@ bool CSSParser::parseMore(const std::string& value)
         if(!parseRule(ptr, end, rule))
             return false;
         m_rules.push_back(rule);
+        Utils::skipWs(ptr, end);
     }
 
     return true;
@@ -1170,31 +1171,64 @@ bool CSSParser::parseMore(const std::string& value)
 
 bool CSSParser::parseRule(const char*& ptr, const char* end, Rule& rule) const
 {
+    if(!parseSelectors(ptr, end, rule.selectors)
+        || !Utils::skipDesc(ptr, end, '{')
+        || !Utils::skipWs(ptr, end)
+        || !parseDeclarations(ptr, end, rule.declarations)
+        || !Utils::skipDesc(ptr, end, '}'))
+        return false;
+
+    return true;
+}
+
+bool CSSParser::parseSelectors(const char*& ptr, const char* end, SelectorList& selectors) const
+{
     Selector selector;
     if(!parseSelector(ptr, end, selector))
         return false;
-    rule.selectors.push_back(selector);
-
+    selectors.push_back(selector);
     while(Utils::skipDesc(ptr, end, ','))
     {
         Utils::skipWs(ptr, end);
         Selector selector;
         if(!parseSelector(ptr, end, selector))
             return false;
-        rule.selectors.push_back(selector);
+        selectors.push_back(selector);
     }
 
-    if(!Utils::skipDesc(ptr, end, '{'))
-        return false;
+    return true;
+}
 
-    Utils::skipWs(ptr, end);
-    if(!parseDeclarations(ptr, end, rule.declarations))
-        return false;
+bool CSSParser::parseDeclarations(const char*& ptr, const char* end, PropertyList& declarations) const
+{
+    std::string name;
+    std::string value;
+    do {
+        if(!readCSSIdentifier(ptr, end, name))
+            return false;
+        Utils::skipWs(ptr, end);
+        if(!Utils::skipDesc(ptr, end, ':'))
+            return false;
+        Utils::skipWs(ptr, end);
+        auto start = ptr;
+        while(ptr < end && !(*ptr == '!' || *ptr == ';' || *ptr == '}'))
+            ++ptr;
+        value.assign(start, Utils::rtrim(start, ptr));
+        int specificity = 0x10;
+        if(Utils::skipDesc(ptr, end, '!'))
+        {
+            if(!Utils::skipDesc(ptr, end, "important"))
+                return false;
+            specificity = 0x1000;
+            Utils::skipWs(ptr, end);
+        }
 
-    if(!Utils::skipDesc(ptr, end, '}'))
-        return false;
+        auto id = cssPropertyId(name);
+        if(id != PropertyId::Unknown)
+            declarations.set(id, value, specificity);
+        Utils::skipWsDelimiter(ptr, end, ';');
+    } while(ptr < end && *ptr != '}');
 
-    Utils::skipWs(ptr, end);
     return true;
 }
 
@@ -1218,7 +1252,7 @@ bool CSSParser::parseSelector(const char*& ptr, const char* end, Selector& selec
 
 bool CSSParser::parseSimpleSelector(const char*& ptr, const char* end, SimpleSelector& simpleSelector) const
 {
-    if(ptr >= end || !(IS_ALPHA(*ptr) || *ptr == '_' || *ptr == '*' || *ptr == '#' || *ptr == '.' || *ptr == '['))
+    if(ptr >= end || !(IS_ALPHA(*ptr) || *ptr == '_' || *ptr == '*' || *ptr == '#' || *ptr == '.' || *ptr == '[' || *ptr == ':'))
         return false;
 
     std::string name;
@@ -1293,6 +1327,44 @@ bool CSSParser::parseSimpleSelector(const char*& ptr, const char* end, SimpleSel
             continue;
         }
 
+        if(Utils::skipDesc(ptr, end, ':'))
+        {
+            if(!readCSSIdentifier(ptr, end, name))
+                return false;
+            PseudoClass pseudo;
+            if(name.compare("empty") == 0)
+                pseudo.type = PseudoClass::Type::Empty;
+            else if(name.compare("root") == 0)
+                pseudo.type = PseudoClass::Type::Root;
+            else if(name.compare("not") == 0)
+                pseudo.type = PseudoClass::Type::Not;
+            else if(name.compare("first-child") == 0)
+                pseudo.type = PseudoClass::Type::FirstChild;
+            else if(name.compare("last-child") == 0)
+                pseudo.type = PseudoClass::Type::LastChild;
+            else if(name.compare("only-child") == 0)
+                pseudo.type = PseudoClass::Type::OnlyChild;
+            else if(name.compare("first-of-type") == 0)
+                pseudo.type = PseudoClass::Type::FirstOfType;
+            else if(name.compare("last-of-type") == 0)
+                pseudo.type = PseudoClass::Type::LastOfType;
+            else if(name.compare("only-of-type") == 0)
+                pseudo.type = PseudoClass::Type::OnlyOfType;
+
+            if(pseudo.type == PseudoClass::Type::Not)
+            {
+                if(!Utils::skipDesc(ptr, end, '(')
+                    || !Utils::skipWs(ptr, end)
+                    || !parseSelectors(ptr, end, pseudo.notSelectors)
+                    || !Utils::skipWs(ptr, end)
+                    || !Utils::skipDesc(ptr, end, ')'))
+                    return false;
+            }
+
+            simpleSelector.pseudoClasses.push_back(pseudo);
+            continue;
+        }
+
         break;
     }
 
@@ -1303,39 +1375,6 @@ bool CSSParser::parseSimpleSelector(const char*& ptr, const char* end, SimpleSel
         simpleSelector.combinator = SimpleSelector::Combinator::DirectAdjacent;
     else if(Utils::skipDesc(ptr, end, '~'))
         simpleSelector.combinator = SimpleSelector::Combinator::InDirectAdjacent;
-
-    return true;
-}
-
-bool CSSParser::parseDeclarations(const char*& ptr, const char* end, PropertyList& declarations) const
-{
-    std::string name;
-    std::string value;
-    do {
-        if(!readCSSIdentifier(ptr, end, name))
-            return false;
-        Utils::skipWs(ptr, end);
-        if(!Utils::skipDesc(ptr, end, ':'))
-            return false;
-        Utils::skipWs(ptr, end);
-        auto start = ptr;
-        while(ptr < end && !(*ptr == '!' || *ptr == ';' || *ptr == '}'))
-            ++ptr;
-        value.assign(start, Utils::rtrim(start, ptr));
-        int specificity = 0x10;
-        if(Utils::skipDesc(ptr, end, '!'))
-        {
-            if(!Utils::skipDesc(ptr, end, "important"))
-                return false;
-            specificity = 0x1000;
-            Utils::skipWs(ptr, end);
-        }
-
-        auto id = cssPropertyId(name);
-        if(id != PropertyId::Unknown)
-            declarations.set(id, value, specificity);
-        Utils::skipWsDelimiter(ptr, end, ';');
-    } while(ptr < end && *ptr != '}');
 
     return true;
 }
@@ -1413,6 +1452,10 @@ bool RuleMatchContext::simpleSelectorMatch(const SimpleSelector& selector, const
         if(!attributeSelectorMatch(attributeSelector, element))
             return false;
 
+    for(auto& pseudoClass : selector.pseudoClasses)
+        if(!pseudoClassMatch(pseudoClass, element))
+            return false;
+
     return true;
 }
 
@@ -1463,6 +1506,60 @@ bool RuleMatchContext::attributeSelectorMatch(const AttributeSelector& selector,
 
     if(selector.matchType == AttributeSelector::MatchType::Contains)
         return value.find(selector.value) != std::string::npos;
+
+    return false;
+}
+
+bool RuleMatchContext::pseudoClassMatch(const PseudoClass& pseudo, const Element* element) const
+{
+    if(pseudo.type == PseudoClass::Type::Empty)
+        return element->children.empty();
+
+    if(pseudo.type == PseudoClass::Type::Root)
+        return element->parent == nullptr;
+
+    if(pseudo.type == PseudoClass::Type::Not)
+    {
+        for(auto& selector : pseudo.notSelectors)
+            if(selectorMatch(&selector, element))
+                return false;
+        return true;
+    }
+
+    if(pseudo.type == PseudoClass::Type::FirstChild)
+        return !element->previousSibling();
+
+    if(pseudo.type == PseudoClass::Type::LastChild)
+        return !element->nextSibling();
+
+    if(pseudo.type == PseudoClass::Type::OnlyChild)
+        return !(element->previousSibling() || element->nextSibling());
+
+    if(pseudo.type == PseudoClass::Type::FirstOfType)
+    {
+        auto sibling = element->previousSibling();
+        while(sibling)
+        {
+            if(sibling->id == element->id)
+                return false;
+            sibling = element->previousSibling();
+        }
+
+        return true;
+    }
+
+    if(pseudo.type == PseudoClass::Type::LastOfType)
+    {
+        auto sibling = element->nextSibling();
+        while(sibling)
+        {
+            if(sibling->id == element->id)
+                return false;
+            sibling = element->nextSibling();
+        }
+
+        return true;
+    }
 
     return false;
 }

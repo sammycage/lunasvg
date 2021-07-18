@@ -61,6 +61,8 @@ private:
     static bool parseTransform(const char*& ptr, const char* end, TransformType& type, double* values, int& count);
 };
 
+struct Selector;
+
 struct AttributeSelector
 {
     enum class MatchType
@@ -79,6 +81,28 @@ struct AttributeSelector
     MatchType matchType{MatchType::None};
 };
 
+using SelectorList = std::vector<Selector>;
+
+struct PseudoClass
+{
+    enum class Type
+    {
+        Unknown,
+        Empty,
+        Root,
+        Not,
+        FirstChild,
+        LastChild,
+        OnlyChild,
+        FirstOfType,
+        LastOfType,
+        OnlyOfType
+    };
+
+    Type type{Type::Unknown};
+    SelectorList notSelectors;
+};
+
 struct SimpleSelector
 {
     enum class Combinator
@@ -91,6 +115,7 @@ struct SimpleSelector
 
     ElementId id{ElementId::Star};
     std::vector<AttributeSelector> attributeSelectors;
+    std::vector<PseudoClass> pseudoClasses;
     Combinator combinator{Combinator::Descendant};
 };
 
@@ -102,7 +127,7 @@ struct Selector
 
 struct Rule
 {
-    std::vector<Selector> selectors;
+    SelectorList selectors;
     PropertyList declarations;
 };
 
@@ -117,6 +142,7 @@ private:
     bool selectorMatch(const Selector* selector, const Element* element) const;
     bool simpleSelectorMatch(const SimpleSelector& selector, const Element* element) const;
     bool attributeSelectorMatch(const AttributeSelector& selector, const Element* element) const;
+    bool pseudoClassMatch(const PseudoClass& pseudo, const Element* element) const;
 
 private:
     std::multimap<int, std::pair<const Selector*, const PropertyList*>, std::less<int>> m_selectors;
@@ -133,9 +159,10 @@ public:
 
 private:
     bool parseRule(const char*& ptr, const char* end, Rule& rule) const;
+    bool parseSelectors(const char*& ptr, const char* end, SelectorList& selectors) const;
+    bool parseDeclarations(const char*& ptr, const char* end, PropertyList& declarations) const;
     bool parseSelector(const char*& ptr, const char* end, Selector& selector) const;
     bool parseSimpleSelector(const char*& ptr, const char* end, SimpleSelector& simpleSelector) const;
-    bool parseDeclarations(const char*& ptr, const char* end, PropertyList& declarations) const;
 
 private:
     std::vector<Rule> m_rules;
