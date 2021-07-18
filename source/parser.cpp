@@ -1664,11 +1664,15 @@ bool ParseDocument::parse(const char* data, std::size_t size)
     std::string value;
     int ignoring = 0;
 
-    auto handle_text = [&](const char* start, const char* end) {
+    auto handle_text = [&](const char* start, const char* end, bool in_cdata) {
         if(ignoring > 0 || current == nullptr || current->id != ElementId::Style)
             return;
 
-        decodeText(start, end, value);
+        if(in_cdata)
+            value.assign(start, end);
+        else
+            decodeText(start, end, value);
+
         removeComments(value);
         cssparser.parseMore(value);
     };
@@ -1679,7 +1683,7 @@ bool ParseDocument::parse(const char* data, std::size_t size)
         if(!Utils::skipUntil(ptr, end, '<'))
             break;
 
-        handle_text(start, ptr);
+        handle_text(start, ptr, false);
         ptr += 1;
 
         if(ptr < end && *ptr == '/')
@@ -1725,7 +1729,7 @@ bool ParseDocument::parse(const char* data, std::size_t size)
                 if(!Utils::skipUntil(ptr, end, "-->"))
                     return false;
 
-                handle_text(start, ptr);
+                handle_text(start, ptr, false);
                 ptr += 3;
                 continue;
             }
@@ -1736,7 +1740,7 @@ bool ParseDocument::parse(const char* data, std::size_t size)
                 if(!Utils::skipUntil(ptr, end, "]]>"))
                     return false;
 
-                handle_text(start, ptr);
+                handle_text(start, ptr, true);
                 ptr += 3;
                 continue;
             }
