@@ -128,7 +128,7 @@ public:
     Rect& intersect(const Rect& rect);
     Rect& unite(const Rect& rect);
 
-    bool empty() const { return w <= 0.0 && h <= 0.0; }
+    bool empty() const { return w <= 0.0 || h <= 0.0; }
     bool valid() const { return w >= 0.0 && h >= 0.0; }
 
     static const Rect Empty;
