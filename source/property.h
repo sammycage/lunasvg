@@ -19,6 +19,12 @@ enum class Visibility
     Hidden
 };
 
+enum class Overflow
+{
+    Visible,
+    Hidden
+};
+
 enum class LineCap
 {
     Butt,

@@ -69,6 +69,7 @@ enum class PropertyId
     Offset,
     Opacity,
     Orient,
+    Overflow,
     PatternContentUnits,
     PatternTransform,
     PatternUnits,

@@ -36,6 +36,7 @@ public:
 
     Display display() const;
     Visibility visibility() const;
+    Overflow overflow() const;
 
     std::string clip_path() const;
     std::string mask() const;

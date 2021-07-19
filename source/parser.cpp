@@ -804,6 +804,18 @@ Visibility Parser::parseVisibility(const std::string& string)
     return Visibility::Hidden;
 }
 
+Overflow Parser::parseOverflow(const std::string& string, Overflow defaultValue)
+{
+    if(string.empty())
+        return defaultValue;
+
+    if(string.compare("visible") == 0)
+        return Overflow::Visible;
+    if(string.compare("hidden") == 0)
+        return Overflow::Hidden;
+    return defaultValue;
+}
+
 bool Parser::parseLength(const char*& ptr, const char* end, double& value, LengthUnits& units, LengthNegativeValuesMode mode)
 {
     if(!Utils::parseNumber(ptr, end, value))
@@ -1056,6 +1068,7 @@ static const std::map<std::string, PropertyId> csspropertymap = {
     {"marker-start", PropertyId::Marker_Start},
     {"mask", PropertyId::Mask},
     {"opacity", PropertyId::Opacity},
+    {"overflow", PropertyId::Overflow},
     {"solid-color", PropertyId::Solid_Color},
     {"solid-opacity", PropertyId::Solid_Opacity},
     {"stop-color", PropertyId::Stop_Color},
@@ -2024,7 +2037,7 @@ Element* ParseDocument::getElementById(const std::string& id) const
     return it->second;
 }
 
-std::unique_ptr<LayoutRoot> ParseDocument::layout() const
+std::unique_ptr<LayoutSymbol> ParseDocument::layout() const
 {
     return m_rootElement->layoutDocument(this);
 }

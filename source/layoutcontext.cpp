@@ -110,7 +110,7 @@ void LayoutClipPath::apply(RenderState& state) const
     if(clipper != nullptr)
         clipper->apply(newState);
 
-    state.canvas->blend(newState.canvas.get(), BlendMode::Dst_In, 1.0);
+    state.canvas->blend(newState.canvas.get(), newState.matrix, Rect::Invalid, BlendMode::Dst_In, 1.0);
 }
 
 LayoutMask::LayoutMask()
@@ -138,24 +138,25 @@ void LayoutMask::apply(RenderState& state) const
         masker->apply(newState);
 
     newState.canvas->luminance();
-    state.canvas->blend(newState.canvas.get(), BlendMode::Dst_In, opacity);
+    state.canvas->blend(newState.canvas.get(), newState.matrix, Rect::Invalid, BlendMode::Dst_In, opacity);
 }
 
-LayoutRoot::LayoutRoot()
-    : LayoutContainer(LayoutId::Root)
+LayoutSymbol::LayoutSymbol()
+    : LayoutContainer(LayoutId::Symbol)
 {
 }
 
-void LayoutRoot::render(RenderState& state) const
+void LayoutSymbol::render(RenderState& state) const
 {
+    BlendInfo info{clipper, masker, opacity, clip};
     RenderState newState(this, state.mode());
     newState.matrix = transform * state.matrix;
-    newState.beginGroup(state, clipper, masker, opacity);
+    newState.beginGroup(state, info);
     renderChildren(newState);
-    newState.endGroup(state, clipper, masker, opacity);
+    newState.endGroup(state, info);
 }
 
-Rect LayoutRoot::map(const Rect& rect) const
+Rect LayoutSymbol::map(const Rect& rect) const
 {
     return transform.map(rect);
 }
@@ -167,11 +168,12 @@ LayoutGroup::LayoutGroup()
 
 void LayoutGroup::render(RenderState& state) const
 {
+    BlendInfo info{clipper, masker, opacity, Rect::Invalid};
     RenderState newState(this, state.mode());
     newState.matrix = transform * state.matrix;
-    newState.beginGroup(state, clipper, masker, opacity);
+    newState.beginGroup(state, info);
     renderChildren(newState);
-    newState.endGroup(state, clipper, masker, opacity);
+    newState.endGroup(state, info);
 }
 
 Rect LayoutGroup::map(const Rect& rect) const
@@ -202,23 +204,25 @@ Transform LayoutMarker::markerTransform(const Point& origin, double angle, doubl
 
 void LayoutMarker::renderMarker(RenderState& state, const Point& origin, double angle, double strokeWidth) const
 {
-    RenderState newState(this, state.mode());
-    newState.matrix = state.matrix;
-    newState.matrix.translate(origin.x, origin.y);
+    auto matrix = state.matrix;
+    matrix.translate(origin.x, origin.y);
     if(orient.type() == MarkerOrient::Auto)
-        newState.matrix.rotate(angle);
+        matrix.rotate(angle);
     else
-        newState.matrix.rotate(orient.value());
+        matrix.rotate(orient.value());
 
     if(units == MarkerUnits::StrokeWidth)
-        newState.matrix.scale(strokeWidth, strokeWidth);
+        matrix.scale(strokeWidth, strokeWidth);
 
-    newState.matrix.translate(-refX, -refY);
-    newState.matrix.premultiply(transform);
+    matrix.translate(-refX, -refY);
+    matrix.premultiply(transform);
 
-    newState.beginGroup(state, clipper, masker, opacity);
+    BlendInfo info{clipper, masker, opacity, clip};
+    RenderState newState(this, state.mode());
+    newState.matrix = matrix;
+    newState.beginGroup(state, info);
     renderChildren(newState);
-    newState.endGroup(state, clipper, masker, opacity);
+    newState.endGroup(state, info);
 }
 
 LayoutPattern::LayoutPattern()
@@ -404,9 +408,10 @@ void LayoutShape::render(RenderState& state) const
     if(visibility == Visibility::Hidden)
         return;
 
+    BlendInfo info{clipper, masker, 1.0, Rect::Invalid};
     RenderState newState(this, state.mode());
     newState.matrix = transform * state.matrix;
-    newState.beginGroup(state, clipper, masker, 1.0);
+    newState.beginGroup(state, info);
 
     if(newState.mode() == RenderMode::Display)
     {
@@ -420,7 +425,7 @@ void LayoutShape::render(RenderState& state) const
         newState.canvas->fill(path, newState.matrix, clipRule, 1.0);
     }
 
-    newState.endGroup(state, clipper, masker, 1.0);
+    newState.endGroup(state, info);
 }
 
 Rect LayoutShape::map(const Rect& rect) const
@@ -453,29 +458,29 @@ RenderState::RenderState(const LayoutObject* object, RenderMode mode)
 {
 }
 
-void RenderState::beginGroup(RenderState& state, const LayoutClipPath* clipper, const LayoutMask* masker, double opacity)
+void RenderState::beginGroup(RenderState& state, const BlendInfo& info)
 {
-    if(clipper || (m_mode == RenderMode::Display && (masker || opacity < 1.0)))
+    if(info.clipper || info.clip.valid() || (m_mode == RenderMode::Display && (info.masker || info.opacity < 1.0)))
         canvas = Canvas::create(state.canvas->width(), state.canvas->height());
     else
         canvas = state.canvas;
 }
 
-void RenderState::endGroup(RenderState& state, const LayoutClipPath* clipper, const LayoutMask* masker, double opacity)
+void RenderState::endGroup(RenderState& state, const BlendInfo& info)
 {
     if(state.canvas == canvas)
         return;
 
-    if(clipper && (m_mode == RenderMode::Display || m_mode == RenderMode::Clipping))
-        clipper->apply(*this);
+    if(info.clipper)
+        info.clipper->apply(*this);
 
-    if(masker && m_mode == RenderMode::Display)
-        masker->apply(*this);
+    if(info.masker && m_mode == RenderMode::Display)
+        info.masker->apply(*this);
 
-    state.canvas->blend(canvas.get(), BlendMode::Src_Over, m_mode == RenderMode::Display ? opacity : 1.0);
+    state.canvas->blend(canvas.get(), matrix, info.clip, BlendMode::Src_Over, m_mode == RenderMode::Display ? info.opacity : 1.0);
 }
 
-LayoutContext::LayoutContext(const ParseDocument* document, LayoutRoot* root)
+LayoutContext::LayoutContext(const ParseDocument* document, LayoutSymbol* root)
     : m_document(document), m_root(root)
 {
 }

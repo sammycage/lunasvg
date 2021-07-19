@@ -68,8 +68,11 @@ std::unique_ptr<LayoutMarker> MarkerElement::getMarker(LayoutContext* context) c
     auto _markerWidth = lengthContext.valueForLength(markerWidth(), LengthMode::Width);
     auto _markerHeight = lengthContext.valueForLength(markerHeight(), LengthMode::Height);
 
+    auto viewBox = this->viewBox();
+    auto clipRect = viewBox.valid() ? viewBox : Rect(0, 0, _markerWidth, _markerHeight);
+
     auto preserveAspectRatio = this->preserveAspectRatio();
-    auto viewTransform = preserveAspectRatio.getMatrix(_markerWidth, _markerHeight, viewBox());
+    auto viewTransform = preserveAspectRatio.getMatrix(_markerWidth, _markerHeight, viewBox);
     viewTransform.map(_refX, _refY, &_refX, &_refY);
 
     LayoutBreaker layoutBreaker(context, this);
@@ -79,6 +82,7 @@ std::unique_ptr<LayoutMarker> MarkerElement::getMarker(LayoutContext* context) c
     marker->transform = viewTransform;
     marker->orient = orient();
     marker->units = markerUnits();
+    marker->clip = overflow() == Overflow::Hidden ? clipRect : Rect::Invalid;
     marker->opacity = opacity();
     marker->masker = context->getMasker(mask());
     marker->clipper = context->getClipper(clip_path());

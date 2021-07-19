@@ -276,6 +276,7 @@ void plutovg_paint(plutovg_t* pluto);
 void plutovg_fill_preserve(plutovg_t* pluto);
 void plutovg_stroke_preserve(plutovg_t* pluto);
 void plutovg_clip_preserve(plutovg_t* pluto);
+void plutovg_reset_clip(plutovg_t* pluto);
 
 #ifdef __cplusplus
 }

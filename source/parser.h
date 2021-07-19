@@ -52,6 +52,7 @@ public:
     static LineJoin parseLineJoin(const std::string& string);
     static Display parseDisplay(const std::string& string);
     static Visibility parseVisibility(const std::string& string);
+    static Overflow parseOverflow(const std::string& string, Overflow defaultValue);
 
 private:
     static bool parseLength(const char*& ptr, const char* end, double& value, LengthUnits& units, LengthNegativeValuesMode mode);
@@ -169,7 +170,7 @@ private:
     std::vector<Rule> m_rules;
 };
 
-class LayoutRoot;
+class LayoutSymbol;
 
 class ParseDocument
 {
@@ -181,7 +182,7 @@ public:
 
     SVGElement* rootElement() const { return m_rootElement.get(); }
     Element* getElementById(const std::string& id) const;
-    std::unique_ptr<LayoutRoot> layout() const;
+    std::unique_ptr<LayoutSymbol> layout() const;
 
 private:
     std::unique_ptr<SVGElement> m_rootElement;

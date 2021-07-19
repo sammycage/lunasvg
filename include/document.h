@@ -93,7 +93,7 @@ private:
     std::shared_ptr<Impl> m_impl;
 };
 
-class LayoutRoot;
+class LayoutSymbol;
 
 class LUNASVG_API Document
 {
@@ -230,7 +230,7 @@ public:
 private:
     Document();
 
-    std::unique_ptr<LayoutRoot> root;
+    std::unique_ptr<LayoutSymbol> root;
 };
 
 } //namespace lunasvg

@@ -12,7 +12,7 @@ namespace lunasvg {
 
 enum class LayoutId
 {
-    Root,
+    Symbol,
     Group,
     Shape,
     Mask,
@@ -99,10 +99,10 @@ public:
     const LayoutClipPath* clipper;
 };
 
-class LayoutRoot : public LayoutContainer
+class LayoutSymbol : public LayoutContainer
 {
 public:
-    LayoutRoot();
+    LayoutSymbol();
 
     void render(RenderState& state) const;
     Rect map(const Rect& rect) const;
@@ -111,6 +111,7 @@ public:
     double width;
     double height;
     Transform transform;
+    Rect clip;
     double opacity;
     const LayoutMask* masker;
     const LayoutClipPath* clipper;
@@ -145,6 +146,7 @@ public:
     Transform transform;
     Angle orient;
     MarkerUnits units;
+    Rect clip;
     double opacity;
     const LayoutMask* masker;
     const LayoutClipPath* clipper;
@@ -313,13 +315,21 @@ enum class RenderMode
     Clipping
 };
 
+struct BlendInfo
+{
+    const LayoutClipPath* clipper;
+    const LayoutMask* masker;
+    double opacity;
+    Rect clip;
+};
+
 class RenderState
 {
 public:
     RenderState(const LayoutObject* object, RenderMode mode);
 
-    void beginGroup(RenderState& state, const LayoutClipPath* clipper, const LayoutMask* masker, double opacity);
-    void endGroup(RenderState& state, const LayoutClipPath* clipper, const LayoutMask* masker, double opacity);
+    void beginGroup(RenderState& state, const BlendInfo& info);
+    void endGroup(RenderState& state, const BlendInfo& info);
 
     const LayoutObject* object() const { return m_object;}
     RenderMode mode() const { return m_mode; }
@@ -341,7 +351,7 @@ class GeometryElement;
 class LayoutContext
 {
 public:
-    LayoutContext(const ParseDocument* document, LayoutRoot* root);
+    LayoutContext(const ParseDocument* document, LayoutSymbol* root);
 
     Element* getElementById(const std::string& id) const;
     LayoutObject* getResourcesById(const std::string& id) const;
@@ -362,7 +372,7 @@ public:
 
 private:
     const ParseDocument* m_document;
-    LayoutRoot* m_root;
+    LayoutSymbol* m_root;
     std::map<std::string, LayoutObject*> m_resourcesCache;
     std::set<const Element*> m_references;
 };

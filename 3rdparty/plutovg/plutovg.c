@@ -490,3 +490,9 @@ void plutovg_clip_preserve(plutovg_t* pluto)
         plutovg_rle_rasterize(state->clippath, pluto->path, &state->matrix, &pluto->clip, NULL, state->winding);
     }
 }
+
+void plutovg_reset_clip(plutovg_t* pluto)
+{
+    plutovg_rle_destroy(pluto->state->clippath);
+    pluto->state->clippath = NULL;
+}

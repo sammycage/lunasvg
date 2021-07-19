@@ -76,7 +76,7 @@ public:
 
     void fill(const Path& path, const Transform& transform, WindRule winding, double opacity);
     void stroke(const Path& path, const Transform& transform, double width, LineCap cap, LineJoin join, double miterlimit, const DashData& dash, double opacity);
-    void blend(const Canvas* source, BlendMode mode, double opacity);
+    void blend(const Canvas* source, const Transform& transform, const Rect& clip, BlendMode mode, double opacity);
 
     void clear(unsigned int value);
     void rgba();

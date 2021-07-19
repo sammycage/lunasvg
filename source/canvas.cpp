@@ -2,6 +2,8 @@
 
 #include "plutovg.h"
 
+#include <iostream>
+
 namespace lunasvg {
 
 static plutovg_matrix_t to_plutovg_matrix(const Transform& transform);
@@ -110,13 +112,22 @@ void Canvas::stroke(const Path& path, const Transform& transform, double width, 
     plutovg_stroke(d->pluto);
 }
 
-void Canvas::blend(const Canvas* source, BlendMode mode, double opacity)
+void Canvas::blend(const Canvas* source, const Transform& transform, const Rect& clip, BlendMode mode, double opacity)
 {
+    if(clip.valid())
+    {
+        auto matrix = to_plutovg_matrix(transform);
+        plutovg_set_matrix(d->pluto, &matrix);
+        plutovg_rect(d->pluto, clip.x, clip.y, clip.w, clip.h);
+        plutovg_clip(d->pluto);
+    }
+
+    plutovg_identity_matrix(d->pluto);
     plutovg_set_source_surface(d->pluto, source->d->surface, 0, 0);
     plutovg_set_operator(d->pluto, to_plutovg_operator(mode));
     plutovg_set_opacity(d->pluto, opacity);
-    plutovg_identity_matrix(d->pluto);
     plutovg_paint(d->pluto);
+    plutovg_reset_clip(d->pluto);
 }
 
 void Canvas::clear(unsigned int value)
