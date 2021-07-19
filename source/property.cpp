@@ -609,7 +609,7 @@ PreserveAspectRatio::PreserveAspectRatio(Align align, MeetOrSlice scale)
 Transform PreserveAspectRatio::getMatrix(double width, double height, const Rect& viewBox) const
 {
     Transform matrix;
-    if(viewBox.w == 0.0 || viewBox.h == 0.0)
+    if(viewBox.empty())
         return matrix;
 
     auto sx = width / viewBox.w;
