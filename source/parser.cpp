@@ -386,7 +386,7 @@ std::string Parser::parseHref(const std::string& string)
 Rect Parser::parseViewBox(const std::string& string)
 {
     if(string.empty())
-        return Rect{};
+        return Rect::Invalid;
 
     auto ptr = string.data();
     auto end = ptr + string.size();
@@ -405,7 +405,7 @@ Rect Parser::parseViewBox(const std::string& string)
         return Rect{};
 
     if(w < 0.0 || h < 0.0)
-        return Rect{};
+        return Rect::Invalid;
 
     return Rect{x, y, w, h};
 }
