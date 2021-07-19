@@ -52,22 +52,20 @@ std::unique_ptr<LayoutMask> MaskElement::getMasker(LayoutContext* context) const
     if(w.isZero() || h.isZero() || context->hasReference(this))
         return nullptr;
 
+    LayoutBreaker layoutBreaker(context, this);
     auto masker = std::make_unique<LayoutMask>();
     masker->units = maskUnits();
     masker->contentUnits = maskContentUnits();
     masker->opacity = opacity();
     masker->clipper = context->getClipper(clip_path());
+    masker->masker = context->getMasker(mask());
 
     LengthContext lengthContext(this, maskUnits());
     masker->x = lengthContext.valueForLength(x(), LengthMode::Width);
     masker->y = lengthContext.valueForLength(y(), LengthMode::Height);
     masker->width = lengthContext.valueForLength(w, LengthMode::Width);
     masker->height = lengthContext.valueForLength(h, LengthMode::Height);
-
-    context->addReference(this);
-    masker->masker = context->getMasker(mask());
     layoutChildren(context, masker.get());
-    context->removeReference(this);
     return masker;
 }
 

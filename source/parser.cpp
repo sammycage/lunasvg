@@ -743,6 +743,7 @@ Paint Parser::parsePaint(const std::string& string, const StyledElement* element
     if(!Utils::readUntil(ptr, end, ')', ref))
         return defaultValue;
 
+    Utils::skipWs(ptr, end);
     std::string fallback{ptr, end};
     if(fallback.empty())
         return Paint{ref, defaultValue};
@@ -1134,28 +1135,13 @@ bool CSSParser::parseMore(const std::string& value)
     auto ptr = value.data();
     auto end = ptr + value.size();
 
-    Utils::skipWs(ptr, end);
     while(ptr < end)
     {
+        Utils::skipWs(ptr, end);
         if(Utils::skipDesc(ptr, end, '@'))
         {
-            int depth = 0;
-            while(ptr < end)
-            {
-                auto ch = *ptr;
-                ++ptr;
-                if(ch == ';' && depth == 0)
-                    break;
-                if(ch == '{') ++depth;
-                else if(ch == '}' && depth > 0)
-                {
-                    if(depth == 1)
-                        break;
-                    --depth;
-                }
-            }
-
-            Utils::skipWs(ptr, end);
+            if(!parseAtRule(ptr, end))
+                return false;
             continue;
         }
 
@@ -1163,7 +1149,27 @@ bool CSSParser::parseMore(const std::string& value)
         if(!parseRule(ptr, end, rule))
             return false;
         m_rules.push_back(rule);
-        Utils::skipWs(ptr, end);
+    }
+
+    return true;
+}
+
+bool CSSParser::parseAtRule(const char*& ptr, const char* end) const
+{
+    int depth = 0;
+    while(ptr < end)
+    {
+        auto ch = *ptr;
+        ++ptr;
+        if(ch == ';' && depth == 0)
+            break;
+        if(ch == '{') ++depth;
+        else if(ch == '}' && depth > 0)
+        {
+            if(depth == 1)
+                break;
+            --depth;
+        }
     }
 
     return true;
@@ -1174,14 +1180,7 @@ bool CSSParser::parseRule(const char*& ptr, const char* end, Rule& rule) const
     if(!parseSelectors(ptr, end, rule.selectors))
         return false;
 
-    if(!Utils::skipDesc(ptr, end, '{'))
-        return false;
-
-    Utils::skipWs(ptr, end);
     if(!parseDeclarations(ptr, end, rule.declarations))
-        return false;
-
-    if(!Utils::skipDesc(ptr, end, '}'))
         return false;
 
     return true;
@@ -1208,8 +1207,12 @@ bool CSSParser::parseSelectors(const char*& ptr, const char* end, SelectorList& 
 
 bool CSSParser::parseDeclarations(const char*& ptr, const char* end, PropertyList& declarations) const
 {
+    if(!Utils::skipDesc(ptr, end, '{'))
+        return false;
+
     std::string name;
     std::string value;
+    Utils::skipWs(ptr, end);
     do {
         if(!readCSSIdentifier(ptr, end, name))
             return false;
@@ -1227,7 +1230,6 @@ bool CSSParser::parseDeclarations(const char*& ptr, const char* end, PropertyLis
             if(!Utils::skipDesc(ptr, end, "important"))
                 return false;
             specificity = 0x1000;
-            Utils::skipWs(ptr, end);
         }
 
         auto id = cssPropertyId(name);
@@ -1236,7 +1238,7 @@ bool CSSParser::parseDeclarations(const char*& ptr, const char* end, PropertyLis
         Utils::skipWsDelimiter(ptr, end, ';');
     } while(ptr < end && *ptr != '}');
 
-    return true;
+    return Utils::skipDesc(ptr, end, '}');
 }
 
 #define IS_SELECTOR_STARTNAMECHAR(c) (IS_CSS_STARTNAMECHAR(c) || (c) == '*' || (c) == '#' || (c) == '.' || (c) == '[' || (c) == ':')
@@ -1497,20 +1499,33 @@ bool RuleMatchContext::attributeSelectorMatch(const AttributeSelector& selector,
         return false;
     }
 
+    auto starts_with = [](const std::string& string, const std::string& prefix) {
+        if(prefix.empty() || prefix.size() > string.size())
+            return false;
+
+        return string.compare(0, prefix.size(), prefix) == 0;
+    };
+
+    auto ends_with = [](const std::string& string, const std::string& suffix) {
+        if(suffix.empty() || suffix.size() > string.size())
+            return false;
+
+        return string.compare(string.size() - suffix.size(), suffix.size(), suffix) == 0;
+    };
+
     if(selector.matchType == AttributeSelector::MatchType::DashMatch)
     {
         if(selector.value == value)
             return true;
 
-        auto dashprefix = selector.value + '-';
-        return value.size() >= dashprefix.size() && value.compare(0, dashprefix.size(), dashprefix) == 0;
+        return starts_with(value, selector.value + '-');
     }
 
     if(selector.matchType == AttributeSelector::MatchType::StartsWith)
-        return value.size() >= selector.value.size() && value.compare(0, selector.value.size(), selector.value) == 0;
+        return starts_with(value, selector.value);
 
     if(selector.matchType == AttributeSelector::MatchType::EndsWith)
-        return value.size() >= selector.value.size() && value.compare(value.size() - selector.value.size(), selector.value.size(), selector.value) == 0;
+        return ends_with(value, selector.value);
 
     if(selector.matchType == AttributeSelector::MatchType::Contains)
         return value.find(selector.value) != std::string::npos;

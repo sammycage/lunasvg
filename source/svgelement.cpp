@@ -71,7 +71,7 @@ std::unique_ptr<LayoutRoot> SVGElement::layoutDocument(const ParseDocument* docu
     root->transform = (viewTranslation * viewTransform) * transform();
     root->opacity = opacity();
 
-    LayoutContext context{document, root.get()};
+    LayoutContext context(document, root.get());
     root->masker = context.getMasker(mask());
     root->clipper = context.getClipper(clip_path());
     layoutChildren(&context, root.get());

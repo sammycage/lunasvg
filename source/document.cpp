@@ -217,8 +217,8 @@ Bitmap Document::renderToBitmap(std::uint32_t width, std::uint32_t height, std::
         width = static_cast<std::uint32_t>(std::ceil(height * root->width / root->height));
     }
 
-    auto bitmap = Bitmap{width, height};
-    auto matrix = Matrix{width / root->width, 0, 0, height / root->height, 0, 0};
+    Bitmap bitmap{width, height};
+    Matrix matrix{width / root->width, 0, 0, height / root->height, 0, 0};
     render(bitmap, matrix, bgColor);
     return bitmap;
 }

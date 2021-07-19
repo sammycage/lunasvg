@@ -72,6 +72,7 @@ std::unique_ptr<LayoutMarker> MarkerElement::getMarker(LayoutContext* context) c
     auto viewTransform = preserveAspectRatio.getMatrix(_markerWidth, _markerHeight, viewBox());
     viewTransform.map(_refX, _refY, &_refX, &_refY);
 
+    LayoutBreaker layoutBreaker(context, this);
     auto marker = std::make_unique<LayoutMarker>();
     marker->refX = _refX;
     marker->refY = _refY;
@@ -81,11 +82,7 @@ std::unique_ptr<LayoutMarker> MarkerElement::getMarker(LayoutContext* context) c
     marker->opacity = opacity();
     marker->masker = context->getMasker(mask());
     marker->clipper = context->getClipper(clip_path());
-
-    context->addReference(this);
     layoutChildren(context, marker.get());
-    context->removeReference(this);
-
     return marker;
 }
 

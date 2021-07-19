@@ -158,6 +158,7 @@ public:
     const std::vector<Rule>& rules() const { return m_rules; }
 
 private:
+    bool parseAtRule(const char*& ptr, const char* end) const;
     bool parseRule(const char*& ptr, const char* end, Rule& rule) const;
     bool parseSelectors(const char*& ptr, const char* end, SelectorList& selectors) const;
     bool parseDeclarations(const char*& ptr, const char* end, PropertyList& declarations) const;

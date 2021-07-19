@@ -367,6 +367,17 @@ private:
     std::set<const Element*> m_references;
 };
 
+class LayoutBreaker
+{
+public:
+    LayoutBreaker(LayoutContext* context, const Element* element);
+    ~LayoutBreaker();
+
+private:
+    LayoutContext* m_context;
+    const Element* m_element;
+};
+
 } // namespace lunasvg
 
 #endif // LAYOUTCONTEXT_H

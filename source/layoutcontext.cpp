@@ -745,10 +745,18 @@ void LayoutContext::removeReference(const Element* element)
 
 bool LayoutContext::hasReference(const Element* element) const
 {
-    auto it = m_references.find(element);
-    if(it == m_references.end())
-        return false;
-    return true;
+    return m_references.count(element);
+}
+
+LayoutBreaker::LayoutBreaker(LayoutContext* context, const Element* element)
+    : m_context(context), m_element(element)
+{
+    context->addReference(element);
+}
+
+LayoutBreaker::~LayoutBreaker()
+{
+    m_context->removeReference(m_element);
 }
 
 } // namespace lunasvg

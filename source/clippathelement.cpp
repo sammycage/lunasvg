@@ -20,14 +20,12 @@ std::unique_ptr<LayoutClipPath> ClipPathElement::getClipper(LayoutContext* conte
     if(context->hasReference(this))
         return nullptr;
 
+    LayoutBreaker layoutBreaker(context, this);
     auto clipper = std::make_unique<LayoutClipPath>();
     clipper->units = clipPathUnits();
     clipper->transform = transform();
-
-    context->addReference(this);
     clipper->clipper = context->getClipper(clip_path());
     layoutChildren(context, clipper.get());
-    context->removeReference(this);
     return clipper;
 }
 
