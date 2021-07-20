@@ -107,10 +107,10 @@ void LayoutClipPath::apply(RenderState& state) const
 
     newState.matrix.premultiply(transform);
     renderChildren(newState);
-    if(clipper != nullptr)
-        clipper->apply(newState);
 
-    state.canvas->blend(newState.canvas.get(), newState.matrix, Rect::Invalid, BlendMode::Dst_In, 1.0);
+    if(clipper) clipper->apply(newState);
+
+    state.canvas->blend(newState.canvas.get(), BlendMode::Dst_In, 1.0);
 }
 
 LayoutMask::LayoutMask()
@@ -120,6 +120,16 @@ LayoutMask::LayoutMask()
 
 void LayoutMask::apply(RenderState& state) const
 {
+    Rect rect{x, y, width, height};
+    if(units == Units::ObjectBoundingBox)
+    {
+        const auto& box = state.objectBoundingBox();
+        rect.x = rect.x * box.w + box.x;
+        rect.y = rect.y * box.h + box.y;
+        rect.w = rect.w * box.w;
+        rect.h = rect.h * box.h;
+    }
+
     RenderState newState(this, state.mode());
     newState.canvas = Canvas::create(state.canvas->width(), state.canvas->height());
     newState.matrix = state.matrix;
@@ -131,14 +141,14 @@ void LayoutMask::apply(RenderState& state) const
     }
 
     renderChildren(newState);
-    if(clipper != nullptr)
-        clipper->apply(newState);
 
-    if(masker != nullptr)
-        masker->apply(newState);
+    if(clipper) clipper->apply(newState);
+    if(masker) masker->apply(newState);
 
+    newState.canvas->mask(rect, newState.matrix);
     newState.canvas->luminance();
-    state.canvas->blend(newState.canvas.get(), newState.matrix, Rect::Invalid, BlendMode::Dst_In, opacity);
+
+    state.canvas->blend(newState.canvas.get(), BlendMode::Dst_In, opacity);
 }
 
 LayoutSymbol::LayoutSymbol()
@@ -335,7 +345,7 @@ void FillData::fill(RenderState& state, const Path& path) const
     else
         painter->apply(state);
 
-    state.canvas->fill(path, state.matrix, fillRule, opacity);
+    state.canvas->fill(path, state.matrix, fillRule, BlendMode::Src_Over, opacity);
 }
 
 void StrokeData::stroke(RenderState& state, const Path& path) const
@@ -348,7 +358,7 @@ void StrokeData::stroke(RenderState& state, const Path& path) const
     else
         painter->apply(state);
 
-    state.canvas->stroke(path, state.matrix, width, cap, join, miterlimit, dash, opacity);
+    state.canvas->stroke(path, state.matrix, width, cap, join, miterlimit, dash, BlendMode::Src_Over, opacity);
 }
 
 static const double sqrt2 = 1.41421356237309504880;
@@ -422,7 +432,7 @@ void LayoutShape::render(RenderState& state) const
     else
     {
         newState.canvas->setColor(Color::Black);
-        newState.canvas->fill(path, newState.matrix, clipRule, 1.0);
+        newState.canvas->fill(path, newState.matrix, clipRule, BlendMode::Src, 1.0);
     }
 
     newState.endGroup(state, info);
@@ -477,7 +487,10 @@ void RenderState::endGroup(RenderState& state, const BlendInfo& info)
     if(info.masker && m_mode == RenderMode::Display)
         info.masker->apply(*this);
 
-    state.canvas->blend(canvas.get(), matrix, info.clip, BlendMode::Src_Over, m_mode == RenderMode::Display ? info.opacity : 1.0);
+    if(info.clip.valid())
+        canvas->mask(info.clip, matrix);
+
+    state.canvas->blend(canvas.get(), BlendMode::Src_Over, m_mode == RenderMode::Display ? info.opacity : 1.0);
 }
 
 LayoutContext::LayoutContext(const ParseDocument* document, LayoutSymbol* root)

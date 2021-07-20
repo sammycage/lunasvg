@@ -2,8 +2,6 @@
 
 #include "plutovg.h"
 
-#include <iostream>
-
 namespace lunasvg {
 
 static plutovg_matrix_t to_plutovg_matrix(const Transform& transform);
@@ -86,18 +84,18 @@ void Canvas::setTexture(const Canvas* source, TextureType type, const Transform&
     plutovg_texture_destroy(texture);
 }
 
-void Canvas::fill(const Path& path, const Transform& transform, WindRule winding, double opacity)
+void Canvas::fill(const Path& path, const Transform& transform, WindRule winding, BlendMode mode, double opacity)
 {
     auto matrix = to_plutovg_matrix(transform);
     to_plutovg_path(d->pluto, path);
     plutovg_set_matrix(d->pluto, &matrix);
     plutovg_set_fill_rule(d->pluto, to_plutovg_fill_rule(winding));
     plutovg_set_opacity(d->pluto, opacity);
-    plutovg_set_operator(d->pluto, plutovg_operator_src_over);
+    plutovg_set_operator(d->pluto, to_plutovg_operator(mode));
     plutovg_fill(d->pluto);
 }
 
-void Canvas::stroke(const Path& path, const Transform& transform, double width, LineCap cap, LineJoin join, double miterlimit, const DashData& dash, double opacity)
+void Canvas::stroke(const Path& path, const Transform& transform, double width, LineCap cap, LineJoin join, double miterlimit, const DashData& dash, BlendMode mode, double opacity)
 {
     auto matrix = to_plutovg_matrix(transform);
     to_plutovg_path(d->pluto, path);
@@ -107,27 +105,39 @@ void Canvas::stroke(const Path& path, const Transform& transform, double width, 
     plutovg_set_line_join(d->pluto, to_plutovg_line_join(join));
     plutovg_set_miter_limit(d->pluto, miterlimit);
     plutovg_set_dash(d->pluto, dash.offset, dash.array.data(), static_cast<int>(dash.array.size()));
+    plutovg_set_operator(d->pluto, to_plutovg_operator(mode));
     plutovg_set_opacity(d->pluto, opacity);
-    plutovg_set_operator(d->pluto, plutovg_operator_src_over);
     plutovg_stroke(d->pluto);
 }
 
-void Canvas::blend(const Canvas* source, const Transform& transform, const Rect& clip, BlendMode mode, double opacity)
+void Canvas::blend(const Canvas* source, BlendMode mode, double opacity)
 {
-    if(clip.valid())
-    {
-        auto matrix = to_plutovg_matrix(transform);
-        plutovg_set_matrix(d->pluto, &matrix);
-        plutovg_rect(d->pluto, clip.x, clip.y, clip.w, clip.h);
-        plutovg_clip(d->pluto);
-    }
-
-    plutovg_identity_matrix(d->pluto);
     plutovg_set_source_surface(d->pluto, source->d->surface, 0, 0);
     plutovg_set_operator(d->pluto, to_plutovg_operator(mode));
     plutovg_set_opacity(d->pluto, opacity);
+    plutovg_identity_matrix(d->pluto);
     plutovg_paint(d->pluto);
-    plutovg_reset_clip(d->pluto);
+}
+
+void Canvas::mask(const Rect& clip, const Transform& transform)
+{
+    auto matrix = to_plutovg_matrix(transform);
+    auto width = plutovg_surface_get_width(d->surface);
+    auto height = plutovg_surface_get_height(d->surface);
+    auto path = plutovg_path_create();
+
+    plutovg_path_add_rect(path, clip.x, clip.y, clip.w, clip.h);
+    plutovg_path_transform(path, &matrix);
+    plutovg_rect(d->pluto, 0, 0, width, height);
+    plutovg_add_path(d->pluto, path);
+    plutovg_path_destroy(path);
+
+    plutovg_set_source_rgba(d->pluto, 0, 0, 0, 0);
+    plutovg_set_fill_rule(d->pluto, plutovg_fill_rule_even_odd);
+    plutovg_set_operator(d->pluto, plutovg_operator_src);
+    plutovg_set_opacity(d->pluto, 1.0);
+    plutovg_identity_matrix(d->pluto);
+    plutovg_fill(d->pluto);
 }
 
 void Canvas::clear(unsigned int value)
@@ -264,7 +274,7 @@ plutovg_fill_rule_t to_plutovg_fill_rule(WindRule winding)
 
 plutovg_operator_t to_plutovg_operator(BlendMode mode)
 {
-    return mode == BlendMode::Dst_In ? plutovg_operator_dst_in : plutovg_operator_src_over;
+    return mode == BlendMode::Src ? plutovg_operator_src : mode == BlendMode::Src_Over ? plutovg_operator_src_over : mode == BlendMode::Dst_In ? plutovg_operator_dst_in : plutovg_operator_dst_out;
 }
 
 plutovg_line_cap_t to_plutovg_line_cap(LineCap cap)

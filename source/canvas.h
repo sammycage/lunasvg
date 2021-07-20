@@ -74,9 +74,10 @@ public:
     void setRadialGradient(const RadialGradientValues& values, SpreadMethod spread, const GradientStops& stops, const Transform& transform);
     void setTexture(const Canvas* source, TextureType type, const Transform& transform);
 
-    void fill(const Path& path, const Transform& transform, WindRule winding, double opacity);
-    void stroke(const Path& path, const Transform& transform, double width, LineCap cap, LineJoin join, double miterlimit, const DashData& dash, double opacity);
-    void blend(const Canvas* source, const Transform& transform, const Rect& clip, BlendMode mode, double opacity);
+    void fill(const Path& path, const Transform& transform, WindRule winding, BlendMode mode, double opacity);
+    void stroke(const Path& path, const Transform& transform, double width, LineCap cap, LineJoin join, double miterlimit, const DashData& dash, BlendMode mode, double opacity);
+    void blend(const Canvas* source, BlendMode mode, double opacity);
+    void mask(const Rect& clip, const Transform& transform);
 
     void clear(unsigned int value);
     void rgba();
