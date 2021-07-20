@@ -145,7 +145,7 @@ void LayoutMask::apply(RenderState& state) const
     if(clipper) clipper->apply(newState);
     if(masker) masker->apply(newState);
 
-    newState.canvas->mask(rect, newState.matrix);
+    newState.canvas->mask(rect, state.matrix);
     newState.canvas->luminance();
 
     state.canvas->blend(newState.canvas.get(), BlendMode::Dst_In, opacity);
