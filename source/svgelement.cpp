@@ -69,7 +69,7 @@ std::unique_ptr<LayoutSymbol> SVGElement::layoutDocument(const ParseDocument* do
     auto root = std::make_unique<LayoutSymbol>();
     root->width = _w;
     root->height = _h;
-    root->transform = (viewTranslation * viewTransform) * transform();
+    root->transform = (viewTransform * viewTranslation) * transform();
     root->clip = isOverflowHidden() ? preserveAspectRatio.getClip(_w, _h, viewBox) : Rect::Invalid;
     root->opacity = opacity();
 
@@ -104,7 +104,7 @@ void SVGElement::layout(LayoutContext* context, LayoutContainer* current) const
     auto symbol = std::make_unique<LayoutSymbol>();
     symbol->width = _w;
     symbol->height = _h;
-    symbol->transform = (viewTranslation * viewTransform) * transform();
+    symbol->transform = (viewTransform * viewTranslation) * transform();
     symbol->clip = isOverflowHidden() ? preserveAspectRatio.getClip(_w, _h, viewBox) : Rect::Invalid;
     symbol->opacity = opacity();
     symbol->masker = context->getMasker(mask());
