@@ -743,7 +743,7 @@ Paint Parser::parsePaint(const std::string& string, const StyledElement* element
     if(!Utils::readUntil(ptr, end, ')', ref))
         return defaultValue;
 
-    Utils::skipWs(ptr, end);
+    Utils::skipWsDelimiter(ptr, end, ')');
     std::string fallback{ptr, end};
     if(fallback.empty())
         return Paint{ref, defaultValue};
