@@ -1600,132 +1600,6 @@ bool RuleMatchContext::pseudoClassMatch(const PseudoClass& pseudo, const Element
     return false;
 }
 
-static inline void encodeUtf8(unsigned int ch, std::string& value)
-{
-    char c[5] = {0, 0, 0, 0, 0};
-    if(ch < 0x80)
-    {
-        c[1] = 0;
-        c[0] = ch;
-    }
-    else if(ch < 0x800)
-    {
-        c[2] = 0;
-        c[1] = (ch & 0x3F) | 0x80;
-        ch >>= 6;
-        c[0] = ch | 0xC0;
-    }
-    else if(ch < 0x10000)
-    {
-        c[3] = 0;
-        c[2] = (ch & 0x3F) | 0x80;
-        ch >>= 6;
-        c[1] = (ch & 0x3F) | 0x80;
-        ch >>= 6;
-        c[0] = ch | 0xE0;
-    }
-    else if(ch < 200000)
-    {
-        c[4] = 0;
-        c[3] = (ch & 0x3F) | 0x80;
-        ch >>= 6;
-        c[2] = (ch & 0x3F) | 0x80;
-        ch >>= 6;
-        c[1] = (ch & 0x3F) | 0x80;
-        ch >>= 6;
-        c[0] = ch | 0xF0;
-    }
-
-    value.append(c);
-}
-
-static const std::map<std::string, unsigned int> entitymap = {
-    {"amp", 38},
-    {"lt", 60},
-    {"gt", 62},
-    {"quot", 34},
-    {"apos", 39},
-};
-
-static inline bool decodeText(const char* ptr, const char* end, std::string& value)
-{
-    value.clear();
-    while(ptr < end)
-    {
-        auto ch = *ptr;
-        ++ptr;
-        if(ch != '&')
-        {
-            value.push_back(ch);
-            continue;
-        }
-
-        if(Utils::skipDesc(ptr, end, '#'))
-        {
-            int base = 10;
-            if(Utils::skipDesc(ptr, end, 'x'))
-                base = 16;
-
-            unsigned int codepoint;
-            if(!Utils::parseInteger(ptr, end, codepoint, base))
-                return false;
-            encodeUtf8(codepoint, value);
-        }
-        else
-        {
-            std::string name;
-            if(!Utils::readUntil(ptr, end, ';', name))
-                return false;
-            auto it = entitymap.find(name);
-            if(it == entitymap.end())
-                return false;
-            encodeUtf8(it->second, value);
-        }
-
-        if(ptr >= end || *ptr != ';')
-            return false;
-        ++ptr;
-    }
-
-    return true;
-}
-
-static inline void removeComments(std::string& value)
-{
-    auto start = value.find("/*");
-    while(start != std::string::npos)
-    {
-        auto end = value.find("*/", start + 2);
-        value.erase(start, end - start + 2);
-        start = value.find("/*");
-    }
-}
-
-static inline void parseStyle(const std::string& string, Element* element)
-{
-    auto ptr = string.data();
-    auto end = ptr + string.size();
-
-    std::string name;
-    std::string value;
-    Utils::skipWs(ptr, end);
-    while(ptr < end && readCSSIdentifier(ptr, end, name))
-    {
-        Utils::skipWs(ptr, end);
-        if(!Utils::skipDesc(ptr, end, ':'))
-            return;
-        Utils::skipWs(ptr, end);
-        auto start = ptr;
-        while(ptr < end && *ptr != ';')
-            ++ptr;
-        value.assign(start, Utils::rtrim(start, ptr));
-        auto id = cssPropertyId(name);
-        if(id != PropertyId::Unknown)
-            element->set(id, value, 0x100);
-        Utils::skipWsDelimiter(ptr, end, ';');
-    }
-}
-
 static inline std::unique_ptr<Element> createElement(ElementId id)
 {
     switch(id) {
@@ -1778,6 +1652,113 @@ static inline std::unique_ptr<Element> createElement(ElementId id)
     return nullptr;
 }
 
+static inline bool decodeText(const char* ptr, const char* end, std::string& value)
+{
+    value.clear();
+    while(ptr < end)
+    {
+        auto ch = *ptr;
+        ++ptr;
+        if(ch != '&')
+        {
+            value.push_back(ch);
+            continue;
+        }
+
+        if(Utils::skipDesc(ptr, end, '#'))
+        {
+            int base = 10;
+            if(Utils::skipDesc(ptr, end, 'x'))
+                base = 16;
+
+            unsigned int cp;
+            if(!Utils::parseInteger(ptr, end, cp, base))
+                return false;
+
+            char c[5] = {0, 0, 0, 0, 0};
+            if(cp < 0x80)
+            {
+                c[1] = 0;
+                c[0] = cp;
+            }
+            else if(cp < 0x800)
+            {
+                c[2] = 0;
+                c[1] = (cp & 0x3F) | 0x80;
+                cp >>= 6;
+                c[0] = cp | 0xC0;
+            }
+            else if(cp < 0x10000)
+            {
+                c[3] = 0;
+                c[2] = (cp & 0x3F) | 0x80;
+                cp >>= 6;
+                c[1] = (cp & 0x3F) | 0x80;
+                cp >>= 6;
+                c[0] = cp | 0xE0;
+            }
+            else if(cp < 0x200000)
+            {
+                c[4] = 0;
+                c[3] = (cp & 0x3F) | 0x80;
+                cp >>= 6;
+                c[2] = (cp & 0x3F) | 0x80;
+                cp >>= 6;
+                c[1] = (cp & 0x3F) | 0x80;
+                cp >>= 6;
+                c[0] = cp | 0xF0;
+            }
+
+            value.append(c);
+        }
+        else
+        {
+            if(Utils::skipDesc(ptr, end, "amp"))
+                value.push_back('&');
+            else if(Utils::skipDesc(ptr, end, "lt"))
+                value.push_back('<');
+            else if(Utils::skipDesc(ptr, end, "gt"))
+                value.push_back('>');
+            else if(Utils::skipDesc(ptr, end, "quot"))
+                value.push_back('\"');
+            else if(Utils::skipDesc(ptr, end, "apos"))
+                value.push_back('\'');
+            else
+                return false;
+        }
+
+        if(!Utils::skipDesc(ptr, end, ';'))
+            return false;
+    }
+
+    return true;
+}
+
+static inline void parseStyle(const std::string& string, Element* element)
+{
+    auto ptr = string.data();
+    auto end = ptr + string.size();
+
+    std::string name;
+    std::string value;
+    Utils::skipWs(ptr, end);
+    while(ptr < end && readCSSIdentifier(ptr, end, name))
+    {
+        Utils::skipWs(ptr, end);
+        if(!Utils::skipDesc(ptr, end, ':'))
+            return;
+        Utils::skipWs(ptr, end);
+        auto start = ptr;
+        while(ptr < end && *ptr != ';')
+            ++ptr;
+        value.assign(start, Utils::rtrim(start, ptr));
+        auto id = cssPropertyId(name);
+        if(id != PropertyId::Unknown)
+            element->set(id, value, 0x100);
+        Utils::skipWsDelimiter(ptr, end, ';');
+    }
+}
+
 ParseDocument::ParseDocument()
 {
 }
@@ -1797,6 +1778,17 @@ bool ParseDocument::parse(const char* data, std::size_t size)
     std::string value;
     int ignoring = 0;
 
+    auto remove_comments = [](std::string& value)
+    {
+        auto start = value.find("/*");
+        while(start != std::string::npos)
+        {
+            auto end = value.find("*/", start + 2);
+            value.erase(start, end - start + 2);
+            start = value.find("/*");
+        }
+    };
+
     auto handle_text = [&](const char* start, const char* end, bool in_cdata) {
         if(ignoring > 0 || current == nullptr || current->id != ElementId::Style)
             return;
@@ -1806,7 +1798,7 @@ bool ParseDocument::parse(const char* data, std::size_t size)
         else
             decodeText(start, end, value);
 
-        removeComments(value);
+        remove_comments(value);
         cssparser.parseMore(value);
     };
 
@@ -1966,7 +1958,7 @@ bool ParseDocument::parse(const char* data, std::size_t size)
                 decodeText(start, Utils::rtrim(start, ptr), value);
                 if(id == PropertyId::Style)
                 {
-                    removeComments(value);
+                    remove_comments(value);
                     parseStyle(value, element);
                 }
                 else
@@ -2007,7 +1999,7 @@ bool ParseDocument::parse(const char* data, std::size_t size)
     }
 
     if(!m_rootElement || ptr < end || ignoring > 0)
-        return true;
+        return false;
 
     const auto& rules = cssparser.rules();
     if(!rules.empty())
