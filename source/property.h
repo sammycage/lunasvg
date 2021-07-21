@@ -326,6 +326,8 @@ public:
     PreserveAspectRatio() = default;
     PreserveAspectRatio(Align align, MeetOrSlice scale);
 
+    Rect getRect(double width, double height, const Rect& viewBox) const;
+    Rect getClip(double width, double height, const Rect& viewBox) const;
     Transform getMatrix(double width, double height, const Rect& viewBox) const;
 
     Align align() const { return m_align; }

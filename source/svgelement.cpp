@@ -61,15 +61,16 @@ std::unique_ptr<LayoutSymbol> SVGElement::layoutDocument(const ParseDocument* do
     auto _w = lengthContext.valueForLength(w, LengthMode::Width);
     auto _h = lengthContext.valueForLength(h, LengthMode::Height);
 
+    auto viewBox = this->viewBox();
     auto preserveAspectRatio = this->preserveAspectRatio();
     auto viewTranslation = Transform::translated(_x, _y);
-    auto viewTransform = preserveAspectRatio.getMatrix(_w, _h, viewBox());
+    auto viewTransform = preserveAspectRatio.getMatrix(_w, _h, viewBox);
 
     auto root = std::make_unique<LayoutSymbol>();
     root->width = _w;
     root->height = _h;
     root->transform = (viewTranslation * viewTransform) * transform();
-    root->clip = overflow() == Overflow::Hidden ? Rect(_x, _y, _w, _h) : Rect::Invalid;
+    root->clip = isOverflowHidden() ? preserveAspectRatio.getClip(_w, _h, viewBox) : Rect::Invalid;
     root->opacity = opacity();
 
     LayoutContext context(document, root.get());
@@ -95,15 +96,16 @@ void SVGElement::layout(LayoutContext* context, LayoutContainer* current) const
     auto _w = lengthContext.valueForLength(w, LengthMode::Width);
     auto _h = lengthContext.valueForLength(h, LengthMode::Height);
 
+    auto viewBox = this->viewBox();
     auto preserveAspectRatio = this->preserveAspectRatio();
     auto viewTranslation = Transform::translated(_x, _y);
-    auto viewTransform = preserveAspectRatio.getMatrix(_w, _h, viewBox());
+    auto viewTransform = preserveAspectRatio.getMatrix(_w, _h, viewBox);
 
     auto symbol = std::make_unique<LayoutSymbol>();
     symbol->width = _w;
     symbol->height = _h;
     symbol->transform = (viewTranslation * viewTransform) * transform();
-    symbol->clip = overflow() == Overflow::Hidden ? Rect(_x, _y, _w, _h) : Rect::Invalid;
+    symbol->clip = isOverflowHidden() ? preserveAspectRatio.getClip(_w, _h, viewBox) : Rect::Invalid;
     symbol->opacity = opacity();
     symbol->masker = context->getMasker(mask());
     symbol->clipper = context->getClipper(clip_path());

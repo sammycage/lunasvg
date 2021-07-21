@@ -606,40 +606,30 @@ PreserveAspectRatio::PreserveAspectRatio(Align align, MeetOrSlice scale)
 {
 }
 
-Transform PreserveAspectRatio::getMatrix(double width, double height, const Rect& viewBox) const
+Rect PreserveAspectRatio::getRect(double width, double height, const Rect& viewBox) const
 {
-    Transform matrix;
-    if(viewBox.empty())
-        return matrix;
-
-    auto sx = width / viewBox.w;
-    auto sy = height / viewBox.h;
-    if(sx == 0.0 || sy == 0.0)
-        return matrix;
-
-    auto tx = -viewBox.x;
-    auto ty = -viewBox.y;
+    auto xscale = width / viewBox.w;
+    auto yscale = height / viewBox.h;
     if(m_align == Align::None)
-    {
-        matrix.scale(sx, sy);
-        matrix.translate(tx, ty);
-        return matrix;
-    }
+        return Rect{0, 0, xscale, yscale};
 
-    auto scale = (m_scale == MeetOrSlice::Meet) ? std::min(sx, sy) : std::max(sx, sy);
-    auto viewW = width / scale;
-    auto viewH = height / scale;
+    auto scale = (m_scale == MeetOrSlice::Meet) ? std::min(xscale, yscale) : std::max(xscale, yscale);
+    auto viewW = viewBox.w * scale;
+    auto viewH = viewBox.h * scale;
+
+    double xoffset = 0.0;
+    double yoffset = 0.0;
 
     switch(m_align) {
     case Align::xMidYMin:
     case Align::xMidYMid:
     case Align::xMidYMax:
-        tx -= (viewBox.w - viewW) * 0.5;
+        xoffset = (width - viewW) * 0.5;
         break;
     case Align::xMaxYMin:
     case Align::xMaxYMid:
     case Align::xMaxYMax:
-        tx -= (viewBox.w - viewW);
+        xoffset = (width - viewW + viewBox.x);
         break;
     default:
         break;
@@ -649,19 +639,45 @@ Transform PreserveAspectRatio::getMatrix(double width, double height, const Rect
     case Align::xMinYMid:
     case Align::xMidYMid:
     case Align::xMaxYMid:
-        ty -= (viewBox.h - viewH) * 0.5;
+        yoffset = (height - viewH) * 0.5;
         break;
     case Align::xMinYMax:
     case Align::xMidYMax:
     case Align::xMaxYMax:
-        ty -= (viewBox.h - viewH);
+        yoffset = (height - viewH + viewBox.y);
         break;
     default:
         break;
     }
 
-    matrix.scale(scale, scale);
-    matrix.translate(tx, ty);
+    return Rect{xoffset, yoffset, scale, scale};
+}
+
+Rect PreserveAspectRatio::getClip(double width, double height, const Rect& viewBox) const
+{
+    if(viewBox.empty())
+        return Rect{0, 0, width, height};
+
+    if(m_scale == MeetOrSlice::Slice)
+        return viewBox;
+
+    auto box = getRect(width, height, viewBox);
+    auto x = viewBox.x - box.x / box.w;
+    auto y = viewBox.y - box.y / box.h;
+    auto w = std::min(viewBox.w, width / box.w);
+    auto h = std::min(viewBox.h, height / box.h);
+    return Rect{x, y, w, h};
+}
+
+Transform PreserveAspectRatio::getMatrix(double width, double height, const Rect& viewBox) const
+{
+    if(viewBox.empty())
+        return Transform{};
+
+    auto box = getRect(width, height, viewBox);
+    auto matrix = Transform::translated(-viewBox.x, -viewBox.y);
+    matrix.scale(box.w, box.h);
+    matrix.translate(box.x, box.y);
     return matrix;
 }
 

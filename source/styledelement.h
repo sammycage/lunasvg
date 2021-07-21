@@ -45,6 +45,7 @@ public:
     std::string marker_end() const;
 
     bool isDisplayNone() const;
+    bool isOverflowHidden() const;
 };
 
 } // namespace lunasvg

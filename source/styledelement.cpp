@@ -169,4 +169,9 @@ bool StyledElement::isDisplayNone() const
     return display() == Display::None;
 }
 
+bool StyledElement::isOverflowHidden() const
+{
+    return overflow() == Overflow::Hidden;
+}
+
 } // namespace lunasvg
