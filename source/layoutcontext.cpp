@@ -208,28 +208,21 @@ Transform LayoutMarker::markerTransform(const Point& origin, double angle, doubl
         transform.scale(strokeWidth, strokeWidth);
 
     transform.translate(-refX, -refY);
-    transform.premultiply(transform);
     return transform;
+}
+
+Rect LayoutMarker::markerBoundingBox(const Point& origin, double angle, double strokeWidth) const
+{
+    auto box = transform.map(strokeBoundingBox());
+    auto transform = markerTransform(origin, angle, strokeWidth);
+    return transform.map(box);
 }
 
 void LayoutMarker::renderMarker(RenderState& state, const Point& origin, double angle, double strokeWidth) const
 {
-    auto matrix = state.matrix;
-    matrix.translate(origin.x, origin.y);
-    if(orient.type() == MarkerOrient::Auto)
-        matrix.rotate(angle);
-    else
-        matrix.rotate(orient.value());
-
-    if(units == MarkerUnits::StrokeWidth)
-        matrix.scale(strokeWidth, strokeWidth);
-
-    matrix.translate(-refX, -refY);
-    matrix.premultiply(transform);
-
     BlendInfo info{clipper, masker, opacity, clip};
     RenderState newState(this, state.mode());
-    newState.matrix = matrix;
+    newState.matrix = transform * markerTransform(origin, angle, strokeWidth) * state.matrix;
     newState.beginGroup(state, info);
     renderChildren(newState);
     newState.endGroup(state, info);
@@ -402,10 +395,7 @@ void MarkerData::render(RenderState& state) const
 void MarkerData::inflate(Rect& box) const
 {
     for(const auto& position : positions)
-    {
-        auto transform = position.marker->markerTransform(position.origin, position.angle, strokeWidth);
-        box.unite(transform.map(position.marker->strokeBoundingBox()));
-    }
+        box.unite(position.marker->markerBoundingBox(position.origin, position.angle, strokeWidth));
 }
 
 LayoutShape::LayoutShape()

@@ -138,6 +138,7 @@ public:
     LayoutMarker();
 
     Transform markerTransform(const Point& origin, double angle, double strokeWidth) const;
+    Rect markerBoundingBox(const Point& origin, double angle, double strokeWidth) const;
     void renderMarker(RenderState& state, const Point& origin, double angle, double strokeWidth) const;
 
 public:
