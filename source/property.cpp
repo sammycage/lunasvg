@@ -606,30 +606,37 @@ PreserveAspectRatio::PreserveAspectRatio(Align align, MeetOrSlice scale)
 {
 }
 
-Rect PreserveAspectRatio::getRect(double width, double height, const Rect& viewBox) const
+Transform PreserveAspectRatio::getMatrix(double width, double height, const Rect& viewBox) const
 {
+    if(viewBox.empty())
+        return Transform{};
+
     auto xscale = width / viewBox.w;
     auto yscale = height / viewBox.h;
     if(m_align == Align::None)
-        return Rect{0, 0, xscale, yscale};
+    {
+        auto xoffset = -viewBox.x * xscale;
+        auto yoffset = -viewBox.y * yscale;
+        return Transform{xscale, 0, 0, yscale, xoffset, yoffset};
+    }
 
     auto scale = (m_scale == MeetOrSlice::Meet) ? std::min(xscale, yscale) : std::max(xscale, yscale);
-    auto viewW = viewBox.w * scale;
-    auto viewH = viewBox.h * scale;
+    auto viewWidth = viewBox.w * scale;
+    auto viewHeight = viewBox.h * scale;
 
-    double xoffset = 0.0;
-    double yoffset = 0.0;
+    auto xoffset = -viewBox.x * scale;
+    auto yoffset = -viewBox.y * scale;
 
     switch(m_align) {
     case Align::xMidYMin:
     case Align::xMidYMid:
     case Align::xMidYMax:
-        xoffset = (width - viewW) * 0.5;
+        xoffset += (width - viewWidth) * 0.5;
         break;
     case Align::xMaxYMin:
     case Align::xMaxYMid:
     case Align::xMaxYMax:
-        xoffset = (width - viewW + viewBox.x);
+        xoffset += (width - viewWidth);
         break;
     default:
         break;
@@ -639,18 +646,18 @@ Rect PreserveAspectRatio::getRect(double width, double height, const Rect& viewB
     case Align::xMinYMid:
     case Align::xMidYMid:
     case Align::xMaxYMid:
-        yoffset = (height - viewH) * 0.5;
+        yoffset += (height - viewHeight) * 0.5;
         break;
     case Align::xMinYMax:
     case Align::xMidYMax:
     case Align::xMaxYMax:
-        yoffset = (height - viewH + viewBox.y);
+        yoffset += (height - viewHeight);
         break;
     default:
         break;
     }
 
-    return Rect{xoffset, yoffset, scale, scale};
+    return Transform{scale, 0, 0, scale, xoffset, yoffset};
 }
 
 Rect PreserveAspectRatio::getClip(double width, double height, const Rect& viewBox) const
@@ -658,27 +665,7 @@ Rect PreserveAspectRatio::getClip(double width, double height, const Rect& viewB
     if(viewBox.empty())
         return Rect{0, 0, width, height};
 
-    if(m_scale == MeetOrSlice::Slice)
-        return viewBox;
-
-    auto box = getRect(width, height, viewBox);
-    auto x = viewBox.x - box.x / box.w;
-    auto y = viewBox.y - box.y / box.h;
-    auto w = std::min(viewBox.w, width / box.w);
-    auto h = std::min(viewBox.h, height / box.h);
-    return Rect{x, y, w, h};
-}
-
-Transform PreserveAspectRatio::getMatrix(double width, double height, const Rect& viewBox) const
-{
-    if(viewBox.empty())
-        return Transform{};
-
-    auto box = getRect(width, height, viewBox);
-    auto matrix = Transform::translated(-viewBox.x, -viewBox.y);
-    matrix.scale(box.w, box.h);
-    matrix.translate(box.x, box.y);
-    return matrix;
+    return viewBox;
 }
 
 Angle::Angle(MarkerOrient type)
