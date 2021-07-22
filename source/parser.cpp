@@ -743,11 +743,13 @@ Paint Parser::parsePaint(const std::string& string, const StyledElement* element
     if(!Utils::readUntil(ptr, end, ')', ref))
         return defaultValue;
 
-    Utils::skipWsDelimiter(ptr, end, ')');
-    std::string fallback{ptr, end};
-    if(fallback.empty())
-        return Paint{ref, defaultValue};
-    return Paint{ref, Parser::parseColor(fallback, element, defaultValue)};
+    if(Utils::skipWsDelimiter(ptr, end, ')'))
+    {
+        std::string fallback{ptr, end};
+        return Paint{ref, parseColor(fallback, element, defaultValue)};
+    }
+
+    return Paint{ref, defaultValue};
 }
 
 WindRule Parser::parseWindRule(const std::string& string)
@@ -1778,8 +1780,7 @@ bool ParseDocument::parse(const char* data, std::size_t size)
     std::string value;
     int ignoring = 0;
 
-    auto remove_comments = [](std::string& value)
-    {
+    auto remove_comments = [](std::string& value) {
         auto start = value.find("/*");
         while(start != std::string::npos)
         {
