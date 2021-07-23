@@ -66,8 +66,9 @@ class CanvasImpl;
 class Canvas
 {
 public:
-    static std::shared_ptr<Canvas> create(unsigned int width, unsigned int height);
     static std::shared_ptr<Canvas> create(unsigned char* data, unsigned int width, unsigned int height, unsigned int stride);
+    static std::shared_ptr<Canvas> create(double x, double y, double width, double height);
+    static std::shared_ptr<Canvas> create(const Rect& box);
 
     void setColor(const Color& color);
     void setLinearGradient(const LinearGradientValues& values, SpreadMethod spread, const GradientStops& stops, const Transform& transform);
@@ -87,11 +88,12 @@ public:
     unsigned int height() const;
     unsigned int stride() const;
     unsigned char* data() const;
+    Rect box() const;
 
     ~Canvas();
 private:
-    Canvas(unsigned int width, unsigned int height);
     Canvas(unsigned char* data, unsigned int width, unsigned int height, unsigned int stride);
+    Canvas(double x, double y, double width, double height);
 
     std::unique_ptr<CanvasImpl> d;
 };

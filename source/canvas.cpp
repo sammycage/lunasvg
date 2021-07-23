@@ -1,6 +1,7 @@
 #include "canvas.h"
-
 #include "plutovg.h"
+
+#include <cmath>
 
 namespace lunasvg {
 
@@ -16,31 +17,72 @@ static void to_plutovg_path(plutovg_t* pluto, const Path& path);
 class CanvasImpl
 {
 public:
-    CanvasImpl(int width, int height);
     CanvasImpl(unsigned char* data, int width, int height, int stride);
+    CanvasImpl(double x, double y, double width, double height);
     ~CanvasImpl();
 
 public:
     plutovg_surface_t* surface;
     plutovg_t* pluto;
+    plutovg_matrix_t translation;
+    double x;
+    double y;
+    double width;
+    double height;
 };
 
-CanvasImpl::CanvasImpl(int width, int height)
-    : surface(plutovg_surface_create(width, height)),
-      pluto(plutovg_create(surface))
+CanvasImpl::CanvasImpl(unsigned char* data, int width, int height, int stride)
+    : x(0), y(0), width(width), height(height)
 {
+    surface = plutovg_surface_create_for_data(data, width, height, stride);
+    pluto = plutovg_create(surface);
+    plutovg_matrix_init_identity(&translation);
 }
 
-CanvasImpl::CanvasImpl(unsigned char* data, int width, int height, int stride)
-    : surface(plutovg_surface_create_for_data(data, width, height, stride)),
-      pluto(plutovg_create(surface))
+CanvasImpl::CanvasImpl(double x, double y, double width, double height)
+    : x(x), y(y), width(width), height(height)
 {
+    auto w = static_cast<int>(std::ceil(width));
+    auto h = static_cast<int>(std::ceil(height));
+
+    surface = plutovg_surface_create(w, h);
+    pluto = plutovg_create(surface);
+    plutovg_matrix_init_translate(&translation, -x, -y);
 }
 
 CanvasImpl::~CanvasImpl()
 {
     plutovg_surface_destroy(surface);
     plutovg_destroy(pluto);
+}
+
+std::shared_ptr<Canvas> Canvas::create(unsigned char* data, unsigned int width, unsigned int height, unsigned int stride)
+{
+    return std::shared_ptr<Canvas>(new Canvas(data, width, height, stride));
+}
+
+std::shared_ptr<Canvas> Canvas::create(double x, double y, double width, double height)
+{
+    return std::shared_ptr<Canvas>(new Canvas(x, y, width, height));
+}
+
+std::shared_ptr<Canvas> Canvas::create(const Rect& box)
+{
+    return std::shared_ptr<Canvas>(new Canvas(box.x, box.y, box.w, box.h));
+}
+
+Canvas::Canvas(unsigned char* data, unsigned int width, unsigned int height, unsigned int stride)
+    : d(new CanvasImpl(data, static_cast<int>(width), static_cast<int>(height), static_cast<int>(stride)))
+{
+}
+
+Canvas::Canvas(double x, double y, double width, double height)
+    : d(new CanvasImpl(x, y, width, height))
+{
+}
+
+Canvas::~Canvas()
+{
 }
 
 void Canvas::setColor(const Color& color)
@@ -87,6 +129,7 @@ void Canvas::setTexture(const Canvas* source, TextureType type, const Transform&
 void Canvas::fill(const Path& path, const Transform& transform, WindRule winding, BlendMode mode, double opacity)
 {
     auto matrix = to_plutovg_matrix(transform);
+    plutovg_matrix_multiply(&matrix, &matrix, &d->translation);
     to_plutovg_path(d->pluto, path);
     plutovg_set_matrix(d->pluto, &matrix);
     plutovg_set_fill_rule(d->pluto, to_plutovg_fill_rule(winding));
@@ -98,6 +141,7 @@ void Canvas::fill(const Path& path, const Transform& transform, WindRule winding
 void Canvas::stroke(const Path& path, const Transform& transform, double width, LineCap cap, LineJoin join, double miterlimit, const DashData& dash, BlendMode mode, double opacity)
 {
     auto matrix = to_plutovg_matrix(transform);
+    plutovg_matrix_multiply(&matrix, &matrix, &d->translation);
     to_plutovg_path(d->pluto, path);
     plutovg_set_matrix(d->pluto, &matrix);
     plutovg_set_line_width(d->pluto, width);
@@ -112,23 +156,20 @@ void Canvas::stroke(const Path& path, const Transform& transform, double width, 
 
 void Canvas::blend(const Canvas* source, BlendMode mode, double opacity)
 {
-    plutovg_set_source_surface(d->pluto, source->d->surface, 0, 0);
+    plutovg_set_source_surface(d->pluto, source->d->surface, source->d->x, source->d->y);
     plutovg_set_operator(d->pluto, to_plutovg_operator(mode));
     plutovg_set_opacity(d->pluto, opacity);
-    plutovg_identity_matrix(d->pluto);
+    plutovg_set_matrix(d->pluto, &d->translation);
     plutovg_paint(d->pluto);
 }
 
 void Canvas::mask(const Rect& clip, const Transform& transform)
 {
     auto matrix = to_plutovg_matrix(transform);
-    auto width = plutovg_surface_get_width(d->surface);
-    auto height = plutovg_surface_get_height(d->surface);
     auto path = plutovg_path_create();
-
     plutovg_path_add_rect(path, clip.x, clip.y, clip.w, clip.h);
     plutovg_path_transform(path, &matrix);
-    plutovg_rect(d->pluto, 0, 0, width, height);
+    plutovg_rect(d->pluto, d->x, d->y, d->width, d->height);
     plutovg_add_path(d->pluto, path);
     plutovg_path_destroy(path);
 
@@ -136,7 +177,7 @@ void Canvas::mask(const Rect& clip, const Transform& transform)
     plutovg_set_fill_rule(d->pluto, plutovg_fill_rule_even_odd);
     plutovg_set_operator(d->pluto, plutovg_operator_src);
     plutovg_set_opacity(d->pluto, 1.0);
-    plutovg_identity_matrix(d->pluto);
+    plutovg_set_matrix(d->pluto, &d->translation);
     plutovg_fill(d->pluto);
 }
 
@@ -226,28 +267,9 @@ unsigned char* Canvas::data() const
     return plutovg_surface_get_data(d->surface);
 }
 
-std::shared_ptr<Canvas> Canvas::create(unsigned int width, unsigned int height)
+Rect Canvas::box() const
 {
-    return std::shared_ptr<Canvas>(new Canvas(width, height));
-}
-
-std::shared_ptr<Canvas> Canvas::create(unsigned char* data, unsigned int width, unsigned int height, unsigned int stride)
-{
-    return std::shared_ptr<Canvas>(new Canvas(data, width, height, stride));
-}
-
-Canvas::~Canvas()
-{
-}
-
-Canvas::Canvas(unsigned int width, unsigned int height)
-    : d(new CanvasImpl(static_cast<int>(width), static_cast<int>(height)))
-{
-}
-
-Canvas::Canvas(unsigned char* data, unsigned int width, unsigned int height, unsigned int stride)
-    : d(new CanvasImpl(data, static_cast<int>(width), static_cast<int>(height), static_cast<int>(stride)))
-{
+    return Rect{d->x, d->y, d->width, d->height};
 }
 
 LinearGradientValues::LinearGradientValues(double x1, double y1, double x2, double y2)

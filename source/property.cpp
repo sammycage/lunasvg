@@ -200,6 +200,9 @@ Point Transform::map(const Point& point) const
 
 Rect Transform::map(const Rect& rect) const
 {
+    if(!rect.valid())
+        return rect;
+
     auto left = rect.x;
     auto top = rect.y;
     auto right = rect.x + rect.w;

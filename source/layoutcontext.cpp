@@ -96,7 +96,7 @@ LayoutClipPath::LayoutClipPath()
 void LayoutClipPath::apply(RenderState& state) const
 {
     RenderState newState(this, RenderMode::Clipping);
-    newState.canvas = Canvas::create(state.canvas->width(), state.canvas->height());
+    newState.canvas = Canvas::create(state.canvas->box());
     newState.matrix = state.matrix;
     if(units == Units::ObjectBoundingBox)
     {
@@ -131,7 +131,7 @@ void LayoutMask::apply(RenderState& state) const
     }
 
     RenderState newState(this, state.mode());
-    newState.canvas = Canvas::create(state.canvas->width(), state.canvas->height());
+    newState.canvas = Canvas::create(state.canvas->box());
     newState.matrix = state.matrix;
     if(contentUnits == Units::ObjectBoundingBox)
     {
@@ -249,11 +249,11 @@ void LayoutPattern::apply(RenderState& state) const
     auto scalex = std::sqrt(ctm.m00 * ctm.m00 + ctm.m01 * ctm.m01);
     auto scaley = std::sqrt(ctm.m10 * ctm.m10 + ctm.m11 * ctm.m11);
 
-    auto width = static_cast<std::uint32_t>(std::ceil(rect.w * scalex));
-    auto height = static_cast<std::uint32_t>(std::ceil(rect.h * scaley));
+    auto width = rect.w * scalex;
+    auto height = rect.h * scaley;
 
     RenderState newState(this, RenderMode::Display);
-    newState.canvas = Canvas::create(width, height);
+    newState.canvas = Canvas::create(0, 0, width, height);
     newState.matrix = Transform::scaled(scalex, scaley);
 
     if(viewBox.valid())
@@ -460,10 +460,16 @@ RenderState::RenderState(const LayoutObject* object, RenderMode mode)
 
 void RenderState::beginGroup(RenderState& state, const BlendInfo& info)
 {
-    if(info.clipper || info.clip.valid() || (m_mode == RenderMode::Display && (info.masker || info.opacity < 1.0)))
-        canvas = Canvas::create(state.canvas->width(), state.canvas->height());
-    else
+    if(!info.clipper && !info.clip.valid() && (m_mode == RenderMode::Display && !(info.masker || info.opacity < 1.0)))
+    {
         canvas = state.canvas;
+        return;
+    }
+
+    auto box = matrix.map(m_object->strokeBoundingBox());
+    box.intersect(matrix.map(info.clip));
+    box.intersect(state.canvas->box());
+    canvas = Canvas::create(box);
 }
 
 void RenderState::endGroup(RenderState& state, const BlendInfo& info)
