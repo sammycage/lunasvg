@@ -52,26 +52,30 @@ CanvasImpl::~CanvasImpl()
 
 std::shared_ptr<Canvas> Canvas::create(unsigned char* data, unsigned int width, unsigned int height, unsigned int stride)
 {
-    return std::shared_ptr<Canvas>(new Canvas(data, width, height, stride));
+    return std::shared_ptr<Canvas>(new Canvas(data, static_cast<int>(width), static_cast<int>(height), static_cast<int>(stride)));
 }
 
 std::shared_ptr<Canvas> Canvas::create(double x, double y, double width, double height)
 {
-    return std::shared_ptr<Canvas>(new Canvas(x, y, width, height));
+    auto l = static_cast<int>(floor(x));
+    auto t = static_cast<int>(floor(y));
+    auto r = static_cast<int>(ceil(x + width));
+    auto b = static_cast<int>(ceil(y + height));
+    return std::shared_ptr<Canvas>(new Canvas(l, t, r - l, b - t));
 }
 
 std::shared_ptr<Canvas> Canvas::create(const Rect& box)
 {
-    return std::shared_ptr<Canvas>(new Canvas(box.x, box.y, box.w, box.h));
+    return create(box.x, box.y, box.w, box.h);
 }
 
-Canvas::Canvas(unsigned char* data, unsigned int width, unsigned int height, unsigned int stride)
-    : d(new CanvasImpl(data, static_cast<int>(width), static_cast<int>(height), static_cast<int>(stride)))
+Canvas::Canvas(unsigned char* data, int width, int height, int stride)
+    : d(new CanvasImpl(data, width, height, stride))
 {
 }
 
-Canvas::Canvas(double x, double y, double width, double height)
-    : d(new CanvasImpl(static_cast<int>(ceil(x)), static_cast<int>(ceil(y)), static_cast<int>(ceil(width)), static_cast<int>(ceil(height))))
+Canvas::Canvas(int x, int y, int width, int height)
+    : d(new CanvasImpl(x, y, width, height))
 {
 }
 

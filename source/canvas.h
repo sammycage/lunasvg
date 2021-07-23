@@ -92,8 +92,8 @@ public:
 
     ~Canvas();
 private:
-    Canvas(unsigned char* data, unsigned int width, unsigned int height, unsigned int stride);
-    Canvas(double x, double y, double width, double height);
+    Canvas(unsigned char* data, int width, int height, int stride);
+    Canvas(int x, int y, int width, int height);
 
     std::unique_ptr<CanvasImpl> d;
 };
