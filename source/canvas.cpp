@@ -18,17 +18,14 @@ class CanvasImpl
 {
 public:
     CanvasImpl(unsigned char* data, int width, int height, int stride);
-    CanvasImpl(double x, double y, double width, double height);
+    CanvasImpl(int x, int y, int width, int height);
     ~CanvasImpl();
 
 public:
     plutovg_surface_t* surface;
     plutovg_t* pluto;
     plutovg_matrix_t translation;
-    double x;
-    double y;
-    double width;
-    double height;
+    int x, y, width, height;
 };
 
 CanvasImpl::CanvasImpl(unsigned char* data, int width, int height, int stride)
@@ -39,13 +36,10 @@ CanvasImpl::CanvasImpl(unsigned char* data, int width, int height, int stride)
     plutovg_matrix_init_identity(&translation);
 }
 
-CanvasImpl::CanvasImpl(double x, double y, double width, double height)
+CanvasImpl::CanvasImpl(int x, int y, int width, int height)
     : x(x), y(y), width(width), height(height)
 {
-    auto w = static_cast<int>(std::ceil(width));
-    auto h = static_cast<int>(std::ceil(height));
-
-    surface = plutovg_surface_create(w, h);
+    surface = plutovg_surface_create(width, height);
     pluto = plutovg_create(surface);
     plutovg_matrix_init_translate(&translation, -x, -y);
 }
@@ -77,7 +71,7 @@ Canvas::Canvas(unsigned char* data, unsigned int width, unsigned int height, uns
 }
 
 Canvas::Canvas(double x, double y, double width, double height)
-    : d(new CanvasImpl(x, y, width, height))
+    : d(new CanvasImpl(static_cast<int>(ceil(x)), static_cast<int>(ceil(y)), static_cast<int>(ceil(width)), static_cast<int>(ceil(height))))
 {
 }
 
@@ -269,7 +263,7 @@ unsigned char* Canvas::data() const
 
 Rect Canvas::box() const
 {
-    return Rect{d->x, d->y, d->width, d->height};
+    return Rect(d->x, d->y, d->width, d->height);
 }
 
 LinearGradientValues::LinearGradientValues(double x1, double y1, double x2, double y2)
