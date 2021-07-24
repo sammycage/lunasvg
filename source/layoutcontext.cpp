@@ -97,7 +97,7 @@ void LayoutClipPath::apply(RenderState& state) const
 {
     RenderState newState(this, RenderMode::Clipping);
     newState.canvas = Canvas::create(state.canvas->box());
-    newState.matrix = state.matrix;
+    newState.matrix = transform * state.matrix;
     if(units == Units::ObjectBoundingBox)
     {
         const auto& box = state.objectBoundingBox();
@@ -105,11 +105,8 @@ void LayoutClipPath::apply(RenderState& state) const
         newState.matrix.scale(box.w, box.h);
     }
 
-    newState.matrix.premultiply(transform);
     renderChildren(newState);
-
     if(clipper) clipper->apply(newState);
-
     state.canvas->blend(newState.canvas.get(), BlendMode::Dst_In, 1.0);
 }
 
