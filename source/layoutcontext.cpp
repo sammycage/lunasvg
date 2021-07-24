@@ -295,8 +295,7 @@ void LayoutLinearGradient::apply(RenderState& state) const
         matrix.scale(box.w, box.h);
     }
 
-    LinearGradientValues values{x1, y1, x2, y2};
-    state.canvas->setLinearGradient(values, spreadMethod, stops, transform * matrix);
+    state.canvas->setLinearGradient(x1, y1, x2, y2, stops, spreadMethod, transform * matrix);
 }
 
 LayoutRadialGradient::LayoutRadialGradient()
@@ -314,8 +313,7 @@ void LayoutRadialGradient::apply(RenderState& state) const
         matrix.scale(box.w, box.h);
     }
 
-    RadialGradientValues values{cx, cy, r, fx, fy};
-    state.canvas->setRadialGradient(values, spreadMethod, stops, transform * matrix);
+    state.canvas->setRadialGradient(cx, cy, r, fx, fy, stops, spreadMethod, transform * matrix);
 }
 
 LayoutSolidColor::LayoutSolidColor()

@@ -4,17 +4,15 @@
 
 namespace lunasvg {
 
-Property::Property(PropertyId id, const std::string& value, int specificity)
-    : id(id), value(value), specificity(specificity)
-{
-}
+static const std::string EmptyString;
 
 void PropertyList::set(PropertyId id, const std::string& value, int specificity)
 {
     auto property = get(id);
     if(property == nullptr)
     {
-        m_properties.emplace_back(id, value, specificity);
+        Property property{id, value, specificity};
+        m_properties.push_back(std::move(property));
         return;
     }
 
@@ -72,7 +70,6 @@ void Element::set(PropertyId id, const std::string& value, int specificity)
     properties.set(id, value, specificity);
 }
 
-static const std::string EmptyString;
 const std::string& Element::get(PropertyId id) const
 {
     auto property = properties.get(id);

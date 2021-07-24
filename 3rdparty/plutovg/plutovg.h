@@ -29,6 +29,9 @@ typedef struct {
     double h;
 } plutovg_rect_t;
 
+void plutovg_rect_init(plutovg_rect_t* rect, double x, double y, double w, double h);
+void plutovg_rect_init_zero(plutovg_rect_t* rect);
+
 typedef struct {
     double m00; double m10;
     double m01; double m11;

@@ -2,6 +2,7 @@
 #define CANVAS_H
 
 #include "property.h"
+#include "plutovg.h"
 
 #include <memory>
 
@@ -9,31 +10,6 @@ namespace lunasvg {
 
 using GradientStop = std::pair<double, Color>;
 using GradientStops = std::vector<GradientStop>;
-
-class LinearGradientValues
-{
-public:
-    LinearGradientValues(double x1, double y1, double x2, double y2);
-
-public:
-    double x1;
-    double y1;
-    double x2;
-    double y2;
-};
-
-class RadialGradientValues
-{
-public:
-    RadialGradientValues(double cx, double cy, double r, double fx, double fy);
-
-public:
-    double cx;
-    double cy;
-    double r;
-    double fx;
-    double fy;
-};
 
 using DashArray = std::vector<double>;
 
@@ -71,8 +47,8 @@ public:
     static std::shared_ptr<Canvas> create(const Rect& box);
 
     void setColor(const Color& color);
-    void setLinearGradient(const LinearGradientValues& values, SpreadMethod spread, const GradientStops& stops, const Transform& transform);
-    void setRadialGradient(const RadialGradientValues& values, SpreadMethod spread, const GradientStops& stops, const Transform& transform);
+    void setLinearGradient(double x1, double y1, double x2, double y2, const GradientStops& stops, SpreadMethod spread, const Transform& transform);
+    void setRadialGradient(double cx, double cy, double r, double fx, double fy, const GradientStops& stops, SpreadMethod spread, const Transform& transform);
     void setTexture(const Canvas* source, TextureType type, const Transform& transform);
 
     void fill(const Path& path, const Transform& transform, WindRule winding, BlendMode mode, double opacity);
@@ -95,7 +71,10 @@ private:
     Canvas(unsigned char* data, int width, int height, int stride);
     Canvas(int x, int y, int width, int height);
 
-    std::unique_ptr<CanvasImpl> d;
+    plutovg_surface_t* surface;
+    plutovg_t* pluto;
+    plutovg_matrix_t translation;
+    plutovg_rect_t rect;
 };
 
 } // namespace lunasvg

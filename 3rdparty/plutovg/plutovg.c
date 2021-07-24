@@ -5,8 +5,7 @@ plutovg_surface_t* plutovg_surface_create(int width, int height)
     plutovg_surface_t* surface = malloc(sizeof(plutovg_surface_t));
     surface->ref = 1;
     surface->owndata = 1;
-    surface->data = malloc((size_t)(width * height * 4));
-    memset(surface->data, 0, (size_t)(width * height * 4));
+    surface->data = calloc(1, (size_t)(width * height * 4));
     surface->width = width;
     surface->height = height;
     surface->stride = width * 4;

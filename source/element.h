@@ -106,16 +106,11 @@ enum class PropertyId
     Y2
 };
 
-class Property
+struct Property
 {
-public:
-    Property() = default;
-    Property(PropertyId id, const std::string& value, int specificity);
-
-public:
-    PropertyId id{PropertyId::Unknown};
+    PropertyId id;
     std::string value;
-    int specificity{0};
+    int specificity;
 };
 
 class PropertyList
