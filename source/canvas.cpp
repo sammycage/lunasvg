@@ -57,6 +57,9 @@ std::shared_ptr<Canvas> Canvas::create(unsigned char* data, unsigned int width, 
 
 std::shared_ptr<Canvas> Canvas::create(double x, double y, double width, double height)
 {
+    if(width <= 0 || height <= 0)
+        return std::shared_ptr<Canvas>(new Canvas(0, 0, 1, 1));
+
     auto l = static_cast<int>(floor(x));
     auto t = static_cast<int>(floor(y));
     auto r = static_cast<int>(ceil(x + width));
