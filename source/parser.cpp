@@ -402,7 +402,7 @@ Rect Parser::parseViewBox(const std::string& string)
             || !Utils::parseNumber(ptr, end, w)
             || !Utils::skipWsComma(ptr, end)
             || !Utils::parseNumber(ptr, end, h))
-        return Rect{};
+        return Rect::Invalid;
 
     if(w < 0.0 || h < 0.0)
         return Rect::Invalid;
