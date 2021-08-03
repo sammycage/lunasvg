@@ -191,8 +191,8 @@ double Document::height() const
 void Document::render(Bitmap bitmap, const Matrix& matrix, std::uint32_t bgColor) const
 {
     RenderState state(nullptr, RenderMode::Display);
-    state.matrix = Transform{matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f};
     state.canvas = Canvas::create(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.stride());
+    state.transform = Transform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f);
     state.canvas->clear(bgColor);
     root->render(state);
     state.canvas->rgba();
