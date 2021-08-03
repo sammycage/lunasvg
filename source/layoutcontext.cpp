@@ -281,15 +281,14 @@ LayoutLinearGradient::LayoutLinearGradient()
 
 void LayoutLinearGradient::apply(RenderState& state) const
 {
-    Transform matrix;
+    auto transform = this->transform;
     if(units == Units::ObjectBoundingBox)
     {
         const auto& box = state.objectBoundingBox();
-        matrix.translate(box.x, box.y);
-        matrix.scale(box.w, box.h);
+        transform *= Transform(box.w, 0, 0, box.h, box.x, box.y);
     }
 
-    state.canvas->setLinearGradient(x1, y1, x2, y2, stops, spreadMethod, transform * matrix);
+    state.canvas->setLinearGradient(x1, y1, x2, y2, stops, spreadMethod, transform);
 }
 
 LayoutRadialGradient::LayoutRadialGradient()
@@ -299,15 +298,14 @@ LayoutRadialGradient::LayoutRadialGradient()
 
 void LayoutRadialGradient::apply(RenderState& state) const
 {
-    Transform matrix;
+    auto transform = this->transform;
     if(units == Units::ObjectBoundingBox)
     {
         const auto& box = state.objectBoundingBox();
-        matrix.translate(box.x, box.y);
-        matrix.scale(box.w, box.h);
+        transform *= Transform(box.w, 0, 0, box.h, box.x, box.y);
     }
 
-    state.canvas->setRadialGradient(cx, cy, r, fx, fy, stops, spreadMethod, transform * matrix);
+    state.canvas->setRadialGradient(cx, cy, r, fx, fy, stops, spreadMethod, transform);
 }
 
 LayoutSolidColor::LayoutSolidColor()
