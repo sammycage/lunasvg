@@ -9,7 +9,7 @@
 ## Example
 
 ```cpp
-#include <lunasvg/document.h>
+#include <lunasvg.h>
 
 using namespace lunasvg;
 

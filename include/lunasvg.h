@@ -19,8 +19,8 @@
  * SOFTWARE.
 */
 
-#ifndef DOCUMENT_H
-#define DOCUMENT_H
+#ifndef LUNASVG_H
+#define LUNASVG_H
 
 #include <memory>
 #include <string>
@@ -235,4 +235,4 @@ private:
 
 } //namespace lunasvg
 
-#endif // DOCUMENT_H
+#endif // LUNASVG_H

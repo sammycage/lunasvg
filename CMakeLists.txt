@@ -25,10 +25,10 @@ if(LUNASVG_BUILD_EXAMPLES)
 endif()
 
 set(LUNASVG_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
-set(LUNASVG_INCDIR ${CMAKE_INSTALL_PREFIX}/include/lunasvg)
+set(LUNASVG_INCDIR ${CMAKE_INSTALL_PREFIX}/include)
 
 install(FILES
-    include/document.h
+    include/lunasvg.h
     DESTINATION ${LUNASVG_INCDIR}
 )
 

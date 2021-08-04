@@ -1,4 +1,4 @@
-#include "document.h"
+#include "lunasvg.h"
 #include "layoutcontext.h"
 #include "parser.h"
 

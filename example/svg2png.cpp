@@ -4,7 +4,7 @@
 #include <iostream>
 #include <sstream>
 
-#include <document.h>
+#include <lunasvg.h>
 
 using namespace lunasvg;
 
