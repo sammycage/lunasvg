@@ -165,21 +165,20 @@ inline bool parseInteger(const char*& ptr, const char* end, T& integer, int base
     if(ptr >= end || !isIntegralDigit(*ptr, base))
         return false;
 
-    int digitValue;
-    while(ptr < end && isIntegralDigit(*ptr, base))
-    {
+    do {
         const char ch = *ptr++;
+        int digitValue;
         if(IS_NUM(ch))
             digitValue = ch - '0';
         else if(ch >= 'a')
             digitValue = ch - 'a' + 10;
         else
             digitValue = ch - 'A' + 10;
+
         if(value > maxMultiplier || (value == maxMultiplier && static_cast<T>(digitValue) > (intMax % static_cast<T>(base)) + isNegative))
             return false;
-
         value = static_cast<T>(base) * value + static_cast<T>(digitValue);
-    }
+    } while(ptr < end && isIntegralDigit(*ptr, base));
 
     if(isNegative)
         integer = -static_cast<signed_t>(value);
@@ -215,8 +214,10 @@ inline bool parseNumber(const char*& ptr, const char* end, T& number)
 
     if(*ptr != '.')
     {
-        while(ptr < end && IS_NUM(*ptr))
-            integer = static_cast<T>(10) * integer + (*ptr++ - '0');
+        do {
+            integer = static_cast<T>(10) * integer + (*ptr - '0');
+            ++ptr;
+        } while(ptr < end && IS_NUM(*ptr));
     }
 
     if(ptr < end && *ptr == '.')
@@ -224,12 +225,13 @@ inline bool parseNumber(const char*& ptr, const char* end, T& number)
         ++ptr;
         if(ptr >= end || !IS_NUM(*ptr))
             return false;
+
         T div = 1;
-        while(ptr < end && IS_NUM(*ptr))
-        {
-            fraction = static_cast<T>(10) * fraction + (*ptr++ - '0');
+        do {
+            fraction = static_cast<T>(10) * fraction + (*ptr - '0');
             div *= static_cast<T>(10);
-        }
+            ++ptr;
+        } while(ptr < end && IS_NUM(*ptr));
         fraction /= div;
     }
 
@@ -248,8 +250,10 @@ inline bool parseNumber(const char*& ptr, const char* end, T& number)
         if(ptr >= end || !IS_NUM(*ptr))
             return false;
 
-        while(ptr < end && IS_NUM(*ptr))
-            exponent = 10 * exponent + (*ptr++ - '0');
+        do {
+            exponent = 10 * exponent + (*ptr - '0');
+            ++ptr;
+        } while(ptr < end && IS_NUM(*ptr));
     }
 
     number = sign * (integer + fraction);
