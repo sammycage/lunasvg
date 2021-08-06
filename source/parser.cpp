@@ -1782,8 +1782,7 @@ bool ParseDocument::parse(const char* data, std::size_t size)
 
     auto remove_comments = [](std::string& value) {
         auto start = value.find("/*");
-        while(start != std::string::npos)
-        {
+        while(start != std::string::npos) {
             auto end = value.find("*/", start + 2);
             value.erase(start, end - start + 2);
             start = value.find("/*");

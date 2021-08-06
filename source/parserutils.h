@@ -135,7 +135,7 @@ inline bool isIntegralDigit(char ch, int base)
         return ch - '0' < base;
 
     if(IS_ALPHA(ch))
-        return (ch>='a'&&ch<'a'+std::min(base, 36)-10) || (ch>='A'&&ch<'A'+std::min(base, 36)-10);
+        return (ch >= 'a' && ch < 'a' + std::min(base, 36) - 10) || (ch >= 'A' && ch < 'A' + std::min(base, 36) - 10);
 
     return false;
 }
@@ -151,16 +151,13 @@ inline bool parseInteger(const char*& ptr, const char* end, T& integer, int base
     using signed_t = typename std::make_signed<T>::type;
     const T maxMultiplier = intMax / static_cast<T>(base);
 
-    if(ptr >= end)
-        return false;
-
-    if(isSigned && *ptr == '-')
+    if(ptr < end && *ptr == '+')
+        ++ptr;
+    else if(ptr < end && isSigned && *ptr == '-')
     {
         ++ptr;
         isNegative = true;
     }
-    else if(*ptr == '+')
-        ++ptr;
 
     if(ptr >= end || !isIntegralDigit(*ptr, base))
         return false;
@@ -209,7 +206,7 @@ inline bool parseNumber(const char*& ptr, const char* end, T& number)
         sign = -1;
     }
 
-    if(ptr >= end || (!IS_NUM(*ptr) && *ptr != '.'))
+    if(ptr >= end || !(IS_NUM(*ptr) || *ptr == '.'))
         return false;
 
     if(*ptr != '.')
@@ -226,13 +223,13 @@ inline bool parseNumber(const char*& ptr, const char* end, T& number)
         if(ptr >= end || !IS_NUM(*ptr))
             return false;
 
-        T div = 1;
+        T divisor = 1;
         do {
             fraction = static_cast<T>(10) * fraction + (*ptr - '0');
-            div *= static_cast<T>(10);
+            divisor *= static_cast<T>(10);
             ++ptr;
         } while(ptr < end && IS_NUM(*ptr));
-        fraction /= div;
+        fraction /= divisor;
     }
 
     if(ptr < end && (*ptr == 'e' || *ptr == 'E')
