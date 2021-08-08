@@ -85,13 +85,12 @@ static const std::string InheritString{"inherit"};
 const std::string& Element::find(PropertyId id) const
 {
     auto element = this;
-    while(element)
-    {
+    do {
         auto& value = element->get(id);
         if(!value.empty() && value != InheritString)
             return value;
         element = element->parent;
-    }
+    } while(element);
 
     return EmptyString;
 }
