@@ -748,7 +748,7 @@ Paint Parser::parsePaint(const std::string& string, const StyledElement* element
 
     std::string fallback{ptr, end};
     if(fallback.empty())
-        return Paint{ref, defaultValue};
+        return Paint{ref, Color::Transparent};
     return Paint{ref, parseColor(fallback, element, defaultValue)};
 }
 
