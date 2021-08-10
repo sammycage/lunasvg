@@ -188,17 +188,17 @@ double Document::height() const
     return root->height;
 }
 
-void Document::render(Bitmap bitmap, const Matrix& matrix, std::uint32_t bgColor) const
+void Document::render(Bitmap bitmap, const Matrix& matrix, std::uint32_t backgroundColor) const
 {
     RenderState state(nullptr, RenderMode::Display);
     state.canvas = Canvas::create(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.stride());
     state.transform = Transform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f);
-    state.canvas->clear(bgColor);
+    state.canvas->clear(backgroundColor);
     root->render(state);
     state.canvas->rgba();
 }
 
-Bitmap Document::renderToBitmap(std::uint32_t width, std::uint32_t height, std::uint32_t bgColor) const
+Bitmap Document::renderToBitmap(std::uint32_t width, std::uint32_t height, std::uint32_t backgroundColor) const
 {
     if(root->width == 0.0 || root->height == 0.0)
         return Bitmap{};
@@ -219,7 +219,7 @@ Bitmap Document::renderToBitmap(std::uint32_t width, std::uint32_t height, std::
 
     Bitmap bitmap{width, height};
     Matrix matrix{width / root->width, 0, 0, height / root->height, 0, 0};
-    render(bitmap, matrix, bgColor);
+    render(bitmap, matrix, backgroundColor);
     return bitmap;
 }
 
