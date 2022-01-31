@@ -99,8 +99,8 @@ public:
     bool isNone() const { return m_ref.empty() && m_color.isNone(); }
 
 public:
-    Color m_color{Color::Transparent};
     std::string m_ref;
+    Color m_color{Color::Transparent};
 };
 
 class Point
