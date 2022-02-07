@@ -164,7 +164,7 @@ Rect Element::currentViewport() const
         auto element = static_cast<const SVGElement*>(this);
         if(element->has(PropertyId::ViewBox))
             return element->viewBox(); 
-        return Rect{0, 0, 512, 512};
+        return Rect{0, 0, 300, 150};
     }
 
     if(parent->id == ElementId::Svg)
