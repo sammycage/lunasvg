@@ -302,6 +302,7 @@ public:
     MarkerData markerData;
     Visibility visibility;
     WindRule clipRule;
+    double opacity;
     const LayoutMask* masker;
     const LayoutClipPath* clipper;
 

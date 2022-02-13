@@ -28,6 +28,7 @@ void GeometryElement::layout(LayoutContext* context, LayoutContainer* current) c
     shape->markerData = context->markerData(this, shape->path);
     shape->visibility = visibility();
     shape->clipRule = clip_rule();
+    shape->opacity = opacity();
     shape->masker = context->getMasker(mask());
     shape->clipper = context->getClipper(clip_path());
     current->addChild(std::move(shape));

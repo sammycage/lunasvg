@@ -398,7 +398,7 @@ void LayoutShape::render(RenderState& state) const
     if(visibility == Visibility::Hidden)
         return;
 
-    BlendInfo info{clipper, masker, 1.0, Rect::Invalid};
+    BlendInfo info{clipper, masker, opacity, Rect::Invalid};
     RenderState newState(this, state.mode());
     newState.transform = transform * state.transform;
     newState.beginGroup(state, info);
@@ -584,7 +584,7 @@ FillData LayoutContext::fillData(const StyledElement* element)
     FillData fillData;
     fillData.painter = getPainter(fill.ref());
     fillData.color = fill.color();
-    fillData.opacity = element->opacity() * element->fill_opacity();
+    fillData.opacity = element->fill_opacity();
     fillData.fillRule = element->fill_rule();
     return fillData;
 }
@@ -637,7 +637,7 @@ StrokeData LayoutContext::strokeData(const StyledElement* element)
     StrokeData strokeData;
     strokeData.painter = getPainter(stroke.ref());
     strokeData.color = stroke.color();
-    strokeData.opacity = element->opacity() * element->stroke_opacity();
+    strokeData.opacity = element->stroke_opacity();
     strokeData.width = lengthContex.valueForLength(element->stroke_width(), LengthMode::Both);
     strokeData.miterlimit = element->stroke_miterlimit();
     strokeData.cap = element->stroke_linecap();
