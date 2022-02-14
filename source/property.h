@@ -116,11 +116,14 @@ public:
 
 using PointList = std::vector<Point>;
 
+class Box;
+
 class Rect
 {
 public:
     Rect() = default;
     Rect(double x, double y, double w, double h);
+    Rect(const Box& box);
 
     Rect operator&(const Rect& rect) const;
     Rect operator|(const Rect& rect) const;
@@ -141,11 +144,14 @@ public:
     double h{0};
 };
 
+class Matrix;
+
 class Transform
 {
 public:
     Transform() = default;
     Transform(double m00, double m10, double m01, double m11, double m02, double m12);
+    Transform(const Matrix& matrix);
 
     Transform inverted() const;
     Transform operator*(const Transform& transform) const;

@@ -38,13 +38,14 @@
 
 namespace lunasvg {
 
-class Box
+class Rect;
+
+class LUNASVG_API Box
 {
 public:
     Box() = default;
-    Box(double x, double y, double w, double h)
-        : x(x), y(y), w(w), h(h)
-    {}
+    Box(double x, double y, double w, double h);
+    Box(const Rect& rect);
 
 public:
     double x{0};
@@ -53,13 +54,37 @@ public:
     double h{0};
 };
 
-class Matrix
+class Transform;
+
+class LUNASVG_API Matrix
 {
 public:
     Matrix() = default;
-    Matrix(double a, double b, double c, double d, double e, double f)
-        : a(a), b(b), c(c), d(d), e(e), f(f)
-    {}
+    Matrix(double a, double b, double c, double d, double e, double f);
+    Matrix(const Transform& transform);
+
+    Matrix& rotate(double angle);
+    Matrix& rotate(double angle, double cx, double cy);
+    Matrix& scale(double sx, double sy);
+    Matrix& shear(double shx, double shy);
+    Matrix& translate(double tx, double ty);
+    Matrix& transform(double a, double b, double c, double d, double e, double f);
+    Matrix& identity();
+    Matrix& invert();
+
+    Matrix& operator*=(const Matrix& matrix);
+    Matrix& premultiply(const Matrix& matrix);
+    Matrix& postmultiply(const Matrix& matrix);
+
+    Matrix inverted() const;
+    Matrix operator*(const Matrix& matrix) const;
+    Box map(const Box& box) const;
+
+    static Matrix rotated(double angle);
+    static Matrix rotated(double angle, double cx, double cy);
+    static Matrix scaled(double sx, double sy);
+    static Matrix sheared(double shx, double shy);
+    static Matrix translated(double tx, double ty);
 
 public:
     double a{1};
@@ -185,6 +210,8 @@ public:
      * @return this
      */
     Document* identity();
+
+    void setMatrix(const Matrix& matrix);
 
     /**
      * @brief Returns the current transformation matrix of the document

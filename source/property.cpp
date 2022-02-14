@@ -1,5 +1,6 @@
 #include "property.h"
 #include "styledelement.h"
+#include "lunasvg.h"
 
 #include <cmath>
 
@@ -38,6 +39,11 @@ const Rect Rect::Invalid{0, 0, -1, -1};
 
 Rect::Rect(double x, double y, double w, double h)
     : x(x), y(y), w(w), h(h)
+{
+}
+
+Rect::Rect(const Box& box)
+    : x(box.y), y(box.y), w(box.w), h(box.h)
 {
 }
 
@@ -87,6 +93,11 @@ Rect& Rect::unite(const Rect& rect)
 
 Transform::Transform(double m00, double m10, double m01, double m11, double m02, double m12)
     : m00(m00), m10(m10), m01(m01), m11(m11), m02(m02), m12(m12)
+{
+}
+
+Transform::Transform(const Matrix& matrix)
+    : m00(matrix.a), m10(matrix.b), m01(matrix.c), m11(matrix.d), m02(matrix.e), m12(matrix.f)
 {
 }
 

@@ -79,6 +79,129 @@ bool Bitmap::valid() const
     return !!m_impl;
 }
 
+Box::Box(double x, double y, double w, double h)
+    : x(x), y(y), w(w), h(h)
+{}
+
+Box::Box(const Rect& rect)
+    : x(rect.x), y(rect.y), w(rect.w), h(rect.h)
+{}
+
+Matrix::Matrix(double a, double b, double c, double d, double e, double f)
+    : a(a), b(b), c(c), d(d), e(e), f(f)
+{}
+
+Matrix::Matrix(const Transform& transform)
+    : a(transform.m00), b(transform.m10), c(transform.m01), d(transform.m11), e(transform.m02), f(transform.m12)
+{
+}
+
+Matrix& Matrix::rotate(double angle)
+{
+    *this = rotated(angle) * *this;
+    return *this;
+}
+
+Matrix& Matrix::rotate(double angle, double cx, double cy)
+{
+    *this = rotated(angle, cx, cy) * *this;
+    return *this;
+}
+
+Matrix& Matrix::scale(double sx, double sy)
+{
+    *this = scaled(sx, sy) * *this;
+    return *this;
+}
+
+Matrix& Matrix::shear(double shx, double shy)
+{
+    *this = sheared(shx, shy) * *this;
+    return *this;
+}
+
+Matrix& Matrix::translate(double tx, double ty)
+{
+   *this = translated(tx, ty) * *this;
+    return *this;
+}
+
+Matrix& Matrix::transform(double a, double b, double c, double d, double e, double f)
+{
+    *this = Matrix{a, b, c, d, e, f} * *this;
+    return *this;
+}
+
+Matrix& Matrix::identity()
+{
+    *this = Matrix{1, 0, 0, 1, 0, 0};
+    return *this;
+}
+
+Matrix& Matrix::invert()
+{
+    *this = inverted();
+    return *this;
+}
+
+Matrix& Matrix::operator*=(const Matrix& matrix)
+{
+    *this = *this * matrix;
+    return *this; 
+}
+
+Matrix& Matrix::premultiply(const Matrix& matrix)
+{
+    *this = matrix * *this;
+    return *this; 
+}
+
+Matrix& Matrix::postmultiply(const Matrix& matrix)
+{
+    *this = *this * matrix;
+    return *this; 
+}
+
+Matrix Matrix::inverted() const
+{
+    return Transform(*this).inverted();
+}
+
+Matrix Matrix::operator*(const Matrix& matrix) const
+{
+    return Transform(*this) * Transform(matrix);
+}
+
+Box Matrix::map(const Box& box) const
+{
+    return Transform(*this).map(box);
+}
+
+Matrix Matrix::rotated(double angle)
+{
+    return Transform::rotated(angle);
+}
+
+Matrix Matrix::rotated(double angle, double cx, double cy)
+{
+    return Transform::rotated(angle, cx, cy);
+}
+
+Matrix Matrix::scaled(double sx, double sy)
+{
+    return Transform::scaled(sx, sy);;
+}
+
+Matrix Matrix::sheared(double shx, double shy)
+{
+    return Transform::sheared(shx, shy);
+}
+
+Matrix Matrix::translated(double tx, double ty)
+{
+    return Transform::translated(tx, ty);
+}
+
 std::unique_ptr<Document> Document::loadFromFile(const std::string& filename)
 {
     std::ifstream fs;
@@ -160,22 +283,19 @@ Document* Document::identity()
     return this;
 }
 
+void Document::setMatrix(const Matrix& matrix)
+{
+    root->transform = Transform(matrix);
+}
+
 Matrix Document::matrix() const
 {
-    Matrix matrix;
-    matrix.a = root->transform.m00;
-    matrix.b = root->transform.m10;
-    matrix.c = root->transform.m01;
-    matrix.d = root->transform.m11;
-    matrix.e = root->transform.m02;
-    matrix.f = root->transform.m12;
-    return matrix;
+    return root->transform;
 }
 
 Box Document::box() const
 {
-    auto box = root->map(root->strokeBoundingBox());
-    return Box{box.x, box.y, box.w, box.h};
+    return root->map(root->strokeBoundingBox());
 }
 
 double Document::width() const
@@ -192,7 +312,7 @@ void Document::render(Bitmap bitmap, const Matrix& matrix, std::uint32_t backgro
 {
     RenderState state(nullptr, RenderMode::Display);
     state.canvas = Canvas::create(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.stride());
-    state.transform = Transform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f);
+    state.transform = Transform(matrix);
     state.canvas->clear(backgroundColor);
     root->render(state);
     state.canvas->rgba();
