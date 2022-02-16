@@ -1820,6 +1820,7 @@ bool ParseDocument::parse(const char* data, std::size_t size)
             if(!readIdentifier(ptr, end, name))
                 return false;
 
+            Utils::skipWs(ptr, end);
             if(ptr >= end || *ptr != '>')
                 return false;
 
