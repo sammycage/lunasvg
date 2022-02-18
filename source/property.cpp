@@ -43,7 +43,7 @@ Rect::Rect(double x, double y, double w, double h)
 }
 
 Rect::Rect(const Box& box)
-    : x(box.y), y(box.y), w(box.w), h(box.h)
+    : x(box.x), y(box.y), w(box.w), h(box.h)
 {
 }
 
