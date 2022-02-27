@@ -99,7 +99,7 @@ class LUNASVG_API Bitmap
 {
 public:
     /**
-     * @note Default bitmap format is RGBA (non-premultiplied).
+     * @note Bitmap format is ARGB Premultiplied.
      */
     Bitmap();
     Bitmap(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride);
@@ -112,7 +112,12 @@ public:
     std::uint32_t width() const;
     std::uint32_t height() const;
     std::uint32_t stride() const;
-    bool valid() const;
+
+    void clear(std::uint32_t color);
+    void convert(int ri, int gi, int bi, int ai, bool unpremultiply);
+    void convertToRGBA() { convert(0, 1, 2, 3, true); }
+
+    bool valid() const { return !!m_impl; }
 
 private:
     struct Impl;
@@ -241,9 +246,8 @@ public:
      * @brief Renders the document to a bitmap
      * @param matrix - the current transformation matrix
      * @param bitmap - target image on which the content will be drawn
-     * @param backgroundColor - background color in 0xRRGGBBAA format
      */
-    void render(Bitmap bitmap, const Matrix& matrix = Matrix{}, std::uint32_t backgroundColor = 0x00000000) const;
+    void render(Bitmap bitmap, const Matrix& matrix = Matrix{}) const;
 
     /**
      * @brief Renders the document to a bitmap

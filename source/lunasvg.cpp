@@ -74,9 +74,61 @@ std::uint32_t Bitmap::stride() const
     return m_impl ? m_impl->stride : 0;
 }
 
-bool Bitmap::valid() const
+void Bitmap::clear(std::uint32_t color)
 {
-    return !!m_impl;
+    auto r = (color >> 24) & 0xFF;
+    auto g = (color >> 16) & 0xFF;
+    auto b = (color >> 8) & 0xFF;
+    auto a = (color >> 0) & 0xFF;
+
+    auto pr = (r * a) / 255;
+    auto pg = (g * a) / 255;
+    auto pb = (b * a) / 255;
+
+    auto width = this->width();
+    auto height = this->height();
+    auto data = this->data();
+    for(int y = 0;y < height;y++)
+    {
+        for(int x = 0;x < width;x++)
+        {
+            data[0] = pb;
+            data[1] = pg;
+            data[2] = pr;
+            data[3] = a;
+            data += 4;
+        }
+    }
+}
+
+void Bitmap::convert(int ri, int gi, int bi, int ai, bool unpremultiply)
+{
+    auto width = this->width();
+    auto height = this->height();
+    auto data = this->data();
+    for(int y = 0;y < height;y++)
+    {
+        for(int x = 0;x < width;x++)
+        {
+            auto b = data[0];
+            auto g = data[1];
+            auto r = data[2];
+            auto a = data[3];
+
+            if(unpremultiply && a != 0)
+            {
+                r = (r * 255) / a;
+                g = (g * 255) / a;
+                b = (b * 255) / a;
+            }
+
+            data[ri] = r;
+            data[gi] = g;
+            data[bi] = b;
+            data[ai] = a;
+            data += 4;
+        }
+    }
 }
 
 Box::Box(double x, double y, double w, double h)
@@ -308,14 +360,12 @@ double Document::height() const
     return root->height;
 }
 
-void Document::render(Bitmap bitmap, const Matrix& matrix, std::uint32_t backgroundColor) const
+void Document::render(Bitmap bitmap, const Matrix& matrix) const
 {
     RenderState state(nullptr, RenderMode::Display);
     state.canvas = Canvas::create(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.stride());
     state.transform = Transform(matrix);
-    state.canvas->clear(backgroundColor);
     root->render(state);
-    state.canvas->rgba();
 }
 
 Bitmap Document::renderToBitmap(std::uint32_t width, std::uint32_t height, std::uint32_t backgroundColor) const
@@ -337,9 +387,10 @@ Bitmap Document::renderToBitmap(std::uint32_t width, std::uint32_t height, std::
         width = static_cast<std::uint32_t>(std::ceil(height * root->width / root->height));
     }
 
-    Bitmap bitmap{width, height};
-    Matrix matrix{width / root->width, 0, 0, height / root->height, 0, 0};
-    render(bitmap, matrix, backgroundColor);
+    Matrix matrix(width / root->width, 0, 0, height / root->height, 0, 0);
+    Bitmap bitmap(width, height);
+    bitmap.clear(backgroundColor);
+    render(bitmap, matrix);
     return bitmap;
 }
 
