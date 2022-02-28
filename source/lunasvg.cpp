@@ -87,9 +87,12 @@ void Bitmap::clear(std::uint32_t color)
 
     auto width = this->width();
     auto height = this->height();
-    auto data = this->data();
+    auto stride = this->stride();
+    auto rowData = this->data();
+
     for(int y = 0;y < height;y++)
     {
+        auto data = rowData;
         for(int x = 0;x < width;x++)
         {
             data[0] = pb;
@@ -98,6 +101,7 @@ void Bitmap::clear(std::uint32_t color)
             data[3] = a;
             data += 4;
         }
+        rowData += stride;
     }
 }
 
@@ -105,9 +109,12 @@ void Bitmap::convert(int ri, int gi, int bi, int ai, bool unpremultiply)
 {
     auto width = this->width();
     auto height = this->height();
-    auto data = this->data();
+    auto stride = this->stride();
+    auto rowData = this->data();
+
     for(int y = 0;y < height;y++)
     {
+        auto data = rowData;
         for(int x = 0;x < width;x++)
         {
             auto b = data[0];
@@ -128,6 +135,7 @@ void Bitmap::convert(int ri, int gi, int bi, int ai, bool unpremultiply)
             data[ai] = a;
             data += 4;
         }
+        rowData += stride;
     }
 }
 
