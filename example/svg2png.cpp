@@ -57,6 +57,7 @@ int main(int argc, char** argv)
     auto basename = filename.substr(filename.find_last_of("/\\") + 1);
     basename.append(".png");
 
+    bitmap.convertToRGBA();
     stbi_write_png(basename.c_str(), int(bitmap.width()), int(bitmap.height()), 4, bitmap.data(), 0);
 
     std::cout << "Generated PNG file : " << basename << std::endl;
