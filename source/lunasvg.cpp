@@ -90,10 +90,10 @@ void Bitmap::clear(std::uint32_t color)
     auto stride = this->stride();
     auto rowData = this->data();
 
-    for(unsigned int y = 0;y < height;y++)
+    for(std::uint32_t y = 0;y < height;y++)
     {
         auto data = rowData;
-        for(unsigned int x = 0;x < width;x++)
+        for(std::uint32_t x = 0;x < width;x++)
         {
             data[0] = pb;
             data[1] = pg;
@@ -112,10 +112,10 @@ void Bitmap::convert(int ri, int gi, int bi, int ai, bool unpremultiply)
     auto stride = this->stride();
     auto rowData = this->data();
 
-    for(unsigned int y = 0;y < height;y++)
+    for(std::uint32_t y = 0;y < height;y++)
     {
         auto data = rowData;
-        for(unsigned int x = 0;x < width;x++)
+        for(std::uint32_t x = 0;x < width;x++)
         {
             auto b = data[0];
             auto g = data[1];
