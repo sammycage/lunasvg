@@ -24,5 +24,5 @@ if(LUNASVG_BUILD_EXAMPLES)
     add_subdirectory(example)
 endif()
 
-set_target_properties(lunasvg PROPERTIES PUBLIC_HEADER "lunasvg.h")
+set_target_properties(lunasvg PROPERTIES PUBLIC_HEADER "include/lunasvg.h")
 install(TARGETS lunasvg RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib PUBLIC_HEADER DESTINATION include)
