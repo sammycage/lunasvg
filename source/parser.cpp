@@ -1025,6 +1025,7 @@ static const std::map<std::string, PropertyId> propertymap = {
     {"gradientTransform", PropertyId::GradientTransform},
     {"gradientUnits", PropertyId::GradientUnits},
     {"height", PropertyId::Height},
+    {"href", PropertyId::Href},
     {"id", PropertyId::Id},
     {"markerHeight", PropertyId::MarkerHeight},
     {"markerUnits", PropertyId::MarkerUnits},
