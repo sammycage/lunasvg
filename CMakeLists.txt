@@ -1,9 +1,14 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.13)
 
 project(lunasvg VERSION 2.3.1 LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_C_STANDARD 11)
+
+# Default to hidden visibility for symbols
+set(CMAKE_C_VISIBILITY_PRESET hidden)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 option(BUILD_SHARED_LIBS "Builds as shared library" OFF)
 option(LUNASVG_BUILD_EXAMPLES "Builds examples" OFF)
@@ -20,17 +25,12 @@ set_target_properties(lunasvg
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-    CXX_VISIBILITY_PRESET hidden
-    VISIBILITY_INLINES_HIDDEN 1
 )
 
 add_library(lunasvg::lunasvg ALIAS lunasvg)
 
 if(NOT BUILD_SHARED_LIBS)
-    set_target_properties(lunasvg
-        PROPERTIES
-        COMPILE_FLAGS -DLUNARSVG_STATIC_DEFINE
-    )
+    target_compile_definitions(lunasvg PUBLIC LUNASVG_STATIC_DEFINE)
 endif()
 
 if(LUNASVG_BUILD_EXAMPLES)
@@ -78,6 +78,3 @@ install(FILES
 )
 
 export(EXPORT lunasvg-targets FILE ${CMAKE_CURRENT_BINARY_DIR}/lunasvgTargets.cmake NAMESPACE lunasvg::)
-
-# Register package in user's package registry
-export(PACKAGE lunasvg)
