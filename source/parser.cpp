@@ -771,7 +771,7 @@ Paint Parser::parsePaint(const std::string& string, const StyledElement* element
         return defaultValue;
     }
 
-    if(ptr == '\'' || *ptr == '"')
+    if(*ptr == '\'' || *ptr == '"')
         ++ptr;
 
     if(ptr >= end || *ptr != ')')
