@@ -373,13 +373,22 @@ std::string Parser::parseUrl(const std::string& string)
     auto ptr = string.data();
     auto end = ptr + string.size();
 
-    if(!Utils::skipDesc(ptr, end, "url(#"))
+    if(!Utils::skipDesc(ptr, end, "url(")
+        || !Utils::skipWs(ptr, end)) {
+        return std::string{};
+    }
+
+    char delim = ')';
+    if(*ptr == '\'' || *ptr == '"') {
+        delim = *ptr;
+        ++ptr;
+    }
+
+    if(!Utils::skipDesc(ptr, end, '#'))
         return std::string{};
 
     std::string value;
-    if(!Utils::readUntil(ptr, end, ')', value))
-        return std::string{};
-
+    Utils::readUntil(ptr, end, delim, value);
     return value;
 }
 
@@ -744,11 +753,28 @@ Paint Parser::parsePaint(const std::string& string, const StyledElement* element
     auto ptr = string.data();
     auto end = ptr + string.size();
 
-    if(!Utils::skipDesc(ptr, end, "url(#"))
+    if(!Utils::skipDesc(ptr, end, "url("))
         return parseColor(string, element, defaultValue);
 
+    if(!Utils::skipWs(ptr, end))
+        return defaultValue;
+
+    char delim = ')';
+    if(*ptr == '\'' || *ptr == '"') {
+        delim = *ptr;
+        ++ptr;
+    }
+
     std::string ref;
-    if(!Utils::readUntil(ptr, end, ')', ref))
+    if(!Utils::skipDesc(ptr, end, '#')
+        || !Utils::readUntil(ptr, end, delim, ref)) {
+        return defaultValue;
+    }
+
+    if(ptr == '\'' || *ptr == '"')
+        ++ptr;
+
+    if(ptr >= end || *ptr != ')')
         return defaultValue;
 
     ++ptr;
