@@ -18,6 +18,10 @@ add_subdirectory(3rdparty/plutovg)
 if(BUILD_SHARED_LIBS)
     target_compile_definitions(lunasvg PUBLIC LUNASVG_SHARED)
     target_compile_definitions(lunasvg PRIVATE LUNASVG_EXPORT)
+    set_target_properties(lunasvg PROPERTIES
+      VERSION ${PROJECT_VERSION}
+      SOVERSION ${PROJECT_VERSION_MAJOR}
+    )
 endif()
 
 if(LUNASVG_BUILD_EXAMPLES)
