@@ -373,22 +373,8 @@ std::string Parser::parseUrl(const std::string& string)
     auto ptr = string.data();
     auto end = ptr + string.size();
 
-    if(!Utils::skipDesc(ptr, end, "url(")
-        || !Utils::skipWs(ptr, end)) {
-        return std::string{};
-    }
-
-    char delim = ')';
-    if(*ptr == '\'' || *ptr == '"') {
-        delim = *ptr;
-        ++ptr;
-    }
-
-    if(!Utils::skipDesc(ptr, end, '#'))
-        return std::string{};
-
     std::string value;
-    Utils::readUntil(ptr, end, delim, value);
+    parseUrlFragment(ptr, end, value);
     return value;
 }
 
@@ -753,32 +739,9 @@ Paint Parser::parsePaint(const std::string& string, const StyledElement* element
     auto ptr = string.data();
     auto end = ptr + string.size();
 
-    if(!Utils::skipDesc(ptr, end, "url("))
-        return parseColor(string, element, defaultValue);
-
-    if(!Utils::skipWs(ptr, end))
-        return defaultValue;
-
-    char delim = ')';
-    if(*ptr == '\'' || *ptr == '"') {
-        delim = *ptr;
-        ++ptr;
-    }
-
     std::string ref;
-    if(!Utils::skipDesc(ptr, end, '#')
-        || !Utils::readUntil(ptr, end, delim, ref)) {
-        return defaultValue;
-    }
-
-    if(*ptr == '\'' || *ptr == '"')
-        ++ptr;
-
-    if(ptr >= end || *ptr != ')')
-        return defaultValue;
-
-    ++ptr;
-    Utils::skipWs(ptr, end);
+    if(!parseUrlFragment(ptr, end, ref))
+        return parseColor(string, element, defaultValue);
 
     std::string fallback{ptr, end};
     if(fallback.empty())
@@ -953,6 +916,43 @@ bool Parser::parseColorComponent(const char*& ptr, const char* end, double& valu
         value *= 2.55;
 
     value = (value < 0.0) ? 0.0 : (value > 255.0) ? 255.0 : std::round(value);
+    return true;
+}
+
+bool Parser::parseUrlFragment(const char*& ptr, const char* end, std::string& ref)
+{
+    if(!Utils::skipDesc(ptr, end, "url(")
+        || !Utils::skipWs(ptr, end)) {
+        return false;
+    }
+
+    switch(*ptr) {
+    case '\'':
+    case '"': {
+        auto delim = *ptr;
+        ++ptr; // delim
+        if(!Utils::skipWs(ptr, end) || *ptr != '#')
+            return false;
+        ++ptr; // #
+        if(!Utils::readUntil(ptr, end, delim, ref))
+            return false;
+        ++ptr; // delim
+        break;
+    }
+
+    case '#':
+        ++ptr; // #
+        Utils::readUntil(ptr, end, ')', ref);
+        break;
+    default:
+        return false;
+    }
+
+    if(ptr >= end || *ptr != ')')
+        return false;
+
+    ++ptr; // )
+    Utils::skipWs(ptr, end);
     return true;
 }
 

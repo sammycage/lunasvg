@@ -59,6 +59,7 @@ private:
     static bool parseNumberList(const char*& ptr, const char* end, double* values, int count);
     static bool parseArcFlag(const char*& ptr, const char* end, bool& flag);
     static bool parseColorComponent(const char*& ptr, const char* end, double& value);
+    static bool parseUrlFragment(const char*& ptr, const char* end, std::string& ref);
     static bool parseTransform(const char*& ptr, const char* end, TransformType& type, double* values, int& count);
 };
 

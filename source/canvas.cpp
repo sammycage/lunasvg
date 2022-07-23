@@ -153,50 +153,6 @@ void Canvas::mask(const Rect& clip, const Transform& transform)
     plutovg_fill(pluto);
 }
 
-void Canvas::clear(unsigned int value)
-{
-    auto r = (value >> 24) & 0xFF;
-    auto g = (value >> 16) & 0xFF;
-    auto b = (value >> 8) & 0xFF;
-    auto a = (value >> 0) & 0xFF;
-
-    plutovg_set_source_rgba(pluto, r / 255.0, g / 255.0, b / 255.0, a / 255.0);
-    plutovg_set_opacity(pluto, 1.0);
-    plutovg_set_operator(pluto, plutovg_operator_src);
-    plutovg_paint(pluto);
-}
-
-void Canvas::rgba()
-{
-    auto width = plutovg_surface_get_width(surface);
-    auto height = plutovg_surface_get_height(surface);
-    auto stride = plutovg_surface_get_stride(surface);
-    auto data = plutovg_surface_get_data(surface);
-    for(int y = 0;y < height;y++)
-    {
-        auto pixels = reinterpret_cast<uint32_t*>(data + stride * y);
-        for(int x = 0;x < width;x++)
-        {
-            auto pixel = pixels[x];
-            auto a = (pixel >> 24) & 0xFF;
-            if(a == 0)
-                continue;
-
-            auto r = (pixel >> 16) & 0xFF;
-            auto g = (pixel >> 8) & 0xFF;
-            auto b = (pixel >> 0) & 0xFF;
-            if(a != 255)
-            {
-                r = (r * 255) / a;
-                g = (g * 255) / a;
-                b = (b * 255) / a;
-            }
-
-            pixels[x] = (a << 24) | (b << 16) | (g << 8) | r;
-        }
-    }
-}
-
 void Canvas::luminance()
 {
     auto width = plutovg_surface_get_width(surface);
