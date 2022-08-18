@@ -39,6 +39,7 @@
 namespace lunasvg {
 
 class Rect;
+class Matrix;
 
 class LUNASVG_API Box
 {
@@ -46,6 +47,9 @@ public:
     Box() = default;
     Box(double x, double y, double w, double h);
     Box(const Rect& rect);
+
+    Box& transform(const Matrix& matrix);
+    Box transformed(const Matrix& matrix) const;
 
 public:
     double x{0};
@@ -78,7 +82,6 @@ public:
 
     Matrix inverted() const;
     Matrix operator*(const Matrix& matrix) const;
-    Box map(const Box& box) const;
 
     static Matrix rotated(double angle);
     static Matrix rotated(double angle, double cx, double cy);

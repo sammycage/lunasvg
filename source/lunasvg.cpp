@@ -141,15 +141,29 @@ void Bitmap::convert(int ri, int gi, int bi, int ai, bool unpremultiply)
 
 Box::Box(double x, double y, double w, double h)
     : x(x), y(y), w(w), h(h)
-{}
+{
+}
 
 Box::Box(const Rect& rect)
     : x(rect.x), y(rect.y), w(rect.w), h(rect.h)
-{}
+{
+}
+
+Box& Box::transform(const Matrix &matrix)
+{
+    *this = transformed(matrix);
+    return *this;
+}
+
+Box Box::transformed(const Matrix& matrix) const
+{
+    return Transform(matrix).map(*this);
+}
 
 Matrix::Matrix(double a, double b, double c, double d, double e, double f)
     : a(a), b(b), c(c), d(d), e(e), f(f)
-{}
+{
+}
 
 Matrix::Matrix(const Transform& transform)
     : a(transform.m00), b(transform.m10), c(transform.m01), d(transform.m11), e(transform.m02), f(transform.m12)
@@ -230,11 +244,6 @@ Matrix Matrix::inverted() const
 Matrix Matrix::operator*(const Matrix& matrix) const
 {
     return Transform(*this) * Transform(matrix);
-}
-
-Box Matrix::map(const Box& box) const
-{
-    return Transform(*this).map(box);
 }
 
 Matrix Matrix::rotated(double angle)
