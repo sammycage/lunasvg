@@ -13,7 +13,7 @@ static SW_FT_Outline* sw_ft_outline_create(int points, int contours)
     SW_FT_Outline* ft = malloc(sizeof(SW_FT_Outline));
     ft->points = malloc((size_t)(points + contours) * sizeof(SW_FT_Vector));
     ft->tags = malloc((size_t)(points + contours) * sizeof(char));
-    ft->contours = malloc((size_t)contours * sizeof(short));
+    ft->contours = malloc((size_t)contours * sizeof(int));
     ft->contours_flag = malloc((size_t)contours * sizeof(char));
     ft->n_points = ft->n_contours = 0;
     ft->flags = 0x0;

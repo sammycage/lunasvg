@@ -650,8 +650,8 @@ static void ft_stroke_border_export(SW_FT_StrokeBorder border,
     {
         SW_FT_UInt   count = border->num_points;
         SW_FT_Byte*  tags = border->tags;
-        SW_FT_Short* write = outline->contours + outline->n_contours;
-        SW_FT_Short  idx = (SW_FT_Short)outline->n_points;
+        SW_FT_Int* write = outline->contours + outline->n_contours;
+        SW_FT_Int  idx = (SW_FT_Int)outline->n_points;
 
         for (; count > 0; count--, tags++, idx++) {
             if (*tags & SW_FT_STROKE_TAG_END) {
