@@ -661,7 +661,7 @@ static void ft_stroke_border_export(SW_FT_StrokeBorder border,
         }
     }
 
-    outline->n_points = (short)(outline->n_points + border->num_points);
+    outline->n_points = (int)(outline->n_points + border->num_points);
 
     assert(SW_FT_Outline_Check(outline) == 0);
 }
