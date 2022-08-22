@@ -310,48 +310,6 @@ std::unique_ptr<Document> Document::loadFromData(const char* data)
     return loadFromData(data, std::strlen(data));
 }
 
-Document* Document::rotate(double angle)
-{
-    root->transform.rotate(angle);
-    return this;
-}
-
-Document* Document::rotate(double angle, double cx, double cy)
-{
-    root->transform.rotate(angle, cx, cy);
-    return this;
-}
-
-Document* Document::scale(double sx, double sy)
-{
-    root->transform.scale(sx, sy);
-    return this;
-}
-
-Document* Document::shear(double shx, double shy)
-{
-    root->transform.shear(shx, shy);
-    return this;
-}
-
-Document* Document::translate(double tx, double ty)
-{
-    root->transform.translate(tx, ty);
-    return this;
-}
-
-Document* Document::transform(double a, double b, double c, double d, double e, double f)
-{
-    root->transform.transform(a, b, c, d, e, f);
-    return this;
-}
-
-Document* Document::identity()
-{
-    root->transform.identity();
-    return this;
-}
-
 void Document::setMatrix(const Matrix& matrix)
 {
     root->transform = Transform(matrix);
