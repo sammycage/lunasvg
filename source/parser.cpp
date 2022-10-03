@@ -1164,8 +1164,8 @@ static inline bool readIdentifier(const char*& ptr, const char* end, std::string
     return true;
 }
 
-#define IS_CSS_STARTNAMECHAR(c) (IS_ALPHA(c) || (c) == '_')
-#define IS_CSS_NAMECHAR(c) (IS_CSS_STARTNAMECHAR(c) || IS_NUM(c) || (c) == '-')
+#define IS_CSS_STARTNAMECHAR(c) (IS_ALPHA(c) || (c) == '_' || (c) == '-')
+#define IS_CSS_NAMECHAR(c) (IS_CSS_STARTNAMECHAR(c) || IS_NUM(c))
 static inline bool readCSSIdentifier(const char*& ptr, const char* end, std::string& value)
 {
     if(ptr >= end || !IS_CSS_STARTNAMECHAR(*ptr))
