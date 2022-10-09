@@ -9,7 +9,7 @@ static plutovg_fill_rule_t to_plutovg_fill_rule(WindRule winding);
 static plutovg_operator_t to_plutovg_operator(BlendMode mode);
 static plutovg_line_cap_t to_plutovg_line_cap(LineCap cap);
 static plutovg_line_join_t to_plutovg_line_join(LineJoin join);
-static plutovg_spread_method_t to_plutovg_spread_methood(SpreadMethod spread);
+static plutovg_spread_method_t to_plutovg_spread_method(SpreadMethod spread);
 static void to_plutovg_stops(plutovg_gradient_t* gradient, const GradientStops& stops);
 static void to_plutovg_path(plutovg_t* pluto, const Path& path);
 
@@ -59,7 +59,7 @@ Canvas::~Canvas()
 
 void Canvas::setColor(const Color& color)
 {
-    plutovg_set_source_rgba(pluto, color.r, color.g, color.b, color.a);
+    plutovg_set_source_rgba(pluto, color.red() / 255.0, color.green() / 255.0, color.blue() / 255.0, color.alpha() / 255.0);
 }
 
 void Canvas::setLinearGradient(double x1, double y1, double x2, double y2, const GradientStops& stops, SpreadMethod spread, const Transform& transform)
@@ -67,7 +67,7 @@ void Canvas::setLinearGradient(double x1, double y1, double x2, double y2, const
     auto gradient = plutovg_gradient_create_linear(x1, y1, x2, y2);
     auto matrix = to_plutovg_matrix(transform);
     to_plutovg_stops(gradient, stops);
-    plutovg_gradient_set_spread(gradient, to_plutovg_spread_methood(spread));
+    plutovg_gradient_set_spread(gradient, to_plutovg_spread_method(spread));
     plutovg_gradient_set_matrix(gradient, &matrix);
     plutovg_set_source_gradient(pluto, gradient);
     plutovg_gradient_destroy(gradient);
@@ -78,7 +78,7 @@ void Canvas::setRadialGradient(double cx, double cy, double r, double fx, double
     auto gradient = plutovg_gradient_create_radial(cx, cy, r, fx, fy, 0);
     auto matrix = to_plutovg_matrix(transform);
     to_plutovg_stops(gradient, stops);
-    plutovg_gradient_set_spread(gradient, to_plutovg_spread_methood(spread));
+    plutovg_gradient_set_spread(gradient, to_plutovg_spread_method(spread));
     plutovg_gradient_set_matrix(gradient, &matrix);
     plutovg_set_source_gradient(pluto, gradient);
     plutovg_gradient_destroy(gradient);
@@ -227,7 +227,7 @@ plutovg_line_join_t to_plutovg_line_join(LineJoin join)
     return join == LineJoin::Miter ? plutovg_line_join_miter : join == LineJoin::Round ? plutovg_line_join_round : plutovg_line_join_bevel;
 }
 
-static plutovg_spread_method_t to_plutovg_spread_methood(SpreadMethod spread)
+static plutovg_spread_method_t to_plutovg_spread_method(SpreadMethod spread)
 {
     return spread == SpreadMethod::Pad ? plutovg_spread_method_pad : spread == SpreadMethod::Reflect ? plutovg_spread_method_reflect : plutovg_spread_method_repeat;
 }
@@ -238,7 +238,7 @@ static void to_plutovg_stops(plutovg_gradient_t* gradient, const GradientStops& 
     {
         auto offset = std::get<0>(stop);
         auto& color = std::get<1>(stop);
-        plutovg_gradient_add_stop_rgba(gradient, offset, color.r, color.g, color.b, color.a);
+        plutovg_gradient_add_stop_rgba(gradient, offset, color.red() / 255.0, color.green() / 255.0, color.blue() / 255.0, color.alpha() / 255.0);
     }
 }
 

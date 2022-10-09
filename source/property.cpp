@@ -2,21 +2,26 @@
 #include "styledelement.h"
 #include "lunasvg.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace lunasvg {
 
-const Color Color::Black{0, 0, 0, 1};
-const Color Color::White{1, 1, 1, 1};
-const Color Color::Red{1, 0, 0, 1};
-const Color Color::Green{0, 1, 0, 1};
-const Color Color::Blue{0, 0, 1, 1};
-const Color Color::Yellow{1, 1, 0, 1};
-const Color Color::Transparent{0, 0, 0, 0};
+const Color Color::Black(0x000000FF);
+const Color Color::White(0xFFFFFFFF);
+const Color Color::Transparent(0x00000000);
 
-Color::Color(double r, double g, double b, double a)
-    : r(r), g(g), b(b), a(a)
+Color& Color::combine(double opacity)
 {
+    *this = combined(opacity);
+    return *this;
+}
+
+Color Color::combined(double opacity) const
+{
+    auto rgb = m_value & 0x00FFFFFF;
+    auto a = static_cast<int>(std::clamp(0.0, 255.0, opacity * alpha()));
+    return Color(rgb | a << 24);
 }
 
 Paint::Paint(const Color& color)
