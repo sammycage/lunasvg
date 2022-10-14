@@ -7,7 +7,7 @@
 
 namespace lunasvg {
 
-const Color Color::Black(0x000000FF);
+const Color Color::Black(0xFF000000);
 const Color Color::White(0xFFFFFFFF);
 const Color Color::Transparent(0x00000000);
 
