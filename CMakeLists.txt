@@ -12,7 +12,6 @@ add_library(lunasvg)
 
 add_subdirectory(include)
 add_subdirectory(source)
-add_subdirectory(3rdparty/software)
 add_subdirectory(3rdparty/plutovg)
 
 if(BUILD_SHARED_LIBS)

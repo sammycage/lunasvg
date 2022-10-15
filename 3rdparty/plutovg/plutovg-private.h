@@ -66,9 +66,9 @@ struct plutovg_paint {
 };
 
 typedef struct {
-    short x;
-    short y;
-    unsigned short len;
+    int x;
+    int len;
+    int y;
     unsigned char coverage;
 } plutovg_span_t;
 
