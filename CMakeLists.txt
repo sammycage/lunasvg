@@ -7,12 +7,19 @@ set(CMAKE_C_STANDARD 11)
 
 option(BUILD_SHARED_LIBS "Builds as shared library" OFF)
 option(LUNASVG_BUILD_EXAMPLES "Builds examples" OFF)
+option(BUILD_PLUTOVG "Enable building of plutovg" ON)
 
 add_library(lunasvg)
 
 add_subdirectory(include)
 add_subdirectory(source)
-add_subdirectory(3rdparty/plutovg)
+
+if(BUILD_PLUTOVG)
+  add_subdirectory(3rdparty/plutovg EXCLUDE_FROM_ALL 3rdparty/plutovg/example)
+  include_directories(3rdparty/plutovg/include)
+  link_directories(3rdparty/plutovg/source)
+  target_link_libraries(lunasvg plutovg)
+endif()
 
 if(BUILD_SHARED_LIBS)
     target_compile_definitions(lunasvg PUBLIC LUNASVG_SHARED)
