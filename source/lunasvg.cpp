@@ -297,7 +297,7 @@ std::unique_ptr<Document> Document::loadFromData(const char* data, std::size_t s
         return nullptr;
 
     auto root = builder.build();
-    if(!root || root->children.empty())
+    if(root == nullptr)
         return nullptr;
 
     std::unique_ptr<Document> document(new Document);
