@@ -1,0 +1,3 @@
+[submodule "3rdparty/plutovg"]
+	path = 3rdparty/plutovg
+	url = https://github.com/sammycage/plutovg

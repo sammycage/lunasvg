@@ -47,7 +47,7 @@ int main()
 ## Build
 
 ```
-git clone https://github.com/sammycage/lunasvg.git
+git clone --recurse-submodules https://github.com/sammycage/lunasvg.git
 cd lunasvg
 mkdir build
 cd build
