@@ -6,25 +6,26 @@
 #include <math.h>
 #include <limits.h>
 
-static PVG_FT_Outline* ft_outline_create(size_t points, size_t contours)
+static void ft_outline_init(PVG_FT_Outline* outline, plutovg_t* pluto, int points, int contours)
 {
-    PVG_FT_Outline* ft = malloc(sizeof(PVG_FT_Outline));
-    ft->points = malloc((points + contours) * sizeof(PVG_FT_Vector));
-    ft->tags = malloc((points + contours) * sizeof(char));
-    ft->contours = malloc(contours * sizeof(int));
-    ft->contours_flag = malloc(contours * sizeof(char));
-    ft->n_points = ft->n_contours = 0;
-    ft->flags = 0x0;
-    return ft;
-}
+    size_t size_a = (points + contours) * sizeof(PVG_FT_Vector);
+    size_t size_b = (points + contours) * sizeof(char);
+    size_t size_c = contours * sizeof(int);
+    size_t size_d = contours * sizeof(char);
+    size_t size_n = size_a + size_b + size_c + size_d;
+    if(size_n > pluto->outline_size) {
+        pluto->outline_data = realloc(pluto->outline_data, size_n);
+        pluto->outline_size = size_n;
+    }
 
-static void ft_outline_destroy(PVG_FT_Outline* ft)
-{
-    free(ft->points);
-    free(ft->tags);
-    free(ft->contours);
-    free(ft->contours_flag);
-    free(ft);
+    PVG_FT_Byte* data = pluto->outline_data;
+    outline->points = (PVG_FT_Vector*)(data);
+    outline->tags = (char*)(data + size_a);
+    outline->contours = (int*)(data + size_a + size_b);
+    outline->contours_flag = (char*)(data + size_a + size_b + size_c);
+    outline->n_points = 0;
+    outline->n_contours = 0;
+    outline->flags = 0x0;
 }
 
 #define FT_COORD(x) (PVG_FT_Pos)((x) * 64)
@@ -89,9 +90,9 @@ static void ft_outline_end(PVG_FT_Outline* ft)
     }
 }
 
-static PVG_FT_Outline* ft_outline_convert(const plutovg_path_t* path, const plutovg_matrix_t* matrix)
+static void ft_outline_convert(PVG_FT_Outline* outline, plutovg_t* pluto, const plutovg_path_t* path, const plutovg_matrix_t* matrix)
 {
-    PVG_FT_Outline* outline = ft_outline_create(path->points.size, path->contours);
+    ft_outline_init(outline, pluto, path->points.size, path->contours);
     plutovg_path_element_t* elements = path->elements.data;
     plutovg_point_t* points = path->points.data;
     plutovg_point_t p[3];
@@ -122,15 +123,13 @@ static PVG_FT_Outline* ft_outline_convert(const plutovg_path_t* path, const plut
     }
 
     ft_outline_end(outline);
-    return outline;
 }
 
-static PVG_FT_Outline* ft_outline_convert_dash(const plutovg_path_t* path, const plutovg_matrix_t* matrix, const plutovg_dash_t* dash)
+static void ft_outline_convert_dash(PVG_FT_Outline* outline, plutovg_t* pluto, const plutovg_path_t* path, const plutovg_matrix_t* matrix, const plutovg_dash_t* dash)
 {
     plutovg_path_t* dashed = plutovg_dash_path(dash, path);
-    PVG_FT_Outline* outline = ft_outline_convert(dashed, matrix);
+    ft_outline_convert(outline, pluto, dashed, matrix);
     plutovg_path_destroy(dashed);
-    return outline;
 }
 
 static void generation_callback(int count, const PVG_FT_Span* spans, void* user)
@@ -162,8 +161,7 @@ void plutovg_rle_destroy(plutovg_rle_t* rle)
     free(rle);
 }
 
-#define SQRT2 1.41421356237309504880
-void plutovg_rle_rasterize(plutovg_rle_t* rle, const plutovg_path_t* path, const plutovg_matrix_t* matrix, const plutovg_rect_t* clip, const plutovg_stroke_data_t* stroke, plutovg_fill_rule_t winding)
+void plutovg_rle_rasterize(plutovg_t* pluto, plutovg_rle_t* rle, const plutovg_path_t* path, const plutovg_matrix_t* matrix, const plutovg_rect_t* clip, const plutovg_stroke_data_t* stroke, plutovg_fill_rule_t winding)
 {
     PVG_FT_Raster_Params params;
     params.flags = PVG_FT_RASTER_FLAG_DIRECT | PVG_FT_RASTER_FLAG_AA;
@@ -171,25 +169,25 @@ void plutovg_rle_rasterize(plutovg_rle_t* rle, const plutovg_path_t* path, const
     params.user = rle;
     if(clip) {
         params.flags |= PVG_FT_RASTER_FLAG_CLIP;
-        params.clip_box.xMin = (PVG_FT_Pos)clip->x;
-        params.clip_box.yMin = (PVG_FT_Pos)clip->y;
+        params.clip_box.xMin = (PVG_FT_Pos)(clip->x);
+        params.clip_box.yMin = (PVG_FT_Pos)(clip->y);
         params.clip_box.xMax = (PVG_FT_Pos)(clip->x + clip->w);
         params.clip_box.yMax = (PVG_FT_Pos)(clip->y + clip->h);
     }
 
     if(stroke) {
-        PVG_FT_Outline* outline;
+        PVG_FT_Outline outline;
         if(stroke->dash == NULL)
-            outline = ft_outline_convert(path, matrix);
+            ft_outline_convert(&outline, pluto, path, matrix);
         else
-            outline = ft_outline_convert_dash(path, matrix, stroke->dash);
+            ft_outline_convert_dash(&outline, pluto, path, matrix, stroke->dash);
         PVG_FT_Stroker_LineCap ftCap;
         PVG_FT_Stroker_LineJoin ftJoin;
         PVG_FT_Fixed ftWidth;
         PVG_FT_Fixed ftMiterLimit;
 
         plutovg_point_t p1 = {0, 0};
-        plutovg_point_t p2 = {SQRT2, SQRT2};
+        plutovg_point_t p2 = {plutovg_sqrt2, plutovg_sqrt2};
         plutovg_point_t p3;
 
         plutovg_matrix_map_point(matrix, &p1, &p1);
@@ -230,35 +228,33 @@ void plutovg_rle_rasterize(plutovg_rle_t* rle, const plutovg_path_t* path, const
         PVG_FT_Stroker stroker;
         PVG_FT_Stroker_New(&stroker);
         PVG_FT_Stroker_Set(stroker, ftWidth, ftCap, ftJoin, ftMiterLimit);
-        PVG_FT_Stroker_ParseOutline(stroker, outline);
+        PVG_FT_Stroker_ParseOutline(stroker, &outline);
 
         PVG_FT_UInt points;
         PVG_FT_UInt contours;
         PVG_FT_Stroker_GetCounts(stroker, &points, &contours);
 
-        PVG_FT_Outline* strokeOutline = ft_outline_create(points, contours);
-        PVG_FT_Stroker_Export(stroker, strokeOutline);
+        ft_outline_init(&outline, pluto, points, contours);
+        PVG_FT_Stroker_Export(stroker, &outline);
         PVG_FT_Stroker_Done(stroker);
 
-        strokeOutline->flags = PVG_FT_OUTLINE_NONE;
-        params.source = strokeOutline;
+        outline.flags = PVG_FT_OUTLINE_NONE;
+        params.source = &outline;
         PVG_FT_Raster_Render(&params);
-        ft_outline_destroy(outline);
-        ft_outline_destroy(strokeOutline);
     } else {
-        PVG_FT_Outline* outline = ft_outline_convert(path, matrix);
+        PVG_FT_Outline outline;
+        ft_outline_convert(&outline, pluto, path, matrix);
         switch(winding) {
         case plutovg_fill_rule_even_odd:
-            outline->flags = PVG_FT_OUTLINE_EVEN_ODD_FILL;
+            outline.flags = PVG_FT_OUTLINE_EVEN_ODD_FILL;
             break;
         default:
-            outline->flags = PVG_FT_OUTLINE_NONE;
+            outline.flags = PVG_FT_OUTLINE_NONE;
             break;
         }
 
-        params.source = outline;
+        params.source = &outline;
         PVG_FT_Raster_Render(&params);
-        ft_outline_destroy(outline);
     }
 
     if(rle->spans.size == 0) {
@@ -286,12 +282,9 @@ void plutovg_rle_rasterize(plutovg_rle_t* rle, const plutovg_path_t* path, const
     rle->h = y2 - y1 + 1;
 }
 
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-#define DIV255(x) (((x) + ((x) >> 8) + 0x80) >> 8)
 plutovg_rle_t* plutovg_rle_intersection(const plutovg_rle_t* a, const plutovg_rle_t* b)
 {
-    int count = MAX(a->spans.size, b->spans.size);
+    int count = plutovg_max(a->spans.size, b->spans.size);
     plutovg_rle_t* result = malloc(sizeof(plutovg_rle_t));
     plutovg_array_init(result->spans);
     plutovg_array_ensure(result->spans, count);
@@ -332,15 +325,15 @@ plutovg_rle_t* plutovg_rle_intersection(const plutovg_rle_t* a, const plutovg_rl
             continue;
         }
 
-        int x = MAX(ax1, bx1);
-        int len = MIN(ax2, bx2) - x;
+        int x = plutovg_max(ax1, bx1);
+        int len = plutovg_min(ax2, bx2) - x;
         if(len)
         {
             plutovg_span_t* span = result->spans.data + result->spans.size;
             span->x = (short)x;
             span->len = (unsigned short)len;
             span->y = a_spans->y;
-            span->coverage = DIV255(a_spans->coverage * b_spans->coverage);
+            span->coverage = plutovg_div255(a_spans->coverage * b_spans->coverage);
             ++result->spans.size;
             --count;
         }
