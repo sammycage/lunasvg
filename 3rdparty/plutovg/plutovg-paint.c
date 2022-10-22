@@ -18,7 +18,7 @@ void plutovg_gradient_init_linear(plutovg_gradient_t* gradient, double x1, doubl
     gradient->type = plutovg_gradient_type_linear;
     gradient->spread = plutovg_spread_method_pad;
     gradient->opacity = 1.0;
-    plutovg_array_init(gradient->stops);
+    plutovg_array_clear(gradient->stops);
     plutovg_matrix_init_identity(&gradient->matrix);
     plutovg_gradient_set_values_linear(gradient, x1, y1, x2, y2);
 }
@@ -28,7 +28,7 @@ void plutovg_gradient_init_radial(plutovg_gradient_t* gradient, double cx, doubl
     gradient->type = plutovg_gradient_type_radial;
     gradient->spread = plutovg_spread_method_pad;
     gradient->opacity = 1.0;
-    plutovg_array_init(gradient->stops);
+    plutovg_array_clear(gradient->stops);
     plutovg_matrix_init_identity(&gradient->matrix);
     plutovg_gradient_set_values_radial(gradient, cx, cy, cr, fx, fy, fr);
 }
