@@ -176,7 +176,6 @@ Path Parser::parsePath(const std::string& string)
     double c[6];
     bool f[2];
 
-    int lastCommand = 0;
     Point startPoint;
     Point currentPoint;
     Point controlPoint;
@@ -259,8 +258,6 @@ Path Parser::parsePath(const std::string& string)
             break;
         case 'T':
         case 't':
-            if(lastCommand != 'Q' && lastCommand != 'q' && lastCommand != 'T' && lastCommand != 't')
-                controlPoint = currentPoint;
             c[0] = 2 * currentPoint.x - controlPoint.x;
             c[1] = 2 * currentPoint.y - controlPoint.y;
             if(!parseNumberList(ptr, end, c + 2, 2))
@@ -280,8 +277,6 @@ Path Parser::parsePath(const std::string& string)
             break;
         case 'S':
         case 's':
-            if(lastCommand != 'C' && lastCommand != 'c' && lastCommand != 'S' && lastCommand != 's')
-                controlPoint = currentPoint;
             c[0] = 2 * currentPoint.x - controlPoint.x;
             c[1] = 2 * currentPoint.y - controlPoint.y;
             if(!parseNumberList(ptr, end, c + 2, 4))
@@ -311,6 +306,7 @@ Path Parser::parsePath(const std::string& string)
 
             path.lineTo(c[0], currentPoint.y);
             currentPoint.x = controlPoint.x = c[0];
+            controlPoint.y = currentPoint.y;
             break;
         case 'V':
         case 'v':
@@ -321,6 +317,7 @@ Path Parser::parsePath(const std::string& string)
                c[1] += currentPoint.y;
 
             path.lineTo(currentPoint.x, c[1]);
+            controlPoint.x = currentPoint.x;
             currentPoint.y = controlPoint.y = c[1];
             break;
         case 'A':
@@ -356,10 +353,7 @@ Path Parser::parsePath(const std::string& string)
             break;
 
         if(IS_ALPHA(*ptr))
-        {
-            lastCommand = command;
             command = *ptr++;
-        }
     }
 
     return path;
