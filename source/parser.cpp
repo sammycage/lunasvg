@@ -173,6 +173,7 @@ Path Parser::parsePath(const std::string& string)
         return Path{};
 
     auto command = *ptr++;
+    auto lastCommand = command;
     double c[6];
     bool f[2];
 
@@ -184,9 +185,7 @@ Path Parser::parsePath(const std::string& string)
     while(true)
     {
         Utils::skipWs(ptr, end);
-        switch(command) {
-        case 'M':
-        case 'm':
+        if(command == 'M' || command == 'm') {
             if(!parseNumberList(ptr, end, c, 2))
                 return path;
 
@@ -197,12 +196,10 @@ Path Parser::parsePath(const std::string& string)
             }
 
             path.moveTo(c[0], c[1]);
-            startPoint.x = currentPoint.x = controlPoint.x = c[0];
-            startPoint.y = currentPoint.y = controlPoint.y = c[1];
+            startPoint.x = currentPoint.x = c[0];
+            startPoint.y = currentPoint.y = c[1];
             command = command == 'm' ? 'l' : 'L';
-            break;
-        case 'L':
-        case 'l':
+        } else if(command == 'L' || command == 'l') {
             if(!parseNumberList(ptr, end, c, 2))
                 return path;
 
@@ -213,11 +210,27 @@ Path Parser::parsePath(const std::string& string)
             }
 
             path.lineTo(c[0], c[1]);
-            currentPoint.x = controlPoint.x = c[0];
-            currentPoint.y = controlPoint.y = c[1];
-            break;
-        case 'Q':
-        case 'q':
+            currentPoint.x = c[0];
+            currentPoint.y = c[1];
+        } else if(command == 'H' || command == 'h') {
+            if(!parseNumberList(ptr, end, c, 1))
+                return path;
+
+            if(command == 'h')
+               c[0] += currentPoint.x;
+
+            path.lineTo(c[0], currentPoint.y);
+            currentPoint.x = c[0];
+        } else if(command == 'V' || command == 'v') {
+            if(!parseNumberList(ptr, end, c + 1, 1))
+                return path;
+
+            if(command == 'v')
+               c[1] += currentPoint.y;
+
+            path.lineTo(currentPoint.x, c[1]);
+            currentPoint.y = c[1];
+        } else if(command == 'Q' || command == 'q') {
             if(!parseNumberList(ptr, end, c, 4))
                 return path;
 
@@ -234,9 +247,7 @@ Path Parser::parsePath(const std::string& string)
             controlPoint.y = c[1];
             currentPoint.x = c[2];
             currentPoint.y = c[3];
-            break;
-        case 'C':
-        case 'c':
+        } else if(command == 'C' || command == 'c') {
             if(!parseNumberList(ptr, end, c, 6))
                 return path;
 
@@ -255,11 +266,15 @@ Path Parser::parsePath(const std::string& string)
             controlPoint.y = c[3];
             currentPoint.x = c[4];
             currentPoint.y = c[5];
-            break;
-        case 'T':
-        case 't':
-            c[0] = 2 * currentPoint.x - controlPoint.x;
-            c[1] = 2 * currentPoint.y - controlPoint.y;
+        } else if(command == 'T' || command == 't') {
+            if(lastCommand != 'Q' && lastCommand != 'q' && lastCommand != 'T' && lastCommand != 't') {
+                c[0] = currentPoint.x;
+                c[1] = currentPoint.y;
+            } else {
+                c[0] = 2 * currentPoint.x - controlPoint.x;
+                c[1] = 2 * currentPoint.y - controlPoint.y;
+            }
+
             if(!parseNumberList(ptr, end, c + 2, 2))
                 return path;
 
@@ -274,11 +289,15 @@ Path Parser::parsePath(const std::string& string)
             controlPoint.y = c[1];
             currentPoint.x = c[2];
             currentPoint.y = c[3];
-            break;
-        case 'S':
-        case 's':
-            c[0] = 2 * currentPoint.x - controlPoint.x;
-            c[1] = 2 * currentPoint.y - controlPoint.y;
+        } else if(command == 'S' || command == 's') {
+            if(lastCommand != 'C' && lastCommand != 'c' && lastCommand != 'S' && lastCommand != 's') {
+                c[0] = currentPoint.x;
+                c[1] = currentPoint.y;
+            } else {
+                c[0] = 2 * currentPoint.x - controlPoint.x;
+                c[1] = 2 * currentPoint.y - controlPoint.y;
+            }
+
             if(!parseNumberList(ptr, end, c + 2, 4))
                 return path;
 
@@ -295,33 +314,7 @@ Path Parser::parsePath(const std::string& string)
             controlPoint.y = c[3];
             currentPoint.x = c[4];
             currentPoint.y = c[5];
-            break;
-        case 'H':
-        case 'h':
-            if(!parseNumberList(ptr, end, c, 1))
-                return path;
-
-            if(command == 'h')
-               c[0] += currentPoint.x;
-
-            path.lineTo(c[0], currentPoint.y);
-            currentPoint.x = controlPoint.x = c[0];
-            controlPoint.y = currentPoint.y;
-            break;
-        case 'V':
-        case 'v':
-            if(!parseNumberList(ptr, end, c + 1, 1))
-                return path;
-
-            if(command == 'v')
-               c[1] += currentPoint.y;
-
-            path.lineTo(currentPoint.x, c[1]);
-            controlPoint.x = currentPoint.x;
-            currentPoint.y = controlPoint.y = c[1];
-            break;
-        case 'A':
-        case 'a':
+        } else if(command == 'A' || command == 'a') {
             if(!parseNumberList(ptr, end, c, 3)
                     || !parseArcFlag(ptr, end, f[0])
                     || !parseArcFlag(ptr, end, f[1])
@@ -335,16 +328,13 @@ Path Parser::parsePath(const std::string& string)
             }
 
             path.arcTo(currentPoint.x, currentPoint.y, c[0], c[1], c[2], f[0], f[1], c[3], c[4]);
-            currentPoint.x = controlPoint.x = c[3];
-            currentPoint.y = controlPoint.y = c[4];
-            break;
-        case 'Z':
-        case 'z':
+            currentPoint.x = c[3];
+            currentPoint.y = c[4];
+        } else if(command == 'Z' || command == 'z') {
             path.close();
-            currentPoint.x = controlPoint.x = startPoint.x;
-            currentPoint.y = controlPoint.y = startPoint.y;
-            break;
-        default:
+            currentPoint.x = startPoint.x;
+            currentPoint.y = startPoint.y;
+        } else {
             return path;
         }
 
@@ -352,6 +342,7 @@ Path Parser::parsePath(const std::string& string)
         if(ptr >= end)
             break;
 
+        lastCommand = command;
         if(IS_ALPHA(*ptr))
             command = *ptr++;
     }
