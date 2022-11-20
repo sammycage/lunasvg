@@ -285,7 +285,7 @@ public:
     static const Length Unknown;
     static const Length Zero;
     static const Length One;
-    static const Length ThreePercent;
+    static const Length Three;
     static const Length HundredPercent;
     static const Length FiftyPercent;
     static const Length OneTwentyPercent;

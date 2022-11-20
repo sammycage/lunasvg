@@ -1,5 +1,5 @@
 #include "property.h"
-#include "styledelement.h"
+#include "element.h"
 #include "lunasvg.h"
 
 #include <algorithm>
@@ -547,7 +547,7 @@ void PathIterator::next()
 const Length Length::Unknown{0, LengthUnits::Unknown};
 const Length Length::Zero{0, LengthUnits::Number};
 const Length Length::One{1, LengthUnits::Number};
-const Length Length::ThreePercent{3, LengthUnits::Percent};
+const Length Length::Three{3, LengthUnits::Number};
 const Length Length::HundredPercent{100, LengthUnits::Percent};
 const Length Length::FiftyPercent{50, LengthUnits::Percent};
 const Length Length::OneTwentyPercent{120, LengthUnits::Percent};
