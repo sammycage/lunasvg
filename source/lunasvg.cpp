@@ -5,376 +5,466 @@
 #include <fstream>
 #include <cstring>
 #include <cmath>
+#include <exception>
 
 namespace lunasvg {
 
-struct Bitmap::Impl
-{
-    Impl(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride);
-    Impl(std::uint32_t width, std::uint32_t height);
+	struct Bitmap::Impl
+	{
+		Impl(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride);
+		Impl(std::uint32_t width, std::uint32_t height);
 
-    std::unique_ptr<std::uint8_t[]> ownData;
-    std::uint8_t* data;
-    std::uint32_t width;
-    std::uint32_t height;
-    std::uint32_t stride;
-};
+		std::unique_ptr<std::uint8_t[]> ownData;
+		std::uint8_t* data;
+		std::uint32_t width;
+		std::uint32_t height;
+		std::uint32_t stride;
+	};
 
-Bitmap::Impl::Impl(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride)
-    : data(data), width(width), height(height), stride(stride)
-{
-}
+	Bitmap::Impl::Impl(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride)
+		: data(data), width(width), height(height), stride(stride)
+	{
+	}
 
-Bitmap::Impl::Impl(std::uint32_t width, std::uint32_t height)
-    : ownData(new std::uint8_t[width*height*4]), data(nullptr), width(width), height(height), stride(width * 4)
-{
-}
+	Bitmap::Impl::Impl(std::uint32_t width, std::uint32_t height)
+		: ownData(new std::uint8_t[width*height * 4]), data(nullptr), width(width), height(height), stride(width * 4)
+	{
+	}
 
-Bitmap::Bitmap()
-{
-}
+	Bitmap::Bitmap()
+	{
+	}
 
-Bitmap::Bitmap(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride)
-    : m_impl(new Impl(data, width, height, stride))
-{
-}
+	Bitmap::Bitmap(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride)
+		: m_impl(new Impl(data, width, height, stride))
+	{
+	}
 
-Bitmap::Bitmap(std::uint32_t width, std::uint32_t height)
-    : m_impl(new Impl(width, height))
-{
-}
+	Bitmap::Bitmap(std::uint32_t width, std::uint32_t height)
+		: m_impl(new Impl(width, height))
+	{
+	}
 
-void Bitmap::reset(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride)
-{
-    m_impl.reset(new Impl(data, width, height, stride));
-}
+	void Bitmap::reset(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride)
+	{
+		m_impl.reset(new Impl(data, width, height, stride));
+	}
 
-void Bitmap::reset(std::uint32_t width, std::uint32_t height)
-{
-    m_impl.reset(new Impl(width, height));
-}
+	void Bitmap::reset(std::uint32_t width, std::uint32_t height)
+	{
+		m_impl.reset(new Impl(width, height));
+	}
 
-std::uint8_t* Bitmap::data() const
-{
-    return m_impl ? m_impl->data ? m_impl->data : m_impl->ownData.get() : nullptr;
-}
+	std::uint8_t* Bitmap::data() const
+	{
+		return m_impl ? m_impl->data ? m_impl->data : m_impl->ownData.get() : nullptr;
+	}
 
-std::uint32_t Bitmap::width() const
-{
-    return m_impl ? m_impl->width : 0;
-}
+	std::uint32_t Bitmap::width() const
+	{
+		return m_impl ? m_impl->width : 0;
+	}
 
-std::uint32_t Bitmap::height() const
-{
-    return m_impl ? m_impl->height : 0;
-}
+	std::uint32_t Bitmap::height() const
+	{
+		return m_impl ? m_impl->height : 0;
+	}
 
-std::uint32_t Bitmap::stride() const
-{
-    return m_impl ? m_impl->stride : 0;
-}
+	std::uint32_t Bitmap::stride() const
+	{
+		return m_impl ? m_impl->stride : 0;
+	}
 
-void Bitmap::clear(std::uint32_t color)
-{
-    auto r = (color >> 24) & 0xFF;
-    auto g = (color >> 16) & 0xFF;
-    auto b = (color >> 8) & 0xFF;
-    auto a = (color >> 0) & 0xFF;
+	void Bitmap::clear(std::uint32_t color)
+	{
+		auto r = (color >> 24) & 0xFF;
+		auto g = (color >> 16) & 0xFF;
+		auto b = (color >> 8) & 0xFF;
+		auto a = (color >> 0) & 0xFF;
 
-    auto pr = (r * a) / 255;
-    auto pg = (g * a) / 255;
-    auto pb = (b * a) / 255;
+		auto pr = (r * a) / 255;
+		auto pg = (g * a) / 255;
+		auto pb = (b * a) / 255;
 
-    auto width = this->width();
-    auto height = this->height();
-    auto stride = this->stride();
-    auto rowData = this->data();
+		auto width = this->width();
+		auto height = this->height();
+		auto stride = this->stride();
+		auto rowData = this->data();
 
-    for(std::uint32_t y = 0;y < height;y++)
-    {
-        auto data = rowData;
-        for(std::uint32_t x = 0;x < width;x++)
-        {
-            data[0] = pb;
-            data[1] = pg;
-            data[2] = pr;
-            data[3] = a;
-            data += 4;
-        }
-        rowData += stride;
-    }
-}
+		for (std::uint32_t y = 0; y < height; y++)
+		{
+			auto data = rowData;
+			for (std::uint32_t x = 0; x < width; x++)
+			{
+				data[0] = pb;
+				data[1] = pg;
+				data[2] = pr;
+				data[3] = a;
+				data += 4;
+			}
+			rowData += stride;
+		}
+	}
 
-void Bitmap::convert(int ri, int gi, int bi, int ai, bool unpremultiply)
-{
-    auto width = this->width();
-    auto height = this->height();
-    auto stride = this->stride();
-    auto rowData = this->data();
+	void Bitmap::convert(int ri, int gi, int bi, int ai, bool unpremultiply)
+	{
+		auto width = this->width();
+		auto height = this->height();
+		auto stride = this->stride();
+		auto rowData = this->data();
 
-    for(std::uint32_t y = 0;y < height;y++)
-    {
-        auto data = rowData;
-        for(std::uint32_t x = 0;x < width;x++)
-        {
-            auto b = data[0];
-            auto g = data[1];
-            auto r = data[2];
-            auto a = data[3];
+		for (std::uint32_t y = 0; y < height; y++)
+		{
+			auto data = rowData;
+			for (std::uint32_t x = 0; x < width; x++)
+			{
+				auto b = data[0];
+				auto g = data[1];
+				auto r = data[2];
+				auto a = data[3];
 
-            if(unpremultiply && a != 0)
-            {
-                r = (r * 255) / a;
-                g = (g * 255) / a;
-                b = (b * 255) / a;
-            }
+				if (unpremultiply && a != 0)
+				{
+					r = (r * 255) / a;
+					g = (g * 255) / a;
+					b = (b * 255) / a;
+				}
 
-            data[ri] = r;
-            data[gi] = g;
-            data[bi] = b;
-            data[ai] = a;
-            data += 4;
-        }
-        rowData += stride;
-    }
-}
+				data[ri] = r;
+				data[gi] = g;
+				data[bi] = b;
+				data[ai] = a;
+				data += 4;
+			}
+			rowData += stride;
+		}
+	}
 
-Box::Box(double x, double y, double w, double h)
-    : x(x), y(y), w(w), h(h)
-{
-}
+	void Bitmap::copyInPlace(uint32_t offset_x, uint32_t offset_y, const Bitmap & source)
+	{
+		const auto source_width = source.width();
+		const auto source_height = source.height();
+		const auto source_stride = source.stride();
+		const auto source_rowData = source.data();
+		auto destination_rowData = this->data();
+		const auto destination_stride = this->stride();
 
-Box::Box(const Rect& rect)
-    : x(rect.x), y(rect.y), w(rect.w), h(rect.h)
-{
-}
+		auto width = this->width();
+		auto height = this->height();
+		auto stride = this->stride();
+		auto rowData = this->data();
 
-Box& Box::transform(const Matrix &matrix)
-{
-    *this = transformed(matrix);
-    return *this;
-}
+		const size_t MAX_PIXELS_SIZE = this->width()*this->height() * 4;
+		for (std::uint32_t y = 0; y < source_height; y++)
+		{
+			for (std::uint32_t x = 0; x < source_width; x++)
+			{
+				const size_t source_pixel_pos = y*source_stride + x * 4;
 
-Box Box::transformed(const Matrix& matrix) const
-{
-    return Transform(matrix).map(*this);
-}
+				const size_t p1 = offset_y*destination_stride;
+				const size_t p2 = y*destination_stride;
+				const size_t p3 = offset_x * 4;
+				const size_t p4 = x * 4;
+				const size_t destination_pixel_pos = p1 + p2 + p3 + p4;
+				if (destination_pixel_pos >= MAX_PIXELS_SIZE)
+				{
+					throw std::out_of_range("you want to copy more pixels then destination image has");
+				}
+				for (int i = 0; i < 4; i++)
+				{
+					destination_rowData[destination_pixel_pos + i] = source_rowData[source_pixel_pos + i];
+				}
+			}
+		}
+	}
 
-Matrix::Matrix(double a, double b, double c, double d, double e, double f)
-    : a(a), b(b), c(c), d(d), e(e), f(f)
-{
-}
+	Box::Box(double x, double y, double w, double h)
+		: x(x), y(y), w(w), h(h)
+	{
+	}
 
-Matrix::Matrix(const Transform& transform)
-    : a(transform.m00), b(transform.m10), c(transform.m01), d(transform.m11), e(transform.m02), f(transform.m12)
-{
-}
+	Box::Box(const Rect& rect)
+		: x(rect.x), y(rect.y), w(rect.w), h(rect.h)
+	{
+	}
 
-Matrix& Matrix::rotate(double angle)
-{
-    *this = rotated(angle) * *this;
-    return *this;
-}
+	Box& Box::transform(const Matrix &matrix)
+	{
+		*this = transformed(matrix);
+		return *this;
+	}
 
-Matrix& Matrix::rotate(double angle, double cx, double cy)
-{
-    *this = rotated(angle, cx, cy) * *this;
-    return *this;
-}
+	Box Box::transformed(const Matrix& matrix) const
+	{
+		return Transform(matrix).map(*this);
+	}
 
-Matrix& Matrix::scale(double sx, double sy)
-{
-    *this = scaled(sx, sy) * *this;
-    return *this;
-}
+	Matrix::Matrix(double a, double b, double c, double d, double e, double f)
+		: a(a), b(b), c(c), d(d), e(e), f(f)
+	{
+	}
 
-Matrix& Matrix::shear(double shx, double shy)
-{
-    *this = sheared(shx, shy) * *this;
-    return *this;
-}
+	Matrix::Matrix(const Transform& transform)
+		: a(transform.m00), b(transform.m10), c(transform.m01), d(transform.m11), e(transform.m02), f(transform.m12)
+	{
+	}
 
-Matrix& Matrix::translate(double tx, double ty)
-{
-   *this = translated(tx, ty) * *this;
-    return *this;
-}
+	Matrix& Matrix::rotate(double angle)
+	{
+		*this = rotated(angle) * *this;
+		return *this;
+	}
 
-Matrix& Matrix::transform(double a, double b, double c, double d, double e, double f)
-{
-    *this = Matrix{a, b, c, d, e, f} * *this;
-    return *this;
-}
+	Matrix& Matrix::rotate(double angle, double cx, double cy)
+	{
+		*this = rotated(angle, cx, cy) * *this;
+		return *this;
+	}
 
-Matrix& Matrix::identity()
-{
-    *this = Matrix{1, 0, 0, 1, 0, 0};
-    return *this;
-}
+	Matrix& Matrix::scale(double sx, double sy)
+	{
+		*this = scaled(sx, sy) * *this;
+		return *this;
+	}
 
-Matrix& Matrix::invert()
-{
-    *this = inverted();
-    return *this;
-}
+	Matrix& Matrix::shear(double shx, double shy)
+	{
+		*this = sheared(shx, shy) * *this;
+		return *this;
+	}
 
-Matrix& Matrix::operator*=(const Matrix& matrix)
-{
-    *this = *this * matrix;
-    return *this; 
-}
+	Matrix& Matrix::translate(double tx, double ty)
+	{
+		*this = translated(tx, ty) * *this;
+		return *this;
+	}
 
-Matrix& Matrix::premultiply(const Matrix& matrix)
-{
-    *this = matrix * *this;
-    return *this; 
-}
+	Matrix& Matrix::transform(double a, double b, double c, double d, double e, double f)
+	{
+		*this = Matrix{ a, b, c, d, e, f } **this;
+		return *this;
+	}
 
-Matrix& Matrix::postmultiply(const Matrix& matrix)
-{
-    *this = *this * matrix;
-    return *this; 
-}
+	Matrix& Matrix::identity()
+	{
+		*this = Matrix{ 1, 0, 0, 1, 0, 0 };
+		return *this;
+	}
 
-Matrix Matrix::inverted() const
-{
-    return Transform(*this).inverted();
-}
+	Matrix& Matrix::invert()
+	{
+		*this = inverted();
+		return *this;
+	}
 
-Matrix Matrix::operator*(const Matrix& matrix) const
-{
-    return Transform(*this) * Transform(matrix);
-}
+	Matrix& Matrix::operator*=(const Matrix& matrix)
+	{
+		*this = *this * matrix;
+		return *this;
+	}
 
-Matrix Matrix::rotated(double angle)
-{
-    return Transform::rotated(angle);
-}
+	Matrix& Matrix::premultiply(const Matrix& matrix)
+	{
+		*this = matrix * *this;
+		return *this;
+	}
 
-Matrix Matrix::rotated(double angle, double cx, double cy)
-{
-    return Transform::rotated(angle, cx, cy);
-}
+	Matrix& Matrix::postmultiply(const Matrix& matrix)
+	{
+		*this = *this * matrix;
+		return *this;
+	}
 
-Matrix Matrix::scaled(double sx, double sy)
-{
-    return Transform::scaled(sx, sy);;
-}
+	Matrix Matrix::inverted() const
+	{
+		return Transform(*this).inverted();
+	}
 
-Matrix Matrix::sheared(double shx, double shy)
-{
-    return Transform::sheared(shx, shy);
-}
+	Matrix Matrix::operator*(const Matrix& matrix) const
+	{
+		return Transform(*this) * Transform(matrix);
+	}
 
-Matrix Matrix::translated(double tx, double ty)
-{
-    return Transform::translated(tx, ty);
-}
+	Matrix Matrix::rotated(double angle)
+	{
+		return Transform::rotated(angle);
+	}
 
-std::unique_ptr<Document> Document::loadFromFile(const std::string& filename)
-{
-    std::ifstream fs;
-    fs.open(filename);
-    if(!fs.is_open())
-        return nullptr;
+	Matrix Matrix::rotated(double angle, double cx, double cy)
+	{
+		return Transform::rotated(angle, cx, cy);
+	}
 
-    std::string content;
-    std::getline(fs, content, '\0');
-    fs.close();
+	Matrix Matrix::scaled(double sx, double sy)
+	{
+		return Transform::scaled(sx, sy);;
+	}
 
-    return loadFromData(content);
-}
+	Matrix Matrix::sheared(double shx, double shy)
+	{
+		return Transform::sheared(shx, shy);
+	}
 
-std::unique_ptr<Document> Document::loadFromData(const std::string& string)
-{
-    return loadFromData(string.data(), string.size());
-}
+	Matrix Matrix::translated(double tx, double ty)
+	{
+		return Transform::translated(tx, ty);
+	}
 
-std::unique_ptr<Document> Document::loadFromData(const char* data, std::size_t size)
-{
-    TreeBuilder builder;
-    if(!builder.parse(data, size))
-        return nullptr;
+	std::unique_ptr<Document> Document::loadFromFile(const std::string& filename)
+	{
+		std::ifstream fs;
+		fs.open(filename);
+		if (!fs.is_open())
+			return nullptr;
 
-    auto root = builder.build();
-    if(root == nullptr)
-        return nullptr;
+		std::string content;
+		std::getline(fs, content, '\0');
+		fs.close();
 
-    std::unique_ptr<Document> document(new Document);
-    document->root = std::move(root);
-    return document;
-}
+		return loadFromData(content);
+	}
 
-std::unique_ptr<Document> Document::loadFromData(const char* data)
-{
-    return loadFromData(data, std::strlen(data));
-}
+	std::unique_ptr<Document> Document::loadFromData(const std::string& string)
+	{
+		return loadFromData(string.data(), string.size());
+	}
 
-void Document::setMatrix(const Matrix& matrix)
-{
-    root->transform = Transform(matrix);
-}
+	std::unique_ptr<Document> Document::loadFromData(const char* data, std::size_t size)
+	{
+		TreeBuilder builder;
+		if (!builder.parse(data, size))
+			return nullptr;
 
-Matrix Document::matrix() const
-{
-    return root->transform;
-}
+		auto root = builder.build();
+		if (root == nullptr)
+			return nullptr;
 
-Box Document::box() const
-{
-    return root->map(root->strokeBoundingBox());
-}
+		std::unique_ptr<Document> document(new Document);
+		document->root = std::move(root);
+		return document;
+	}
 
-double Document::width() const
-{
-    return root->width;
-}
+	std::unique_ptr<Document> Document::loadFromData(const char* data)
+	{
+		return loadFromData(data, std::strlen(data));
+	}
 
-double Document::height() const
-{
-    return root->height;
-}
+	void Document::setMatrix(const Matrix& matrix)
+	{
+		root->transform = Transform(matrix);
+	}
 
-void Document::render(Bitmap bitmap, const Matrix& matrix) const
-{
-    RenderState state(nullptr, RenderMode::Display);
-    state.canvas = Canvas::create(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.stride());
-    state.transform = Transform(matrix);
-    root->render(state);
-}
+	Matrix Document::matrix() const
+	{
+		return root->transform;
+	}
 
-Bitmap Document::renderToBitmap(std::uint32_t width, std::uint32_t height, std::uint32_t backgroundColor) const
-{
-    if(root->width == 0.0 || root->height == 0.0)
-        return Bitmap{};
+	Box Document::box() const
+	{
+		return root->map(root->strokeBoundingBox());
+	}
 
-    if(width == 0 && height == 0)
-    {
-        width = static_cast<std::uint32_t>(std::ceil(root->width));
-        height = static_cast<std::uint32_t>(std::ceil(root->height));
-    }
-    else if(width != 0 && height == 0)
-    {
-        height = static_cast<std::uint32_t>(std::ceil(width * root->height / root->width));
-    }
-    else if(height != 0 && width == 0)
-    {
-        width = static_cast<std::uint32_t>(std::ceil(height * root->width / root->height));
-    }
+	double Document::width() const
+	{
+		return root->width;
+	}
 
-    Matrix matrix(width / root->width, 0, 0, height / root->height, 0, 0);
-    Bitmap bitmap(width, height);
-    bitmap.clear(backgroundColor);
-    render(bitmap, matrix);
-    return bitmap;
-}
+	double Document::height() const
+	{
+		return root->height;
+	}
 
-Document::Document()
-{
-}
+	void Document::render(Bitmap bitmap, const Matrix& matrix) const
+	{
+		RenderState state(nullptr, RenderMode::Display);
+		state.canvas = Canvas::create(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.stride());
+		state.transform = Transform(matrix);
+		root->render(state);
+	}
 
-Document::~Document()
-{
-}
+	Bitmap Document::renderToBitmap(std::uint32_t width, std::uint32_t height, std::uint32_t backgroundColor) const
+	{
+		if (root->width == 0.0 || root->height == 0.0)
+			return Bitmap{};
+
+		if (width == 0 && height == 0)
+		{
+			width = static_cast<std::uint32_t>(std::ceil(root->width));
+			height = static_cast<std::uint32_t>(std::ceil(root->height));
+		}
+		else if (width != 0 && height == 0)
+		{
+			height = static_cast<std::uint32_t>(std::ceil(width * root->height / root->width));
+		}
+		else if (height != 0 && width == 0)
+		{
+			width = static_cast<std::uint32_t>(std::ceil(height * root->width / root->height));
+		}
+
+		Matrix matrix(width / root->width, 0, 0, height / root->height, 0, 0);
+		Bitmap bitmap(width, height);
+		bitmap.clear(backgroundColor);
+		render(bitmap, matrix);
+		return bitmap;
+	}
+
+	Bitmap Document::renderToBitmapWithBlackBackground(std::uint32_t offset_x, std::uint32_t offset_y, std::uint32_t width, std::uint32_t height, std::uint32_t background_width, std::uint32_t background_height) const
+	{
+		const std::uint32_t backgroundColor = 0x000000FF;
+		if (root->width == 0.0 || root->height == 0.0)
+			return Bitmap{};
+
+		if (width == 0 && height == 0)
+		{
+			width = static_cast<std::uint32_t>(std::ceil(root->width));
+			height = static_cast<std::uint32_t>(std::ceil(root->height));
+		}
+		else if (width != 0 && height == 0)
+		{
+			height = static_cast<std::uint32_t>(std::ceil(width * root->height / root->width));
+		}
+		else if (height != 0 && width == 0)
+		{
+			width = static_cast<std::uint32_t>(std::ceil(height * root->width / root->height));
+		}
+
+		if (background_width == 0 && background_height == 0)
+		{
+			background_width = static_cast<std::uint32_t>(std::ceil(root->width));
+			background_height = static_cast<std::uint32_t>(std::ceil(root->height));
+		}
+		else if (background_width != 0 && background_height == 0)
+		{
+			background_height = static_cast<std::uint32_t>(std::ceil(background_width * root->height / root->width));
+		}
+		else if (background_height != 0 && background_width == 0)
+		{
+			background_width = static_cast<std::uint32_t>(std::ceil(background_height * root->width / root->height));
+		}
+
+		Matrix matrix_background(background_width / root->width, 0, 0, background_height / root->height, 0, 0);
+		Bitmap bitmap_background(background_width, background_height);
+		bitmap_background.clear(backgroundColor);
+
+		Matrix matrix(width / root->width, 0, 0, height / root->height, 0, 0);
+		Bitmap bitmap(width, height);
+		bitmap.clear(backgroundColor);
+		render(bitmap, matrix);
+
+		//bitmap_background.convertToRGBA();
+		//bitmap.convertToRGBA();
+		bitmap_background.copyInPlace(offset_x, offset_y, bitmap);
+		//bitmap_background.convertToRGBA();
+
+		return bitmap_background;
+	}
+
+	Document::Document()
+	{
+	}
+
+	Document::~Document()
+	{
+	}
 
 } // namespace lunasvg
