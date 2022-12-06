@@ -121,7 +121,7 @@ public:
     void convertToRGBA() { convert(0, 1, 2, 3, true); }
 
     bool valid() const { return !!m_impl; }
-
+	void copyInPlace(uint32_t offset_x, uint32_t offset_y, const Bitmap & source);
 private:
     struct Impl;
     std::shared_ptr<Impl> m_impl;
@@ -206,6 +206,16 @@ public:
      * @return the raster representation of the document
      */
     Bitmap renderToBitmap(std::uint32_t width = 0, std::uint32_t height = 0, std::uint32_t backgroundColor = 0x00000000) const;
+	
+	/**
+	* @brief Firstly renders black background. secondly renders the document to a bitmap. 
+	In last stage copies a document onto background
+	* @param width - maximum width, in pixels
+	* @param height - maximum height, in pixels
+	* @param backgroundColor - background color in 0xRRGGBBAA format
+	* @return the raster representation of the document
+	*/
+	Bitmap renderToBitmapWithBlackBackground(std::uint32_t offset_x = 0, std::uint32_t offset_y = 0,std::uint32_t width = 0, std::uint32_t height = 0, std::uint32_t background_width = 0, std::uint32_t background_height = 0) const;
 
     ~Document();
 private:
