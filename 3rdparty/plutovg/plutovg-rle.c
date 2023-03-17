@@ -21,9 +21,13 @@ static void ft_outline_init(PVG_FT_Outline* outline, plutovg_t* pluto, int point
 
     PVG_FT_Byte* data = pluto->outline_data;
     outline->points = (PVG_FT_Vector*)(data);
-    outline->tags = (char*)(data + size_a);
-    outline->contours = (int*)(data + size_a + size_b);
-    outline->contours_flag = (char*)(data + size_a + size_b + size_c);
+    outline->tags = outline->contours_flag = NULL;
+    outline->contours = NULL;
+    if(data){
+        outline->tags = (char*)(data + size_a);
+        outline->contours = (int*)(data + size_a + size_b);
+        outline->contours_flag = (char*)(data + size_a + size_b + size_c);
+    }
     outline->n_points = 0;
     outline->n_contours = 0;
     outline->flags = 0x0;
