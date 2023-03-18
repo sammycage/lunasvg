@@ -634,6 +634,7 @@ static void ft_stroke_border_export(PVG_FT_StrokeBorder border,
             border->num_points * sizeof(PVG_FT_Vector));
 
     /* copy tags */
+    if (outline->tags)
     {
         PVG_FT_UInt  count = border->num_points;
         PVG_FT_Byte* read = border->tags;
@@ -650,6 +651,7 @@ static void ft_stroke_border_export(PVG_FT_StrokeBorder border,
     }
 
     /* copy contours */
+    if (outline->contours)
     {
         PVG_FT_UInt   count = border->num_points;
         PVG_FT_Byte*  tags = border->tags;
