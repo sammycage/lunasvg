@@ -34,7 +34,12 @@ install(FILES
 )
 
 install(TARGETS lunasvg
+    EXPORT lunasvg-config
     LIBRARY     DESTINATION    ${LUNASVG_LIBDIR}
     ARCHIVE     DESTINATION    ${LUNASVG_LIBDIR}
     INCLUDES    DESTINATION    ${LUNASVG_INCDIR}
+)
+install(EXPORT lunasvg-config
+    DESTINATION ${LUNASVG_LIBDIR}/cmake/lunasvg
+    NAMESPACE lunasvg::
 )
