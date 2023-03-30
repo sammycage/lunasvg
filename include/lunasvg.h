@@ -25,6 +25,7 @@
 
 #include <memory>
 #include <string>
+#include <cstdint>
 
 #include <lunasvg_export.h>
 #define LUNASVG_API LUNASVG_EXPORT
