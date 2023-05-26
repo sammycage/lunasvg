@@ -45,8 +45,7 @@ LengthList Parser::parseLengthList(const std::string& string, LengthNegativeValu
     LengthUnits units;
 
     LengthList values;
-    while(ptr < end)
-    {
+    while(ptr < end) {
         if(!parseLength(ptr, end, value, units, mode))
             break;
         values.emplace_back(value, units);
@@ -100,12 +99,13 @@ PointList Parser::parsePointList(const std::string& string)
     double y;
 
     PointList values;
-    while(ptr < end)
-    {
+    while(ptr < end) {
         if(!Utils::parseNumber(ptr, end, x)
-                || !Utils::skipWsComma(ptr, end)
-                || !Utils::parseNumber(ptr, end, y))
+            || !Utils::skipWsComma(ptr, end)
+            || !Utils::parseNumber(ptr, end, y)) {
             break;
+        }
+
         values.emplace_back(x, y);
         Utils::skipWsComma(ptr, end);
     }
@@ -126,8 +126,7 @@ Transform Parser::parseTransform(const std::string& string)
     int count;
 
     Transform transform;
-    while(ptr < end)
-    {
+    while(ptr < end) {
         if(!parseTransform(ptr, end, type, values, count))
             break;
         Utils::skipWsComma(ptr, end);
@@ -182,15 +181,13 @@ Path Parser::parsePath(const std::string& string)
     Point controlPoint;
 
     Path path;
-    while(true)
-    {
+    while(true) {
         Utils::skipWs(ptr, end);
         if(command == 'M' || command == 'm') {
             if(!parseNumberList(ptr, end, c, 2))
                 return path;
 
-            if(command == 'm')
-            {
+            if(command == 'm') {
                 c[0] += currentPoint.x;
                 c[1] += currentPoint.y;
             }
@@ -203,8 +200,7 @@ Path Parser::parsePath(const std::string& string)
             if(!parseNumberList(ptr, end, c, 2))
                 return path;
 
-            if(command == 'l')
-            {
+            if(command == 'l') {
                 c[0] += currentPoint.x;
                 c[1] += currentPoint.y;
             }
@@ -234,8 +230,7 @@ Path Parser::parsePath(const std::string& string)
             if(!parseNumberList(ptr, end, c, 4))
                 return path;
 
-            if(command == 'q')
-            {
+            if(command == 'q') {
                 c[0] += currentPoint.x;
                 c[1] += currentPoint.y;
                 c[2] += currentPoint.x;
@@ -251,8 +246,7 @@ Path Parser::parsePath(const std::string& string)
             if(!parseNumberList(ptr, end, c, 6))
                 return path;
 
-            if(command == 'c')
-            {
+            if(command == 'c') {
                 c[0] += currentPoint.x;
                 c[1] += currentPoint.y;
                 c[2] += currentPoint.x;
@@ -278,8 +272,7 @@ Path Parser::parsePath(const std::string& string)
             if(!parseNumberList(ptr, end, c + 2, 2))
                 return path;
 
-            if(command == 't')
-            {
+            if(command == 't') {
                 c[2] += currentPoint.x;
                 c[3] += currentPoint.y;
             }
@@ -301,8 +294,7 @@ Path Parser::parsePath(const std::string& string)
             if(!parseNumberList(ptr, end, c + 2, 4))
                 return path;
 
-            if(command == 's')
-            {
+            if(command == 's') {
                 c[2] += currentPoint.x;
                 c[3] += currentPoint.y;
                 c[4] += currentPoint.x;
@@ -316,13 +308,13 @@ Path Parser::parsePath(const std::string& string)
             currentPoint.y = c[5];
         } else if(command == 'A' || command == 'a') {
             if(!parseNumberList(ptr, end, c, 3)
-                    || !parseArcFlag(ptr, end, f[0])
-                    || !parseArcFlag(ptr, end, f[1])
-                    || !parseNumberList(ptr, end, c + 3, 2))
+                || !parseArcFlag(ptr, end, f[0])
+                || !parseArcFlag(ptr, end, f[1])
+                || !parseNumberList(ptr, end, c + 3, 2)) {
                 return path;
+            }
 
-            if(command == 'a')
-            {
+            if(command == 'a') {
                c[3] += currentPoint.x;
                c[4] += currentPoint.y;
             }
@@ -384,17 +376,17 @@ Rect Parser::parseViewBox(const std::string& string)
     double w;
     double h;
     if(!Utils::parseNumber(ptr, end, x)
-            || !Utils::skipWsComma(ptr, end)
-            || !Utils::parseNumber(ptr, end, y)
-            || !Utils::skipWsComma(ptr, end)
-            || !Utils::parseNumber(ptr, end, w)
-            || !Utils::skipWsComma(ptr, end)
-            || !Utils::parseNumber(ptr, end, h))
+        || !Utils::skipWsComma(ptr, end)
+        || !Utils::parseNumber(ptr, end, y)
+        || !Utils::skipWsComma(ptr, end)
+        || !Utils::parseNumber(ptr, end, w)
+        || !Utils::skipWsComma(ptr, end)
+        || !Utils::parseNumber(ptr, end, h)) {
         return Rect::Invalid;
+    }
 
     if(w < 0.0 || h < 0.0)
         return Rect::Invalid;
-
     return Rect{x, y, w, h};
 }
 
@@ -499,157 +491,6 @@ Units Parser::parseUnits(const std::string& string, Units defaultValue)
     return defaultValue;
 }
 
-static const std::map<std::string, unsigned int> colormap = {
-    {"aliceblue", 0xF0F8FF},
-    {"antiquewhite", 0xFAEBD7},
-    {"aqua", 0x00FFFF},
-    {"aquamarine", 0x7FFFD4},
-    {"azure", 0xF0FFFF},
-    {"beige", 0xF5F5DC},
-    {"bisque", 0xFFE4C4},
-    {"black", 0x000000},
-    {"blanchedalmond", 0xFFEBCD},
-    {"blue", 0x0000FF},
-    {"blueviolet", 0x8A2BE2},
-    {"brown", 0xA52A2A},
-    {"burlywood", 0xDEB887},
-    {"cadetblue", 0x5F9EA0},
-    {"chartreuse", 0x7FFF00},
-    {"chocolate", 0xD2691E},
-    {"coral", 0xFF7F50},
-    {"cornflowerblue", 0x6495ED},
-    {"cornsilk", 0xFFF8DC},
-    {"crimson", 0xDC143C},
-    {"cyan", 0x00FFFF},
-    {"darkblue", 0x00008B},
-    {"darkcyan", 0x008B8B},
-    {"darkgoldenrod", 0xB8860B},
-    {"darkgray", 0xA9A9A9},
-    {"darkgreen", 0x006400},
-    {"darkgrey", 0xA9A9A9},
-    {"darkkhaki", 0xBDB76B},
-    {"darkmagenta", 0x8B008B},
-    {"darkolivegreen", 0x556B2F},
-    {"darkorange", 0xFF8C00},
-    {"darkorchid", 0x9932CC},
-    {"darkred", 0x8B0000},
-    {"darksalmon", 0xE9967A},
-    {"darkseagreen", 0x8FBC8F},
-    {"darkslateblue", 0x483D8B},
-    {"darkslategray", 0x2F4F4F},
-    {"darkslategrey", 0x2F4F4F},
-    {"darkturquoise", 0x00CED1},
-    {"darkviolet", 0x9400D3},
-    {"deeppink", 0xFF1493},
-    {"deepskyblue", 0x00BFFF},
-    {"dimgray", 0x696969},
-    {"dimgrey", 0x696969},
-    {"dodgerblue", 0x1E90FF},
-    {"firebrick", 0xB22222},
-    {"floralwhite", 0xFFFAF0},
-    {"forestgreen", 0x228B22},
-    {"fuchsia", 0xFF00FF},
-    {"gainsboro", 0xDCDCDC},
-    {"ghostwhite", 0xF8F8FF},
-    {"gold", 0xFFD700},
-    {"goldenrod", 0xDAA520},
-    {"gray", 0x808080},
-    {"green", 0x008000},
-    {"greenyellow", 0xADFF2F},
-    {"grey", 0x808080},
-    {"honeydew", 0xF0FFF0},
-    {"hotpink", 0xFF69B4},
-    {"indianred", 0xCD5C5C},
-    {"indigo", 0x4B0082},
-    {"ivory", 0xFFFFF0},
-    {"khaki", 0xF0E68C},
-    {"lavender", 0xE6E6FA},
-    {"lavenderblush", 0xFFF0F5},
-    {"lawngreen", 0x7CFC00},
-    {"lemonchiffon", 0xFFFACD},
-    {"lightblue", 0xADD8E6},
-    {"lightcoral", 0xF08080},
-    {"lightcyan", 0xE0FFFF},
-    {"lightgoldenrodyellow", 0xFAFAD2},
-    {"lightgray", 0xD3D3D3},
-    {"lightgreen", 0x90EE90},
-    {"lightgrey", 0xD3D3D3},
-    {"lightpink", 0xFFB6C1},
-    {"lightsalmon", 0xFFA07A},
-    {"lightseagreen", 0x20B2AA},
-    {"lightskyblue", 0x87CEFA},
-    {"lightslategray", 0x778899},
-    {"lightslategrey", 0x778899},
-    {"lightsteelblue", 0xB0C4DE},
-    {"lightyellow", 0xFFFFE0},
-    {"lime", 0x00FF00},
-    {"limegreen", 0x32CD32},
-    {"linen", 0xFAF0E6},
-    {"magenta", 0xFF00FF},
-    {"maroon", 0x800000},
-    {"mediumaquamarine", 0x66CDAA},
-    {"mediumblue", 0x0000CD},
-    {"mediumorchid", 0xBA55D3},
-    {"mediumpurple", 0x9370DB},
-    {"mediumseagreen", 0x3CB371},
-    {"mediumslateblue", 0x7B68EE},
-    {"mediumspringgreen", 0x00FA9A},
-    {"mediumturquoise", 0x48D1CC},
-    {"mediumvioletred", 0xC71585},
-    {"midnightblue", 0x191970},
-    {"mintcream", 0xF5FFFA},
-    {"mistyrose", 0xFFE4E1},
-    {"moccasin", 0xFFE4B5},
-    {"navajowhite", 0xFFDEAD},
-    {"navy", 0x000080},
-    {"oldlace", 0xFDF5E6},
-    {"olive", 0x808000},
-    {"olivedrab", 0x6B8E23},
-    {"orange", 0xFFA500},
-    {"orangered", 0xFF4500},
-    {"orchid", 0xDA70D6},
-    {"palegoldenrod", 0xEEE8AA},
-    {"palegreen", 0x98FB98},
-    {"paleturquoise", 0xAFEEEE},
-    {"palevioletred", 0xDB7093},
-    {"papayawhip", 0xFFEFD5},
-    {"peachpuff", 0xFFDAB9},
-    {"peru", 0xCD853F},
-    {"pink", 0xFFC0CB},
-    {"plum", 0xDDA0DD},
-    {"powderblue", 0xB0E0E6},
-    {"purple", 0x800080},
-    {"rebeccapurple", 0x663399},
-    {"red", 0xFF0000},
-    {"rosybrown", 0xBC8F8F},
-    {"royalblue", 0x4169E1},
-    {"saddlebrown", 0x8B4513},
-    {"salmon", 0xFA8072},
-    {"sandybrown", 0xF4A460},
-    {"seagreen", 0x2E8B57},
-    {"seashell", 0xFFF5EE},
-    {"sienna", 0xA0522D},
-    {"silver", 0xC0C0C0},
-    {"skyblue", 0x87CEEB},
-    {"slateblue", 0x6A5ACD},
-    {"slategray", 0x708090},
-    {"slategrey", 0x708090},
-    {"snow", 0xFFFAFA},
-    {"springgreen", 0x00FF7F},
-    {"steelblue", 0x4682B4},
-    {"tan", 0xD2B48C},
-    {"teal", 0x008080},
-    {"thistle", 0xD8BFD8},
-    {"tomato", 0xFF6347},
-    {"turquoise", 0x40E0D0},
-    {"violet", 0xEE82EE},
-    {"wheat", 0xF5DEB3},
-    {"white", 0xFFFFFF},
-    {"whitesmoke", 0xF5F5F5},
-    {"yellow", 0xFFFF00},
-    {"yellowgreen", 0x9ACD32}
-};
-
 Color Parser::parseColor(const std::string& string, const StyledElement* element, const Color& defaultValue)
 {
     if(string.empty())
@@ -658,8 +499,7 @@ Color Parser::parseColor(const std::string& string, const StyledElement* element
     auto ptr = string.data();
     auto end = ptr + string.size();
 
-    if(Utils::skipDesc(ptr, end, '#'))
-    {
+    if(Utils::skipDesc(ptr, end, '#')) {
         auto start = ptr;
         unsigned int value;
         if(!Utils::parseInteger(ptr, end, value, 16))
@@ -669,8 +509,7 @@ Color Parser::parseColor(const std::string& string, const StyledElement* element
         if(n != 3 && n != 6)
             return defaultValue;
 
-        if(n == 3)
-        {
+        if(n == 3) {
             value = ((value&0xf00) << 8) | ((value&0x0f0) << 4) | (value&0x00f);
             value |= value << 4;
         }
@@ -678,8 +517,7 @@ Color Parser::parseColor(const std::string& string, const StyledElement* element
         return Color(value | 0xFF000000);
     }
 
-    if(Utils::skipDesc(ptr, end, "rgb("))
-    {
+    if(Utils::skipDesc(ptr, end, "rgb(")) {
         int r, g, b;
         if(!Utils::skipWs(ptr, end)
             || !parseColorComponent(ptr, end, r)
@@ -688,8 +526,9 @@ Color Parser::parseColor(const std::string& string, const StyledElement* element
             || !Utils::skipWsComma(ptr, end)
             || !parseColorComponent(ptr, end, b)
             || !Utils::skipWs(ptr, end)
-            || !Utils::skipDesc(ptr, end, ')'))
+            || !Utils::skipDesc(ptr, end, ')')) {
             return defaultValue;
+        }
 
         return Color(r, g, b, 255);
     }
@@ -699,6 +538,157 @@ Color Parser::parseColor(const std::string& string, const StyledElement* element
 
     if(Utils::skipDesc(ptr, end, "currentColor"))
         return element->color();
+
+    static const std::map<std::string, unsigned int> colormap = {
+        {"aliceblue", 0xF0F8FF},
+        {"antiquewhite", 0xFAEBD7},
+        {"aqua", 0x00FFFF},
+        {"aquamarine", 0x7FFFD4},
+        {"azure", 0xF0FFFF},
+        {"beige", 0xF5F5DC},
+        {"bisque", 0xFFE4C4},
+        {"black", 0x000000},
+        {"blanchedalmond", 0xFFEBCD},
+        {"blue", 0x0000FF},
+        {"blueviolet", 0x8A2BE2},
+        {"brown", 0xA52A2A},
+        {"burlywood", 0xDEB887},
+        {"cadetblue", 0x5F9EA0},
+        {"chartreuse", 0x7FFF00},
+        {"chocolate", 0xD2691E},
+        {"coral", 0xFF7F50},
+        {"cornflowerblue", 0x6495ED},
+        {"cornsilk", 0xFFF8DC},
+        {"crimson", 0xDC143C},
+        {"cyan", 0x00FFFF},
+        {"darkblue", 0x00008B},
+        {"darkcyan", 0x008B8B},
+        {"darkgoldenrod", 0xB8860B},
+        {"darkgray", 0xA9A9A9},
+        {"darkgreen", 0x006400},
+        {"darkgrey", 0xA9A9A9},
+        {"darkkhaki", 0xBDB76B},
+        {"darkmagenta", 0x8B008B},
+        {"darkolivegreen", 0x556B2F},
+        {"darkorange", 0xFF8C00},
+        {"darkorchid", 0x9932CC},
+        {"darkred", 0x8B0000},
+        {"darksalmon", 0xE9967A},
+        {"darkseagreen", 0x8FBC8F},
+        {"darkslateblue", 0x483D8B},
+        {"darkslategray", 0x2F4F4F},
+        {"darkslategrey", 0x2F4F4F},
+        {"darkturquoise", 0x00CED1},
+        {"darkviolet", 0x9400D3},
+        {"deeppink", 0xFF1493},
+        {"deepskyblue", 0x00BFFF},
+        {"dimgray", 0x696969},
+        {"dimgrey", 0x696969},
+        {"dodgerblue", 0x1E90FF},
+        {"firebrick", 0xB22222},
+        {"floralwhite", 0xFFFAF0},
+        {"forestgreen", 0x228B22},
+        {"fuchsia", 0xFF00FF},
+        {"gainsboro", 0xDCDCDC},
+        {"ghostwhite", 0xF8F8FF},
+        {"gold", 0xFFD700},
+        {"goldenrod", 0xDAA520},
+        {"gray", 0x808080},
+        {"green", 0x008000},
+        {"greenyellow", 0xADFF2F},
+        {"grey", 0x808080},
+        {"honeydew", 0xF0FFF0},
+        {"hotpink", 0xFF69B4},
+        {"indianred", 0xCD5C5C},
+        {"indigo", 0x4B0082},
+        {"ivory", 0xFFFFF0},
+        {"khaki", 0xF0E68C},
+        {"lavender", 0xE6E6FA},
+        {"lavenderblush", 0xFFF0F5},
+        {"lawngreen", 0x7CFC00},
+        {"lemonchiffon", 0xFFFACD},
+        {"lightblue", 0xADD8E6},
+        {"lightcoral", 0xF08080},
+        {"lightcyan", 0xE0FFFF},
+        {"lightgoldenrodyellow", 0xFAFAD2},
+        {"lightgray", 0xD3D3D3},
+        {"lightgreen", 0x90EE90},
+        {"lightgrey", 0xD3D3D3},
+        {"lightpink", 0xFFB6C1},
+        {"lightsalmon", 0xFFA07A},
+        {"lightseagreen", 0x20B2AA},
+        {"lightskyblue", 0x87CEFA},
+        {"lightslategray", 0x778899},
+        {"lightslategrey", 0x778899},
+        {"lightsteelblue", 0xB0C4DE},
+        {"lightyellow", 0xFFFFE0},
+        {"lime", 0x00FF00},
+        {"limegreen", 0x32CD32},
+        {"linen", 0xFAF0E6},
+        {"magenta", 0xFF00FF},
+        {"maroon", 0x800000},
+        {"mediumaquamarine", 0x66CDAA},
+        {"mediumblue", 0x0000CD},
+        {"mediumorchid", 0xBA55D3},
+        {"mediumpurple", 0x9370DB},
+        {"mediumseagreen", 0x3CB371},
+        {"mediumslateblue", 0x7B68EE},
+        {"mediumspringgreen", 0x00FA9A},
+        {"mediumturquoise", 0x48D1CC},
+        {"mediumvioletred", 0xC71585},
+        {"midnightblue", 0x191970},
+        {"mintcream", 0xF5FFFA},
+        {"mistyrose", 0xFFE4E1},
+        {"moccasin", 0xFFE4B5},
+        {"navajowhite", 0xFFDEAD},
+        {"navy", 0x000080},
+        {"oldlace", 0xFDF5E6},
+        {"olive", 0x808000},
+        {"olivedrab", 0x6B8E23},
+        {"orange", 0xFFA500},
+        {"orangered", 0xFF4500},
+        {"orchid", 0xDA70D6},
+        {"palegoldenrod", 0xEEE8AA},
+        {"palegreen", 0x98FB98},
+        {"paleturquoise", 0xAFEEEE},
+        {"palevioletred", 0xDB7093},
+        {"papayawhip", 0xFFEFD5},
+        {"peachpuff", 0xFFDAB9},
+        {"peru", 0xCD853F},
+        {"pink", 0xFFC0CB},
+        {"plum", 0xDDA0DD},
+        {"powderblue", 0xB0E0E6},
+        {"purple", 0x800080},
+        {"rebeccapurple", 0x663399},
+        {"red", 0xFF0000},
+        {"rosybrown", 0xBC8F8F},
+        {"royalblue", 0x4169E1},
+        {"saddlebrown", 0x8B4513},
+        {"salmon", 0xFA8072},
+        {"sandybrown", 0xF4A460},
+        {"seagreen", 0x2E8B57},
+        {"seashell", 0xFFF5EE},
+        {"sienna", 0xA0522D},
+        {"silver", 0xC0C0C0},
+        {"skyblue", 0x87CEEB},
+        {"slateblue", 0x6A5ACD},
+        {"slategray", 0x708090},
+        {"slategrey", 0x708090},
+        {"snow", 0xFFFAFA},
+        {"springgreen", 0x00FF7F},
+        {"steelblue", 0x4682B4},
+        {"tan", 0xD2B48C},
+        {"teal", 0x008080},
+        {"thistle", 0xD8BFD8},
+        {"tomato", 0xFF6347},
+        {"turquoise", 0x40E0D0},
+        {"violet", 0xEE82EE},
+        {"wheat", 0xF5DEB3},
+        {"white", 0xFFFFFF},
+        {"whitesmoke", 0xF5F5F5},
+        {"yellow", 0xFFFF00},
+        {"yellowgreen", 0x9ACD32}
+    };
 
     auto it = colormap.find(string);
     if(it == colormap.end())
@@ -858,8 +848,7 @@ bool Parser::parseLength(const char*& ptr, const char* end, double& value, Lengt
 
 bool Parser::parseNumberList(const char*& ptr, const char* end, double* values, int count)
 {
-    for(int i = 0;i < count;i++)
-    {
+    for(int i = 0; i < count; i++) {
         if(!Utils::parseNumber(ptr, end, values[i]))
             return false;
         Utils::skipWsComma(ptr, end);
@@ -937,44 +926,31 @@ bool Parser::parseTransform(const char*& ptr, const char* end, TransformType& ty
 {
     int required = 0;
     int optional = 0;
-    if(Utils::skipDesc(ptr, end, "matrix"))
-    {
+    if(Utils::skipDesc(ptr, end, "matrix")) {
         type = TransformType::Matrix;
         required = 6;
         optional = 0;
-    }
-    else if(Utils::skipDesc(ptr, end, "rotate"))
-    {
+    } else if(Utils::skipDesc(ptr, end, "rotate")) {
         type = TransformType::Rotate;
         required = 1;
         optional = 2;
-    }
-    else if(Utils::skipDesc(ptr, end, "scale"))
-    {
+    } else if(Utils::skipDesc(ptr, end, "scale")) {
         type = TransformType::Scale;
         required = 1;
         optional = 1;
-    }
-    else if(Utils::skipDesc(ptr, end, "skewX"))
-    {
+    } else if(Utils::skipDesc(ptr, end, "skewX")) {
         type = TransformType::SkewX;
         required = 1;
         optional = 0;
-    }
-    else if(Utils::skipDesc(ptr, end, "skewY"))
-    {
+    } else if(Utils::skipDesc(ptr, end, "skewY")) {
         type = TransformType::SkewY;
         required = 1;
         optional = 0;
-    }
-    else if(Utils::skipDesc(ptr, end, "translate"))
-    {
+    } else if(Utils::skipDesc(ptr, end, "translate")) {
         type = TransformType::Translate;
         required = 1;
         optional = 1;
-    }
-    else
-    {
+    } else {
         return false;
     }
 
@@ -986,8 +962,7 @@ bool Parser::parseTransform(const char*& ptr, const char* end, TransformType& ty
     int maxCount = required + optional;
     count = 0;
     Utils::skipWs(ptr, end);
-    while(count < maxCount)
-    {
+    while(count < maxCount) {
         if(!Utils::parseNumber(ptr, end, values[count]))
             break;
         ++count;
@@ -1001,127 +976,124 @@ bool Parser::parseTransform(const char*& ptr, const char* end, TransformType& ty
     return true;
 }
 
-static const std::map<std::string, ElementID> elementmap = {
-    {"circle", ElementID::Circle},
-    {"clipPath", ElementID::ClipPath},
-    {"defs", ElementID::Defs},
-    {"ellipse", ElementID::Ellipse},
-    {"g", ElementID::G},
-    {"line", ElementID::Line},
-    {"linearGradient", ElementID::LinearGradient},
-    {"marker", ElementID::Marker},
-    {"mask", ElementID::Mask},
-    {"path", ElementID::Path},
-    {"pattern", ElementID::Pattern},
-    {"polygon", ElementID::Polygon},
-    {"polyline", ElementID::Polyline},
-    {"radialGradient", ElementID::RadialGradient},
-    {"rect", ElementID::Rect},
-    {"stop", ElementID::Stop},
-    {"style", ElementID::Style},
-    {"solidColor", ElementID::SolidColor},
-    {"svg", ElementID::Svg},
-    {"symbol", ElementID::Symbol},
-    {"use", ElementID::Use}
-};
-
-static const std::map<std::string, PropertyID> propertymap = {
-    {"class", PropertyID::Class},
-    {"clipPathUnits", PropertyID::ClipPathUnits},
-    {"cx", PropertyID::Cx},
-    {"cy", PropertyID::Cy},
-    {"d", PropertyID::D},
-    {"fx", PropertyID::Fx},
-    {"fy", PropertyID::Fy},
-    {"gradientTransform", PropertyID::GradientTransform},
-    {"gradientUnits", PropertyID::GradientUnits},
-    {"height", PropertyID::Height},
-    {"href", PropertyID::Href},
-    {"id", PropertyID::Id},
-    {"markerHeight", PropertyID::MarkerHeight},
-    {"markerUnits", PropertyID::MarkerUnits},
-    {"markerWidth", PropertyID::MarkerWidth},
-    {"maskContentUnits", PropertyID::MaskContentUnits},
-    {"maskUnits", PropertyID::MaskUnits},
-    {"offset", PropertyID::Offset},
-    {"orient", PropertyID::Orient},
-    {"patternContentUnits", PropertyID::PatternContentUnits},
-    {"patternTransform", PropertyID::PatternTransform},
-    {"patternUnits", PropertyID::PatternUnits},
-    {"points", PropertyID::Points},
-    {"preserveAspectRatio", PropertyID::PreserveAspectRatio},
-    {"r", PropertyID::R},
-    {"refX", PropertyID::RefX},
-    {"refY", PropertyID::RefY},
-    {"rx", PropertyID::Rx},
-    {"ry", PropertyID::Ry},
-    {"spreadMethod", PropertyID::SpreadMethod},
-    {"style", PropertyID::Style},
-    {"transform", PropertyID::Transform},
-    {"viewBox", PropertyID::ViewBox},
-    {"width", PropertyID::Width},
-    {"x", PropertyID::X},
-    {"x1", PropertyID::X1},
-    {"x2", PropertyID::X2},
-    {"xlink:href", PropertyID::Href},
-    {"y", PropertyID::Y},
-    {"y1", PropertyID::Y1},
-    {"y2", PropertyID::Y2}
-};
-
-static const std::map<std::string, PropertyID> csspropertymap = {
-    {"clip-path", PropertyID::Clip_Path},
-    {"clip-rule", PropertyID::Clip_Rule},
-    {"color", PropertyID::Color},
-    {"display", PropertyID::Display},
-    {"fill", PropertyID::Fill},
-    {"fill-opacity", PropertyID::Fill_Opacity},
-    {"fill-rule", PropertyID::Fill_Rule},
-    {"marker-end", PropertyID::Marker_End},
-    {"marker-mid", PropertyID::Marker_Mid},
-    {"marker-start", PropertyID::Marker_Start},
-    {"mask", PropertyID::Mask},
-    {"opacity", PropertyID::Opacity},
-    {"overflow", PropertyID::Overflow},
-    {"solid-color", PropertyID::Solid_Color},
-    {"solid-opacity", PropertyID::Solid_Opacity},
-    {"stop-color", PropertyID::Stop_Color},
-    {"stop-opacity", PropertyID::Stop_Opacity},
-    {"stroke", PropertyID::Stroke},
-    {"stroke-dasharray", PropertyID::Stroke_Dasharray},
-    {"stroke-dashoffset", PropertyID::Stroke_Dashoffset},
-    {"stroke-linecap", PropertyID::Stroke_Linecap},
-    {"stroke-linejoin", PropertyID::Stroke_Linejoin},
-    {"stroke-miterlimit", PropertyID::Stroke_Miterlimit},
-    {"stroke-opacity", PropertyID::Stroke_Opacity},
-    {"stroke-width", PropertyID::Stroke_Width},
-    {"visibility", PropertyID::Visibility}
-};
-
 static inline ElementID elementId(const std::string& name)
 {
+    static const std::map<std::string, ElementID> elementmap = {
+        {"circle", ElementID::Circle},
+        {"clipPath", ElementID::ClipPath},
+        {"defs", ElementID::Defs},
+        {"ellipse", ElementID::Ellipse},
+        {"g", ElementID::G},
+        {"line", ElementID::Line},
+        {"linearGradient", ElementID::LinearGradient},
+        {"marker", ElementID::Marker},
+        {"mask", ElementID::Mask},
+        {"path", ElementID::Path},
+        {"pattern", ElementID::Pattern},
+        {"polygon", ElementID::Polygon},
+        {"polyline", ElementID::Polyline},
+        {"radialGradient", ElementID::RadialGradient},
+        {"rect", ElementID::Rect},
+        {"stop", ElementID::Stop},
+        {"style", ElementID::Style},
+        {"solidColor", ElementID::SolidColor},
+        {"svg", ElementID::Svg},
+        {"symbol", ElementID::Symbol},
+        {"use", ElementID::Use}
+    };
+
     auto it = elementmap.find(name);
     if(it == elementmap.end())
         return ElementID::Unknown;
-
     return it->second;
 }
 
 static inline PropertyID cssPropertyId(const std::string& name)
 {
+    static const std::map<std::string, PropertyID> csspropertymap = {
+        {"clip-path", PropertyID::Clip_Path},
+        {"clip-rule", PropertyID::Clip_Rule},
+        {"color", PropertyID::Color},
+        {"display", PropertyID::Display},
+        {"fill", PropertyID::Fill},
+        {"fill-opacity", PropertyID::Fill_Opacity},
+        {"fill-rule", PropertyID::Fill_Rule},
+        {"marker-end", PropertyID::Marker_End},
+        {"marker-mid", PropertyID::Marker_Mid},
+        {"marker-start", PropertyID::Marker_Start},
+        {"mask", PropertyID::Mask},
+        {"opacity", PropertyID::Opacity},
+        {"overflow", PropertyID::Overflow},
+        {"solid-color", PropertyID::Solid_Color},
+        {"solid-opacity", PropertyID::Solid_Opacity},
+        {"stop-color", PropertyID::Stop_Color},
+        {"stop-opacity", PropertyID::Stop_Opacity},
+        {"stroke", PropertyID::Stroke},
+        {"stroke-dasharray", PropertyID::Stroke_Dasharray},
+        {"stroke-dashoffset", PropertyID::Stroke_Dashoffset},
+        {"stroke-linecap", PropertyID::Stroke_Linecap},
+        {"stroke-linejoin", PropertyID::Stroke_Linejoin},
+        {"stroke-miterlimit", PropertyID::Stroke_Miterlimit},
+        {"stroke-opacity", PropertyID::Stroke_Opacity},
+        {"stroke-width", PropertyID::Stroke_Width},
+        {"visibility", PropertyID::Visibility}
+    };
+
     auto it = csspropertymap.find(name);
     if(it == csspropertymap.end())
         return PropertyID::Unknown;
-
     return it->second;
 }
 
 static inline PropertyID propertyId(const std::string& name)
 {
+    static const std::map<std::string, PropertyID> propertymap = {
+        {"class", PropertyID::Class},
+        {"clipPathUnits", PropertyID::ClipPathUnits},
+        {"cx", PropertyID::Cx},
+        {"cy", PropertyID::Cy},
+        {"d", PropertyID::D},
+        {"fx", PropertyID::Fx},
+        {"fy", PropertyID::Fy},
+        {"gradientTransform", PropertyID::GradientTransform},
+        {"gradientUnits", PropertyID::GradientUnits},
+        {"height", PropertyID::Height},
+        {"href", PropertyID::Href},
+        {"id", PropertyID::Id},
+        {"markerHeight", PropertyID::MarkerHeight},
+        {"markerUnits", PropertyID::MarkerUnits},
+        {"markerWidth", PropertyID::MarkerWidth},
+        {"maskContentUnits", PropertyID::MaskContentUnits},
+        {"maskUnits", PropertyID::MaskUnits},
+        {"offset", PropertyID::Offset},
+        {"orient", PropertyID::Orient},
+        {"patternContentUnits", PropertyID::PatternContentUnits},
+        {"patternTransform", PropertyID::PatternTransform},
+        {"patternUnits", PropertyID::PatternUnits},
+        {"points", PropertyID::Points},
+        {"preserveAspectRatio", PropertyID::PreserveAspectRatio},
+        {"r", PropertyID::R},
+        {"refX", PropertyID::RefX},
+        {"refY", PropertyID::RefY},
+        {"rx", PropertyID::Rx},
+        {"ry", PropertyID::Ry},
+        {"spreadMethod", PropertyID::SpreadMethod},
+        {"style", PropertyID::Style},
+        {"transform", PropertyID::Transform},
+        {"viewBox", PropertyID::ViewBox},
+        {"width", PropertyID::Width},
+        {"x", PropertyID::X},
+        {"x1", PropertyID::X1},
+        {"x2", PropertyID::X2},
+        {"xlink:href", PropertyID::Href},
+        {"y", PropertyID::Y},
+        {"y1", PropertyID::Y1},
+        {"y2", PropertyID::Y2}
+    };
+
     auto it = propertymap.find(name);
     if(it == propertymap.end())
         return cssPropertyId(name);
-
     return it->second;
 }
 
@@ -1139,8 +1111,7 @@ bool RuleData::match(const Element* element) const
         return false;
     ++it;
 
-    while(it != end)
-    {
+    while(it != end) {
         switch(it->combinator) {
         case SimpleSelector::Combinator::Child:
         case SimpleSelector::Combinator::Descendant:
@@ -1155,34 +1126,38 @@ bool RuleData::match(const Element* element) const
         if(element == nullptr)
             return false;
 
-        auto match = matchSimpleSelector(*it, element);
-        if(!match && (it->combinator != SimpleSelector::Combinator::Descendant && it->combinator != SimpleSelector::Combinator::InDirectAdjacent))
-            return false;
-
-        if(match || (it->combinator != SimpleSelector::Combinator::Descendant && it->combinator != SimpleSelector::Combinator::InDirectAdjacent))
+        if(matchSimpleSelector(*it, element)) {
             ++it;
+        } else if(it->combinator != SimpleSelector::Combinator::Descendant
+            && it->combinator != SimpleSelector::Combinator::InDirectAdjacent) {
+            return false;
+        }
     }
 
     return true;
 }
 
-bool RuleData::matchSimpleSelector(const SimpleSelector& selector, const Element* element) const
+bool RuleData::matchSimpleSelector(const SimpleSelector& selector, const Element* element)
 {
     if(selector.id != ElementID::Star && selector.id != element->id)
         return false;
 
-    for(auto& sel : selector.attributeSelectors)
-        if(!matchAttributeSelector(sel, element))
+    for(auto& sel : selector.attributeSelectors) {
+        if(!matchAttributeSelector(sel, element)) {
             return false;
+        }
+    }
 
-    for(auto& sel : selector.pseudoClassSelectors)
-        if(!matchPseudoClassSelector(sel, element))
+    for(auto& sel : selector.pseudoClassSelectors) {
+        if(!matchPseudoClassSelector(sel, element)) {
             return false;
+        }
+    }
 
     return true;
 }
 
-bool RuleData::matchAttributeSelector(const AttributeSelector& selector, const Element* element) const
+bool RuleData::matchAttributeSelector(const AttributeSelector& selector, const Element* element)
 {
     auto& value = element->get(selector.id);
     if(value.empty())
@@ -1194,16 +1169,13 @@ bool RuleData::matchAttributeSelector(const AttributeSelector& selector, const E
     if(selector.matchType == AttributeSelector::MatchType::Equal)
         return selector.value == value;
 
-    if(selector.matchType == AttributeSelector::MatchType::Includes)
-    {
+    if(selector.matchType == AttributeSelector::MatchType::Includes) {
         auto ptr = value.data();
         auto end = ptr + value.size();
-        while(ptr < end)
-        {
+        while(ptr < end) {
             auto start = ptr;
             while(ptr < end && !IS_WS(*ptr))
                 ++ptr;
-
             if(selector.value == std::string(start, ptr))
                 return true;
             Utils::skipWs(ptr, end);
@@ -1215,22 +1187,18 @@ bool RuleData::matchAttributeSelector(const AttributeSelector& selector, const E
     auto starts_with = [](const std::string& string, const std::string& prefix) {
         if(prefix.empty() || prefix.size() > string.size())
             return false;
-
         return string.compare(0, prefix.size(), prefix) == 0;
     };
 
     auto ends_with = [](const std::string& string, const std::string& suffix) {
         if(suffix.empty() || suffix.size() > string.size())
             return false;
-
         return string.compare(string.size() - suffix.size(), suffix.size(), suffix) == 0;
     };
 
-    if(selector.matchType == AttributeSelector::MatchType::DashMatch)
-    {
+    if(selector.matchType == AttributeSelector::MatchType::DashMatch) {
         if(selector.value == value)
             return true;
-
         return starts_with(value, selector.value + '-');
     }
 
@@ -1246,7 +1214,7 @@ bool RuleData::matchAttributeSelector(const AttributeSelector& selector, const E
     return false;
 }
 
-bool RuleData::matchPseudoClassSelector(const PseudoClassSelector& selector, const Element* element) const
+bool RuleData::matchPseudoClassSelector(const PseudoClassSelector& selector, const Element* element)
 {
     if(selector.type == PseudoClassSelector::Type::Empty)
         return element->children.empty();
@@ -1254,8 +1222,7 @@ bool RuleData::matchPseudoClassSelector(const PseudoClassSelector& selector, con
     if(selector.type == PseudoClassSelector::Type::Root)
         return element->parent == nullptr;
 
-    if(selector.type == PseudoClassSelector::Type::Is)
-    {
+    if(selector.type == PseudoClassSelector::Type::Is) {
         for(auto& selector : selector.subSelectors) {
             for(auto& sel : selector) {
                 if(!matchSimpleSelector(sel, element)) {
@@ -1267,8 +1234,7 @@ bool RuleData::matchPseudoClassSelector(const PseudoClassSelector& selector, con
         return true;
     }
 
-    if(selector.type == PseudoClassSelector::Type::Not)
-    {
+    if(selector.type == PseudoClassSelector::Type::Not) {
         for(auto& selector : selector.subSelectors) {
             for(auto& sel : selector) {
                 if(matchSimpleSelector(sel, element)) {
@@ -1289,11 +1255,9 @@ bool RuleData::matchPseudoClassSelector(const PseudoClassSelector& selector, con
     if(selector.type == PseudoClassSelector::Type::OnlyChild)
         return !(element->previousElement() || element->nextElement());
 
-    if(selector.type == PseudoClassSelector::Type::FirstOfType)
-    {
+    if(selector.type == PseudoClassSelector::Type::FirstOfType) {
         auto sibling = element->previousElement();
-        while(sibling)
-        {
+        while(sibling) {
             if(sibling->id == element->id)
                 return false;
             sibling = element->previousElement();
@@ -1302,11 +1266,9 @@ bool RuleData::matchPseudoClassSelector(const PseudoClassSelector& selector, con
         return true;
     }
 
-    if(selector.type == PseudoClassSelector::Type::LastOfType)
-    {
+    if(selector.type == PseudoClassSelector::Type::LastOfType) {
         auto sibling = element->nextElement();
-        while(sibling)
-        {
+        while(sibling) {
             if(sibling->id == element->id)
                 return false;
             sibling = element->nextElement();
@@ -1316,40 +1278,6 @@ bool RuleData::matchPseudoClassSelector(const PseudoClassSelector& selector, con
     }
 
     return false;
-}
-
-void StyleSheet::parse(const std::string& content)
-{
-    CSSParser::parseSheet(this, content);
-}
-
-void StyleSheet::add(const Rule& rule)
-{
-    for(auto& selector : rule.selectors) {
-        uint32_t specificity = 0;
-        for(auto& simpleSelector : selector) {
-            specificity += (simpleSelector.id == ElementID::Star) ? 0x0 : 0x1;
-            for(auto& attributeSelector : simpleSelector.attributeSelectors) {
-                specificity += (attributeSelector.id == PropertyID::Id) ? 0x10000 : 0x100;
-            }
-        }
-
-        m_rules.emplace(selector, rule.declarations, specificity, m_position);
-    }
-
-    m_position += 1;
-}
-
-std::vector<const PropertyList*> StyleSheet::match(const Element *element) const
-{
-    std::vector<const PropertyList*> declarations;
-    for(auto& rule : m_rules) {
-        if(!rule.match(element))
-            continue;
-        declarations.push_back(&rule.properties());
-    }
-
-    return declarations;
 }
 
 #define IS_STARTNAMECHAR(c) (IS_ALPHA(c) ||  (c) == '_' || (c) == ':')
@@ -1384,42 +1312,55 @@ static inline bool readCSSIdentifier(const char*& ptr, const char* end, std::str
     return true;
 }
 
-bool CSSParser::parseSheet(StyleSheet* sheet, const std::string& value)
+bool StyleSheet::parse(const std::string& value)
 {
     auto ptr = value.data();
     auto end = ptr + value.size();
 
-    Rule rule;
-    while(ptr < end)
-    {
+    while(ptr < end) {
         Utils::skipWs(ptr, end);
-        if(Utils::skipDesc(ptr, end, '@'))
-        {
+        if(Utils::skipDesc(ptr, end, '@')) {
             if(!parseAtRule(ptr, end))
                 return false;
             continue;
         }
 
+        Rule rule;
         if(!parseRule(ptr, end, rule))
             return false;
-        sheet->add(rule);
+        add(rule);
     }
 
     return true;
 }
 
-bool CSSParser::parseAtRule(const char*& ptr, const char* end)
+void StyleSheet::add(const Rule& rule)
+{
+    for(auto& selector : rule.selectors) {
+        uint32_t specificity = 0;
+        for(auto& simpleSelector : selector) {
+            specificity += (simpleSelector.id == ElementID::Star) ? 0x0 : 0x1;
+            for(auto& attributeSelector : simpleSelector.attributeSelectors) {
+                specificity += (attributeSelector.id == PropertyID::Id) ? 0x10000 : 0x100;
+            }
+        }
+
+        m_rules.emplace(selector, rule.declarations, specificity, m_position);
+    }
+
+    m_position += 1;
+}
+
+bool StyleSheet::parseAtRule(const char*& ptr, const char* end)
 {
     int depth = 0;
-    while(ptr < end)
-    {
+    while(ptr < end) {
         auto ch = *ptr;
         ++ptr;
         if(ch == ';' && depth == 0)
             break;
         if(ch == '{') ++depth;
-        else if(ch == '}' && depth > 0)
-        {
+        else if(ch == '}' && depth > 0) {
             if(depth == 1)
                 break;
             --depth;
@@ -1429,7 +1370,7 @@ bool CSSParser::parseAtRule(const char*& ptr, const char* end)
     return true;
 }
 
-bool CSSParser::parseRule(const char*& ptr, const char* end, Rule& rule)
+bool StyleSheet::parseRule(const char*& ptr, const char* end, Rule& rule)
 {
     if(!parseSelectors(ptr, end, rule.selectors))
         return false;
@@ -1440,16 +1381,14 @@ bool CSSParser::parseRule(const char*& ptr, const char* end, Rule& rule)
     return true;
 }
 
-bool CSSParser::parseSelectors(const char*& ptr, const char* end, SelectorList& selectors)
+bool StyleSheet::parseSelectors(const char*& ptr, const char* end, SelectorList& selectors)
 {
-    selectors.clear();
     Selector selector;
     if(!parseSelector(ptr, end, selector))
         return false;
     selectors.push_back(selector);
 
-    while(Utils::skipDesc(ptr, end, ','))
-    {
+    while(Utils::skipDesc(ptr, end, ',')) {
         Utils::skipWs(ptr, end);
         Selector selector;
         if(!parseSelector(ptr, end, selector))
@@ -1460,16 +1399,14 @@ bool CSSParser::parseSelectors(const char*& ptr, const char* end, SelectorList& 
     return true;
 }
 
-bool CSSParser::parseDeclarations(const char*& ptr, const char* end, PropertyList& declarations)
+bool StyleSheet::parseDeclarations(const char*& ptr, const char* end, DeclarationList& declarations)
 {
-    declarations.clear();
     if(!Utils::skipDesc(ptr, end, '{'))
         return false;
 
-    std::string name;
-    std::string value;
     Utils::skipWs(ptr, end);
     do {
+        std::string name;
         if(!readCSSIdentifier(ptr, end, name))
             return false;
         Utils::skipWs(ptr, end);
@@ -1479,18 +1416,19 @@ bool CSSParser::parseDeclarations(const char*& ptr, const char* end, PropertyLis
         auto start = ptr;
         while(ptr < end && !(*ptr == '!' || *ptr == ';' || *ptr == '}'))
             ++ptr;
-        value.assign(start, Utils::rtrim(start, ptr));
-        int specificity = 0x10;
-        if(Utils::skipDesc(ptr, end, '!'))
-        {
+
+        Declaration declaration;
+        declaration.specificity = 0x10;
+        declaration.id = cssPropertyId(name);
+        declaration.value.assign(start, Utils::rtrim(start, ptr));
+        if(Utils::skipDesc(ptr, end, '!')) {
             if(!Utils::skipDesc(ptr, end, "important"))
                 return false;
-            specificity = 0x1000;
+            declaration.specificity = 0x1000;
         }
 
-        auto id = cssPropertyId(name);
-        if(id != PropertyID::Unknown)
-            declarations.set(id, value, specificity);
+        if(declaration.id != PropertyID::Unknown)
+            declarations.push_back(std::move(declaration));
         Utils::skipWsDelimiter(ptr, end, ';');
     } while(ptr < end && *ptr != '}');
 
@@ -1498,7 +1436,7 @@ bool CSSParser::parseDeclarations(const char*& ptr, const char* end, PropertyLis
 }
 
 #define IS_SELECTOR_STARTNAMECHAR(c) (IS_CSS_STARTNAMECHAR(c) || (c) == '*' || (c) == '#' || (c) == '.' || (c) == '[' || (c) == ':')
-bool CSSParser::parseSelector(const char*& ptr, const char* end, Selector& selector)
+bool StyleSheet::parseSelector(const char*& ptr, const char* end, Selector& selector)
 {
     do {
         SimpleSelector simpleSelector;
@@ -1511,7 +1449,7 @@ bool CSSParser::parseSelector(const char*& ptr, const char* end, Selector& selec
     return true;
 }
 
-bool CSSParser::parseSimpleSelector(const char*& ptr, const char* end, SimpleSelector& simpleSelector)
+bool StyleSheet::parseSimpleSelector(const char*& ptr, const char* end, SimpleSelector& simpleSelector)
 {
     std::string name;
     if(Utils::skipDesc(ptr, end, '*'))
@@ -1519,10 +1457,8 @@ bool CSSParser::parseSimpleSelector(const char*& ptr, const char* end, SimpleSel
     else if(readCSSIdentifier(ptr, end, name))
         simpleSelector.id = elementId(name);
 
-    while(ptr < end)
-    {
-        if(Utils::skipDesc(ptr, end, '#'))
-        {
+    while(ptr < end) {
+        if(Utils::skipDesc(ptr, end, '#')) {
             AttributeSelector a;
             a.id = PropertyID::Id;
             a.matchType = AttributeSelector::MatchType::Equal;
@@ -1532,8 +1468,7 @@ bool CSSParser::parseSimpleSelector(const char*& ptr, const char* end, SimpleSel
             continue;
         }
 
-        if(Utils::skipDesc(ptr, end, '.'))
-        {
+        if(Utils::skipDesc(ptr, end, '.')) {
             AttributeSelector a;
             a.id = PropertyID::Class;
             a.matchType = AttributeSelector::MatchType::Includes;
@@ -1543,8 +1478,7 @@ bool CSSParser::parseSimpleSelector(const char*& ptr, const char* end, SimpleSel
             continue;
         }
 
-        if(Utils::skipDesc(ptr, end, '['))
-        {
+        if(Utils::skipDesc(ptr, end, '[')) {
             Utils::skipWs(ptr, end);
             if(!readCSSIdentifier(ptr, end, name))
                 return false;
@@ -1562,11 +1496,9 @@ bool CSSParser::parseSimpleSelector(const char*& ptr, const char* end, SimpleSel
                 a.matchType = AttributeSelector::MatchType::EndsWith;
             else if(Utils::skipDesc(ptr, end, "*="))
                 a.matchType = AttributeSelector::MatchType::Contains;
-            if(a.matchType != AttributeSelector::MatchType::None)
-            {
+            if(a.matchType != AttributeSelector::MatchType::None) {
                 Utils::skipWs(ptr, end);
-                if(!readCSSIdentifier(ptr, end, a.value))
-                {
+                if(!readCSSIdentifier(ptr, end, a.value)) {
                     if(ptr >= end || !(*ptr == '\"' || *ptr == '\''))
                         return false;
 
@@ -1585,8 +1517,7 @@ bool CSSParser::parseSimpleSelector(const char*& ptr, const char* end, SimpleSel
             continue;
         }
 
-        if(Utils::skipDesc(ptr, end, ':'))
-        {
+        if(Utils::skipDesc(ptr, end, ':')) {
             if(!readCSSIdentifier(ptr, end, name))
                 return false;
             PseudoClassSelector selector;
@@ -1608,8 +1539,7 @@ bool CSSParser::parseSimpleSelector(const char*& ptr, const char* end, SimpleSel
                 selector.type = PseudoClassSelector::Type::LastOfType;
             else if(name.compare("only-of-type") == 0)
                 selector.type = PseudoClassSelector::Type::OnlyOfType;
-            if(selector.type == PseudoClassSelector::Type::Is || selector.type == PseudoClassSelector::Type::Not)
-            {
+            if(selector.type == PseudoClassSelector::Type::Is || selector.type == PseudoClassSelector::Type::Not) {
                 if(!Utils::skipDesc(ptr, end, '('))
                     return false;
 
@@ -1618,8 +1548,9 @@ bool CSSParser::parseSimpleSelector(const char*& ptr, const char* end, SimpleSel
                     return false;
 
                 Utils::skipWs(ptr, end);
-                if(!Utils::skipDesc(ptr, end, ')'))
+                if(!Utils::skipDesc(ptr, end, ')')) {
                     return false;
+                }
             }
 
             simpleSelector.pseudoClassSelectors.push_back(selector);
@@ -1695,18 +1626,15 @@ static inline std::unique_ptr<Element> createElement(ElementID id)
 static inline bool decodeText(const char* ptr, const char* end, std::string& value)
 {
     value.clear();
-    while(ptr < end)
-    {
+    while(ptr < end) {
         auto ch = *ptr;
         ++ptr;
-        if(ch != '&')
-        {
+        if(ch != '&') {
             value.push_back(ch);
             continue;
         }
 
-        if(Utils::skipDesc(ptr, end, '#'))
-        {
+        if(Utils::skipDesc(ptr, end, '#')) {
             int base = 10;
             if(Utils::skipDesc(ptr, end, 'x'))
                 base = 16;
@@ -1716,29 +1644,22 @@ static inline bool decodeText(const char* ptr, const char* end, std::string& val
                 return false;
 
             char c[5] = {0, 0, 0, 0, 0};
-            if(cp < 0x80)
-            {
+            if(cp < 0x80) {
                 c[1] = 0;
                 c[0] = cp;
-            }
-            else if(cp < 0x800)
-            {
+            } else if(cp < 0x800) {
                 c[2] = 0;
                 c[1] = (cp & 0x3F) | 0x80;
                 cp >>= 6;
                 c[0] = cp | 0xC0;
-            }
-            else if(cp < 0x10000)
-            {
+            } else if(cp < 0x10000) {
                 c[3] = 0;
                 c[2] = (cp & 0x3F) | 0x80;
                 cp >>= 6;
                 c[1] = (cp & 0x3F) | 0x80;
                 cp >>= 6;
                 c[0] = cp | 0xE0;
-            }
-            else if(cp < 0x200000)
-            {
+            } else if(cp < 0x200000) {
                 c[4] = 0;
                 c[3] = (cp & 0x3F) | 0x80;
                 cp >>= 6;
@@ -1750,9 +1671,7 @@ static inline bool decodeText(const char* ptr, const char* end, std::string& val
             }
 
             value.append(c);
-        }
-        else
-        {
+        } else {
             if(Utils::skipDesc(ptr, end, "amp"))
                 value.push_back('&');
             else if(Utils::skipDesc(ptr, end, "lt"))
@@ -1763,12 +1682,14 @@ static inline bool decodeText(const char* ptr, const char* end, std::string& val
                 value.push_back('\"');
             else if(Utils::skipDesc(ptr, end, "apos"))
                 value.push_back('\'');
-            else
+            else {
                 return false;
+            }
         }
 
-        if(!Utils::skipDesc(ptr, end, ';'))
+        if(!Utils::skipDesc(ptr, end, ';')) {
             return false;
+        }
     }
 
     return true;
@@ -1782,8 +1703,7 @@ static inline void parseStyle(const std::string& string, Element* element)
     std::string name;
     std::string value;
     Utils::skipWs(ptr, end);
-    while(ptr < end && readCSSIdentifier(ptr, end, name))
-    {
+    while(ptr < end && readCSSIdentifier(ptr, end, name)) {
         Utils::skipWs(ptr, end);
         if(!Utils::skipDesc(ptr, end, ':'))
             return;
@@ -1836,8 +1756,7 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
         styleSheet.parse(value);
     };
 
-    while(ptr < end)
-    {
+    while(ptr < end) {
         auto start = ptr;
         if(!Utils::skipUntil(ptr, end, '<'))
             break;
@@ -1845,8 +1764,7 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
         handle_text(start, ptr, false);
         ptr += 1;
 
-        if(ptr < end && *ptr == '/')
-        {
+        if(ptr < end && *ptr == '/') {
             if(current == nullptr && ignoring == 0)
                 return false;
 
@@ -1867,8 +1785,7 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
             continue;
         }
 
-        if(ptr < end && *ptr == '?')
-        {
+        if(ptr < end && *ptr == '?') {
             ++ptr;
             if(!readIdentifier(ptr, end, name))
                 return false;
@@ -1880,11 +1797,9 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
             continue;
         }
 
-        if(ptr < end && *ptr == '!')
-        {
+        if(ptr < end && *ptr == '!') {
             ++ptr;
-            if(Utils::skipDesc(ptr, end, "--"))
-            {
+            if(Utils::skipDesc(ptr, end, "--")) {
                 start = ptr;
                 if(!Utils::skipUntil(ptr, end, "-->"))
                     return false;
@@ -1894,8 +1809,7 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
                 continue;
             }
 
-            if(Utils::skipDesc(ptr, end, "[CDATA["))
-            {
+            if(Utils::skipDesc(ptr, end, "[CDATA[")) {
                 start = ptr;
                 if(!Utils::skipUntil(ptr, end, "]]>"))
                     return false;
@@ -1905,23 +1819,17 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
                 continue;
             }
 
-            if(Utils::skipDesc(ptr, end, "DOCTYPE"))
-            {
-                while(ptr < end && *ptr != '>')
-                {
-                    if(*ptr == '[')
-                    {
+            if(Utils::skipDesc(ptr, end, "DOCTYPE")) {
+                while(ptr < end && *ptr != '>') {
+                    if(*ptr == '[') {
                         ++ptr;
                         int depth = 1;
-                        while(ptr < end && depth > 0)
-                        {
+                        while(ptr < end && depth > 0) {
                             if(*ptr == '[') ++depth;
                             else if(*ptr == ']') --depth;
                             ++ptr;
                         }
-                    }
-                    else
-                    {
+                    } else {
                         ++ptr;
                     }
                 }
@@ -1944,21 +1852,16 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
             ++ignoring;
 
         Element* element = nullptr;
-        if(ignoring == 0)
-        {
+        if(ignoring == 0) {
             if(m_rootElement && current == nullptr)
                 return false;
 
-            if(m_rootElement == nullptr)
-            {
+            if(m_rootElement == nullptr) {
                 if(id != ElementID::Svg)
                     return false;
-
                 m_rootElement = std::make_unique<SVGElement>();
                 element = m_rootElement.get();
-            }
-            else
-            {
+            } else {
                 auto child = createElement(id);
                 element = child.get();
                 current->addChild(std::move(child));
@@ -1966,8 +1869,7 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
         }
 
         Utils::skipWs(ptr, end);
-        while(ptr < end && readIdentifier(ptr, end, name))
-        {
+        while(ptr < end && readIdentifier(ptr, end, name)) {
             Utils::skipWs(ptr, end);
             if(ptr >= end || *ptr != '=')
                 return false;
@@ -1988,16 +1890,12 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
                 return false;
 
             auto id = element ? propertyId(name) : PropertyID::Unknown;
-            if(id != PropertyID::Unknown)
-            {
+            if(id != PropertyID::Unknown) {
                 decodeText(start, Utils::rtrim(start, ptr), value);
-                if(id == PropertyID::Style)
-                {
+                if(id == PropertyID::Style) {
                     remove_comments(value);
                     parseStyle(value, element);
-                }
-                else
-                {
+                } else {
                     if(id == PropertyID::Id)
                         m_idCache.emplace(value, element);
                     element->set(id, value, 0x1);
@@ -2008,8 +1906,7 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
             Utils::skipWs(ptr, end);
         }
 
-        if(ptr < end && *ptr == '>')
-        {
+        if(ptr < end && *ptr == '>') {
             if(element != nullptr)
                 current = element;
 
@@ -2017,8 +1914,7 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
             continue;
         }
 
-        if(ptr < end && *ptr == '/')
-        {
+        if(ptr < end && *ptr == '/') {
             ++ptr;
             if(ptr >= end || *ptr != '>')
                 return false;
@@ -2036,16 +1932,20 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
     if(!m_rootElement || ptr < end || ignoring > 0)
         return false;
 
-    if(!styleSheet.empty())
-    {
+    if(!styleSheet.empty()) {
         m_rootElement->transverse([&styleSheet](Node* node) {
             if(node->isText())
                 return false;
 
             auto element = static_cast<Element*>(node);
-            auto declarations = styleSheet.match(element);
-            for(auto& declaration : declarations)
-                element->properties.add(*declaration);
+            for(auto& rule : styleSheet.rules()) {
+                if(rule.match(element)) {
+                    for(auto& declaration : rule.declarations()) {
+                        element->set(declaration.id, declaration.value, declaration.specificity);
+                    }
+                }
+            }
+
             return false;
         });
     }
@@ -2058,7 +1958,6 @@ Element* TreeBuilder::getElementById(const std::string& id) const
     auto it = m_idCache.find(id);
     if(it == m_idCache.end())
         return nullptr;
-
     return it->second;
 }
 
