@@ -367,14 +367,16 @@ void MarkerData::add(const LayoutMarker* marker, const Point& origin, double ang
 
 void MarkerData::render(RenderState& state) const
 {
-    for(const auto& position : positions)
+    for(const auto& position : positions) {
         position.marker->renderMarker(state, position.origin, position.angle, strokeWidth);
+    }
 }
 
 void MarkerData::inflate(Rect& box) const
 {
-    for(const auto& position : positions)
+    for(const auto& position : positions) {
         box.unite(position.marker->markerBoundingBox(position.origin, position.angle, strokeWidth));
+    }
 }
 
 LayoutShape::LayoutShape()
@@ -480,7 +482,6 @@ LayoutObject* LayoutContext::getResourcesById(const std::string& id) const
     auto it = m_resourcesCache.find(id);
     if(it == m_resourcesCache.end())
         return nullptr;
-
     return it->second;
 }
 

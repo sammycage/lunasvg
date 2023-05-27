@@ -161,12 +161,12 @@ public:
 
     template<typename T>
     void transverse(T callback) {
-        if(callback(this))
+        if(!callback(this))
             return;
 
         for(auto& child : children) {
             if(child->isText()) {
-                if(callback(child.get()))
+                if(!callback(child.get()))
                     return;
                 continue;
             }

@@ -26,8 +26,9 @@ void Element::set(PropertyID id, const std::string& value, int specificity)
             if(specificity >= property.specificity) {
                 property.specificity = specificity;
                 property.value = value;
-                return;
             }
+
+            return;
         }
     }
 

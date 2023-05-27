@@ -335,8 +335,9 @@ Path Parser::parsePath(const std::string& string)
             break;
 
         lastCommand = command;
-        if(IS_ALPHA(*ptr))
+        if(IS_ALPHA(*ptr)) {
             command = *ptr++;
+        }
     }
 
     return path;
@@ -359,7 +360,6 @@ std::string Parser::parseHref(const std::string& string)
 {
     if(string.size() > 1 && string.front() == '#')
         return string.substr(1);
-
     return std::string{};
 }
 
@@ -897,7 +897,8 @@ bool Parser::parseUrlFragment(const char*& ptr, const char* end, std::string& re
     case '"': {
         auto delim = *ptr;
         ++ptr; // delim
-        if(!Utils::skipWs(ptr, end) || *ptr != '#')
+        Utils::skipWs(ptr, end);
+        if(ptr >= end || *ptr != '#')
             return false;
         ++ptr; // #
         if(!Utils::readUntil(ptr, end, delim, ref))
@@ -976,7 +977,7 @@ bool Parser::parseTransform(const char*& ptr, const char* end, TransformType& ty
     return true;
 }
 
-static inline ElementID elementId(const std::string& name)
+static inline ElementID elementid(const std::string& name)
 {
     static const std::map<std::string, ElementID> elementmap = {
         {"circle", ElementID::Circle},
@@ -1008,7 +1009,7 @@ static inline ElementID elementId(const std::string& name)
     return it->second;
 }
 
-static inline PropertyID cssPropertyId(const std::string& name)
+static inline PropertyID csspropertyid(const std::string& name)
 {
     static const std::map<std::string, PropertyID> csspropertymap = {
         {"clip-path", PropertyID::Clip_Path},
@@ -1045,7 +1046,7 @@ static inline PropertyID cssPropertyId(const std::string& name)
     return it->second;
 }
 
-static inline PropertyID propertyId(const std::string& name)
+static inline PropertyID propertyid(const std::string& name)
 {
     static const std::map<std::string, PropertyID> propertymap = {
         {"class", PropertyID::Class},
@@ -1093,7 +1094,7 @@ static inline PropertyID propertyId(const std::string& name)
 
     auto it = propertymap.find(name);
     if(it == propertymap.end())
-        return cssPropertyId(name);
+        return csspropertyid(name);
     return it->second;
 }
 
@@ -1386,14 +1387,14 @@ bool StyleSheet::parseSelectors(const char*& ptr, const char* end, SelectorList&
     Selector selector;
     if(!parseSelector(ptr, end, selector))
         return false;
-    selectors.push_back(selector);
+    selectors.push_back(std::move(selector));
 
     while(Utils::skipDesc(ptr, end, ',')) {
         Utils::skipWs(ptr, end);
         Selector selector;
         if(!parseSelector(ptr, end, selector))
             return false;
-        selectors.push_back(selector);
+        selectors.push_back(std::move(selector));
     }
 
     return true;
@@ -1419,7 +1420,7 @@ bool StyleSheet::parseDeclarations(const char*& ptr, const char* end, Declaratio
 
         Declaration declaration;
         declaration.specificity = 0x10;
-        declaration.id = cssPropertyId(name);
+        declaration.id = csspropertyid(name);
         declaration.value.assign(start, Utils::rtrim(start, ptr));
         if(Utils::skipDesc(ptr, end, '!')) {
             if(!Utils::skipDesc(ptr, end, "important"))
@@ -1442,7 +1443,7 @@ bool StyleSheet::parseSelector(const char*& ptr, const char* end, Selector& sele
         SimpleSelector simpleSelector;
         if(!parseSimpleSelector(ptr, end, simpleSelector))
             return false;
-        selector.push_back(simpleSelector);
+        selector.push_back(std::move(simpleSelector));
         Utils::skipWs(ptr, end);
     } while(ptr < end && IS_SELECTOR_STARTNAMECHAR(*ptr));
 
@@ -1455,7 +1456,7 @@ bool StyleSheet::parseSimpleSelector(const char*& ptr, const char* end, SimpleSe
     if(Utils::skipDesc(ptr, end, '*'))
         simpleSelector.id = ElementID::Star;
     else if(readCSSIdentifier(ptr, end, name))
-        simpleSelector.id = elementId(name);
+        simpleSelector.id = elementid(name);
 
     while(ptr < end) {
         if(Utils::skipDesc(ptr, end, '#')) {
@@ -1464,7 +1465,7 @@ bool StyleSheet::parseSimpleSelector(const char*& ptr, const char* end, SimpleSe
             a.matchType = AttributeSelector::MatchType::Equal;
             if(!readCSSIdentifier(ptr, end, a.value))
                 return false;
-            simpleSelector.attributeSelectors.push_back(a);
+            simpleSelector.attributeSelectors.push_back(std::move(a));
             continue;
         }
 
@@ -1474,7 +1475,7 @@ bool StyleSheet::parseSimpleSelector(const char*& ptr, const char* end, SimpleSe
             a.matchType = AttributeSelector::MatchType::Includes;
             if(!readCSSIdentifier(ptr, end, a.value))
                 return false;
-            simpleSelector.attributeSelectors.push_back(a);
+            simpleSelector.attributeSelectors.push_back(std::move(a));
             continue;
         }
 
@@ -1483,7 +1484,7 @@ bool StyleSheet::parseSimpleSelector(const char*& ptr, const char* end, SimpleSe
             if(!readCSSIdentifier(ptr, end, name))
                 return false;
             AttributeSelector a;
-            a.id = propertyId(name);
+            a.id = propertyid(name);
             if(Utils::skipDesc(ptr, end, '='))
                 a.matchType = AttributeSelector::MatchType::Equal;
             else if(Utils::skipDesc(ptr, end, "~="))
@@ -1513,7 +1514,7 @@ bool StyleSheet::parseSimpleSelector(const char*& ptr, const char* end, SimpleSe
             Utils::skipWs(ptr, end);
             if(!Utils::skipDesc(ptr, end, ']'))
                 return false;
-            simpleSelector.attributeSelectors.push_back(a);
+            simpleSelector.attributeSelectors.push_back(std::move(a));
             continue;
         }
 
@@ -1553,7 +1554,7 @@ bool StyleSheet::parseSimpleSelector(const char*& ptr, const char* end, SimpleSe
                 }
             }
 
-            simpleSelector.pseudoClassSelectors.push_back(selector);
+            simpleSelector.pseudoClassSelectors.push_back(std::move(selector));
             continue;
         }
 
@@ -1712,10 +1713,20 @@ static inline void parseStyle(const std::string& string, Element* element)
         while(ptr < end && *ptr != ';')
             ++ptr;
         value.assign(start, Utils::rtrim(start, ptr));
-        auto id = cssPropertyId(name);
+        auto id = csspropertyid(name);
         if(id != PropertyID::Unknown)
             element->set(id, value, 0x100);
         Utils::skipWsDelimiter(ptr, end, ';');
+    }
+}
+
+static inline void removeComments(std::string& value)
+{
+    auto start = value.find("/*");
+    while(start != std::string::npos) {
+        auto end = value.find("*/", start + 2);
+        value.erase(start, end - start + 2);
+        start = value.find("/*");
     }
 }
 
@@ -1733,17 +1744,7 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
     std::string name;
     std::string value;
     int ignoring = 0;
-
-    auto remove_comments = [](std::string& value) {
-        auto start = value.find("/*");
-        while(start != std::string::npos) {
-            auto end = value.find("*/", start + 2);
-            value.erase(start, end - start + 2);
-            start = value.find("/*");
-        }
-    };
-
-    auto handle_text = [&](const char* start, const char* end, bool in_cdata) {
+    auto handleText = [&](const char* start, const char* end, bool in_cdata) {
         if(ignoring > 0 || current == nullptr || current->id != ElementID::Style)
             return;
 
@@ -1752,7 +1753,7 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
         else
             decodeText(start, end, value);
 
-        remove_comments(value);
+        removeComments(value);
         styleSheet.parse(value);
     };
 
@@ -1761,7 +1762,7 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
         if(!Utils::skipUntil(ptr, end, '<'))
             break;
 
-        handle_text(start, ptr, false);
+        handleText(start, ptr, false);
         ptr += 1;
 
         if(ptr < end && *ptr == '/') {
@@ -1804,7 +1805,7 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
                 if(!Utils::skipUntil(ptr, end, "-->"))
                     return false;
 
-                handle_text(start, ptr, false);
+                handleText(start, ptr, false);
                 ptr += 3;
                 continue;
             }
@@ -1814,7 +1815,7 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
                 if(!Utils::skipUntil(ptr, end, "]]>"))
                     return false;
 
-                handle_text(start, ptr, true);
+                handleText(start, ptr, true);
                 ptr += 3;
                 continue;
             }
@@ -1847,7 +1848,9 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
         if(!readIdentifier(ptr, end, name))
             return false;
 
-        auto id = ignoring == 0 ? elementId(name) : ElementID::Unknown;
+        auto id = ElementID::Unknown;
+        if(ignoring == 0)
+            id = elementid(name);
         if(id == ElementID::Unknown)
             ++ignoring;
 
@@ -1889,11 +1892,13 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
             if(ptr >= end || *ptr != quote)
                 return false;
 
-            auto id = element ? propertyId(name) : PropertyID::Unknown;
+            auto id = PropertyID::Unknown;
+            if(element != nullptr)
+                id = propertyid(name);
             if(id != PropertyID::Unknown) {
                 decodeText(start, Utils::rtrim(start, ptr), value);
                 if(id == PropertyID::Style) {
-                    remove_comments(value);
+                    removeComments(value);
                     parseStyle(value, element);
                 } else {
                     if(id == PropertyID::Id)
@@ -1935,7 +1940,7 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
     if(!styleSheet.empty()) {
         m_rootElement->transverse([&styleSheet](Node* node) {
             if(node->isText())
-                return false;
+                return true;
 
             auto element = static_cast<Element*>(node);
             for(auto& rule : styleSheet.rules()) {
@@ -1946,7 +1951,7 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
                 }
             }
 
-            return false;
+            return true;
         });
     }
 
