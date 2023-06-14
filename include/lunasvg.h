@@ -100,7 +100,7 @@ public:
 class LUNASVG_API Bitmap {
 public:
     /**
-     * @note Bitmap format is ARGB Premultiplied.
+     * @note Bitmap format is ARGB32 Premultiplied.
      */
     Bitmap();
     Bitmap(std::uint8_t* data, std::uint32_t width, std::uint32_t height, std::uint32_t stride);

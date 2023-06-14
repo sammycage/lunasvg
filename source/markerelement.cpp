@@ -76,7 +76,7 @@ std::unique_ptr<LayoutMarker> MarkerElement::getMarker(LayoutContext* context) c
     viewTransform.map(_refX, _refY, &_refX, &_refY);
 
     LayoutBreaker layoutBreaker(context, this);
-    auto marker = std::make_unique<LayoutMarker>();
+    auto marker = makeUnique<LayoutMarker>();
     marker->refX = _refX;
     marker->refY = _refY;
     marker->transform = viewTransform;

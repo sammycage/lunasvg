@@ -21,7 +21,7 @@ std::unique_ptr<LayoutClipPath> ClipPathElement::getClipper(LayoutContext* conte
         return nullptr;
 
     LayoutBreaker layoutBreaker(context, this);
-    auto clipper = std::make_unique<LayoutClipPath>();
+    auto clipper = makeUnique<LayoutClipPath>();
     clipper->units = clipPathUnits();
     clipper->transform = transform();
     clipper->clipper = context->getClipper(clip_path());

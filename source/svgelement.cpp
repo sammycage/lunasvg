@@ -66,7 +66,7 @@ std::unique_ptr<LayoutSymbol> SVGElement::build(const TreeBuilder* builder) cons
     auto viewTranslation = Transform::translated(_x, _y);
     auto viewTransform = preserveAspectRatio.getMatrix(_w, _h, viewBox);
 
-    auto root = std::make_unique<LayoutSymbol>();
+    auto root = makeUnique<LayoutSymbol>();
     root->width = _w;
     root->height = _h;
     root->transform = (viewTransform * viewTranslation) * transform();
@@ -107,7 +107,7 @@ void SVGElement::layout(LayoutContext* context, LayoutContainer* current) const
     auto viewTranslation = Transform::translated(_x, _y);
     auto viewTransform = preserveAspectRatio.getMatrix(_w, _h, viewBox);
 
-    auto symbol = std::make_unique<LayoutSymbol>();
+    auto symbol = makeUnique<LayoutSymbol>();
     symbol->width = _w;
     symbol->height = _h;
     symbol->transform = (viewTransform * viewTranslation) * transform();

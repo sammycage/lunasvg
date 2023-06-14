@@ -20,7 +20,7 @@ void GeometryElement::layout(LayoutContext* context, LayoutContainer* current) c
     if(path.empty())
         return;
 
-    auto shape = std::make_unique<LayoutShape>();
+    auto shape = makeUnique<LayoutShape>();
     shape->path = std::move(path);
     shape->transform = transform();
     shape->fillData = context->fillData(this);

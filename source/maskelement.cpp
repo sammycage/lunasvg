@@ -53,7 +53,7 @@ std::unique_ptr<LayoutMask> MaskElement::getMasker(LayoutContext* context) const
         return nullptr;
 
     LayoutBreaker layoutBreaker(context, this);
-    auto masker = std::make_unique<LayoutMask>();
+    auto masker = makeUnique<LayoutMask>();
     masker->units = maskUnits();
     masker->contentUnits = maskContentUnits();
     masker->opacity = opacity();

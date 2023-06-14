@@ -10,15 +10,19 @@ using namespace lunasvg;
 
 int help()
 {
-    std::cout << "Usage: \n   svg2png [filename] [resolution] [bgColor]\n\nExamples: \n    $ svg2png input.svg\n    $ svg2png input.svg 512x512\n    $ svg2png input.svg 512x512 0xff00ffff\n\n";
+    std::cout << "Usage: \n"
+                 "   svg2png [filename] [resolution] [bgColor]\n\n"
+                 "Examples: \n"
+                 "    $ svg2png input.svg\n"
+                 "    $ svg2png input.svg 512x512\n"
+                 "    $ svg2png input.svg 512x512 0xff00ffff\n\n";
     return 1;
 }
 
 bool setup(int argc, char** argv, std::string& filename, std::uint32_t& width, std::uint32_t& height, std::uint32_t& bgColor)
 {
     if(argc > 1) filename.assign(argv[1]);
-    if(argc > 2)
-    {
+    if(argc > 2) {
         std::stringstream ss;
 
         ss << argv[2];
@@ -30,15 +34,14 @@ bool setup(int argc, char** argv, std::string& filename, std::uint32_t& width, s
         ss >> height;
     }
 
-    if(argc > 3)
-    {
+    if(argc > 3) {
         std::stringstream ss;
 
         ss << std::hex << argv[3];
         ss >> std::hex >> bgColor;
     }
 
-    return true;
+    return argc > 1;
 }
 
 int main(int argc, char** argv)
@@ -53,12 +56,12 @@ int main(int argc, char** argv)
 
     auto bitmap = document->renderToBitmap(width, height, bgColor);
     if(!bitmap.valid()) return help();
+    bitmap.convertToRGBA();
 
     auto basename = filename.substr(filename.find_last_of("/\\") + 1);
     basename.append(".png");
 
-    bitmap.convertToRGBA();
-    stbi_write_png(basename.c_str(), int(bitmap.width()), int(bitmap.height()), 4, bitmap.data(), 0);
+    stbi_write_png(basename.c_str(), bitmap.width(), bitmap.height(), 4, bitmap.data(), 0);
 
     std::cout << "Generated PNG file : " << basename << std::endl;
 

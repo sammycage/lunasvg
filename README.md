@@ -65,7 +65,7 @@ make install
 
 ## Demo
 
-While building lunasvg example it generates a simple SVG to PNG converter which can be used to convert SVG file to PNG file.
+By enabling the `LUNASVG_BUILD_EXAMPLES` option during the CMake configuration, the lunasvg build includes a simple SVG to PNG converter for easy conversion of SVG files to PNG format.
 
 Run Demo.
 ```

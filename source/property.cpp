@@ -20,7 +20,7 @@ Color& Color::combine(double opacity)
 Color Color::combined(double opacity) const
 {
     auto rgb = m_value & 0x00FFFFFF;
-    auto a = static_cast<int>(std::clamp(opacity * alpha(), 0.0, 255.0));
+    auto a = static_cast<int>(clamp(opacity * alpha(), 0.0, 255.0));
     return Color(rgb | a << 24);
 }
 

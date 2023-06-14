@@ -56,6 +56,12 @@ enum class MarkerUnits {
     UserSpaceOnUse
 };
 
+template<typename T>
+constexpr const T& clamp(const T& val, const T& lo, const T& hi)
+{
+    return (val < lo) ? lo : (hi < val) ? hi : val;
+}
+
 class Color {
 public:
     Color() = default;

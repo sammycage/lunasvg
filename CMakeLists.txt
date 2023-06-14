@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.3)
 
 project(lunasvg VERSION 2.3.8 LANGUAGES CXX C)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 11)
 
-option(BUILD_SHARED_LIBS "Builds as shared library" OFF)
-option(LUNASVG_BUILD_EXAMPLES "Builds examples" OFF)
+option(BUILD_SHARED_LIBS "Build as a shared library" OFF)
+option(LUNASVG_BUILD_EXAMPLES "Build example(s)" OFF)
 
 add_library(lunasvg)
 
@@ -20,7 +20,9 @@ if(BUILD_SHARED_LIBS)
 endif()
 
 if(LUNASVG_BUILD_EXAMPLES)
-    add_subdirectory(example)
+    add_executable(svg2png svg2png.cpp)
+    target_link_libraries(svg2png PRIVATE lunasvg)
+    target_include_directories(svg2png PRIVATE 3rdparty/stb)
 endif()
 
 set(LUNASVG_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)

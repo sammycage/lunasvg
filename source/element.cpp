@@ -9,7 +9,7 @@ void Node::layout(LayoutContext*, LayoutContainer*) const
 
 std::unique_ptr<Node> TextNode::clone() const
 {
-    auto node = std::make_unique<TextNode>();
+    auto node = makeUnique<TextNode>();
     node->text = text;
     return std::move(node);
 }
@@ -32,8 +32,7 @@ void Element::set(PropertyID id, const std::string& value, int specificity)
         }
     }
 
-    Property property{specificity, id, value};
-    properties.push_back(std::move(property));
+    properties.push_back({specificity, id, value});
 }
 
 static const std::string EmptyString;

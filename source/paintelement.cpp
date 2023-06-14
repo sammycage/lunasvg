@@ -138,12 +138,12 @@ std::unique_ptr<LayoutObject> LinearGradientElement::getPainter(LayoutContext* c
     auto x2 = lengthContext.valueForLength(attributes.x2(), LengthMode::Width);
     auto y2 = lengthContext.valueForLength(attributes.y2(), LengthMode::Height);
     if((x1 == x2 && y1 == y2) || stops.size() == 1) {
-        auto solid = std::make_unique<LayoutSolidColor>();
+        auto solid = makeUnique<LayoutSolidColor>();
         solid->color = std::get<1>(stops.back());
         return std::move(solid);
     }
 
-    auto gradient = std::make_unique<LayoutLinearGradient>();
+    auto gradient = makeUnique<LayoutLinearGradient>();
     gradient->transform = attributes.gradientTransform();
     gradient->spreadMethod = attributes.spreadMethod();
     gradient->units = attributes.gradientUnits();
@@ -247,12 +247,12 @@ std::unique_ptr<LayoutObject> RadialGradientElement::getPainter(LayoutContext* c
 
     auto& r = attributes.r();
     if(r.isZero() || stops.size() == 1) {
-        auto solid = std::make_unique<LayoutSolidColor>();
+        auto solid = makeUnique<LayoutSolidColor>();
         solid->color = std::get<1>(stops.back());
         return std::move(solid);
     }
 
-    auto gradient = std::make_unique<LayoutRadialGradient>();
+    auto gradient = makeUnique<LayoutRadialGradient>();
     gradient->transform = attributes.gradientTransform();
     gradient->spreadMethod = attributes.spreadMethod();
     gradient->units = attributes.gradientUnits();
@@ -386,7 +386,7 @@ std::unique_ptr<LayoutObject> PatternElement::getPainter(LayoutContext* context)
         return nullptr;
 
     LayoutBreaker layoutBreaker(context, this);
-    auto pattern = std::make_unique<LayoutPattern>();
+    auto pattern = makeUnique<LayoutPattern>();
     pattern->transform = attributes.patternTransform();
     pattern->units = attributes.patternUnits();
     pattern->contentUnits = attributes.patternContentUnits();
@@ -414,7 +414,7 @@ SolidColorElement::SolidColorElement()
 
 std::unique_ptr<LayoutObject> SolidColorElement::getPainter(LayoutContext*) const
 {
-    auto solid = std::make_unique<LayoutSolidColor>();
+    auto solid = makeUnique<LayoutSolidColor>();
     solid->color = solid_color();
     solid->color.combine(solid_opacity());
     return std::move(solid);

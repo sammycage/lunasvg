@@ -112,6 +112,12 @@ struct Property {
 
 using PropertyList = std::vector<Property>;
 
+template<typename T, typename... Args>
+inline std::unique_ptr<T> makeUnique(Args&&... args)
+{
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
 class LayoutContext;
 class LayoutContainer;
 class Element;
@@ -178,7 +184,7 @@ public:
 
     template<typename T>
     std::unique_ptr<T> cloneElement() const {
-        auto element = std::make_unique<T>();
+        auto element = makeUnique<T>();
         element->properties = properties;
         for(auto& child : children)
             element->addChild(child->clone());

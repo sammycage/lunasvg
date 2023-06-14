@@ -880,7 +880,7 @@ bool Parser::parseColorComponent(const char*& ptr, const char* end, int& compone
     if(Utils::skipDesc(ptr, end, '%'))
         value *= 2.55;
 
-    value = std::clamp(value, 0.0, 255.0);
+    value = clamp(value, 0.0, 255.0);
     component = static_cast<int>(std::round(value));
     return true;
 }
@@ -1576,47 +1576,47 @@ static inline std::unique_ptr<Element> createElement(ElementID id)
 {
     switch(id) {
     case ElementID::Svg:
-        return std::make_unique<SVGElement>();
+        return makeUnique<SVGElement>();
     case ElementID::Path:
-        return std::make_unique<PathElement>();
+        return makeUnique<PathElement>();
     case ElementID::G:
-        return std::make_unique<GElement>();
+        return makeUnique<GElement>();
     case ElementID::Rect:
-        return std::make_unique<RectElement>();
+        return makeUnique<RectElement>();
     case ElementID::Circle:
-        return std::make_unique<CircleElement>();
+        return makeUnique<CircleElement>();
     case ElementID::Ellipse:
-        return std::make_unique<EllipseElement>();
+        return makeUnique<EllipseElement>();
     case ElementID::Line:
-        return std::make_unique<LineElement>();
+        return makeUnique<LineElement>();
     case ElementID::Defs:
-        return std::make_unique<DefsElement>();
+        return makeUnique<DefsElement>();
     case ElementID::Polygon:
-        return std::make_unique<PolygonElement>();
+        return makeUnique<PolygonElement>();
     case ElementID::Polyline:
-        return std::make_unique<PolylineElement>();
+        return makeUnique<PolylineElement>();
     case ElementID::Stop:
-        return std::make_unique<StopElement>();
+        return makeUnique<StopElement>();
     case ElementID::LinearGradient:
-        return std::make_unique<LinearGradientElement>();
+        return makeUnique<LinearGradientElement>();
     case ElementID::RadialGradient:
-        return std::make_unique<RadialGradientElement>();
+        return makeUnique<RadialGradientElement>();
     case ElementID::Symbol:
-        return std::make_unique<SymbolElement>();
+        return makeUnique<SymbolElement>();
     case ElementID::Use:
-        return std::make_unique<UseElement>();
+        return makeUnique<UseElement>();
     case ElementID::Pattern:
-        return std::make_unique<PatternElement>();
+        return makeUnique<PatternElement>();
     case ElementID::Mask:
-        return std::make_unique<MaskElement>();
+        return makeUnique<MaskElement>();
     case ElementID::ClipPath:
-        return std::make_unique<ClipPathElement>();
+        return makeUnique<ClipPathElement>();
     case ElementID::SolidColor:
-        return std::make_unique<SolidColorElement>();
+        return makeUnique<SolidColorElement>();
     case ElementID::Marker:
-        return std::make_unique<MarkerElement>();
+        return makeUnique<MarkerElement>();
     case ElementID::Style:
-        return std::make_unique<StyleElement>();
+        return makeUnique<StyleElement>();
     default:
         break;
     }
@@ -1862,7 +1862,7 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
             if(m_rootElement == nullptr) {
                 if(id != ElementID::Svg)
                     return false;
-                m_rootElement = std::make_unique<SVGElement>();
+                m_rootElement = makeUnique<SVGElement>();
                 element = m_rootElement.get();
             } else {
                 auto child = createElement(id);

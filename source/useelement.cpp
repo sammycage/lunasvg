@@ -61,7 +61,7 @@ void UseElement::layout(LayoutContext* context, LayoutContainer* current) const
         return;
 
     LayoutBreaker layoutBreaker(context, ref);
-    auto group = std::make_unique<GElement>();
+    auto group = makeUnique<GElement>();
     group->parent = parent;
     group->properties = properties;
 
