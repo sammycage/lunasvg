@@ -364,8 +364,8 @@ Bitmap Document::renderToBitmap(std::uint32_t width, std::uint32_t height, std::
     return bitmap;
 }
 
-Document::Document() = default;
-
+Document::Document(Document&&) = default;
 Document::~Document() = default;
+Document::Document() = default;
 
 } // namespace lunasvg

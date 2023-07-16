@@ -204,6 +204,7 @@ public:
      */
     Bitmap renderToBitmap(std::uint32_t width = 0, std::uint32_t height = 0, std::uint32_t backgroundColor = 0x00000000) const;
 
+    Document(Document&&);
     ~Document();
 
 private:
