@@ -1,0 +1,7 @@
+# Ignore build dirs
+/build
+/cmake-build-*
+
+# Ignore IDE specific dirs
+*.idea
+**/.vscode
