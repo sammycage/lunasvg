@@ -323,6 +323,8 @@ Path Parser::parsePath(const std::string& string)
             currentPoint.x = c[3];
             currentPoint.y = c[4];
         } else if(command == 'Z' || command == 'z') {
+            if(lastCommand == 'Z' || lastCommand == 'z')
+               return path;
             path.close();
             currentPoint.x = startPoint.x;
             currentPoint.y = startPoint.y;
