@@ -1226,8 +1226,8 @@ bool RuleData::matchPseudoClassSelector(const PseudoClassSelector& selector, con
         return element->parent == nullptr;
 
     if(selector.type == PseudoClassSelector::Type::Is) {
-        for(auto& selector : selector.subSelectors) {
-            for(auto& sel : selector) {
+        for(auto& subselector : selector.subSelectors) {
+            for(auto& sel : subselector) {
                 if(!matchSimpleSelector(sel, element)) {
                     return false;
                 }
@@ -1238,8 +1238,8 @@ bool RuleData::matchPseudoClassSelector(const PseudoClassSelector& selector, con
     }
 
     if(selector.type == PseudoClassSelector::Type::Not) {
-        for(auto& selector : selector.subSelectors) {
-            for(auto& sel : selector) {
+        for(auto& subselector : selector.subSelectors) {
+            for(auto& sel : subselector) {
                 if(matchSimpleSelector(sel, element)) {
                     return false;
                 }
