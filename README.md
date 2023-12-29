@@ -82,3 +82,4 @@ svg2png [filename] [resolution] [bgColor]
 - [ObEngine](https://github.com/ObEngine/ObEngine)
 - [OTTO](https://github.com/bitfieldaudio/OTTO)
 - [EmulationStation-DE](https://gitlab.com/es-de/emulationstation-de)
+- [SvgBooga](https://github.com/etodanik/SvgBooga/tree/main)
