@@ -61,6 +61,11 @@ std::unique_ptr<LayoutSymbol> SVGElement::build(const TreeBuilder* builder) cons
     auto _w = lengthContext.valueForLength(w, LengthMode::Width);
     auto _h = lengthContext.valueForLength(h, LengthMode::Height);
 
+    Point transformOrigin(_w * 0.5, _h * 0.5); // transform-origin: 50% 50%
+    auto transform = Transform::translated(transformOrigin.x, transformOrigin.y);
+    transform.premultiply(this->transform());
+    transform.translate(-transformOrigin.x, -transformOrigin.y);
+
     auto viewBox = this->viewBox();
     auto preserveAspectRatio = this->preserveAspectRatio();
     auto viewTranslation = Transform::translated(_x, _y);
@@ -69,7 +74,7 @@ std::unique_ptr<LayoutSymbol> SVGElement::build(const TreeBuilder* builder) cons
     auto root = makeUnique<LayoutSymbol>();
     root->width = _w;
     root->height = _h;
-    root->transform = (viewTransform * viewTranslation) * transform();
+    root->transform = (viewTransform * viewTranslation) * transform;
     root->clip = isOverflowHidden() ? preserveAspectRatio.getClip(_w, _h, viewBox) : Rect::Invalid;
     root->opacity = opacity();
 
