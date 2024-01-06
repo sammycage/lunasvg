@@ -42,55 +42,85 @@ std::string UseElement::href() const
     return Parser::parseHref(value);
 }
 
-void UseElement::transferWidthAndHeight(Element* element) const
-{
-    auto& width = get(PropertyID::Width);
-    auto& height = get(PropertyID::Height);
-
-    element->set(PropertyID::Width, width, 0x0);
-    element->set(PropertyID::Height, height, 0x0);
-}
-
 void UseElement::layout(LayoutContext* context, LayoutContainer* current) const
 {
     if(isDisplayNone())
         return;
-
-    auto ref = context->getElementById(href());
-    if(ref == nullptr || context->hasReference(ref) || (current->id == LayoutId::ClipPath && !ref->isGeometry()))
-        return;
-
-    LayoutBreaker layoutBreaker(context, ref);
-    auto group = makeUnique<GElement>();
-    group->parent = parent;
-    group->properties = properties;
-
     LengthContext lengthContext(this);
     auto _x = lengthContext.valueForLength(x(), LengthMode::Width);
     auto _y = lengthContext.valueForLength(y(), LengthMode::Height);
 
-    auto transform = get(PropertyID::Transform);
-    transform += "translate(";
-    transform += std::to_string(_x);
-    transform += ' ';
-    transform += std::to_string(_y);
-    transform += ')';
-    group->set(PropertyID::Transform, transform, 0x10);
-
-    if(ref->id == ElementID::Svg || ref->id == ElementID::Symbol) {
-        auto element = ref->cloneElement<SVGElement>();
-        transferWidthAndHeight(element.get());
-        group->addChild(std::move(element));
-    } else {
-        group->addChild(ref->clone());
-    }
-
-    group->layout(context, current);
+    auto group = makeUnique<LayoutGroup>();
+    group->transform = Transform::translated(_x, _y) * transform();
+    group->opacity = opacity();
+    group->masker = context->getMasker(mask());
+    group->clipper = context->getClipper(clip_path());
+    layoutChildren(context, group.get());
+    current->addChildIfNotEmpty(std::move(group));
 }
 
-std::unique_ptr<Node> UseElement::clone() const
+std::unique_ptr<Element> UseElement::cloneTargetElement(const Element* targetElement) const
 {
-    return cloneElement<UseElement>();
+    if(targetElement == this)
+        return nullptr;
+    switch(targetElement->id) {
+    case ElementID::Circle:
+    case ElementID::Ellipse:
+    case ElementID::G:
+    case ElementID::Image:
+    case ElementID::Line:
+    case ElementID::Path:
+    case ElementID::Polygon:
+    case ElementID::Polyline:
+    case ElementID::Rect:
+    case ElementID::Svg:
+    case ElementID::Symbol:
+    case ElementID::Text:
+    case ElementID::TSpan:
+    case ElementID::Use:
+        break;
+    default:
+        return nullptr;
+    }
+
+    const auto& idAttr = targetElement->get(PropertyID::Id);
+    for(const auto* element = parent; element; element = element->parent) {
+        if(!idAttr.empty() && idAttr == element->get(PropertyID::Id)) {
+            return nullptr;
+        }
+    }
+
+    auto tagId = targetElement->id;
+    if(tagId == ElementID::Symbol) {
+        tagId = ElementID::Svg;
+    }
+
+    auto newElement = TreeBuilder::createElement(tagId);
+    newElement->properties = targetElement->properties;
+    if(newElement->id == ElementID::Svg) {
+        for(const auto& property : properties) {
+            if(property.id == PropertyID::Width || property.id == PropertyID::Height) {
+                newElement->set(property.id, property.value, 0x0);
+            }
+        }
+    }
+
+    if(newElement->id == ElementID::Use)
+        return newElement;
+    for(auto& child : targetElement->children)
+        newElement->addChild(child->clone());
+    return newElement;
+}
+
+void UseElement::build(const TreeBuilder* builder)
+{
+    if(auto targetElement = builder->getElementById(href())) {
+        if(auto newElement = cloneTargetElement(targetElement)) {
+            addChild(std::move(newElement));
+        }
+    }
+
+    Element::build(builder);
 }
 
 } // namespace lunasvg

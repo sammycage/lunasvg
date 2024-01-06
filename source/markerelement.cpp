@@ -90,9 +90,4 @@ std::unique_ptr<LayoutMarker> MarkerElement::getMarker(LayoutContext* context) c
     return marker;
 }
 
-std::unique_ptr<Node> MarkerElement::clone() const
-{
-    return cloneElement<MarkerElement>();
-}
-
 } // namespace lunasvg

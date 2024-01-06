@@ -5,11 +5,9 @@
 
 namespace lunasvg {
 
-class StyleElement : public Element {
+class StyleElement final : public Element {
 public:
     StyleElement();
-
-    std::unique_ptr<Node> clone() const;
 };
 
 } // namespace lunasvg

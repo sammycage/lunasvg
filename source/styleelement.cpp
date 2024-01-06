@@ -7,9 +7,4 @@ StyleElement::StyleElement()
 {
 }
 
-std::unique_ptr<Node> StyleElement::clone() const
-{
-    return cloneElement<StyleElement>();
-}
-
 } // namespace lunasvg

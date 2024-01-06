@@ -295,11 +295,9 @@ std::unique_ptr<Document> Document::loadFromData(const char* data, std::size_t s
     TreeBuilder builder;
     if(!builder.parse(data, size))
         return nullptr;
-
-    auto root = builder.build();
+    auto root = builder.layout();
     if(root == nullptr)
         return nullptr;
-
     std::unique_ptr<Document> document(new Document);
     document->root = std::move(root);
     return document;

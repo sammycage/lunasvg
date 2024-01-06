@@ -69,9 +69,4 @@ std::unique_ptr<LayoutMask> MaskElement::getMasker(LayoutContext* context) const
     return masker;
 }
 
-std::unique_ptr<Node> MaskElement::clone() const
-{
-    return cloneElement<MaskElement>();
-}
-
 } // namespace lunasvg

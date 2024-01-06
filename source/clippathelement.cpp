@@ -19,7 +19,6 @@ std::unique_ptr<LayoutClipPath> ClipPathElement::getClipper(LayoutContext* conte
 {
     if(context->hasReference(this))
         return nullptr;
-
     LayoutBreaker layoutBreaker(context, this);
     auto clipper = makeUnique<LayoutClipPath>();
     clipper->units = clipPathUnits();
@@ -27,11 +26,6 @@ std::unique_ptr<LayoutClipPath> ClipPathElement::getClipper(LayoutContext* conte
     clipper->clipper = context->getClipper(clip_path());
     layoutChildren(context, clipper.get());
     return clipper;
-}
-
-std::unique_ptr<Node> ClipPathElement::clone() const
-{
-    return cloneElement<ClipPathElement>();
 }
 
 } // namespace lunasvg

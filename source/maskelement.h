@@ -7,7 +7,7 @@ namespace lunasvg {
 
 class LayoutMask;
 
-class MaskElement : public StyledElement {
+class MaskElement final : public StyledElement {
 public:
     MaskElement();
 
@@ -18,8 +18,6 @@ public:
     Units maskUnits() const;
     Units maskContentUnits() const;
     std::unique_ptr<LayoutMask> getMasker(LayoutContext* context) const;
-
-    std::unique_ptr<Node> clone() const;
 };
 
 } // namespace lunasvg

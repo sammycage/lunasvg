@@ -44,9 +44,4 @@ PreserveAspectRatio SymbolElement::preserveAspectRatio() const
     return Parser::parsePreserveAspectRatio(value);
 }
 
-std::unique_ptr<Node> SymbolElement::clone() const
-{
-    return cloneElement<SymbolElement>();
-}
-
 } // namespace lunasvg

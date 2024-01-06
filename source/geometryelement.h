@@ -16,14 +16,12 @@ public:
     virtual Path path() const = 0;
 };
 
-class PathElement : public GeometryElement {
+class PathElement final : public GeometryElement {
 public:
     PathElement();
 
     Path d() const;
-    Path path() const;
-
-    std::unique_ptr<Node> clone() const;
+    Path path() const final;
 };
 
 class PolyElement : public GeometryElement {
@@ -33,25 +31,21 @@ public:
     PointList points() const;
 };
 
-class PolygonElement : public PolyElement {
+class PolygonElement final : public PolyElement {
 public:
     PolygonElement();
 
-    Path path() const;
-
-    std::unique_ptr<Node> clone() const;
+    Path path() const final;
 };
 
-class PolylineElement : public PolyElement {
+class PolylineElement final : public PolyElement {
 public:
     PolylineElement();
 
-    Path path() const;
-
-    std::unique_ptr<Node> clone() const;
+    Path path() const final;
 };
 
-class CircleElement : public GeometryElement {
+class CircleElement final : public GeometryElement {
 public:
     CircleElement();
 
@@ -59,12 +53,10 @@ public:
     Length cy() const;
     Length r() const;
 
-    Path path() const;
-
-    std::unique_ptr<Node> clone() const;
+    Path path() const final;
 };
 
-class EllipseElement : public GeometryElement {
+class EllipseElement final : public GeometryElement {
 public:
     EllipseElement();
 
@@ -73,12 +65,10 @@ public:
     Length rx() const;
     Length ry() const;
 
-    Path path() const;
-
-    std::unique_ptr<Node> clone() const;
+    Path path() const final;
 };
 
-class LineElement : public GeometryElement {
+class LineElement final : public GeometryElement {
 public:
     LineElement();
 
@@ -87,12 +77,10 @@ public:
     Length x2() const;
     Length y2() const;
 
-    Path path() const;
-
-    std::unique_ptr<Node> clone() const;
+    Path path() const final;
 };
 
-class RectElement : public GeometryElement {
+class RectElement final : public GeometryElement {
 public:
     RectElement();
 
@@ -103,9 +91,7 @@ public:
     Length width() const;
     Length height() const;
 
-    Path path() const;
-
-    std::unique_ptr<Node> clone() const;
+    Path path() const final;
 };
 
 } // namespace lunasvg

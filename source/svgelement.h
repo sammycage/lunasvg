@@ -8,7 +8,7 @@ namespace lunasvg {
 class TreeBuilder;
 class LayoutSymbol;
 
-class SVGElement : public GraphicsElement {
+class SVGElement final : public GraphicsElement {
 public:
     SVGElement();
 
@@ -19,10 +19,8 @@ public:
 
     Rect viewBox() const;
     PreserveAspectRatio preserveAspectRatio() const;
-    std::unique_ptr<LayoutSymbol> build(const TreeBuilder* builder) const;
-
-    void layout(LayoutContext* context, LayoutContainer* current) const;
-    std::unique_ptr<Node> clone() const;
+    std::unique_ptr<LayoutSymbol> layoutTree(const TreeBuilder* builder) const;
+    void layout(LayoutContext* context, LayoutContainer* current) const final;
 };
 
 } // namespace lunasvg

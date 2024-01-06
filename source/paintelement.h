@@ -27,7 +27,7 @@ public:
     GradientStops buildGradientStops() const;
 };
 
-class LinearGradientElement : public GradientElement {
+class LinearGradientElement final : public GradientElement {
 public:
     LinearGradientElement();
 
@@ -36,11 +36,10 @@ public:
     Length x2() const;
     Length y2() const;
 
-    std::unique_ptr<LayoutObject> getPainter(LayoutContext* context) const;
-    std::unique_ptr<Node> clone() const;
+    std::unique_ptr<LayoutObject> getPainter(LayoutContext* context) const final;
 };
 
-class RadialGradientElement : public GradientElement {
+class RadialGradientElement final : public GradientElement {
 public:
     RadialGradientElement();
 
@@ -50,11 +49,10 @@ public:
     Length fx() const;
     Length fy() const;
 
-    std::unique_ptr<LayoutObject> getPainter(LayoutContext* context) const;
-    std::unique_ptr<Node> clone() const;
+    std::unique_ptr<LayoutObject> getPainter(LayoutContext* context) const final;
 };
 
-class PatternElement : public PaintElement {
+class PatternElement final : public PaintElement {
 public:
     PatternElement();
 
@@ -70,16 +68,14 @@ public:
     PreserveAspectRatio preserveAspectRatio() const;
     std::string href() const;
 
-    std::unique_ptr<LayoutObject> getPainter(LayoutContext* context) const;
-    std::unique_ptr<Node> clone() const;
+    std::unique_ptr<LayoutObject> getPainter(LayoutContext* context) const final;
 };
 
-class SolidColorElement : public PaintElement {
+class SolidColorElement final : public PaintElement {
 public:
     SolidColorElement();
 
-    std::unique_ptr<LayoutObject> getPainter(LayoutContext*) const;
-    std::unique_ptr<Node> clone() const;
+    std::unique_ptr<LayoutObject> getPainter(LayoutContext*) const final;
 };
 
 class GradientAttributes {

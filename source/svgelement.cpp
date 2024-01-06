@@ -45,16 +45,14 @@ PreserveAspectRatio SVGElement::preserveAspectRatio() const
     return Parser::parsePreserveAspectRatio(value);
 }
 
-std::unique_ptr<LayoutSymbol> SVGElement::build(const TreeBuilder* builder) const
+std::unique_ptr<LayoutSymbol> SVGElement::layoutTree(const TreeBuilder* builder) const
 {
     if(isDisplayNone())
         return nullptr;
-
     auto w = this->width();
     auto h = this->height();
     if(w.isZero() || h.isZero())
         return nullptr;
-
     LengthContext lengthContext(this);
     auto _x = lengthContext.valueForLength(x(), LengthMode::Width);
     auto _y = lengthContext.valueForLength(y(), LengthMode::Height);
@@ -95,7 +93,6 @@ void SVGElement::layout(LayoutContext* context, LayoutContainer* current) const
 {
     if(isDisplayNone())
         return;
-
     auto w = this->width();
     auto h = this->height();
     if(w.isZero() || h.isZero())
@@ -122,11 +119,6 @@ void SVGElement::layout(LayoutContext* context, LayoutContainer* current) const
     symbol->clipper = context->getClipper(clip_path());
     layoutChildren(context, symbol.get());
     current->addChildIfNotEmpty(std::move(symbol));
-}
-
-std::unique_ptr<Node> SVGElement::clone() const
-{
-    return cloneElement<SVGElement>();
 }
 
 } // namespace lunasvg

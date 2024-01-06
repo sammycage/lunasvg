@@ -190,7 +190,9 @@ public:
 
     SVGElement* rootElement() const { return m_rootElement.get(); }
     Element* getElementById(const std::string& id) const;
-    std::unique_ptr<LayoutSymbol> build() const;
+    std::unique_ptr<LayoutSymbol> layout() const;
+
+    static std::unique_ptr<Element> createElement(ElementID id);
 
 private:
     std::unique_ptr<SVGElement> m_rootElement;

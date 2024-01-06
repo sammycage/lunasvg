@@ -1574,58 +1574,6 @@ bool StyleSheet::parseSimpleSelector(const char*& ptr, const char* end, SimpleSe
     return true;
 }
 
-static inline std::unique_ptr<Element> createElement(ElementID id)
-{
-    switch(id) {
-    case ElementID::Svg:
-        return makeUnique<SVGElement>();
-    case ElementID::Path:
-        return makeUnique<PathElement>();
-    case ElementID::G:
-        return makeUnique<GElement>();
-    case ElementID::Rect:
-        return makeUnique<RectElement>();
-    case ElementID::Circle:
-        return makeUnique<CircleElement>();
-    case ElementID::Ellipse:
-        return makeUnique<EllipseElement>();
-    case ElementID::Line:
-        return makeUnique<LineElement>();
-    case ElementID::Defs:
-        return makeUnique<DefsElement>();
-    case ElementID::Polygon:
-        return makeUnique<PolygonElement>();
-    case ElementID::Polyline:
-        return makeUnique<PolylineElement>();
-    case ElementID::Stop:
-        return makeUnique<StopElement>();
-    case ElementID::LinearGradient:
-        return makeUnique<LinearGradientElement>();
-    case ElementID::RadialGradient:
-        return makeUnique<RadialGradientElement>();
-    case ElementID::Symbol:
-        return makeUnique<SymbolElement>();
-    case ElementID::Use:
-        return makeUnique<UseElement>();
-    case ElementID::Pattern:
-        return makeUnique<PatternElement>();
-    case ElementID::Mask:
-        return makeUnique<MaskElement>();
-    case ElementID::ClipPath:
-        return makeUnique<ClipPathElement>();
-    case ElementID::SolidColor:
-        return makeUnique<SolidColorElement>();
-    case ElementID::Marker:
-        return makeUnique<MarkerElement>();
-    case ElementID::Style:
-        return makeUnique<StyleElement>();
-    default:
-        break;
-    }
-
-    return nullptr;
-}
-
 static inline bool decodeText(const char* ptr, const char* end, std::string& value)
 {
     value.clear();
@@ -1938,7 +1886,6 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
 
     if(!m_rootElement || ptr < end || ignoring > 0)
         return false;
-
     if(!styleSheet.empty()) {
         m_rootElement->transverse([&styleSheet](Node* node) {
             if(node->isText())
@@ -1957,6 +1904,7 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
         });
     }
 
+    m_rootElement->build(this);
     return true;
 }
 
@@ -1968,9 +1916,61 @@ Element* TreeBuilder::getElementById(const std::string& id) const
     return it->second;
 }
 
-std::unique_ptr<LayoutSymbol> TreeBuilder::build() const
+std::unique_ptr<Element> TreeBuilder::createElement(ElementID id)
 {
-    return m_rootElement->build(this);
+    switch(id) {
+    case ElementID::Svg:
+        return makeUnique<SVGElement>();
+    case ElementID::Path:
+        return makeUnique<PathElement>();
+    case ElementID::G:
+        return makeUnique<GElement>();
+    case ElementID::Rect:
+        return makeUnique<RectElement>();
+    case ElementID::Circle:
+        return makeUnique<CircleElement>();
+    case ElementID::Ellipse:
+        return makeUnique<EllipseElement>();
+    case ElementID::Line:
+        return makeUnique<LineElement>();
+    case ElementID::Defs:
+        return makeUnique<DefsElement>();
+    case ElementID::Polygon:
+        return makeUnique<PolygonElement>();
+    case ElementID::Polyline:
+        return makeUnique<PolylineElement>();
+    case ElementID::Stop:
+        return makeUnique<StopElement>();
+    case ElementID::LinearGradient:
+        return makeUnique<LinearGradientElement>();
+    case ElementID::RadialGradient:
+        return makeUnique<RadialGradientElement>();
+    case ElementID::Symbol:
+        return makeUnique<SymbolElement>();
+    case ElementID::Use:
+        return makeUnique<UseElement>();
+    case ElementID::Pattern:
+        return makeUnique<PatternElement>();
+    case ElementID::Mask:
+        return makeUnique<MaskElement>();
+    case ElementID::ClipPath:
+        return makeUnique<ClipPathElement>();
+    case ElementID::SolidColor:
+        return makeUnique<SolidColorElement>();
+    case ElementID::Marker:
+        return makeUnique<MarkerElement>();
+    case ElementID::Style:
+        return makeUnique<StyleElement>();
+    default:
+        break;
+    }
+
+    return nullptr;
+}
+
+std::unique_ptr<LayoutSymbol> TreeBuilder::layout() const
+{
+    return m_rootElement->layoutTree(this);
 }
 
 } // namespace lunasvg

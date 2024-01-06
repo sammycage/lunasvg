@@ -5,12 +5,11 @@
 
 namespace lunasvg {
 
-class GElement : public GraphicsElement {
+class GElement final : public GraphicsElement {
 public:
     GElement();
 
     void layout(LayoutContext* context, LayoutContainer* current) const;
-    std::unique_ptr<Node> clone() const;
 };
 
 } // namespace lunasvg

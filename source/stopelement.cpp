@@ -21,9 +21,4 @@ Color StopElement::stopColorWithOpacity() const
     return color;
 }
 
-std::unique_ptr<Node> StopElement::clone() const
-{
-    return cloneElement<StopElement>();
-}
-
 } // namespace lunasvg

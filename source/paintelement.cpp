@@ -155,11 +155,6 @@ std::unique_ptr<LayoutObject> LinearGradientElement::getPainter(LayoutContext* c
     return std::move(gradient);
 }
 
-std::unique_ptr<Node> LinearGradientElement::clone() const
-{
-    return cloneElement<LinearGradientElement>();
-}
-
 RadialGradientElement::RadialGradientElement()
     : GradientElement(ElementID::RadialGradient)
 {
@@ -265,11 +260,6 @@ std::unique_ptr<LayoutObject> RadialGradientElement::getPainter(LayoutContext* c
     gradient->fx = lengthContext.valueForLength(attributes.fx(), LengthMode::Width);
     gradient->fy = lengthContext.valueForLength(attributes.fy(), LengthMode::Height);
     return std::move(gradient);
-}
-
-std::unique_ptr<Node> RadialGradientElement::clone() const
-{
-    return cloneElement<RadialGradientElement>();
 }
 
 PatternElement::PatternElement()
@@ -402,11 +392,6 @@ std::unique_ptr<LayoutObject> PatternElement::getPainter(LayoutContext* context)
     return std::move(pattern);
 }
 
-std::unique_ptr<Node> PatternElement::clone() const
-{
-    return cloneElement<PatternElement>();
-}
-
 SolidColorElement::SolidColorElement()
     : PaintElement(ElementID::SolidColor)
 {
@@ -418,11 +403,6 @@ std::unique_ptr<LayoutObject> SolidColorElement::getPainter(LayoutContext*) cons
     solid->color = solid_color();
     solid->color.combine(solid_opacity());
     return std::move(solid);
-}
-
-std::unique_ptr<Node> SolidColorElement::clone() const
-{
-    return cloneElement<SolidColorElement>();
 }
 
 } // namespace lunasvg

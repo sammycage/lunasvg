@@ -7,9 +7,4 @@ DefsElement::DefsElement()
 {
 }
 
-std::unique_ptr<Node> DefsElement::clone() const
-{
-    return cloneElement<DefsElement>();
-}
-
 } // namespace lunasvg

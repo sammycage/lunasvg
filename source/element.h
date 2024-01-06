@@ -16,6 +16,7 @@ enum class ElementID {
     Defs,
     Ellipse,
     G,
+    Image,
     Line,
     LinearGradient,
     Marker,
@@ -31,6 +32,8 @@ enum class ElementID {
     Style,
     Svg,
     Symbol,
+    Text,
+    TSpan,
     Use
 };
 
@@ -150,6 +153,8 @@ public:
 
 using NodeList = std::list<std::unique_ptr<Node>>;
 
+class TreeBuilder;
+
 class Element : public Node {
 public:
     Element(ElementID id);
@@ -165,11 +170,12 @@ public:
     void layoutChildren(LayoutContext* context, LayoutContainer* current) const;
     Rect currentViewport() const;
 
+    virtual void build(const TreeBuilder* builder);
+
     template<typename T>
     void transverse(T callback) {
         if(!callback(this))
             return;
-
         for(auto& child : children) {
             if(child->isText()) {
                 if(!callback(child.get()))
@@ -182,14 +188,7 @@ public:
         }
     }
 
-    template<typename T>
-    std::unique_ptr<T> cloneElement() const {
-        auto element = makeUnique<T>();
-        element->properties = properties;
-        for(auto& child : children)
-            element->addChild(child->clone());
-        return element;
-    }
+    std::unique_ptr<Node> clone() const final;
 
 public:
     ElementID id;

@@ -1,5 +1,6 @@
 #include "element.h"
 #include "svgelement.h"
+#include "parser.h"
 
 namespace lunasvg {
 
@@ -142,7 +143,6 @@ Rect Element::currentViewport() const
         auto element = static_cast<SVGElement*>(parent);
         if(element->has(PropertyID::ViewBox))
             return element->viewBox();
-
         LengthContext lengthContext(element);
         auto _x = lengthContext.valueForLength(element->x(), LengthMode::Width);
         auto _y = lengthContext.valueForLength(element->y(), LengthMode::Height);
@@ -152,6 +152,25 @@ Rect Element::currentViewport() const
     }
 
     return parent->currentViewport();
+}
+
+void Element::build(const TreeBuilder* builder)
+{
+    for(auto& child : children) {
+        if(child->isText())
+            continue;
+        auto element = static_cast<Element*>(child.get());
+        element->build(builder);
+    }
+}
+
+std::unique_ptr<Node> Element::clone() const
+{
+    auto element = TreeBuilder::createElement(id);
+    element->properties = properties;
+    for(auto& child : children)
+        element->addChild(child->clone());
+    return element;
 }
 
 } // namespace lunasvg
