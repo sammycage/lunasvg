@@ -677,8 +677,44 @@ Rect PreserveAspectRatio::getClip(double width, double height, const Rect& viewB
 {
     if(viewBox.empty())
         return Rect{0, 0, width, height};
+    if(m_scale == MeetOrSlice::Meet)
+        return viewBox;
+    auto scale = std::max(width / viewBox.w, height / viewBox.h);
+    auto xOffset = -viewBox.x * scale;
+    auto yOffset = -viewBox.y * scale;
+    auto viewWidth = viewBox.w * scale;
+    auto viewHeight = viewBox.h * scale;
+    switch(m_align) {
+    case Align::xMidYMin:
+    case Align::xMidYMid:
+    case Align::xMidYMax:
+        xOffset += (width - viewWidth) * 0.5f;
+        break;
+    case Align::xMaxYMin:
+    case Align::xMaxYMid:
+    case Align::xMaxYMax:
+        xOffset += (width - viewWidth);
+        break;
+    default:
+        break;
+    }
 
-    return viewBox;
+    switch(m_align) {
+    case Align::xMinYMid:
+    case Align::xMidYMid:
+    case Align::xMaxYMid:
+        yOffset += (height - viewHeight) * 0.5f;
+        break;
+    case Align::xMinYMax:
+    case Align::xMidYMax:
+    case Align::xMaxYMax:
+        yOffset += (height - viewHeight);
+        break;
+    default:
+        break;
+    }
+
+    return Rect(-xOffset / scale, -yOffset / scale, width / scale, height / scale);
 }
 
 Angle::Angle(MarkerOrient type)
