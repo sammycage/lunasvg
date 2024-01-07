@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 11)
 
 option(BUILD_SHARED_LIBS "Build as a shared library" OFF)
-option(LUNASVG_BUILD_EXAMPLES "Build example(s)" OFF)
+option(LUNASVG_BUILD_EXAMPLES "Build example(s)" ON)
 
 add_library(lunasvg)
 
@@ -23,6 +23,10 @@ if(LUNASVG_BUILD_EXAMPLES)
     add_executable(svg2png svg2png.cpp)
     target_link_libraries(svg2png PRIVATE lunasvg)
     target_include_directories(svg2png PRIVATE 3rdparty/stb)
+	if (WIN32)
+    add_executable(svg2ico examples/win32/svg2ico/svg2ico.cpp)
+    target_link_libraries(svg2ico PRIVATE lunasvg)
+	endif()
 endif()
 
 set(LUNASVG_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
