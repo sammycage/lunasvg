@@ -1,19 +1,7 @@
 #include "parser.h"
 #include "parserutils.h"
 #include "layoutcontext.h"
-
-#include "clippathelement.h"
-#include "defselement.h"
-#include "gelement.h"
-#include "geometryelement.h"
-#include "markerelement.h"
-#include "maskelement.h"
-#include "paintelement.h"
-#include "stopelement.h"
 #include "svgelement.h"
-#include "symbolelement.h"
-#include "useelement.h"
-#include "styleelement.h"
 
 namespace lunasvg {
 
@@ -979,7 +967,7 @@ bool Parser::parseTransform(const char*& ptr, const char* end, TransformType& ty
     return true;
 }
 
-static inline ElementID elementid(const std::string& name)
+ElementID elementid(const std::string& name)
 {
     static const std::map<std::string, ElementID> elementmap = {
         {"circle", ElementID::Circle},
@@ -1011,7 +999,7 @@ static inline ElementID elementid(const std::string& name)
     return it->second;
 }
 
-static inline PropertyID csspropertyid(const std::string& name)
+PropertyID csspropertyid(const std::string& name)
 {
     static const std::map<std::string, PropertyID> csspropertymap = {
         {"clip-path", PropertyID::Clip_Path},
@@ -1048,7 +1036,7 @@ static inline PropertyID csspropertyid(const std::string& name)
     return it->second;
 }
 
-static inline PropertyID propertyid(const std::string& name)
+PropertyID propertyid(const std::string& name)
 {
     static const std::map<std::string, PropertyID> propertymap = {
         {"class", PropertyID::Class},
@@ -1680,11 +1668,7 @@ static inline void removeComments(std::string& value)
     }
 }
 
-TreeBuilder::TreeBuilder() = default;
-
-TreeBuilder::~TreeBuilder() = default;
-
-bool TreeBuilder::parse(const char* data, std::size_t size)
+bool Document::parse(const char* data, std::size_t size)
 {
     auto ptr = data;
     auto end = ptr + size;
@@ -1815,7 +1799,7 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
                 m_rootElement = makeUnique<SVGElement>();
                 element = m_rootElement.get();
             } else {
-                auto child = createElement(id);
+                auto child = Element::create(id);
                 element = child.get();
                 current->addChild(std::move(child));
             }
@@ -1906,71 +1890,6 @@ bool TreeBuilder::parse(const char* data, std::size_t size)
 
     m_rootElement->build(this);
     return true;
-}
-
-Element* TreeBuilder::getElementById(const std::string& id) const
-{
-    auto it = m_idCache.find(id);
-    if(it == m_idCache.end())
-        return nullptr;
-    return it->second;
-}
-
-std::unique_ptr<Element> TreeBuilder::createElement(ElementID id)
-{
-    switch(id) {
-    case ElementID::Svg:
-        return makeUnique<SVGElement>();
-    case ElementID::Path:
-        return makeUnique<PathElement>();
-    case ElementID::G:
-        return makeUnique<GElement>();
-    case ElementID::Rect:
-        return makeUnique<RectElement>();
-    case ElementID::Circle:
-        return makeUnique<CircleElement>();
-    case ElementID::Ellipse:
-        return makeUnique<EllipseElement>();
-    case ElementID::Line:
-        return makeUnique<LineElement>();
-    case ElementID::Defs:
-        return makeUnique<DefsElement>();
-    case ElementID::Polygon:
-        return makeUnique<PolygonElement>();
-    case ElementID::Polyline:
-        return makeUnique<PolylineElement>();
-    case ElementID::Stop:
-        return makeUnique<StopElement>();
-    case ElementID::LinearGradient:
-        return makeUnique<LinearGradientElement>();
-    case ElementID::RadialGradient:
-        return makeUnique<RadialGradientElement>();
-    case ElementID::Symbol:
-        return makeUnique<SymbolElement>();
-    case ElementID::Use:
-        return makeUnique<UseElement>();
-    case ElementID::Pattern:
-        return makeUnique<PatternElement>();
-    case ElementID::Mask:
-        return makeUnique<MaskElement>();
-    case ElementID::ClipPath:
-        return makeUnique<ClipPathElement>();
-    case ElementID::SolidColor:
-        return makeUnique<SolidColorElement>();
-    case ElementID::Marker:
-        return makeUnique<MarkerElement>();
-    case ElementID::Style:
-        return makeUnique<StyleElement>();
-    default:
-        break;
-    }
-
-    return nullptr;
-}
-
-std::unique_ptr<LayoutSymbol> TreeBuilder::layout() const
-{
-    return m_rootElement->layoutTree(this);
 }
 
 } // namespace lunasvg

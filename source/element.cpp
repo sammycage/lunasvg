@@ -1,5 +1,16 @@
 #include "element.h"
+#include "clippathelement.h"
+#include "defselement.h"
+#include "gelement.h"
+#include "geometryelement.h"
+#include "markerelement.h"
+#include "maskelement.h"
+#include "paintelement.h"
+#include "stopelement.h"
 #include "svgelement.h"
+#include "symbolelement.h"
+#include "useelement.h"
+#include "styleelement.h"
 #include "parser.h"
 
 namespace lunasvg {
@@ -18,6 +29,58 @@ std::unique_ptr<Node> TextNode::clone() const
 Element::Element(ElementID id)
     : id(id)
 {
+}
+
+std::unique_ptr<Element> Element::create(ElementID id)
+{
+    switch(id) {
+    case ElementID::Svg:
+        return makeUnique<SVGElement>();
+    case ElementID::Path:
+        return makeUnique<PathElement>();
+    case ElementID::G:
+        return makeUnique<GElement>();
+    case ElementID::Rect:
+        return makeUnique<RectElement>();
+    case ElementID::Circle:
+        return makeUnique<CircleElement>();
+    case ElementID::Ellipse:
+        return makeUnique<EllipseElement>();
+    case ElementID::Line:
+        return makeUnique<LineElement>();
+    case ElementID::Defs:
+        return makeUnique<DefsElement>();
+    case ElementID::Polygon:
+        return makeUnique<PolygonElement>();
+    case ElementID::Polyline:
+        return makeUnique<PolylineElement>();
+    case ElementID::Stop:
+        return makeUnique<StopElement>();
+    case ElementID::LinearGradient:
+        return makeUnique<LinearGradientElement>();
+    case ElementID::RadialGradient:
+        return makeUnique<RadialGradientElement>();
+    case ElementID::Symbol:
+        return makeUnique<SymbolElement>();
+    case ElementID::Use:
+        return makeUnique<UseElement>();
+    case ElementID::Pattern:
+        return makeUnique<PatternElement>();
+    case ElementID::Mask:
+        return makeUnique<MaskElement>();
+    case ElementID::ClipPath:
+        return makeUnique<ClipPathElement>();
+    case ElementID::SolidColor:
+        return makeUnique<SolidColorElement>();
+    case ElementID::Marker:
+        return makeUnique<MarkerElement>();
+    case ElementID::Style:
+        return makeUnique<StyleElement>();
+    default:
+        break;
+    }
+
+    return nullptr;
 }
 
 void Element::set(PropertyID id, const std::string& value, int specificity)
@@ -79,7 +142,6 @@ Element* Element::previousElement() const
 {
     if(parent == nullptr)
         return nullptr;
-
     Element* element = nullptr;
     auto it = parent->children.begin();
     auto end = parent->children.end();
@@ -99,7 +161,6 @@ Element* Element::nextElement() const
 {
     if(parent == nullptr)
         return nullptr;
-
     Element* element = nullptr;
     auto it = parent->children.rbegin();
     auto end = parent->children.rend();
@@ -154,19 +215,19 @@ Rect Element::currentViewport() const
     return parent->currentViewport();
 }
 
-void Element::build(const TreeBuilder* builder)
+void Element::build(const Document* document)
 {
     for(auto& child : children) {
         if(child->isText())
             continue;
         auto element = static_cast<Element*>(child.get());
-        element->build(builder);
+        element->build(document);
     }
 }
 
 std::unique_ptr<Node> Element::clone() const
 {
-    auto element = TreeBuilder::createElement(id);
+    auto element = Element::create(id);
     element->properties = properties;
     for(auto& child : children)
         element->addChild(child->clone());

@@ -95,7 +95,7 @@ std::unique_ptr<Element> UseElement::cloneTargetElement(const Element* targetEle
         tagId = ElementID::Svg;
     }
 
-    auto newElement = TreeBuilder::createElement(tagId);
+    auto newElement = Element::create(tagId);
     newElement->properties = targetElement->properties;
     if(newElement->id == ElementID::Svg) {
         for(const auto& property : properties) {
@@ -112,15 +112,16 @@ std::unique_ptr<Element> UseElement::cloneTargetElement(const Element* targetEle
     return newElement;
 }
 
-void UseElement::build(const TreeBuilder* builder)
+void UseElement::build(const Document* document)
 {
-    if(auto targetElement = builder->getElementById(href())) {
-        if(auto newElement = cloneTargetElement(targetElement)) {
+    auto targetElement = document->getElementById(href());
+    if(!targetElement.isNull()) {
+        if(auto newElement = cloneTargetElement(targetElement.get())) {
             addChild(std::move(newElement));
         }
     }
 
-    Element::build(builder);
+    Element::build(document);
 }
 
 } // namespace lunasvg

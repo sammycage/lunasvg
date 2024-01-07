@@ -467,14 +467,17 @@ void RenderState::endGroup(RenderState& state, const BlendInfo& info)
     state.canvas->blend(canvas.get(), BlendMode::Src_Over, m_mode == RenderMode::Display ? info.opacity : 1.0);
 }
 
-LayoutContext::LayoutContext(const TreeBuilder* builder, LayoutSymbol* root)
-    : m_builder(builder), m_root(root)
+LayoutContext::LayoutContext(const Document* document, LayoutSymbol* root)
+    : m_document(document), m_root(root)
 {
 }
 
 Element* LayoutContext::getElementById(const std::string& id) const
 {
-    return m_builder->getElementById(id);
+    auto element = m_document->getElementById(id);
+    if(element.isNull())
+        return nullptr;
+    return element.get();
 }
 
 LayoutObject* LayoutContext::getResourcesById(const std::string& id) const

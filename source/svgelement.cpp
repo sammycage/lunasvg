@@ -45,7 +45,7 @@ PreserveAspectRatio SVGElement::preserveAspectRatio() const
     return Parser::parsePreserveAspectRatio(value);
 }
 
-std::unique_ptr<LayoutSymbol> SVGElement::layoutTree(const TreeBuilder* builder) const
+std::unique_ptr<LayoutSymbol> SVGElement::layoutTree(const Document* document) const
 {
     if(isDisplayNone())
         return nullptr;
@@ -76,7 +76,7 @@ std::unique_ptr<LayoutSymbol> SVGElement::layoutTree(const TreeBuilder* builder)
     root->clip = isOverflowHidden() ? preserveAspectRatio.getClip(_w, _h, viewBox) : Rect::Invalid;
     root->opacity = opacity();
 
-    LayoutContext context(builder, root.get());
+    LayoutContext context(document, root.get());
     root->masker = context.getMasker(mask());
     root->clipper = context.getClipper(clip_path());
     layoutChildren(&context, root.get());

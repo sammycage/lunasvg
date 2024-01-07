@@ -18,7 +18,7 @@ public:
 
     void layout(LayoutContext* context, LayoutContainer* current) const final;
     std::unique_ptr<Element> cloneTargetElement(const Element* targetElement) const;
-    void build(const TreeBuilder* builder) final;
+    void build(const Document* document) final;
 };
 
 } // namespace lunasvg
