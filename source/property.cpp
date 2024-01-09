@@ -96,6 +96,8 @@ Rect& Rect::unite(const Rect& rect)
     return *this;
 }
 
+const Transform Transform::Identity(1, 0, 0, 1, 0, 0);
+
 Transform::Transform(double m00, double m10, double m01, double m11, double m02, double m12)
     : m00(m00), m10(m10), m01(m01), m11(m11), m02(m02), m12(m12)
 {

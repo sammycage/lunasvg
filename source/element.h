@@ -5,6 +5,7 @@
 #include <list>
 
 #include "property.h"
+#include "lunasvg.h"
 
 namespace lunasvg {
 
@@ -107,6 +108,10 @@ enum class PropertyID {
     Y2
 };
 
+ElementID elementid(const std::string& name);
+PropertyID csspropertyid(const std::string& name);
+PropertyID propertyid(const std::string& name);
+
 struct Property {
     int specificity;
     PropertyID id;
@@ -121,8 +126,9 @@ inline std::unique_ptr<T> makeUnique(Args&&... args)
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
-class LayoutContext;
+class LayoutObject;
 class LayoutContainer;
+class LayoutContext;
 class Element;
 
 class Node {
@@ -133,19 +139,20 @@ public:
     virtual bool isText() const { return false; }
     virtual bool isPaint() const { return false; }
     virtual bool isGeometry() const { return false; }
-    virtual void layout(LayoutContext*, LayoutContainer*) const;
+    virtual void layout(LayoutContext*, LayoutContainer*) {}
     virtual std::unique_ptr<Node> clone() const = 0;
 
 public:
     Element* parent = nullptr;
+    LayoutObject* box = nullptr;
 };
 
-class TextNode : public Node {
+class TextNode final : public Node {
 public:
     TextNode() = default;
 
-    bool isText() const { return true; }
-    std::unique_ptr<Node> clone() const;
+    bool isText() const final { return true; }
+    std::unique_ptr<Node> clone() const final;
 
 public:
     std::string text;
@@ -153,11 +160,9 @@ public:
 
 using NodeList = std::list<std::unique_ptr<Node>>;
 
-class TreeBuilder;
-
 class Element : public Node {
 public:
-    Element(ElementID id);
+    static std::unique_ptr<Element> create(ElementID id);
 
     void set(PropertyID id, const std::string& value, int specificity);
     const std::string& get(PropertyID id) const;
@@ -167,10 +172,10 @@ public:
     Element* previousElement() const;
     Element* nextElement() const;
     Node* addChild(std::unique_ptr<Node> child);
-    void layoutChildren(LayoutContext* context, LayoutContainer* current) const;
+    void layoutChildren(LayoutContext* context, LayoutContainer* current);
     Rect currentViewport() const;
 
-    virtual void build(const TreeBuilder* builder);
+    virtual void build(const Document* document);
 
     template<typename T>
     void transverse(T callback) {
@@ -191,6 +196,7 @@ public:
     std::unique_ptr<Node> clone() const final;
 
 public:
+    Element(ElementID id);
     ElementID id;
     NodeList children;
     PropertyList properties;

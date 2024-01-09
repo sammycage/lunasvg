@@ -57,7 +57,7 @@ PreserveAspectRatio MarkerElement::preserveAspectRatio() const
     return Parser::parsePreserveAspectRatio(value);
 }
 
-std::unique_ptr<LayoutMarker> MarkerElement::getMarker(LayoutContext* context) const
+std::unique_ptr<LayoutMarker> MarkerElement::getMarker(LayoutContext* context)
 {
     auto markerWidth = this->markerWidth();
     auto markerHeight = this->markerHeight();
@@ -76,7 +76,7 @@ std::unique_ptr<LayoutMarker> MarkerElement::getMarker(LayoutContext* context) c
     viewTransform.map(_refX, _refY, &_refX, &_refY);
 
     LayoutBreaker layoutBreaker(context, this);
-    auto marker = makeUnique<LayoutMarker>();
+    auto marker = makeUnique<LayoutMarker>(this);
     marker->refX = _refX;
     marker->refY = _refY;
     marker->transform = viewTransform;

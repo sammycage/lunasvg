@@ -5,7 +5,7 @@
 
 namespace lunasvg {
 
-class TreeBuilder;
+class Document;
 class LayoutSymbol;
 
 class SVGElement final : public GraphicsElement {
@@ -19,8 +19,8 @@ public:
 
     Rect viewBox() const;
     PreserveAspectRatio preserveAspectRatio() const;
-    std::unique_ptr<LayoutSymbol> layoutTree(const TreeBuilder* builder) const;
-    void layout(LayoutContext* context, LayoutContainer* current) const final;
+    std::unique_ptr<LayoutSymbol> layoutTree(const Document* document);
+    void layout(LayoutContext* context, LayoutContainer* current) final;
 };
 
 } // namespace lunasvg

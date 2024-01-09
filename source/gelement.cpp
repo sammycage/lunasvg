@@ -8,11 +8,11 @@ GElement::GElement()
 {
 }
 
-void GElement::layout(LayoutContext* context, LayoutContainer* current) const
+void GElement::layout(LayoutContext* context, LayoutContainer* current)
 {
     if(isDisplayNone())
         return;
-    auto group = makeUnique<LayoutGroup>();
+    auto group = makeUnique<LayoutGroup>(this);
     group->transform = transform();
     group->opacity = opacity();
     group->masker = context->getMasker(mask());

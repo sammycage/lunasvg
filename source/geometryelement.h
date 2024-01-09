@@ -11,8 +11,8 @@ class GeometryElement : public GraphicsElement {
 public:
     GeometryElement(ElementID id);
 
-    bool isGeometry() const { return true; }
-    virtual void layout(LayoutContext* context, LayoutContainer* current) const;
+    bool isGeometry() const final { return true; }
+    void layout(LayoutContext* context, LayoutContainer* current) final;
     virtual Path path() const = 0;
 };
 

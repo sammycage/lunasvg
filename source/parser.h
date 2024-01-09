@@ -146,7 +146,6 @@ private:
     static bool matchAttributeSelector(const AttributeSelector& selector, const Element* element);
     static bool matchPseudoClassSelector(const PseudoClassSelector& selector, const Element* element);
 
-private:
     Selector m_selector;
     DeclarationList m_declarations;
     uint32_t m_specificity;
@@ -174,29 +173,8 @@ private:
     static bool parseSelector(const char*& ptr, const char* end, Selector& selector);
     static bool parseSimpleSelector(const char*& ptr, const char* end, SimpleSelector& simpleSelector);
 
-private:
     std::multiset<RuleData> m_rules;
     uint32_t m_position{0};
-};
-
-class LayoutSymbol;
-
-class TreeBuilder {
-public:
-    TreeBuilder();
-    ~TreeBuilder();
-
-    bool parse(const char* data, std::size_t size);
-
-    SVGElement* rootElement() const { return m_rootElement.get(); }
-    Element* getElementById(const std::string& id) const;
-    std::unique_ptr<LayoutSymbol> layout() const;
-
-    static std::unique_ptr<Element> createElement(ElementID id);
-
-private:
-    std::unique_ptr<SVGElement> m_rootElement;
-    std::map<std::string, Element*> m_idCache;
 };
 
 } // namespace lunasvg

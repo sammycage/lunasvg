@@ -42,7 +42,7 @@ std::string UseElement::href() const
     return Parser::parseHref(value);
 }
 
-void UseElement::layout(LayoutContext* context, LayoutContainer* current) const
+void UseElement::layout(LayoutContext* context, LayoutContainer* current)
 {
     if(isDisplayNone())
         return;
@@ -50,7 +50,7 @@ void UseElement::layout(LayoutContext* context, LayoutContainer* current) const
     auto _x = lengthContext.valueForLength(x(), LengthMode::Width);
     auto _y = lengthContext.valueForLength(y(), LengthMode::Height);
 
-    auto group = makeUnique<LayoutGroup>();
+    auto group = makeUnique<LayoutGroup>(this);
     group->transform = Transform::translated(_x, _y) * transform();
     group->opacity = opacity();
     group->masker = context->getMasker(mask());
@@ -95,7 +95,7 @@ std::unique_ptr<Element> UseElement::cloneTargetElement(const Element* targetEle
         tagId = ElementID::Svg;
     }
 
-    auto newElement = TreeBuilder::createElement(tagId);
+    auto newElement = Element::create(tagId);
     newElement->properties = targetElement->properties;
     if(newElement->id == ElementID::Svg) {
         for(const auto& property : properties) {
@@ -112,15 +112,16 @@ std::unique_ptr<Element> UseElement::cloneTargetElement(const Element* targetEle
     return newElement;
 }
 
-void UseElement::build(const TreeBuilder* builder)
+void UseElement::build(const Document* document)
 {
-    if(auto targetElement = builder->getElementById(href())) {
-        if(auto newElement = cloneTargetElement(targetElement)) {
+    auto targetElement = document->getElementById(href());
+    if(!targetElement.isNull()) {
+        if(auto newElement = cloneTargetElement(targetElement.get())) {
             addChild(std::move(newElement));
         }
     }
 
-    Element::build(builder);
+    Element::build(document);
 }
 
 } // namespace lunasvg
