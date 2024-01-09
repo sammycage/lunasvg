@@ -126,8 +126,9 @@ inline std::unique_ptr<T> makeUnique(Args&&... args)
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
-class LayoutContext;
+class LayoutObject;
 class LayoutContainer;
+class LayoutContext;
 class Element;
 
 class Node {
@@ -138,19 +139,20 @@ public:
     virtual bool isText() const { return false; }
     virtual bool isPaint() const { return false; }
     virtual bool isGeometry() const { return false; }
-    virtual void layout(LayoutContext*, LayoutContainer*) const;
+    virtual void layout(LayoutContext*, LayoutContainer*) {}
     virtual std::unique_ptr<Node> clone() const = 0;
 
 public:
     Element* parent = nullptr;
+    LayoutObject* box = nullptr;
 };
 
-class TextNode : public Node {
+class TextNode final : public Node {
 public:
     TextNode() = default;
 
-    bool isText() const { return true; }
-    std::unique_ptr<Node> clone() const;
+    bool isText() const final { return true; }
+    std::unique_ptr<Node> clone() const final;
 
 public:
     std::string text;
@@ -170,7 +172,7 @@ public:
     Element* previousElement() const;
     Element* nextElement() const;
     Node* addChild(std::unique_ptr<Node> child);
-    void layoutChildren(LayoutContext* context, LayoutContainer* current) const;
+    void layoutChildren(LayoutContext* context, LayoutContainer* current);
     Rect currentViewport() const;
 
     virtual void build(const Document* document);

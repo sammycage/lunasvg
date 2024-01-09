@@ -19,8 +19,8 @@ public:
 
     Rect viewBox() const;
     PreserveAspectRatio preserveAspectRatio() const;
-    std::unique_ptr<LayoutSymbol> layoutTree(const Document* document) const;
-    void layout(LayoutContext* context, LayoutContainer* current) const final;
+    std::unique_ptr<LayoutSymbol> layoutTree(const Document* document);
+    void layout(LayoutContext* context, LayoutContainer* current) final;
 };
 
 } // namespace lunasvg

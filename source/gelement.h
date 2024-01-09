@@ -9,7 +9,7 @@ class GElement final : public GraphicsElement {
 public:
     GElement();
 
-    void layout(LayoutContext* context, LayoutContainer* current) const;
+    void layout(LayoutContext* context, LayoutContainer* current) final;
 };
 
 } // namespace lunasvg

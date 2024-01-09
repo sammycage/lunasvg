@@ -316,6 +316,25 @@ bool DomElement::hasAttribute(const std::string& name) const
     return false;
 }
 
+Box DomElement::getBBox() const
+{
+    if(m_element && m_element->box)
+        return m_element->box->strokeBoundingBox();
+    return Box();
+}
+
+Matrix DomElement::getLocalTransform() const
+{
+    if(m_element && m_element->box)
+        return m_element->box->localTransform();
+    return Matrix();
+}
+
+Matrix DomElement::getAbsoluteTransform() const
+{
+    return getLocalTransform();
+}
+
 std::unique_ptr<Document> Document::loadFromFile(const std::string& filename)
 {
     std::ifstream fs;

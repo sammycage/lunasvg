@@ -42,7 +42,7 @@ std::string UseElement::href() const
     return Parser::parseHref(value);
 }
 
-void UseElement::layout(LayoutContext* context, LayoutContainer* current) const
+void UseElement::layout(LayoutContext* context, LayoutContainer* current)
 {
     if(isDisplayNone())
         return;
@@ -50,7 +50,7 @@ void UseElement::layout(LayoutContext* context, LayoutContainer* current) const
     auto _x = lengthContext.valueForLength(x(), LengthMode::Width);
     auto _y = lengthContext.valueForLength(y(), LengthMode::Height);
 
-    auto group = makeUnique<LayoutGroup>();
+    auto group = makeUnique<LayoutGroup>(this);
     group->transform = Transform::translated(_x, _y) * transform();
     group->opacity = opacity();
     group->masker = context->getMasker(mask());

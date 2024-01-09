@@ -176,6 +176,8 @@ public:
     static Transform sheared(double shx, double shy);
     static Transform translated(double tx, double ty);
 
+    static const Transform Identity;
+
 public:
     double m00{1};
     double m10{0};

@@ -89,7 +89,7 @@ Length LinearGradientElement::y2() const
     return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
-std::unique_ptr<LayoutObject> LinearGradientElement::getPainter(LayoutContext* context) const
+std::unique_ptr<LayoutObject> LinearGradientElement::getPainter(LayoutContext* context)
 {
     LinearGradientAttributes attributes;
     std::set<const GradientElement*> processedGradients;
@@ -138,12 +138,12 @@ std::unique_ptr<LayoutObject> LinearGradientElement::getPainter(LayoutContext* c
     auto x2 = lengthContext.valueForLength(attributes.x2(), LengthMode::Width);
     auto y2 = lengthContext.valueForLength(attributes.y2(), LengthMode::Height);
     if((x1 == x2 && y1 == y2) || stops.size() == 1) {
-        auto solid = makeUnique<LayoutSolidColor>();
+        auto solid = makeUnique<LayoutSolidColor>(this);
         solid->color = std::get<1>(stops.back());
         return std::move(solid);
     }
 
-    auto gradient = makeUnique<LayoutLinearGradient>();
+    auto gradient = makeUnique<LayoutLinearGradient>(this);
     gradient->transform = attributes.gradientTransform();
     gradient->spreadMethod = attributes.spreadMethod();
     gradient->units = attributes.gradientUnits();
@@ -190,7 +190,7 @@ Length RadialGradientElement::fy() const
     return Parser::parseLength(value, AllowNegativeLengths, Length::Zero);
 }
 
-std::unique_ptr<LayoutObject> RadialGradientElement::getPainter(LayoutContext* context) const
+std::unique_ptr<LayoutObject> RadialGradientElement::getPainter(LayoutContext* context)
 {
     RadialGradientAttributes attributes;
     std::set<const GradientElement*> processedGradients;
@@ -242,12 +242,12 @@ std::unique_ptr<LayoutObject> RadialGradientElement::getPainter(LayoutContext* c
 
     auto& r = attributes.r();
     if(r.isZero() || stops.size() == 1) {
-        auto solid = makeUnique<LayoutSolidColor>();
+        auto solid = makeUnique<LayoutSolidColor>(this);
         solid->color = std::get<1>(stops.back());
         return std::move(solid);
     }
 
-    auto gradient = makeUnique<LayoutRadialGradient>();
+    auto gradient = makeUnique<LayoutRadialGradient>(this);
     gradient->transform = attributes.gradientTransform();
     gradient->spreadMethod = attributes.spreadMethod();
     gradient->units = attributes.gradientUnits();
@@ -327,14 +327,14 @@ std::string PatternElement::href() const
     return Parser::parseHref(value);
 }
 
-std::unique_ptr<LayoutObject> PatternElement::getPainter(LayoutContext* context) const
+std::unique_ptr<LayoutObject> PatternElement::getPainter(LayoutContext* context)
 {
     if(context->hasReference(this))
         return nullptr;
 
     PatternAttributes attributes;
     std::set<const PatternElement*> processedPatterns;
-    const PatternElement* current = this;
+    PatternElement* current = this;
 
     while(true) {
         if(!attributes.hasX() && current->has(PropertyID::X))
@@ -363,7 +363,7 @@ std::unique_ptr<LayoutObject> PatternElement::getPainter(LayoutContext* context)
             break;
 
         processedPatterns.insert(current);
-        current = static_cast<const PatternElement*>(ref);
+        current = static_cast<PatternElement*>(ref);
         if(processedPatterns.find(current) != processedPatterns.end()) {
             break;
         }
@@ -376,7 +376,7 @@ std::unique_ptr<LayoutObject> PatternElement::getPainter(LayoutContext* context)
         return nullptr;
 
     LayoutBreaker layoutBreaker(context, this);
-    auto pattern = makeUnique<LayoutPattern>();
+    auto pattern = makeUnique<LayoutPattern>(this);
     pattern->transform = attributes.patternTransform();
     pattern->units = attributes.patternUnits();
     pattern->contentUnits = attributes.patternContentUnits();
@@ -397,9 +397,9 @@ SolidColorElement::SolidColorElement()
 {
 }
 
-std::unique_ptr<LayoutObject> SolidColorElement::getPainter(LayoutContext*) const
+std::unique_ptr<LayoutObject> SolidColorElement::getPainter(LayoutContext*)
 {
-    auto solid = makeUnique<LayoutSolidColor>();
+    auto solid = makeUnique<LayoutSolidColor>(this);
     solid->color = solid_color();
     solid->color.combine(solid_opacity());
     return std::move(solid);

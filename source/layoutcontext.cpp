@@ -11,30 +11,14 @@
 
 namespace lunasvg {
 
-LayoutObject::LayoutObject(LayoutId id)
-    : id(id)
+LayoutObject::LayoutObject(Node* node, LayoutId id)
+    : node(node), id(id)
 {
+    node->box = this;
 }
 
-LayoutObject::~LayoutObject()
-{
-}
-
-void LayoutObject::render(RenderState&) const
-{
-}
-
-void LayoutObject::apply(RenderState&) const
-{
-}
-
-Rect LayoutObject::map(const Rect&) const
-{
-    return Rect::Invalid;
-}
-
-LayoutContainer::LayoutContainer(LayoutId id)
-    : LayoutObject(id)
+LayoutContainer::LayoutContainer(Node* node, LayoutId id)
+    : LayoutObject(node, id)
 {
 }
 
@@ -86,8 +70,8 @@ void LayoutContainer::renderChildren(RenderState& state) const
     }
 }
 
-LayoutClipPath::LayoutClipPath()
-    : LayoutContainer(LayoutId::ClipPath)
+LayoutClipPath::LayoutClipPath(Node* node)
+    : LayoutContainer(node, LayoutId::ClipPath)
 {
 }
 
@@ -107,8 +91,8 @@ void LayoutClipPath::apply(RenderState& state) const
     state.canvas->blend(newState.canvas.get(), BlendMode::Dst_In, 1.0);
 }
 
-LayoutMask::LayoutMask()
-    : LayoutContainer(LayoutId::Mask)
+LayoutMask::LayoutMask(Node* node)
+    : LayoutContainer(node, LayoutId::Mask)
 {
 }
 
@@ -140,8 +124,8 @@ void LayoutMask::apply(RenderState& state) const
     state.canvas->blend(newState.canvas.get(), BlendMode::Dst_In, opacity);
 }
 
-LayoutSymbol::LayoutSymbol()
-    : LayoutContainer(LayoutId::Symbol)
+LayoutSymbol::LayoutSymbol(Node* node)
+    : LayoutContainer(node, LayoutId::Symbol)
 {
 }
 
@@ -155,13 +139,8 @@ void LayoutSymbol::render(RenderState& state) const
     newState.endGroup(state, info);
 }
 
-Rect LayoutSymbol::map(const Rect& rect) const
-{
-    return transform.map(rect);
-}
-
-LayoutGroup::LayoutGroup()
-    : LayoutContainer(LayoutId::Group)
+LayoutGroup::LayoutGroup(Node* node)
+    : LayoutContainer(node, LayoutId::Group)
 {
 }
 
@@ -175,13 +154,8 @@ void LayoutGroup::render(RenderState& state) const
     newState.endGroup(state, info);
 }
 
-Rect LayoutGroup::map(const Rect& rect) const
-{
-    return transform.map(rect);
-}
-
-LayoutMarker::LayoutMarker()
-    : LayoutContainer(LayoutId::Marker)
+LayoutMarker::LayoutMarker(Node* node)
+    : LayoutContainer(node, LayoutId::Marker)
 {
 }
 
@@ -217,8 +191,8 @@ void LayoutMarker::renderMarker(RenderState& state, const Point& origin, double 
     newState.endGroup(state, info);
 }
 
-LayoutPattern::LayoutPattern()
-    : LayoutContainer(LayoutId::Pattern)
+LayoutPattern::LayoutPattern(Node* node)
+    : LayoutContainer(node, LayoutId::Pattern)
 {
 }
 
@@ -260,13 +234,13 @@ void LayoutPattern::apply(RenderState& state) const
     state.canvas->setTexture(newState.canvas.get(), TextureType::Tiled, transform);
 }
 
-LayoutGradient::LayoutGradient(LayoutId id)
-    : LayoutObject(id)
+LayoutGradient::LayoutGradient(Node* node, LayoutId id)
+    : LayoutObject(node, id)
 {
 }
 
-LayoutLinearGradient::LayoutLinearGradient()
-    : LayoutGradient(LayoutId::LinearGradient)
+LayoutLinearGradient::LayoutLinearGradient(Node* node)
+    : LayoutGradient(node, LayoutId::LinearGradient)
 {
 }
 
@@ -281,8 +255,8 @@ void LayoutLinearGradient::apply(RenderState& state) const
     state.canvas->setLinearGradient(x1, y1, x2, y2, stops, spreadMethod, transform);
 }
 
-LayoutRadialGradient::LayoutRadialGradient()
-    : LayoutGradient(LayoutId::RadialGradient)
+LayoutRadialGradient::LayoutRadialGradient(Node* node)
+    : LayoutGradient(node, LayoutId::RadialGradient)
 {
 }
 
@@ -297,8 +271,8 @@ void LayoutRadialGradient::apply(RenderState& state) const
     state.canvas->setRadialGradient(cx, cy, r, fx, fy, stops, spreadMethod, transform);
 }
 
-LayoutSolidColor::LayoutSolidColor()
-    : LayoutObject(LayoutId::SolidColor)
+LayoutSolidColor::LayoutSolidColor(Node* node)
+    : LayoutObject(node, LayoutId::SolidColor)
 {
 }
 
@@ -379,8 +353,8 @@ void MarkerData::inflate(Rect& box) const
     }
 }
 
-LayoutShape::LayoutShape()
-    : LayoutObject(LayoutId::Shape)
+LayoutShape::LayoutShape(Node* node)
+    : LayoutObject(node, LayoutId::Shape)
 {
 }
 
@@ -404,11 +378,6 @@ void LayoutShape::render(RenderState& state) const
     }
 
     newState.endGroup(state, info);
-}
-
-Rect LayoutShape::map(const Rect& rect) const
-{
-    return transform.map(rect);
 }
 
 const Rect& LayoutShape::fillBoundingBox() const

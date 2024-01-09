@@ -15,10 +15,6 @@
 
 namespace lunasvg {
 
-void Node::layout(LayoutContext*, LayoutContainer*) const
-{
-}
-
 std::unique_ptr<Node> TextNode::clone() const
 {
     auto node = makeUnique<TextNode>();
@@ -184,7 +180,7 @@ Node* Element::addChild(std::unique_ptr<Node> child)
     return &*children.back();
 }
 
-void Element::layoutChildren(LayoutContext* context, LayoutContainer* current) const
+void Element::layoutChildren(LayoutContext* context, LayoutContainer* current)
 {
     for(auto& child : children) {
         child->layout(context, current);

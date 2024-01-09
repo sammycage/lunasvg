@@ -45,7 +45,7 @@ PreserveAspectRatio SVGElement::preserveAspectRatio() const
     return Parser::parsePreserveAspectRatio(value);
 }
 
-std::unique_ptr<LayoutSymbol> SVGElement::layoutTree(const Document* document) const
+std::unique_ptr<LayoutSymbol> SVGElement::layoutTree(const Document* document)
 {
     if(isDisplayNone())
         return nullptr;
@@ -69,7 +69,7 @@ std::unique_ptr<LayoutSymbol> SVGElement::layoutTree(const Document* document) c
     auto viewTranslation = Transform::translated(_x, _y);
     auto viewTransform = preserveAspectRatio.getMatrix(_w, _h, viewBox);
 
-    auto root = makeUnique<LayoutSymbol>();
+    auto root = makeUnique<LayoutSymbol>(this);
     root->width = _w;
     root->height = _h;
     root->transform = (viewTransform * viewTranslation) * transform;
@@ -89,7 +89,7 @@ std::unique_ptr<LayoutSymbol> SVGElement::layoutTree(const Document* document) c
     return root;
 }
 
-void SVGElement::layout(LayoutContext* context, LayoutContainer* current) const
+void SVGElement::layout(LayoutContext* context, LayoutContainer* current)
 {
     if(isDisplayNone())
         return;
@@ -109,7 +109,7 @@ void SVGElement::layout(LayoutContext* context, LayoutContainer* current) const
     auto viewTranslation = Transform::translated(_x, _y);
     auto viewTransform = preserveAspectRatio.getMatrix(_w, _h, viewBox);
 
-    auto symbol = makeUnique<LayoutSymbol>();
+    auto symbol = makeUnique<LayoutSymbol>(this);
     symbol->width = _w;
     symbol->height = _h;
     symbol->transform = (viewTransform * viewTranslation) * transform();

@@ -169,6 +169,24 @@ public:
     bool hasAttribute(const std::string& name) const;
 
     /**
+     * @brief getBBox
+     * @return
+     */
+    Box getBBox() const;
+
+    /**
+     * @brief getLocalTransform
+     * @return
+     */
+    Matrix getLocalTransform() const;
+
+    /**
+     * @brief getAbsoluteTransform
+     * @return
+     */
+    Matrix getAbsoluteTransform() const;
+
+    /**
      * @brief isNull
      * @return
      */

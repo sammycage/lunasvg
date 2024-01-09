@@ -17,7 +17,7 @@ public:
     Length height() const;
     Units maskUnits() const;
     Units maskContentUnits() const;
-    std::unique_ptr<LayoutMask> getMasker(LayoutContext* context) const;
+    std::unique_ptr<LayoutMask> getMasker(LayoutContext* context);
 };
 
 } // namespace lunasvg

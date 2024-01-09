@@ -9,7 +9,7 @@ GeometryElement::GeometryElement(ElementID id)
 {
 }
 
-void GeometryElement::layout(LayoutContext* context, LayoutContainer* current) const
+void GeometryElement::layout(LayoutContext* context, LayoutContainer* current)
 {
     if(isDisplayNone())
         return;
@@ -17,8 +17,7 @@ void GeometryElement::layout(LayoutContext* context, LayoutContainer* current) c
     auto path = this->path();
     if(path.empty())
         return;
-
-    auto shape = makeUnique<LayoutShape>();
+    auto shape = makeUnique<LayoutShape>(this);
     shape->path = std::move(path);
     shape->transform = transform();
     shape->fillData = context->fillData(this);

@@ -20,7 +20,7 @@ public:
 
     Rect viewBox() const;
     PreserveAspectRatio preserveAspectRatio() const;
-    std::unique_ptr<LayoutMarker> getMarker(LayoutContext* context) const;
+    std::unique_ptr<LayoutMarker> getMarker(LayoutContext* context);
 };
 
 } // namespace lunasvg

@@ -12,7 +12,7 @@ public:
     ClipPathElement();
 
     Units clipPathUnits() const;
-    std::unique_ptr<LayoutClipPath> getClipper(LayoutContext* context) const;
+    std::unique_ptr<LayoutClipPath> getClipper(LayoutContext* context);
 };
 
 } // namespace lunasvg
