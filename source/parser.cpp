@@ -508,7 +508,7 @@ Color Parser::parseColor(const std::string& string, const StyledElement* element
     }
 
     if(Utils::skipDesc(ptr, end, "rgb(")) {
-        int r, g, b;
+        uint8_t r, g, b;
         if(!Utils::skipWs(ptr, end)
             || !parseColorComponent(ptr, end, r)
             || !Utils::skipWsComma(ptr, end)
@@ -861,7 +861,7 @@ bool Parser::parseArcFlag(const char*& ptr, const char* end, bool& flag)
     return true;
 }
 
-bool Parser::parseColorComponent(const char*& ptr, const char* end, int& component)
+bool Parser::parseColorComponent(const char*& ptr, const char* end, uint8_t& component)
 {
     double value = 0;
     if(!Utils::parseNumber(ptr, end, value))
@@ -871,7 +871,7 @@ bool Parser::parseColorComponent(const char*& ptr, const char* end, int& compone
         value *= 2.55;
 
     value = clamp(value, 0.0, 255.0);
-    component = static_cast<int>(std::round(value));
+    component = static_cast<uint8_t>(std::round(value));
     return true;
 }
 
@@ -1583,28 +1583,28 @@ static inline bool decodeText(const char* ptr, const char* end, std::string& val
             char c[5] = {0, 0, 0, 0, 0};
             if(cp < 0x80) {
                 c[1] = 0;
-                c[0] = cp;
+                c[0] = static_cast<char>(cp);
             } else if(cp < 0x800) {
                 c[2] = 0;
-                c[1] = (cp & 0x3F) | 0x80;
+                c[1] = static_cast<char>((cp & 0x3F) | 0x80);
                 cp >>= 6;
-                c[0] = cp | 0xC0;
+                c[0] = static_cast<char>(cp | 0xC0);
             } else if(cp < 0x10000) {
                 c[3] = 0;
-                c[2] = (cp & 0x3F) | 0x80;
+                c[2] = static_cast<char>((cp & 0x3F) | 0x80);
                 cp >>= 6;
-                c[1] = (cp & 0x3F) | 0x80;
+                c[1] = static_cast<char>((cp & 0x3F) | 0x80);
                 cp >>= 6;
-                c[0] = cp | 0xE0;
+                c[0] = static_cast<char>(cp | 0xE0);
             } else if(cp < 0x200000) {
                 c[4] = 0;
-                c[3] = (cp & 0x3F) | 0x80;
+                c[3] = static_cast<char>((cp & 0x3F) | 0x80);
                 cp >>= 6;
-                c[2] = (cp & 0x3F) | 0x80;
+                c[2] = static_cast<char>((cp & 0x3F) | 0x80);
                 cp >>= 6;
-                c[1] = (cp & 0x3F) | 0x80;
+                c[1] = static_cast<char>((cp & 0x3F) | 0x80);
                 cp >>= 6;
-                c[0] = cp | 0xF0;
+                c[0] = static_cast<char>(cp | 0xF0);
             }
 
             value.append(c);

@@ -70,9 +70,9 @@ Matrix& Matrix::translate(double tx, double ty)
     return *this;
 }
 
-Matrix& Matrix::transform(double a, double b, double c, double d, double e, double f)
+Matrix& Matrix::transform(double _a, double _b, double _c, double _d, double _e, double _f)
 {
-    *this = Matrix{a, b, c, d, e, f} * *this;
+    *this = Matrix{_a, _b, _c, _d, _e, _f} * *this;
     return *this;
 }
 
@@ -229,10 +229,10 @@ void Bitmap::clear(std::uint32_t color)
     for(std::uint32_t y = 0; y < height; y++) {
         auto data = rowData;
         for(std::uint32_t x = 0; x < width; x++) {
-            data[0] = pb;
-            data[1] = pg;
-            data[2] = pr;
-            data[3] = a;
+            data[0] = static_cast<std::uint8_t>(pb);
+            data[1] = static_cast<std::uint8_t>(pg);
+            data[2] = static_cast<std::uint8_t>(pr);
+            data[3] = static_cast<std::uint8_t>(a);
             data += 4;
         }
 

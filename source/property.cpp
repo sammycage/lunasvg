@@ -110,31 +110,31 @@ Transform::Transform(const Matrix& matrix)
 
 Transform Transform::inverted() const
 {
-    double det = (this->m00 * this->m11 - this->m10 * this->m01);
+    double det = (m00 * m11 - m10 * m01);
     if(det == 0.0)
         return Transform{};
 
     double inv_det = 1.0 / det;
-    double m00 = this->m00 * inv_det;
-    double m10 = this->m10 * inv_det;
-    double m01 = this->m01 * inv_det;
-    double m11 = this->m11 * inv_det;
-    double m02 = (this->m01 * this->m12 - this->m11 * this->m02) * inv_det;
-    double m12 = (this->m10 * this->m02 - this->m00 * this->m12) * inv_det;
+    double _m00 = m00 * inv_det;
+    double _m10 = m10 * inv_det;
+    double _m01 = m01 * inv_det;
+    double _m11 = m11 * inv_det;
+    double _m02 = (m01 * m12 - m11 * m02) * inv_det;
+    double _m12 = (m10 * m02 - m00 * m12) * inv_det;
 
-    return Transform{m11, -m10, -m01, m00, m02, m12};
+    return Transform{_m11, -_m10, -_m01, _m00, _m02, _m12};
 }
 
 Transform Transform::operator*(const Transform& transform) const
 {
-    double m00 = this->m00 * transform.m00 + this->m10 * transform.m01;
-    double m10 = this->m00 * transform.m10 + this->m10 * transform.m11;
-    double m01 = this->m01 * transform.m00 + this->m11 * transform.m01;
-    double m11 = this->m01 * transform.m10 + this->m11 * transform.m11;
-    double m02 = this->m02 * transform.m00 + this->m12 * transform.m01 + transform.m02;
-    double m12 = this->m02 * transform.m10 + this->m12 * transform.m11 + transform.m12;
+    double _m00 = m00 * transform.m00 + m10 * transform.m01;
+    double _m10 = m00 * transform.m10 + m10 * transform.m11;
+    double _m01 = m01 * transform.m00 + m11 * transform.m01;
+    double _m11 = m01 * transform.m10 + m11 * transform.m11;
+    double _m02 = m02 * transform.m00 + m12 * transform.m01 + transform.m02;
+    double _m12 = m02 * transform.m10 + m12 * transform.m11 + transform.m12;
 
-    return Transform{m00, m10, m01, m11, m02, m12};
+    return Transform{_m00, _m10, _m01, _m11, _m02, _m12};
 }
 
 Transform& Transform::operator*=(const Transform& transform)
@@ -185,9 +185,9 @@ Transform& Transform::translate(double tx, double ty)
     return *this;
 }
 
-Transform& Transform::transform(double m00, double m10, double m01, double m11, double m02, double m12)
+Transform& Transform::transform(double _m00, double _m10, double _m01, double _m11, double _m02, double _m12)
 {
-    *this = Transform{m00, m10, m01, m11, m02, m12} * *this;
+    *this = Transform{_m00, _m10, _m01, _m11, _m02, _m12} * *this;
     return *this;
 }
 
@@ -381,7 +381,7 @@ void Path::arcTo(double cx, double cy, double rx, double ry, double xAxisRotatio
     auto th0 = std::atan2(y0 - yc, x0 - xc);
     auto th1 = std::atan2(y1 - yc, x1 - xc);
 
-    double th_arc = th1 - th0;
+    auto th_arc = th1 - th0;
     if(th_arc < 0.0 && sweepFlag)
         th_arc += 2.0 * pi;
     else if(th_arc > 0.0 && !sweepFlag)
@@ -392,26 +392,26 @@ void Path::arcTo(double cx, double cy, double rx, double ry, double xAxisRotatio
         auto th2 = th0 + i * th_arc / n_segs;
         auto th3 = th0 + (i + 1) * th_arc / n_segs;
 
-        auto a00 =  cos_th * rx;
-        auto a01 = -sin_th * ry;
-        auto a10 =  sin_th * rx;
-        auto a11 =  cos_th * ry;
+        auto _a00 =  cos_th * rx;
+        auto _a01 = -sin_th * ry;
+        auto _a10 =  sin_th * rx;
+        auto _a11 =  cos_th * ry;
 
         auto thHalf = 0.5 * (th3 - th2);
         auto t = (8.0 / 3.0) * std::sin(thHalf * 0.5) * std::sin(thHalf * 0.5) / std::sin(thHalf);
-        auto x1 = xc + std::cos(th2) - t * std::sin(th2);
-        auto y1 = yc + std::sin(th2) + t * std::cos(th2);
-        auto x3 = xc + std::cos(th3);
-        auto y3 = yc + std::sin(th3);
-        auto x2 = x3 + t * std::sin(th3);
-        auto y2 = y3 - t * std::cos(th3);
+        auto _x1 = xc + std::cos(th2) - t * std::sin(th2);
+        auto _y1 = yc + std::sin(th2) + t * std::cos(th2);
+        auto _x3 = xc + std::cos(th3);
+        auto _y3 = yc + std::sin(th3);
+        auto _x2 = _x3 + t * std::sin(th3);
+        auto _y2 = _y3 - t * std::cos(th3);
 
-        auto cx1 = a00 * x1 + a01 * y1;
-        auto cy1 = a10 * x1 + a11 * y1;
-        auto cx2 = a00 * x2 + a01 * y2;
-        auto cy2 = a10 * x2 + a11 * y2;
-        auto cx3 = a00 * x3 + a01 * y3;
-        auto cy3 = a10 * x3 + a11 * y3;
+        auto cx1 = _a00 * _x1 + _a01 * _y1;
+        auto cy1 = _a10 * _x1 + _a11 * _y1;
+        auto cx2 = _a00 * _x2 + _a01 * _y2;
+        auto cy2 = _a10 * _x2 + _a11 * _y2;
+        auto cx3 = _a00 * _x3 + _a01 * _y3;
+        auto cy3 = _a10 * _x3 + _a11 * _y3;
         cubicTo(cx1, cy1, cx2, cy2, cx3, cy3);
     }
 }

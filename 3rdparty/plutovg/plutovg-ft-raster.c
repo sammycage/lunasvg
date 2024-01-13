@@ -1612,7 +1612,7 @@ PVG_FT_END_STMNT
   PVG_FT_Raster_Render(const PVG_FT_Raster_Params *params)
   {
       char stack[PVG_FT_MINIMUM_POOL_SIZE];
-      size_t length = PVG_FT_MINIMUM_POOL_SIZE;
+      long length = PVG_FT_MINIMUM_POOL_SIZE;
 
       TWorker worker;
       worker.skip_spans = 0;
@@ -1623,7 +1623,7 @@ PVG_FT_END_STMNT
               rendered_spans += -worker.skip_spans;
           worker.skip_spans = rendered_spans;
           length *= 2;
-          void* heap = malloc(length);
+          void* heap = malloc((size_t)(length));
           error = gray_raster_render(&worker, heap, length, params);
           free(heap);
       }

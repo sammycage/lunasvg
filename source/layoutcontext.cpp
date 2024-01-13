@@ -221,12 +221,12 @@ void LayoutPattern::apply(RenderState& state) const
         newState.transform.scale(box.w, box.h);
     }
 
-    auto transform = this->transform;
-    transform.translate(rect.x, rect.y);
-    transform.scale(1.0/scalex, 1.0/scaley);
+    auto patternTransform = this->transform;
+    patternTransform.translate(rect.x, rect.y);
+    patternTransform.scale(1.0/scalex, 1.0/scaley);
 
     renderChildren(newState);
-    state.canvas->setTexture(newState.canvas.get(), TextureType::Tiled, transform);
+    state.canvas->setTexture(newState.canvas.get(), TextureType::Tiled, patternTransform);
 }
 
 LayoutGradient::LayoutGradient(Node* node, LayoutId id)
@@ -241,13 +241,13 @@ LayoutLinearGradient::LayoutLinearGradient(Node* node)
 
 void LayoutLinearGradient::apply(RenderState& state) const
 {
-    auto transform = this->transform;
+    auto gradientTransform = this->transform;
     if(units == Units::ObjectBoundingBox) {
         const auto& box = state.objectBoundingBox();
-        transform *= Transform(box.w, 0, 0, box.h, box.x, box.y);
+        gradientTransform *= Transform(box.w, 0, 0, box.h, box.x, box.y);
     }
 
-    state.canvas->setLinearGradient(x1, y1, x2, y2, stops, spreadMethod, transform);
+    state.canvas->setLinearGradient(x1, y1, x2, y2, stops, spreadMethod, gradientTransform);
 }
 
 LayoutRadialGradient::LayoutRadialGradient(Node* node)
@@ -257,13 +257,13 @@ LayoutRadialGradient::LayoutRadialGradient(Node* node)
 
 void LayoutRadialGradient::apply(RenderState& state) const
 {
-    auto transform = this->transform;
+    auto gradientTransform = this->transform;
     if(units == Units::ObjectBoundingBox) {
         const auto& box = state.objectBoundingBox();
-        transform *= Transform(box.w, 0, 0, box.h, box.x, box.y);
+        gradientTransform *= Transform(box.w, 0, 0, box.h, box.x, box.y);
     }
 
-    state.canvas->setRadialGradient(cx, cy, r, fx, fy, stops, spreadMethod, transform);
+    state.canvas->setRadialGradient(cx, cy, r, fx, fy, stops, spreadMethod, gradientTransform);
 }
 
 LayoutSolidColor::LayoutSolidColor(Node* node)

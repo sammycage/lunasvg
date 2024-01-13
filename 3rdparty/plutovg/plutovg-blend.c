@@ -3,6 +3,7 @@
 #include <limits.h>
 #include <math.h>
 #include <float.h>
+#include <stdint.h>
 
 #define COLOR_TABLE_SIZE 1024
 typedef struct {

@@ -55,8 +55,8 @@ public:
     unsigned int stride() const;
     unsigned char* data() const;
 
-    float x() const { return m_rect.x; }
-    float y() const { return m_rect.y; }
+    double x() const { return m_rect.x; }
+    double y() const { return m_rect.y; }
     Rect rect() const { return Rect(m_rect.x, m_rect.y, m_rect.w, m_rect.h); }
     plutovg_surface_t* surface() const { return m_surface; }
 
