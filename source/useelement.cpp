@@ -63,7 +63,7 @@ std::unique_ptr<Element> UseElement::cloneTargetElement(const Element* targetEle
 {
     if(targetElement == this)
         return nullptr;
-    switch(targetElement->id) {
+    switch(targetElement->id()) {
     case ElementID::Circle:
     case ElementID::Ellipse:
     case ElementID::G:
@@ -84,30 +84,30 @@ std::unique_ptr<Element> UseElement::cloneTargetElement(const Element* targetEle
     }
 
     const auto& idAttr = targetElement->get(PropertyID::Id);
-    for(const auto* element = parent; element; element = element->parent) {
+    for(const auto* element = parent(); element; element = element->parent()) {
         if(!idAttr.empty() && idAttr == element->get(PropertyID::Id)) {
             return nullptr;
         }
     }
 
-    auto tagId = targetElement->id;
+    auto tagId = targetElement->id();
     if(tagId == ElementID::Symbol) {
         tagId = ElementID::Svg;
     }
 
     auto newElement = Element::create(tagId);
-    newElement->properties = targetElement->properties;
-    if(newElement->id == ElementID::Svg) {
-        for(const auto& property : properties) {
+    newElement->setPropertyList(targetElement->properties());
+    if(newElement->id() == ElementID::Svg) {
+        for(const auto& property : properties()) {
             if(property.id == PropertyID::Width || property.id == PropertyID::Height) {
                 newElement->set(property.id, property.value, 0x0);
             }
         }
     }
 
-    if(newElement->id == ElementID::Use)
+    if(newElement->id() == ElementID::Use)
         return newElement;
-    for(auto& child : targetElement->children)
+    for(auto& child : targetElement->children())
         newElement->addChild(child->clone());
     return newElement;
 }

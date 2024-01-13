@@ -39,12 +39,15 @@ public:
     virtual const Rect& fillBoundingBox() const { return Rect::Invalid; }
     virtual const Rect& strokeBoundingBox() const { return Rect::Invalid; }
 
-    bool isPaint() const { return id == LayoutId::LinearGradient || id == LayoutId::RadialGradient || id == LayoutId::Pattern || id == LayoutId::SolidColor; }
-    bool isHidden() const { return isPaint() || id == LayoutId::ClipPath || id == LayoutId::Mask || id == LayoutId::Marker; }
+    bool isPaint() const { return m_id == LayoutId::LinearGradient || m_id == LayoutId::RadialGradient || m_id == LayoutId::Pattern || m_id == LayoutId::SolidColor; }
+    bool isHidden() const { return isPaint() || m_id == LayoutId::ClipPath || m_id == LayoutId::Mask || m_id == LayoutId::Marker; }
 
-public:
-    Node* node;
-    LayoutId id;
+    Node* node() const { return m_node; }
+    LayoutId id() const { return m_id; }
+
+private:
+    Node* m_node;
+    LayoutId m_id;
 };
 
 using LayoutList = std::list<std::unique_ptr<LayoutObject>>;
@@ -55,15 +58,14 @@ public:
 
     const Rect& fillBoundingBox() const;
     const Rect& strokeBoundingBox() const;
+    const LayoutList& children() const { return m_children; }
 
     LayoutObject* addChild(std::unique_ptr<LayoutObject> child);
     LayoutObject* addChildIfNotEmpty(std::unique_ptr<LayoutContainer> child);
     void renderChildren(RenderState& state) const;
 
-public:
-    LayoutList children;
-
 protected:
+    LayoutList m_children;
     mutable Rect m_fillBoundingBox{Rect::Invalid};
     mutable Rect m_strokeBoundingBox{Rect::Invalid};
 };

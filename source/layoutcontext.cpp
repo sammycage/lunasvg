@@ -12,9 +12,9 @@
 namespace lunasvg {
 
 LayoutObject::LayoutObject(Node* node, LayoutId id)
-    : node(node), id(id)
+    : m_node(node), m_id(id)
 {
-    node->box = this;
+    node->setBox(this);
 }
 
 LayoutContainer::LayoutContainer(Node* node, LayoutId id)
@@ -26,8 +26,7 @@ const Rect& LayoutContainer::fillBoundingBox() const
 {
     if(m_fillBoundingBox.valid())
         return m_fillBoundingBox;
-
-    for(const auto& child : children) {
+    for(const auto& child : m_children) {
         if(child->isHidden())
             continue;
         m_fillBoundingBox.unite(child->map(child->fillBoundingBox()));
@@ -40,8 +39,7 @@ const Rect& LayoutContainer::strokeBoundingBox() const
 {
     if(m_strokeBoundingBox.valid())
         return m_strokeBoundingBox;
-
-    for(const auto& child : children) {
+    for(const auto& child : m_children) {
         if(child->isHidden())
             continue;
         m_strokeBoundingBox.unite(child->map(child->strokeBoundingBox()));
@@ -52,20 +50,20 @@ const Rect& LayoutContainer::strokeBoundingBox() const
 
 LayoutObject* LayoutContainer::addChild(std::unique_ptr<LayoutObject> child)
 {
-    children.push_back(std::move(child));
-    return &*children.back();
+    m_children.push_back(std::move(child));
+    return &*m_children.back();
 }
 
 LayoutObject* LayoutContainer::addChildIfNotEmpty(std::unique_ptr<LayoutContainer> child)
 {
-    if(child->children.empty())
+    if(child->children().empty())
         return nullptr;
     return addChild(std::move(child));
 }
 
 void LayoutContainer::renderChildren(RenderState& state) const
 {
-    for(const auto& child : children) {
+    for(const auto& child : m_children) {
         child->render(state);
     }
 }
@@ -78,7 +76,7 @@ LayoutClipPath::LayoutClipPath(Node* node)
 void LayoutClipPath::apply(RenderState& state) const
 {
     RenderState newState(this, RenderMode::Clipping);
-    newState.canvas = Canvas::create(state.canvas->box());
+    newState.canvas = Canvas::create(state.canvas->rect());
     newState.transform = transform * state.transform;
     if(units == Units::ObjectBoundingBox) {
         const auto& box = state.objectBoundingBox();
@@ -108,7 +106,7 @@ void LayoutMask::apply(RenderState& state) const
     }
 
     RenderState newState(this, state.mode());
-    newState.canvas = Canvas::create(state.canvas->box());
+    newState.canvas = Canvas::create(state.canvas->rect());
     newState.transform = state.transform;
     if(contentUnits == Units::ObjectBoundingBox) {
         const auto& box = state.objectBoundingBox();
@@ -211,11 +209,8 @@ void LayoutPattern::apply(RenderState& state) const
     auto scalex = std::sqrt(ctm.m00 * ctm.m00 + ctm.m01 * ctm.m01);
     auto scaley = std::sqrt(ctm.m10 * ctm.m10 + ctm.m11 * ctm.m11);
 
-    auto width = rect.w * scalex;
-    auto height = rect.h * scaley;
-
     RenderState newState(this, RenderMode::Display);
-    newState.canvas = Canvas::create(0, 0, width, height);
+    newState.canvas = Canvas::create(0, 0, rect.w * scalex, rect.h * scaley);
     newState.transform = Transform::scaled(scalex, scaley);
 
     if(viewBox.valid()) {
@@ -415,7 +410,7 @@ void RenderState::beginGroup(RenderState& state, const BlendInfo& info)
 
     auto box = transform.map(m_object->strokeBoundingBox());
     box.intersect(transform.map(info.clip));
-    box.intersect(state.canvas->box());
+    box.intersect(state.canvas->rect());
     canvas = Canvas::create(box);
 }
 
@@ -472,11 +467,11 @@ LayoutMask* LayoutContext::getMasker(const std::string& id)
         return nullptr;
 
     auto ref = getResourcesById(id);
-    if(ref && ref->id == LayoutId::Mask)
+    if(ref && ref->id() == LayoutId::Mask)
         return static_cast<LayoutMask*>(ref);
 
     auto element = getElementById(id);
-    if(element == nullptr || element->id != ElementID::Mask)
+    if(element == nullptr || element->id() != ElementID::Mask)
         return nullptr;
 
     auto masker = static_cast<MaskElement*>(element)->getMasker(this);
@@ -489,11 +484,11 @@ LayoutClipPath* LayoutContext::getClipper(const std::string& id)
         return nullptr;
 
     auto ref = getResourcesById(id);
-    if(ref && ref->id == LayoutId::ClipPath)
+    if(ref && ref->id() == LayoutId::ClipPath)
         return static_cast<LayoutClipPath*>(ref);
 
     auto element = getElementById(id);
-    if(element == nullptr || element->id != ElementID::ClipPath)
+    if(element == nullptr || element->id() != ElementID::ClipPath)
         return nullptr;
 
     auto clipper = static_cast<ClipPathElement*>(element)->getClipper(this);
@@ -506,11 +501,11 @@ LayoutMarker* LayoutContext::getMarker(const std::string& id)
         return nullptr;
 
     auto ref = getResourcesById(id);
-    if(ref && ref->id == LayoutId::Marker)
+    if(ref && ref->id() == LayoutId::Marker)
         return static_cast<LayoutMarker*>(ref);
 
     auto element = getElementById(id);
-    if(element == nullptr || element->id != ElementID::Marker)
+    if(element == nullptr || element->id() != ElementID::Marker)
         return nullptr;
 
     auto marker = static_cast<MarkerElement*>(element)->getMarker(this);

@@ -1106,7 +1106,7 @@ bool RuleData::match(const Element* element) const
         switch(it->combinator) {
         case SimpleSelector::Combinator::Child:
         case SimpleSelector::Combinator::Descendant:
-            element = element->parent;
+            element = element->parent();
             break;
         case SimpleSelector::Combinator::DirectAdjacent:
         case SimpleSelector::Combinator::InDirectAdjacent:
@@ -1130,7 +1130,7 @@ bool RuleData::match(const Element* element) const
 
 bool RuleData::matchSimpleSelector(const SimpleSelector& selector, const Element* element)
 {
-    if(selector.id != ElementID::Star && selector.id != element->id)
+    if(selector.id != ElementID::Star && selector.id != element->id())
         return false;
 
     for(auto& sel : selector.attributeSelectors) {
@@ -1208,11 +1208,9 @@ bool RuleData::matchAttributeSelector(const AttributeSelector& selector, const E
 bool RuleData::matchPseudoClassSelector(const PseudoClassSelector& selector, const Element* element)
 {
     if(selector.type == PseudoClassSelector::Type::Empty)
-        return element->children.empty();
-
+        return element->children().empty();
     if(selector.type == PseudoClassSelector::Type::Root)
-        return element->parent == nullptr;
-
+        return element->parent() == nullptr;
     if(selector.type == PseudoClassSelector::Type::Is) {
         for(auto& subselector : selector.subSelectors) {
             for(auto& sel : subselector) {
@@ -1249,7 +1247,7 @@ bool RuleData::matchPseudoClassSelector(const PseudoClassSelector& selector, con
     if(selector.type == PseudoClassSelector::Type::FirstOfType) {
         auto sibling = element->previousElement();
         while(sibling) {
-            if(sibling->id == element->id)
+            if(sibling->id() == element->id())
                 return false;
             sibling = element->previousElement();
         }
@@ -1260,7 +1258,7 @@ bool RuleData::matchPseudoClassSelector(const PseudoClassSelector& selector, con
     if(selector.type == PseudoClassSelector::Type::LastOfType) {
         auto sibling = element->nextElement();
         while(sibling) {
-            if(sibling->id == element->id)
+            if(sibling->id() == element->id())
                 return false;
             sibling = element->nextElement();
         }
@@ -1679,7 +1677,7 @@ bool Document::parse(const char* data, std::size_t size)
     std::string value;
     int ignoring = 0;
     auto handleText = [&](const char* start, const char* end, bool in_cdata) {
-        if(ignoring > 0 || current == nullptr || current->id != ElementID::Style)
+        if(ignoring > 0 || current == nullptr || current->id() != ElementID::Style)
             return;
 
         if(in_cdata)
@@ -1714,8 +1712,7 @@ bool Document::parse(const char* data, std::size_t size)
             if(ignoring > 0)
                 --ignoring;
             else
-                current = current->parent;
-
+                current = current->parent();
             ++ptr;
             continue;
         }

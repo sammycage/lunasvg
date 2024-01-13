@@ -98,7 +98,7 @@ public:
     const std::string& ref() const { return m_ref; }
     bool isNone() const { return m_ref.empty() && m_color.isNone(); }
 
-public:
+private:
     std::string m_ref;
     Color m_color{Color::Transparent};
 };

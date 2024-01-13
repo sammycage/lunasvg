@@ -45,11 +45,11 @@ GradientStops GradientElement::buildGradientStops() const
 {
     GradientStops gradientStops;
     double prevOffset = 0.0;
-    for(auto& child : children) {
+    for(auto& child : children()) {
         if(child->isText())
             continue;
         auto element = static_cast<Element*>(child.get());
-        if(element->id != ElementID::Stop)
+        if(element->id() != ElementID::Stop)
             continue;
         auto stop = static_cast<StopElement*>(element);
         auto offset = std::max(prevOffset, stop->offset());
@@ -105,7 +105,7 @@ std::unique_ptr<LayoutObject> LinearGradientElement::getPainter(LayoutContext* c
         if(!attributes.hasGradientStops())
             attributes.setGradientStops(current->buildGradientStops());
 
-        if(current->id == ElementID::LinearGradient) {
+        if(current->id() == ElementID::LinearGradient) {
             auto element = static_cast<const LinearGradientElement*>(current);
             if(!attributes.hasX1() && element->has(PropertyID::X1))
                 attributes.setX1(element->x1());
@@ -118,9 +118,8 @@ std::unique_ptr<LayoutObject> LinearGradientElement::getPainter(LayoutContext* c
         }
 
         auto ref = context->getElementById(current->href());
-        if(!ref || !(ref->id == ElementID::LinearGradient || ref->id == ElementID::RadialGradient))
+        if(!ref || !(ref->id() == ElementID::LinearGradient || ref->id() == ElementID::RadialGradient))
             break;
-
         processedGradients.insert(current);
         current = static_cast<const GradientElement*>(ref);
         if(processedGradients.find(current) != processedGradients.end()) {
@@ -206,7 +205,7 @@ std::unique_ptr<LayoutObject> RadialGradientElement::getPainter(LayoutContext* c
         if(!attributes.hasGradientStops())
             attributes.setGradientStops(current->buildGradientStops());
 
-        if(current->id == ElementID::RadialGradient) {
+        if(current->id() == ElementID::RadialGradient) {
             auto element = static_cast<const RadialGradientElement*>(current);
             if(!attributes.hasCx() && element->has(PropertyID::Cx))
                 attributes.setCx(element->cx());
@@ -221,9 +220,8 @@ std::unique_ptr<LayoutObject> RadialGradientElement::getPainter(LayoutContext* c
         }
 
         auto ref = context->getElementById(current->href());
-        if(!ref || !(ref->id == ElementID::LinearGradient || ref->id == ElementID::RadialGradient))
+        if(!ref || !(ref->id() == ElementID::LinearGradient || ref->id() == ElementID::RadialGradient))
             break;
-
         processedGradients.insert(current);
         current = static_cast<const GradientElement*>(ref);
         if(processedGradients.find(current) != processedGradients.end()) {
@@ -355,13 +353,12 @@ std::unique_ptr<LayoutObject> PatternElement::getPainter(LayoutContext* context)
             attributes.setViewBox(current->viewBox());
         if(!attributes.hasPreserveAspectRatio() && current->has(PropertyID::PreserveAspectRatio))
             attributes.setPreserveAspectRatio(current->preserveAspectRatio());
-        if(!attributes.hasPatternContentElement() && current->children.size())
+        if(!attributes.hasPatternContentElement() && !current->children().empty())
             attributes.setPatternContentElement(current);
 
         auto ref = context->getElementById(current->href());
-        if(!ref || ref->id != ElementID::Pattern)
+        if(!ref || ref->id() != ElementID::Pattern)
             break;
-
         processedPatterns.insert(current);
         current = static_cast<PatternElement*>(ref);
         if(processedPatterns.find(current) != processedPatterns.end()) {

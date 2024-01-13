@@ -54,7 +54,11 @@ public:
     unsigned int height() const;
     unsigned int stride() const;
     unsigned char* data() const;
-    Rect box() const;
+
+    float x() const { return m_rect.x; }
+    float y() const { return m_rect.y; }
+    Rect rect() const { return Rect(m_rect.x, m_rect.y, m_rect.w, m_rect.h); }
+    plutovg_surface_t* surface() const { return m_surface; }
 
     ~Canvas();
 
@@ -62,10 +66,10 @@ private:
     Canvas(unsigned char* data, int width, int height, int stride);
     Canvas(int x, int y, int width, int height);
 
-    plutovg_surface_t* surface;
-    plutovg_t* pluto;
-    plutovg_matrix_t translation;
-    plutovg_rect_t rect;
+    plutovg_surface_t* m_surface;
+    plutovg_t* m_pluto;
+    plutovg_matrix_t m_translation;
+    plutovg_rect_t m_rect;
 };
 
 } // namespace lunasvg

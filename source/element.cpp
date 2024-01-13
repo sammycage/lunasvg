@@ -18,12 +18,12 @@ namespace lunasvg {
 std::unique_ptr<Node> TextNode::clone() const
 {
     auto node = makeUnique<TextNode>();
-    node->text = text;
+    node->setText(m_text);
     return std::move(node);
 }
 
 Element::Element(ElementID id)
-    : id(id)
+    : m_id(id)
 {
 }
 
@@ -81,7 +81,7 @@ std::unique_ptr<Element> Element::create(ElementID id)
 
 void Element::set(PropertyID id, const std::string& value, int specificity)
 {
-    for(auto& property : properties) {
+    for(auto& property : m_properties) {
         if(property.id == id) {
             if(specificity >= property.specificity) {
                 property.specificity = specificity;
@@ -92,14 +92,14 @@ void Element::set(PropertyID id, const std::string& value, int specificity)
         }
     }
 
-    properties.push_back({specificity, id, value});
+    m_properties.push_back({specificity, id, value});
 }
 
 static const std::string EmptyString;
 
 const std::string& Element::get(PropertyID id) const
 {
-    for(auto& property : properties) {
+    for(auto& property : m_properties) {
         if(property.id == id) {
             return property.value;
         }
@@ -117,15 +117,14 @@ const std::string& Element::find(PropertyID id) const
         auto& value = element->get(id);
         if(!value.empty() && value != InheritString)
             return value;
-        element = element->parent;
+        element = element->parent();
     } while(element);
-
     return EmptyString;
 }
 
 bool Element::has(PropertyID id) const
 {
-    for(auto& property : properties) {
+    for(auto& property : m_properties) {
         if(property.id == id) {
             return true;
         }
@@ -136,11 +135,12 @@ bool Element::has(PropertyID id) const
 
 Element* Element::previousElement() const
 {
-    if(parent == nullptr)
+    if(parent() == nullptr)
         return nullptr;
     Element* element = nullptr;
-    auto it = parent->children.begin();
-    auto end = parent->children.end();
+    const auto& children = parent()->children();
+    auto it = children.begin();
+    auto end = children.end();
     for(; it != end; ++it) {
         auto node = it->get();
         if(node->isText())
@@ -155,16 +155,16 @@ Element* Element::previousElement() const
 
 Element* Element::nextElement() const
 {
-    if(parent == nullptr)
+    if(parent() == nullptr)
         return nullptr;
     Element* element = nullptr;
-    auto it = parent->children.rbegin();
-    auto end = parent->children.rend();
+    const auto& children = parent()->children();
+    auto it = children.begin();
+    auto end = children.end();
     for(; it != end; ++it) {
         auto node = it->get();
         if(node->isText())
             continue;
-
         if(node == this)
             return element;
         element = static_cast<Element*>(node);
@@ -175,29 +175,29 @@ Element* Element::nextElement() const
 
 Node* Element::addChild(std::unique_ptr<Node> child)
 {
-    child->parent = this;
-    children.push_back(std::move(child));
-    return &*children.back();
+    child->setParent(this);
+    m_children.push_back(std::move(child));
+    return &*m_children.back();
 }
 
 void Element::layoutChildren(LayoutContext* context, LayoutContainer* current)
 {
-    for(auto& child : children) {
+    for(auto& child : m_children) {
         child->layout(context, current);
     }
 }
 
 Rect Element::currentViewport() const
 {
-    if(parent == nullptr) {
+    if(parent() == nullptr) {
         auto element = static_cast<const SVGElement*>(this);
         if(element->has(PropertyID::ViewBox))
             return element->viewBox(); 
         return Rect{0, 0, 300, 150};
     }
 
-    if(parent->id == ElementID::Svg) {
-        auto element = static_cast<SVGElement*>(parent);
+    if(parent()->id() == ElementID::Svg) {
+        auto element = static_cast<SVGElement*>(parent());
         if(element->has(PropertyID::ViewBox))
             return element->viewBox();
         LengthContext lengthContext(element);
@@ -208,12 +208,12 @@ Rect Element::currentViewport() const
         return Rect{_x, _y, _w, _h};
     }
 
-    return parent->currentViewport();
+    return parent()->currentViewport();
 }
 
 void Element::build(const Document* document)
 {
-    for(auto& child : children) {
+    for(auto& child : m_children) {
         if(child->isText())
             continue;
         auto element = static_cast<Element*>(child.get());
@@ -223,9 +223,9 @@ void Element::build(const Document* document)
 
 std::unique_ptr<Node> Element::clone() const
 {
-    auto element = Element::create(id);
-    element->properties = properties;
-    for(auto& child : children)
+    auto element = Element::create(m_id);
+    element->setPropertyList(m_properties);
+    for(auto& child : m_children)
         element->addChild(child->clone());
     return element;
 }

@@ -131,7 +131,7 @@ Visibility StyledElement::visibility() const
 Overflow StyledElement::overflow() const
 {
     auto& value = get(PropertyID::Overflow);
-    return Parser::parseOverflow(value, parent == nullptr ? Overflow::Visible : Overflow::Hidden);
+    return Parser::parseOverflow(value, parent() == nullptr ? Overflow::Visible : Overflow::Hidden);
 }
 
 std::string StyledElement::clip_path() const

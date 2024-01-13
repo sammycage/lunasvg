@@ -142,9 +142,15 @@ public:
     virtual void layout(LayoutContext*, LayoutContainer*) {}
     virtual std::unique_ptr<Node> clone() const = 0;
 
-public:
-    Element* parent = nullptr;
-    LayoutObject* box = nullptr;
+    void setParent(Element* parent) { m_parent = parent; }
+    Element* parent() const { return m_parent; }
+
+    LayoutObject* box() const { return m_box; }
+    void setBox(LayoutObject* box) { m_box = box; }
+
+private:
+    Element* m_parent = nullptr;
+    LayoutObject* m_box = nullptr;
 };
 
 class TextNode final : public Node {
@@ -154,8 +160,11 @@ public:
     bool isText() const final { return true; }
     std::unique_ptr<Node> clone() const final;
 
-public:
-    std::string text;
+    void setText(std::string text) { m_text = std::move(text); }
+    const std::string& text() const { return m_text; }
+
+private:
+    std::string m_text;
 };
 
 using NodeList = std::list<std::unique_ptr<Node>>;
@@ -169,11 +178,17 @@ public:
     const std::string& find(PropertyID id) const;
     bool has(PropertyID id) const;
 
+    const PropertyList& properties() const { return m_properties; }
+    void setPropertyList(PropertyList properties) { m_properties = std::move(properties); }
+
     Element* previousElement() const;
     Element* nextElement() const;
     Node* addChild(std::unique_ptr<Node> child);
     void layoutChildren(LayoutContext* context, LayoutContainer* current);
     Rect currentViewport() const;
+
+    ElementID id() const { return m_id; }
+    const NodeList& children() const { return m_children; }
 
     virtual void build(const Document* document);
 
@@ -181,7 +196,7 @@ public:
     void transverse(T callback) {
         if(!callback(this))
             return;
-        for(auto& child : children) {
+        for(auto& child : m_children) {
             if(child->isText()) {
                 if(!callback(child.get()))
                     return;
@@ -195,11 +210,11 @@ public:
 
     std::unique_ptr<Node> clone() const final;
 
-public:
+protected:
     Element(ElementID id);
-    ElementID id;
-    NodeList children;
-    PropertyList properties;
+    ElementID m_id;
+    NodeList m_children;
+    PropertyList m_properties;
 };
 
 } // namespace lunasvg

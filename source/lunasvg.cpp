@@ -318,15 +318,15 @@ bool DomElement::hasAttribute(const std::string& name) const
 
 Box DomElement::getBBox() const
 {
-    if(m_element && m_element->box)
-        return m_element->box->strokeBoundingBox();
+    if(m_element && m_element->box())
+        return m_element->box()->strokeBoundingBox();
     return Box();
 }
 
 Matrix DomElement::getLocalTransform() const
 {
-    if(m_element && m_element->box)
-        return m_element->box->localTransform();
+    if(m_element && m_element->box())
+        return m_element->box()->localTransform();
     return Matrix();
 }
 
