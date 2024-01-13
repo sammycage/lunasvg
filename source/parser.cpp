@@ -1379,7 +1379,6 @@ bool StyleSheet::parseSelectors(const char*& ptr, const char* end, SelectorList&
 
     while(Utils::skipDesc(ptr, end, ',')) {
         Utils::skipWs(ptr, end);
-        Selector selector;
         if(!parseSelector(ptr, end, selector))
             return false;
         selectors.push_back(std::move(selector));
@@ -1823,18 +1822,18 @@ bool Document::parse(const char* data, std::size_t size)
             if(ptr >= end || *ptr != quote)
                 return false;
 
-            auto id = PropertyID::Unknown;
+            auto attrId = PropertyID::Unknown;
             if(element != nullptr)
-                id = propertyid(name);
-            if(id != PropertyID::Unknown) {
+                attrId = propertyid(name);
+            if(attrId != PropertyID::Unknown) {
                 decodeText(start, Utils::rtrim(start, ptr), value);
-                if(id == PropertyID::Style) {
+                if(attrId == PropertyID::Style) {
                     removeComments(value);
                     parseStyle(value, element);
                 } else {
-                    if(id == PropertyID::Id)
+                    if(attrId == PropertyID::Id)
                         m_idCache.emplace(value, element);
-                    element->set(id, value, 0x1);
+                    element->set(attrId, value, 0x1);
                 }
             }
 
