@@ -159,24 +159,22 @@ LayoutMarker::LayoutMarker(Node* node)
 
 Transform LayoutMarker::markerTransform(const Point& origin, double angle, double strokeWidth) const
 {
-    auto transform = Transform::translated(origin.x, origin.y);
+    auto markerTransformation = Transform::translated(origin.x, origin.y);
     if(orient.type() == MarkerOrient::Auto)
-        transform.rotate(angle);
+        markerTransformation.rotate(angle);
     else
-        transform.rotate(orient.value());
+        markerTransformation.rotate(orient.value());
 
     if(units == MarkerUnits::StrokeWidth)
-        transform.scale(strokeWidth, strokeWidth);
+        markerTransformation.scale(strokeWidth, strokeWidth);
 
-    transform.translate(-refX, -refY);
-    return transform;
+    markerTransformation.translate(-refX, -refY);
+    return markerTransformation;
 }
 
 Rect LayoutMarker::markerBoundingBox(const Point& origin, double angle, double strokeWidth) const
 {
-    auto box = transform.map(strokeBoundingBox());
-    auto transform = markerTransform(origin, angle, strokeWidth);
-    return transform.map(box);
+    return markerTransform(origin, angle, strokeWidth).map(transform.map(strokeBoundingBox()));
 }
 
 void LayoutMarker::renderMarker(RenderState& state, const Point& origin, double angle, double strokeWidth) const
