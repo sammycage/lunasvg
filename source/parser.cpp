@@ -970,6 +970,7 @@ bool Parser::parseTransform(const char*& ptr, const char* end, TransformType& ty
 ElementID elementid(const std::string& name)
 {
     static const std::map<std::string, ElementID> elementmap = {
+        {"a", ElementID::G},
         {"circle", ElementID::Circle},
         {"clipPath", ElementID::ClipPath},
         {"defs", ElementID::Defs},
