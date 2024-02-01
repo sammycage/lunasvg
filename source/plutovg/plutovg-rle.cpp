@@ -3,6 +3,7 @@
 #include "plutovg-ft-raster.h"
 #include "plutovg-ft-stroker.h"
 
+#include <cstring>
 #include <limits.h>
 #include <math.h>
 

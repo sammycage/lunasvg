@@ -1,5 +1,7 @@
 #include "plutovg-private.h"
 
+#include <cstdlib>
+
 plutovg_surface_t* plutovg_surface_create(int width, int height)
 {
     plutovg_surface_t* surface = new plutovg_surface_t;

@@ -1,5 +1,6 @@
 #include "plutovg-private.h"
 
+#include <cstring>
 #include <math.h>
 
 plutovg_dash_t* plutovg_dash_create(double offset, const double* data, int size)

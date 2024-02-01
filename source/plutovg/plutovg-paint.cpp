@@ -1,5 +1,8 @@
 #include "plutovg-private.h"
 
+#include <cstdlib>
+#include <cstring>
+
 void plutovg_color_init_rgb(plutovg_color_t* color, double r, double g, double b)
 {
     plutovg_color_init_rgba(color, r, g, b, 1.0);

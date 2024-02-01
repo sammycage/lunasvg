@@ -1,5 +1,6 @@
 #include "plutovg-private.h"
 
+#include <cstring>
 #include <float.h>
 #include <limits.h>
 #include <math.h>
