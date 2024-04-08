@@ -335,6 +335,36 @@ Matrix DomElement::getAbsoluteTransform() const
     return getLocalTransform();
 }
 
+Bitmap DomElement::renderToBitmap(std::uint32_t width, std::uint32_t height, std::uint32_t backgroundColor) const {
+    if(m_element == nullptr || !m_element->box())
+        return Bitmap();
+
+    auto elementBounds = m_element->box()->map(m_element->box()->strokeBoundingBox());
+    if(elementBounds.empty())
+        return Bitmap();
+
+    if(width == 0 && height == 0) {
+        width = static_cast<std::uint32_t>(std::ceil(elementBounds.w));
+        height = static_cast<std::uint32_t>(std::ceil(elementBounds.h));
+    } else if(width != 0 && height == 0) {
+        height = static_cast<std::uint32_t>(std::ceil(width * elementBounds.h / elementBounds.w));
+    } else if(height != 0 && width == 0) {
+        width = static_cast<std::uint32_t>(std::ceil(height * elementBounds.w / elementBounds.h));
+    }
+
+    const auto xScale = width / elementBounds.w;
+    const auto yScale = height / elementBounds.h;
+
+    Matrix matrix(xScale, 0, 0, yScale, -elementBounds.x * xScale, -elementBounds.y * yScale);
+    Bitmap bitmap(width, height);
+    bitmap.clear(backgroundColor);
+    RenderState state(nullptr, RenderMode::Display);
+    state.canvas = Canvas::create(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.stride());
+    state.transform = Transform(matrix);
+    m_element->box()->render(state);
+    return bitmap;
+}
+
 std::unique_ptr<Document> Document::loadFromFile(const std::string& filename)
 {
     std::ifstream fs;

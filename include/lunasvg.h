@@ -198,6 +198,8 @@ public:
      */
     Element* get() { return m_element; }
 
+	Bitmap renderToBitmap(std::uint32_t width, std::uint32_t height, std::uint32_t backgroundColor = 0x00000000) const;
+
 private:
     Element* m_element = nullptr;
 };
