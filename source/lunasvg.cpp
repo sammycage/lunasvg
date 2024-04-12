@@ -332,17 +332,25 @@ Matrix DomElement::getLocalTransform() const
 
 Matrix DomElement::getAbsoluteTransform() const
 {
-    return getLocalTransform();
+    if(m_element == nullptr || !m_element->box())
+        return Matrix();
+    auto transform = m_element->box()->localTransform();
+    for(auto currentElement = m_element->parent(); currentElement; currentElement = currentElement->parent()) {
+        if(auto box = currentElement->box()) {
+            transform.postmultiply(box->localTransform());
+        }
+    }
+
+    return transform;
 }
 
-Bitmap DomElement::renderToBitmap(std::uint32_t width, std::uint32_t height, std::uint32_t backgroundColor) const {
+Bitmap DomElement::renderToBitmap(std::uint32_t width, std::uint32_t height, std::uint32_t backgroundColor) const
+{
     if(m_element == nullptr || !m_element->box())
         return Bitmap();
-
     auto elementBounds = m_element->box()->map(m_element->box()->strokeBoundingBox());
     if(elementBounds.empty())
         return Bitmap();
-
     if(width == 0 && height == 0) {
         width = static_cast<std::uint32_t>(std::ceil(elementBounds.w));
         height = static_cast<std::uint32_t>(std::ceil(elementBounds.h));
