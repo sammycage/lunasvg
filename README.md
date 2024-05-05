@@ -2,7 +2,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/sammycage/lunasvg/blob/master/LICENSE)
 [![Build Status](https://github.com/sammycage/lunasvg/actions/workflows/ci.yml/badge.svg)](https://github.com/sammycage/lunasvg/actions)
 
-> If you like the work lunasvg is doing please consider a small donation : [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/sammycage)
+> Check out my other library [PlutoBook: Paged HTML Rendering Library](https://github.com/plutoprint/plutobook)
 
 # LunaSVG - SVG rendering library in C++
 
@@ -83,3 +83,5 @@ svg2png [filename] [resolution] [bgColor]
 - [OTTO](https://github.com/bitfieldaudio/OTTO)
 - [EmulationStation-DE](https://gitlab.com/es-de/emulationstation-de)
 - [SvgBooga](https://github.com/etodanik/SvgBooga/tree/main)
+- [Dear ImGui](https://github.com/ocornut/imgui)
+
