@@ -409,6 +409,10 @@ std::unique_ptr<Document> Document::loadFromData(const char* data)
 void Document::setMatrix(const Matrix& matrix)
 {
     if(m_rootBox) {
+        Box bbox(0, 0, m_rootBox->width, m_rootBox->height);
+        bbox.transform(matrix);
+        m_rootBox->width = bbox.w;
+        m_rootBox->height = bbox.h;
         m_rootBox->transform = Transform(matrix);
     }
 }
