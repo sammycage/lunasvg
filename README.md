@@ -81,3 +81,4 @@ svg2png [filename] [resolution] [bgColor]
 - [EmulationStation-DE](https://gitlab.com/es-de/emulationstation-de)
 - [SvgBooga](https://github.com/etodanik/SvgBooga/tree/main)
 - [Dear ImGui](https://github.com/ocornut/imgui)
+- [Multi Theft Auto: San Andreas](https://github.com/multitheftauto/mtasa-blue)
