@@ -82,3 +82,5 @@ svg2png [filename] [resolution] [bgColor]
 - [SvgBooga](https://github.com/etodanik/SvgBooga/tree/main)
 - [Dear ImGui](https://github.com/ocornut/imgui)
 - [Multi Theft Auto: San Andreas](https://github.com/multitheftauto/mtasa-blue)
+- [eScada Solutions](https://www.escadasolutions.com)
+
