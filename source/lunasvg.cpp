@@ -344,6 +344,16 @@ Matrix DomElement::getAbsoluteTransform() const
     return transform;
 }
 
+void DomElement::render(Bitmap bitmap, const Matrix& matrix) const
+{
+    if(m_element == nullptr || !m_element->box())
+        return;
+    RenderState state(nullptr, RenderMode::Display);
+    state.canvas = Canvas::create(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.stride());
+    state.transform = Transform(matrix);
+    m_element->box()->render(state);
+}
+
 Bitmap DomElement::renderToBitmap(std::uint32_t width, std::uint32_t height, std::uint32_t backgroundColor) const
 {
     if(m_element == nullptr || !m_element->box())
@@ -366,10 +376,7 @@ Bitmap DomElement::renderToBitmap(std::uint32_t width, std::uint32_t height, std
     Matrix matrix(xScale, 0, 0, yScale, -elementBounds.x * xScale, -elementBounds.y * yScale);
     Bitmap bitmap(width, height);
     bitmap.clear(backgroundColor);
-    RenderState state(nullptr, RenderMode::Display);
-    state.canvas = Canvas::create(bitmap.data(), bitmap.width(), bitmap.height(), bitmap.stride());
-    state.transform = Transform(matrix);
-    m_element->box()->render(state);
+    render(bitmap, matrix);
     return bitmap;
 }
 
