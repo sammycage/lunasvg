@@ -34,7 +34,10 @@ install(FILES
 )
 
 install(TARGETS lunasvg
-    LIBRARY     DESTINATION    ${LUNASVG_LIBDIR}
-    ARCHIVE     DESTINATION    ${LUNASVG_LIBDIR}
-    INCLUDES    DESTINATION    ${LUNASVG_INCDIR}
-)
+    EXPORT lunasvg-config
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    PUBLIC_HEADER DESTINATION include)
+
+install(EXPORT lunasvg-config NAMESPACE lunasvg:: DESTINATION share/lunasvg)
