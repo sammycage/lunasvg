@@ -25,7 +25,7 @@ if(LUNASVG_BUILD_EXAMPLES)
     target_include_directories(svg2png PRIVATE 3rdparty/stb)
 endif()
 
-set(LUNASVG_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
+set(LUNASVG_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib CACHE PATH "library output directory")
 set(LUNASVG_INCDIR ${CMAKE_INSTALL_PREFIX}/include)
 
 install(FILES
