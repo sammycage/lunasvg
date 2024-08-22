@@ -776,7 +776,7 @@ std::unique_ptr<SVGElement> SVGUseElement::cloneTargetElement(SVGElement* target
 }
 
 SVGImageElement::SVGImageElement(Document* document)
-    : SVGGraphicsElement(document, ElementID::Use)
+    : SVGGraphicsElement(document, ElementID::Image)
     , SVGURIReference(this)
     , m_x(PropertyID::X, LengthDirection::Horizontal, LengthNegativeMode::Allow, 0.f, LengthUnits::None)
     , m_y(PropertyID::Y, LengthDirection::Vertical, LengthNegativeMode::Allow, 0.f, LengthUnits::None)
