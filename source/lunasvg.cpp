@@ -404,6 +404,8 @@ void Document::updateLayout()
 
 void Document::render(Bitmap& bitmap, const Matrix& matrix) const
 {
+    if(bitmap.isNull())
+        return;
     auto canvas = Canvas::create(bitmap);
     SVGRenderState state(nullptr, nullptr, matrix, SVGRenderMode::Painting, canvas);
     m_rootElement->render(state);
