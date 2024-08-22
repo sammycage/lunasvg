@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <algorithm>
 #include <memory>
+#include <vector>
 #include <array>
 
 namespace lunasvg {
