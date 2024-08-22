@@ -442,6 +442,9 @@ Element Document::documentElement() const
     return m_rootElement.get();
 }
 
+Document::Document(Document&&) = default;
+Document& Document::operator=(Document&&) = default;
+
 Document::Document() = default;
 Document::~Document() = default;
 

@@ -633,8 +633,8 @@ public:
      */
     SVGRootElement* rootElement() const { return m_rootElement.get(); }
 
-    Document(Document&&) = default;
-    Document& operator=(Document&&) = default;
+    Document(Document&&);
+    Document& operator=(Document&&);
     ~Document();
 
 private:

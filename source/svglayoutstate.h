@@ -46,6 +46,9 @@ public:
     const std::string& marker_end() const { return m_marker_end; }
     const std::string& font_family() const { return m_font_family; }
 
+    const SVGLayoutState* parent() const { return m_parent; }
+    const SVGElement* element() const { return m_element; }
+
 private:
     const SVGLayoutState* m_parent = nullptr;
     const SVGElement* m_element = nullptr;

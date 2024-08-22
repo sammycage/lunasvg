@@ -21,6 +21,7 @@ public:
         : m_document(document)
     {}
 
+    virtual ~SVGNode() = default;
     virtual bool isTextNode() const { return false; }
     virtual bool isElement() const { return false; }
     virtual bool isPaintElement() const { return false; }
