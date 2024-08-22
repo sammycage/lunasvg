@@ -1,0 +1,48 @@
+name: Build
+on: [push, pull_request]
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install build dependencies
+        run: |
+          pip install meson
+          pip install ninja
+          
+      - name: Setup and Build
+        run: |
+          meson setup build
+          meson compile -C build
+          
+  macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install build dependencies
+        run: |
+          pip install meson
+          pip install ninja
+          
+      - name: Setup and Build
+        run: |
+          meson setup build
+          meson compile -C build
+          
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install build dependencies
+        run: |
+          pip install meson
+          pip install ninja
+          
+      - name: Setup and Build
+        run: |
+          meson setup build
+          meson compile -C build
