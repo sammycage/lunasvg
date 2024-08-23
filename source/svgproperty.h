@@ -4,7 +4,6 @@
 #include "graphics.h"
 
 #include <string>
-#include <vector>
 
 namespace lunasvg {
 

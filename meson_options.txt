@@ -1,3 +1,2 @@
 option('examples', type : 'feature', value : 'auto')
 option('tests', type : 'feature', value : 'auto')
-option('expat', type : 'feature', value : 'auto')

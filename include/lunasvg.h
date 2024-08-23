@@ -175,9 +175,9 @@ public:
 
     /**
      * @brief clear
-     * @param color
+     * @param value
      */
-    void clear(uint32_t color);
+    void clear(uint32_t value);
 
     /**
      * @brief convertToRGBA

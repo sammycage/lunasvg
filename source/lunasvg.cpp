@@ -118,9 +118,7 @@ bool Bitmap::writeToPng(const std::string& filename) const
 
 plutovg_surface_t* Bitmap::release()
 {
-    auto surface = m_surface;
-    m_surface = nullptr;
-    return surface;
+    return std::exchange(m_surface, nullptr);
 }
 
 Box::Box(float x, float y, float w, float h)
