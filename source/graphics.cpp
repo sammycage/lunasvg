@@ -308,7 +308,7 @@ void Path::reset()
 Rect Path::boundingRect() const
 {
     plutovg_rect_t extents;
-    plutovg_path_extents(m_data, &extents);
+    plutovg_path_extents(m_data, &extents, false);
     return extents;
 }
 
