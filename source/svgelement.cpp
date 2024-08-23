@@ -312,6 +312,7 @@ Rect SVGElement::paintBoundingBox() const
 {
     if(m_paintBoundingBox.isValid())
         return m_paintBoundingBox;
+    m_paintBoundingBox = Rect::Empty;
     m_paintBoundingBox = strokeBoundingBox();
     assert(m_paintBoundingBox.isValid());
     if(m_clipper) m_paintBoundingBox.intersect(m_clipper->clipBoundingBox(this));
