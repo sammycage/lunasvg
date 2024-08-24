@@ -12,12 +12,12 @@ using SelectorList = std::vector<Selector>;
 struct AttributeSelector {
     enum class MatchType {
         None,
-        Equal,
+        Equals,
+        Contains,
         Includes,
-        DashMatch,
         StartsWith,
         EndsWith,
-        Contains
+        DashEquals
     };
 
     MatchType matchType{MatchType::None};
@@ -99,30 +99,6 @@ private:
 
 inline bool operator<(const RuleData& a, const RuleData& b) { return a.isLessThan(b); }
 
-using RuleDataList = std::vector<RuleData>;
-
-class StyleSheet {
-public:
-    StyleSheet() = default;
-
-    bool parseSheet(std::string_view input);
-    const RuleDataList& rules() const { return m_rules; }
-    bool isEmpty() const { return m_rules.empty(); }
-
-    void sortRules();
-
-private:
-    static bool parseAtRule(std::string_view& input);
-    static bool parseRule(std::string_view& input, Rule& rule);
-    static bool parseSelectors(std::string_view& input, SelectorList& selectors);
-    static bool parseDeclarations(std::string_view& input, DeclarationList& declarations);
-    static bool parseSelector(std::string_view& input, Selector& selector);
-    static bool parseSimpleSelector(std::string_view& input, SimpleSelector& simpleSelector);
-
-    RuleDataList m_rules;
-    uint32_t m_position{0};
-};
-
 bool RuleData::match(const SVGElement* element) const
 {
     if(m_selector.empty())
@@ -177,6 +153,16 @@ bool RuleData::matchSimpleSelector(const SimpleSelector& selector, const SVGElem
     return true;
 }
 
+constexpr bool equals(const std::string_view& value, const std::string_view& subvalue)
+{
+    return value.compare(subvalue) == 0;
+}
+
+constexpr bool contains(const std::string_view& value, const std::string_view& subvalue)
+{
+    return value.find(subvalue) != std::string_view::npos;
+}
+
 constexpr bool includes(const std::string_view& value, const std::string_view& subvalue)
 {
     if(subvalue.empty() || subvalue.length() > value.length())
@@ -219,22 +205,20 @@ constexpr bool dashequals(const std::string_view& value, const std::string_view&
 bool RuleData::matchAttributeSelector(const AttributeSelector& selector, const SVGElement* element)
 {
     const auto& value = element->getAttribute(selector.id);
-    if(value.empty())
-        return false;
     if(selector.matchType == AttributeSelector::MatchType::None)
-        return true;
-    if(selector.matchType == AttributeSelector::MatchType::Equal)
-        return selector.value == value;
+        return !value.empty();
+    if(selector.matchType == AttributeSelector::MatchType::Equals)
+        return equals(value, selector.value);
+    if(selector.matchType == AttributeSelector::MatchType::Contains)
+        return contains(value, selector.value);
     if(selector.matchType == AttributeSelector::MatchType::Includes)
         return includes(value, selector.value);
-    if(selector.matchType == AttributeSelector::MatchType::DashMatch)
-        return dashequals(value, selector.value);
     if(selector.matchType == AttributeSelector::MatchType::StartsWith)
         return startswith(value, selector.value);
     if(selector.matchType == AttributeSelector::MatchType::EndsWith)
         return endswith(value, selector.value);
-    if(selector.matchType == AttributeSelector::MatchType::Contains)
-        return value.find(selector.value) != std::string::npos;
+    if(selector.matchType == AttributeSelector::MatchType::DashEquals)
+        return dashequals(value, selector.value);
     return false;
 }
 
@@ -246,8 +230,8 @@ bool RuleData::matchPseudoClassSelector(const PseudoClassSelector& selector, con
         return element->parent() == nullptr;
     if(selector.type == PseudoClassSelector::Type::Is) {
         for(const auto& subSelector : selector.subSelectors) {
-            for(const auto& sel : subSelector) {
-                if(!matchSimpleSelector(sel, element)) {
+            for(const auto& simpleSelector : subSelector) {
+                if(!matchSimpleSelector(simpleSelector, element)) {
                     return false;
                 }
             }
@@ -258,8 +242,8 @@ bool RuleData::matchPseudoClassSelector(const PseudoClassSelector& selector, con
 
     if(selector.type == PseudoClassSelector::Type::Not) {
         for(const auto& subSelector : selector.subSelectors) {
-            for(const auto& sel : subSelector) {
-                if(matchSimpleSelector(sel, element)) {
+            for(const auto& simpleSelector : subSelector) {
+                if(matchSimpleSelector(simpleSelector, element)) {
                     return false;
                 }
             }
@@ -299,19 +283,28 @@ bool RuleData::matchPseudoClassSelector(const PseudoClassSelector& selector, con
     return false;
 }
 
-constexpr bool IS_CSS_STARTNAMECHAR(int c) { return IS_ALPHA(c) || c == '_' || c == '-'; }
-constexpr bool IS_CSS_NAMECHAR(int c) { return IS_CSS_STARTNAMECHAR(c) || IS_NUM(c); }
-inline bool readCSSIdentifier(std::string_view& input, std::string& output)
-{
-    if(input.empty() || !IS_CSS_STARTNAMECHAR(input.front()))
-        return false;
-    output.clear();
-    do {
-        output.push_back(input.front());
-        input.remove_prefix(1);
-    } while(!input.empty() && IS_CSS_NAMECHAR(input.front()));
-    return true;
-}
+using RuleDataList = std::vector<RuleData>;
+
+class StyleSheet {
+public:
+    StyleSheet() = default;
+
+    bool parseSheet(std::string_view input);
+    const RuleDataList& rules() const { return m_rules; }
+    bool isEmpty() const { return m_rules.empty(); }
+
+    void sortRules();
+
+private:
+    static bool parseRule(std::string_view& input, Rule& rule);
+    static bool parseSelectors(std::string_view& input, SelectorList& selectors);
+    static bool parseDeclarations(std::string_view& input, DeclarationList& declarations);
+    static bool parseSelector(std::string_view& input, Selector& selector);
+    static bool parseSimpleSelector(std::string_view& input, SimpleSelector& simpleSelector);
+
+    RuleDataList m_rules;
+    uint32_t m_position{0};
+};
 
 bool StyleSheet::parseSheet(std::string_view input)
 {
@@ -319,8 +312,20 @@ bool StyleSheet::parseSheet(std::string_view input)
     while(!input.empty()) {
         skipOptionalSpaces(input);
         if(skipDelimiter(input, '@')) {
-            if(!parseAtRule(input))
-                return false;
+            int depth = 0;
+            while(!input.empty()) {
+                auto ch = input.front();
+                input.remove_prefix(1);
+                if(ch == ';' && depth == 0)
+                    break;
+                if(ch == '{') ++depth;
+                else if(ch == '}' && depth > 0) {
+                    if(depth == 1)
+                        break;
+                    --depth;
+                }
+            }
+
             continue;
         }
 
@@ -349,25 +354,6 @@ void StyleSheet::sortRules()
     std::sort(m_rules.begin(), m_rules.end());
 }
 
-bool StyleSheet::parseAtRule(std::string_view& input)
-{
-    int depth = 0;
-    while(!input.empty()) {
-        auto ch = input.front();
-        input.remove_prefix(1);
-        if(ch == ';' && depth == 0)
-            break;
-        if(ch == '{') ++depth;
-        else if(ch == '}' && depth > 0) {
-            if(depth == 1)
-                break;
-            --depth;
-        }
-    }
-
-    return true;
-}
-
 bool StyleSheet::parseRule(std::string_view& input, Rule& rule)
 {
     rule.selectors.clear();
@@ -387,6 +373,21 @@ bool StyleSheet::parseSelectors(std::string_view& input, SelectorList& selectors
             return false;
         selectors.push_back(std::move(selector));
     } while(skipDelimiter(input, ',') && skipOptionalSpaces(input));
+    return true;
+}
+
+constexpr bool IS_CSS_STARTNAMECHAR(int c) { return IS_ALPHA(c) || c == '_' || c == '-'; }
+constexpr bool IS_CSS_NAMECHAR(int c) { return IS_CSS_STARTNAMECHAR(c) || IS_NUM(c); }
+
+inline bool readCSSIdentifier(std::string_view& input, std::string& output)
+{
+    if(input.empty() || !IS_CSS_STARTNAMECHAR(input.front()))
+        return false;
+    output.clear();
+    do {
+        output.push_back(input.front());
+        input.remove_prefix(1);
+    } while(!input.empty() && IS_CSS_NAMECHAR(input.front()));
     return true;
 }
 
@@ -427,7 +428,6 @@ bool StyleSheet::parseDeclarations(std::string_view& input, DeclarationList& dec
     return skipDelimiter(input, '}');
 }
 
-constexpr bool IS_SELECTOR_STARTNAMECHAR(int c) { return IS_CSS_STARTNAMECHAR(c) || c == '*' || c == '#' || c == '.' || c == '[' || c == ':'; }
 bool StyleSheet::parseSelector(std::string_view& input, Selector& selector)
 {
     do {
@@ -435,8 +435,7 @@ bool StyleSheet::parseSelector(std::string_view& input, Selector& selector)
         if(!parseSimpleSelector(input, simpleSelector))
             return false;
         selector.push_back(std::move(simpleSelector));
-        skipOptionalSpaces(input);
-    } while(!input.empty() && IS_SELECTOR_STARTNAMECHAR(input.front()));
+    } while(skipOptionalSpaces(input) && input.front() != ',' && input.front() != '{');
     return true;
 }
 
@@ -492,7 +491,7 @@ bool StyleSheet::parseSimpleSelector(std::string_view& input, SimpleSelector& si
             input.remove_prefix(1);
             AttributeSelector a;
             a.id = PropertyID::Id;
-            a.matchType = AttributeSelector::MatchType::Equal;
+            a.matchType = AttributeSelector::MatchType::Equals;
             if(!readCSSIdentifier(input, a.value))
                 return false;
             simpleSelector.attributeSelectors.push_back(std::move(a));
@@ -517,18 +516,19 @@ bool StyleSheet::parseSimpleSelector(std::string_view& input, SimpleSelector& si
                 return false;
             AttributeSelector a;
             a.id = propertyid(name);
+            a.matchType = AttributeSelector::MatchType::None;
             if(skipDelimiter(input, '='))
-                a.matchType = AttributeSelector::MatchType::Equal;
+                a.matchType = AttributeSelector::MatchType::Equals;
+            else if(skipString(input, "*="))
+                a.matchType = AttributeSelector::MatchType::Contains;
             else if(skipString(input, "~="))
                 a.matchType = AttributeSelector::MatchType::Includes;
-            else if(skipString(input, "|="))
-                a.matchType = AttributeSelector::MatchType::DashMatch;
             else if(skipString(input, "^="))
                 a.matchType = AttributeSelector::MatchType::StartsWith;
             else if(skipString(input, "$="))
                 a.matchType = AttributeSelector::MatchType::EndsWith;
-            else if(skipString(input, "*="))
-                a.matchType = AttributeSelector::MatchType::Contains;
+            else if(skipString(input, "|="))
+                a.matchType = AttributeSelector::MatchType::DashEquals;
             if(a.matchType != AttributeSelector::MatchType::None) {
                 skipOptionalSpaces(input);
                 if(!readCSSIdentifier(input, a.value)) {
@@ -555,6 +555,7 @@ bool StyleSheet::parseSimpleSelector(std::string_view& input, SimpleSelector& si
     }
 
     skipOptionalSpaces(input);
+    simpleSelector.combinator = SimpleSelector::Combinator::Descendant;
     if(skipDelimiter(input, '>'))
         simpleSelector.combinator = SimpleSelector::Combinator::Child;
     else if(skipDelimiter(input, '+'))
@@ -564,7 +565,7 @@ bool StyleSheet::parseSimpleSelector(std::string_view& input, SimpleSelector& si
     return true;
 }
 
-inline void parseStyle(std::string_view input, SVGElement* element)
+inline void parseInlineStyle(std::string_view input, SVGElement* element)
 {
     std::string name;
     std::string value;
@@ -668,6 +669,7 @@ inline bool decodeText(std::string_view input, std::string& output)
 
 constexpr bool IS_STARTNAMECHAR(int c) { return IS_ALPHA(c) ||  c == '_' || c == ':'; }
 constexpr bool IS_NAMECHAR(int c) { return IS_STARTNAMECHAR(c) || IS_NUM(c) || c == '-' || c == '.'; }
+
 inline bool readIdentifier(std::string_view& input, std::string& output)
 {
     if(input.empty() || !IS_STARTNAMECHAR(input.front()))
@@ -682,26 +684,29 @@ inline bool readIdentifier(std::string_view& input, std::string& output)
 
 bool Document::parse(const char* data, size_t length)
 {
-    std::string name;
-    std::string value;
+    std::string buffer;
     StyleSheet styleSheet;
     SVGElement* currentElement = nullptr;
     int ignoring = 0;
     auto handleText = [&](const std::string_view& text, bool in_cdata) {
-        if(text.empty() || !currentElement || (currentElement->id() != ElementID::Text && currentElement->id() != ElementID::TSpan && currentElement->id() != ElementID::Style))
+        if(text.empty() || currentElement == nullptr || ignoring > 0)
             return;
+        if(currentElement->id() != ElementID::Text && currentElement->id() != ElementID::TSpan && currentElement->id() != ElementID::Style) {
+            return;
+        }
+
         if(in_cdata) {
-            value.assign(text);
+            buffer.assign(text);
         } else {
-            decodeText(text, value);
+            decodeText(text, buffer);
         }
 
         if(currentElement->id() == ElementID::Style) {
-            removeStyleComments(value);
-            styleSheet.parseSheet(value);
+            removeStyleComments(buffer);
+            styleSheet.parseSheet(buffer);
         } else {
             auto node = std::make_unique<SVGTextNode>(this);
-            node->setText(value);
+            node->setText(buffer);
             currentElement->addChild(std::move(node));
         }
     };
@@ -721,7 +726,7 @@ bool Document::parse(const char* data, size_t length)
         if(!skipDelimiter(input, '<'))
             return false;
         if(skipDelimiter(input, '?')) {
-            if(!readIdentifier(input, name))
+            if(!readIdentifier(input, buffer))
                 return false;
             auto n = input.find("?>");
             if(n == std::string_view::npos)
@@ -775,10 +780,10 @@ bool Document::parse(const char* data, size_t length)
         if(skipDelimiter(input, '/')) {
             if(currentElement == nullptr && ignoring == 0)
                 return false;
-            if(!readIdentifier(input, name))
+            if(!readIdentifier(input, buffer))
                 return false;
             if(ignoring == 0) {
-                auto id = elementid(name);
+                auto id = elementid(buffer);
                 if(id != currentElement->id())
                     return false;
                 currentElement = currentElement->parent();
@@ -792,13 +797,13 @@ bool Document::parse(const char* data, size_t length)
             continue;
         }
 
-        if(!readIdentifier(input, name))
+        if(!readIdentifier(input, buffer))
             return false;
         SVGElement* element = nullptr;
         if(ignoring > 0) {
             ++ignoring;
         } else {
-            auto id = elementid(name);
+            auto id = elementid(buffer);
             if(id == ElementID::Unknown) {
                 ignoring = 1;
             } else {
@@ -818,7 +823,7 @@ bool Document::parse(const char* data, size_t length)
         }
 
         skipOptionalSpaces(input);
-        while(readIdentifier(input, name)) {
+        while(readIdentifier(input, buffer)) {
             skipOptionalSpaces(input);
             if(!skipDelimiter(input, '='))
                 return false;
@@ -832,16 +837,16 @@ bool Document::parse(const char* data, size_t length)
                 return false;
             auto id = PropertyID::Unknown;
             if(element != nullptr)
-                id = propertyid(name);
+                id = propertyid(buffer);
             if(id != PropertyID::Unknown) {
-                decodeText(input.substr(0, n), value);
+                decodeText(input.substr(0, n), buffer);
                 if(id == PropertyID::Style) {
-                    removeStyleComments(value);
-                    parseStyle(value, element);
+                    removeStyleComments(buffer);
+                    parseInlineStyle(buffer, element);
                 } else {
                     if(id == PropertyID::Id)
-                        m_rootElement->addElementById(value, element);
-                    element->setAttribute(0x1, id, value);
+                        m_rootElement->addElementById(buffer, element);
+                    element->setAttribute(0x1, id, buffer);
                 }
             }
 
