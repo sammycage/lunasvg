@@ -89,8 +89,7 @@ static Paint parsePaint(std::string_view input, const SVGLayoutState* state, con
     std::string id;
     if(!parseUrlValue(input, id))
         return Paint(parseColorOrNone(input, state, defaultValue));
-    skipOptionalSpaces(input);
-    if(!input.empty())
+    if(skipOptionalSpaces(input))
         return Paint(id, parseColorOrNone(input, state, defaultValue));
     return Paint(id, Color::Transparent);
 }

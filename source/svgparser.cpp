@@ -879,9 +879,9 @@ bool Document::parse(const char* data, size_t length)
             if(node->isTextNode())
                 return true;
             auto element = static_cast<SVGElement*>(node);
-            for(auto& rule : styleSheet.rules()) {
+            for(const auto& rule : styleSheet.rules()) {
                 if(rule.match(element)) {
-                    for(auto& declaration : rule.declarations()) {
+                    for(const auto& declaration : rule.declarations()) {
                         element->setAttribute(declaration.specificity, declaration.id, declaration.value);
                     }
                 }

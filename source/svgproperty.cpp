@@ -213,42 +213,78 @@ bool Length::parse(std::string_view input, LengthNegativeMode mode)
         return true;
     }
 
-    if(input == "%") {
+    constexpr auto dpi = 96.f;
+    switch(input.front()) {
+    case '%':
         m_value = value;
         m_units = LengthUnits::Percent;
-        return true;
-    }
-
-    if(input == "em") {
+        break;
+    case 'p':
+        input.remove_prefix(1);
+        if(input.empty())
+            return false;
+        else if(input.front() == 'x')
+            m_value = value;
+        else if(input.front() == 'c')
+            m_value = value * dpi / 6.f;
+        else if(input.front() == 't')
+            m_value = value * dpi / 72.f;
+        else
+            return false;
+        input.remove_prefix(1);
+        m_units = LengthUnits::Px;
+        break;
+    case 'i':
+        input.remove_prefix(1);
+        if(input.empty())
+            return false;
+        else if(input.front() == 'n')
+            m_value = value * dpi;
+        else
+            return false;
+        m_units = LengthUnits::Px;
+        input.remove_prefix(1);
+        break;
+    case 'c':
+        input.remove_prefix(1);
+        if(input.empty())
+            return false;
+        else if(input.front() == 'm')
+            m_value = value * dpi / 2.54f;
+        else
+            return false;
+        m_units = LengthUnits::Px;
+        input.remove_prefix(1);
+        break;
+    case 'm':
+        input.remove_prefix(1);
+        if(input.empty())
+            return false;
+        else if(input.front() == 'm')
+            m_value = value * dpi / 25.4f;
+        else
+            return false;
+        m_units = LengthUnits::Px;
+        input.remove_prefix(1);
+        break;
+    case 'e':
+        input.remove_prefix(1);
+        if(input.empty())
+            return false;
+        else if(input.front() == 'm')
+            m_units = LengthUnits::Em;
+        else if(input.front() == 'x')
+            m_units = LengthUnits::Ex;
+        else
+            return false;
         m_value = value;
-        m_units = LengthUnits::Em;
-        return true;
-    }
-
-    if(input == "ex") {
-        m_value = value;
-        m_units = LengthUnits::Ex;
-        return true;
-    }
-
-    constexpr auto dpi = 96.f;
-    if(input == "in") {
-        value *= dpi;
-    } else if(input == "cm") {
-        value *= dpi / 2.54f;
-    } else if(input == "mm") {
-        value *= dpi / 25.4f;
-    } else if(input == "pt") {
-        value *= dpi / 72.f;
-    } else if(input == "pc") {
-        value *= dpi / 6.f;
-    } else if(input != "px") {
+        input.remove_prefix(1);
+        break;
+    default:
         return false;
     }
 
-    m_value = value;
-    m_units = LengthUnits::Px;
-    return true;
+    return input.empty();
 }
 
 float LengthContext::valueForLength(const Length& length, LengthDirection direction) const
