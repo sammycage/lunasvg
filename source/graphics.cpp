@@ -421,29 +421,70 @@ plutovg_font_face_t* FontFace::release()
     return std::exchange(m_face, nullptr);
 }
 
-bool FontFaceCache::addFontFace(const std::string& family, bool italic, bool bold, const std::string& filename)
+FontFace FontFaceCache::addFontFace(const std::string& family, bool italic, bool bold, const std::string& filename)
 {
     return addFontFace(family, italic, bold, FontFace(filename));
 }
 
-bool FontFaceCache::addFontFace(const std::string& family, bool italic, bool bold, const void* data, size_t length)
+FontFace FontFaceCache::addFontFace(const std::string& family, bool italic, bool bold, const void* data, size_t length)
 {
     return addFontFace(family, italic, bold, FontFace(data, length));
 }
 
-bool FontFaceCache::addFontFace(const std::string& family, bool italic, bool bold, const FontFace& face)
+FontFace FontFaceCache::addFontFace(const std::string& family, bool italic, bool bold, const FontFace& face)
 {
-    if(face.isNull())
-        return false;
-    m_table[family].emplace_back(italic, bold, face);
-    return true;
+    if(!face.isNull())
+       m_table[family].emplace_back(italic, bold, face);
+    return face;
 }
 
-FontFace FontFaceCache::getFontFace(const std::string& family, bool italic, bool bold) const
+#ifdef _WIN32
+#define ARIAL_REGULAR "C:/Windows/Fonts/arial.ttf"
+#define ARIAL_ITALIC "C:/Windows/Fonts/ariali.ttf"
+#define ARIAL_BOLD "C:/Windows/Fonts/arialbd.ttf"
+#define ARIAL_BOLD_ITALIC "C:/Windows/Fonts/arialbi.ttf"
+#elif __APPLE__
+#define ARIAL_REGULAR "/Library/Fonts/Arial.ttf"
+#define ARIAL_ITALIC "/Library/Fonts/Arial Italic.ttf"
+#define ARIAL_BOLD "/Library/Fonts/Arial Bold.ttf"
+#define ARIAL_BOLD_ITALIC "/Library/Fonts/Arial Bold Italic.ttf"
+#else
+#define ARIAL_REGULAR "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+#define ARIAL_ITALIC "/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf"
+#define ARIAL_BOLD "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+#define ARIAL_BOLD_ITALIC "/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf"
+#endif
+
+FontFace FontFaceCache::getFallbackFontFace(bool italic, bool bold)
+{
+    if(!italic && !bold)
+        return addFontFace(emptyString, false, false, ARIAL_REGULAR);
+    if(italic && !bold)
+        return addFontFace(emptyString, true, false, ARIAL_ITALIC);
+    if(!italic && bold)
+        return addFontFace(emptyString, false, true, ARIAL_BOLD);
+    return addFontFace(emptyString, true, true, ARIAL_BOLD_ITALIC);
+}
+
+FontFace FontFaceCache::getFontFace(const std::string& family, bool italic, bool bold)
 {
     auto it = m_table.find(family);
-    if(it == m_table.end())
-        return FontFace();
+    if(it == m_table.end()) {
+        if(family.empty())
+            return getFallbackFontFace(italic, bold);
+        return getFontFace(emptyString, italic, bold);
+    }
+
+    if(family.empty()) {
+        for(const auto& item : it->second) {
+            if(italic == std::get<0>(item) && bold == std::get<1>(item)) {
+                return std::get<2>(item);
+            }
+        }
+
+        return getFallbackFontFace(italic, bold);
+    }
+
     auto select = [italic, bold](const FontFaceEntry& a, const FontFaceEntry& b) {
         if(std::get<2>(a).isNull())
             return b;

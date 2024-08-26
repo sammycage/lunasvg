@@ -185,6 +185,46 @@ static Overflow parseOverflow(std::string_view input)
     return parseEnumValue(input, entries, Overflow::Visible);
 }
 
+static FontStyle parseFontStyle(std::string_view input)
+{
+    static const SVGEnumerationEntry<FontStyle> entries[] = {
+        {FontStyle::Normal, "normal"},
+        {FontStyle::Italic, "italic"},
+        {FontStyle::Italic, "oblique"}
+    };
+
+    return parseEnumValue(input, entries, FontStyle::Normal);
+}
+
+static FontWeight parseFontWeight(std::string_view input)
+{
+    static const SVGEnumerationEntry<FontWeight> entries[] = {
+        {FontWeight::Normal, "normal"},
+        {FontWeight::Normal, "100"},
+        {FontWeight::Normal, "200"},
+        {FontWeight::Normal, "300"},
+        {FontWeight::Normal, "400"},
+        {FontWeight::Normal, "500"},
+        {FontWeight::Bold, "bold"},
+        {FontWeight::Bold, "600"},
+        {FontWeight::Bold, "700"},
+        {FontWeight::Bold, "800"},
+        {FontWeight::Bold, "900"}
+    };
+
+    return parseEnumValue(input, entries, FontWeight::Normal);
+}
+
+static Direction parseDirection(std::string_view input)
+{
+    static const SVGEnumerationEntry<Direction> entries[] = {
+        {Direction::Ltr, "ltr"},
+        {Direction::Rtl, "rtl"}
+    };
+
+    return parseEnumValue(input, entries, Direction::Ltr);
+}
+
 static TextAnchor parseTextAnchor(std::string_view input)
 {
     static const SVGEnumerationEntry<TextAnchor> entries[] = {
@@ -221,6 +261,16 @@ static MaskType parseMaskType(std::string_view input)
     return parseEnumValue(input, entries, MaskType::Luminance);
 }
 
+static FillRule parseFillRule(std::string_view input)
+{
+    static const SVGEnumerationEntry<FillRule> entries[] = {
+        {FillRule::NonZero, "nonzero"},
+        {FillRule::EvenOdd, "evenodd"}
+    };
+
+    return parseEnumValue(input, entries, FillRule::NonZero);
+}
+
 static LineCap parseLineCap(std::string_view input)
 {
     static const SVGEnumerationEntry<LineCap> entries[] = {
@@ -243,16 +293,6 @@ static LineJoin parseLineJoin(std::string_view input)
     return parseEnumValue(input, entries, LineJoin::Miter);
 }
 
-static FillRule parseFillRule(std::string_view input)
-{
-    static const SVGEnumerationEntry<FillRule> entries[] = {
-        {FillRule::NonZero, "nonzero"},
-        {FillRule::EvenOdd, "evenodd"}
-    };
-
-    return parseEnumValue(input, entries, FillRule::NonZero);
-}
-
 SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* element)
     : m_parent(&parent)
     , m_element(element)
@@ -270,8 +310,11 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
     , m_stroke_linejoin(parent.stroke_linejoin())
     , m_fill_rule(parent.fill_rule())
     , m_clip_rule(parent.clip_rule())
+    , m_font_style(parent.font_style())
+    , m_font_weight(parent.font_weight())
     , m_text_anchor(parent.text_anchor())
     , m_white_space(parent.white_space())
+    , m_direction(parent.direction())
     , m_visibility(parent.visibility())
     , m_overflow(element->parent() ? Overflow::Hidden : Overflow::Visible)
     , m_marker_start(parent.marker_start())
@@ -336,6 +379,15 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
         case PropertyID::Clip_Rule:
             m_clip_rule = parseFillRule(input);
             break;
+        case PropertyID::Font_Style:
+            m_font_style = parseFontStyle(input);
+            break;
+        case PropertyID::Font_Weight:
+            m_font_weight = parseFontWeight(input);
+            break;
+        case PropertyID::Direction:
+            m_direction = parseDirection(input);
+            break;
         case PropertyID::Text_Anchor:
             m_text_anchor = parseTextAnchor(input);
             break;
@@ -380,9 +432,9 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
 
 Font SVGLayoutState::font() const
 {
-    auto face = fontFaceCache()->getFontFace(m_font_family, false, false);
-    if(!m_font_family.empty() && face.isNull())
-        face = fontFaceCache()->getFontFace(emptyString, false, false);
+    auto italic = m_font_style == FontStyle::Italic;
+    auto bold = m_font_weight == FontWeight::Bold;
+    auto face = fontFaceCache()->getFontFace(m_font_family, italic, bold);
     return Font(face, m_font_size);
 }
 

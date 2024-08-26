@@ -17,6 +17,7 @@ enum class PropertyID : uint8_t {
     Cx,
     Cy,
     D,
+    Direction,
     Display,
     Dx,
     Dy,
@@ -25,6 +26,8 @@ enum class PropertyID : uint8_t {
     Fill_Rule,
     Font_Family,
     Font_Size,
+    Font_Style,
+    Font_Weight,
     Fx,
     Fy,
     GradientTransform,
@@ -132,11 +135,6 @@ private:
     Color m_color = Color::Transparent;
 };
 
-enum class WhiteSpace : uint8_t {
-    Default,
-    Preserve
-};
-
 enum class Display : uint8_t {
     Inline,
     None
@@ -153,15 +151,30 @@ enum class Overflow : uint8_t {
     Hidden
 };
 
-enum class Direction : uint8_t {
-    Ltr,
-    Rtl
+enum class FontStyle : uint8_t {
+    Normal,
+    Italic
+};
+
+enum class FontWeight : uint8_t {
+    Normal,
+    Bold
 };
 
 enum class TextAnchor : uint8_t {
     Start,
     Middle,
     End
+};
+
+enum class WhiteSpace : uint8_t {
+    Default,
+    Preserve
+};
+
+enum class Direction : uint8_t {
+    Ltr,
+    Rtl
 };
 
 enum class MaskType : uint8_t {

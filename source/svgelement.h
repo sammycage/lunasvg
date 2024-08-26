@@ -43,8 +43,6 @@ private:
     SVGElement* m_parent = nullptr;
 };
 
-static std::string emptyString;
-
 class SVGTextNode final : public SVGNode {
 public:
     SVGTextNode(Document* document);

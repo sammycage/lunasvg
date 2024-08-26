@@ -33,23 +33,22 @@ struct SVGTextPosition {
 using SVGTextPositionList = std::vector<SVGTextPosition>;
 
 struct SVGTextFragment {
-    SVGTextFragment(const SVGTextPosition& position) : position(position) {}
-    const SVGTextPositioningElement* element() const;
-    SVGTextPosition position;
-    bool startsNewTextChunk = false;
+    explicit SVGTextFragment(const SVGTextPositioningElement* element) : element(element) {}
+    const SVGTextPositioningElement* element;
+    uint32_t offset = 0;
+    uint32_t length = 0;
     float x = 0;
     float y = 0;
     float angle = 0;
     float width = 0;
+    bool startsNewTextChunk = false;
 };
 
 using SVGTextFragmentList = std::vector<SVGTextFragment>;
 
 class SVGTextFragmentsBuilder {
 public:
-    SVGTextFragmentsBuilder(std::u32string& text, SVGTextFragmentList& fragments)
-        : m_text(text), m_fragments(fragments)
-    {}
+    SVGTextFragmentsBuilder(std::u32string& text, SVGTextFragmentList& fragments);
 
     void build(const SVGTextElement* element);
 

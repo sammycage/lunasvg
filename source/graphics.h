@@ -394,6 +394,8 @@ private:
     int m_index;
 };
 
+static std::string emptyString;
+
 class FontFace {
 public:
     FontFace() = default;
@@ -419,11 +421,12 @@ private:
 
 class FontFaceCache {
 public:
-    bool addFontFace(const std::string& family, bool italic, bool bold, const std::string& filename);
-    bool addFontFace(const std::string& family, bool italic, bool bold, const void* data, size_t length);
-    bool addFontFace(const std::string& family, bool italic, bool bold, const FontFace& face);
+    FontFace addFontFace(const std::string& family, bool italic, bool bold, const std::string& filename);
+    FontFace addFontFace(const std::string& family, bool italic, bool bold, const void* data, size_t length);
+    FontFace addFontFace(const std::string& family, bool italic, bool bold, const FontFace& face);
 
-    FontFace getFontFace(const std::string& family, bool italic, bool bold) const;
+    FontFace getFallbackFontFace(bool italic, bool bold);
+    FontFace getFontFace(const std::string& family, bool italic, bool bold);
 
 private:
     FontFaceCache() = default;

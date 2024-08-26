@@ -6,14 +6,6 @@
 
 namespace lunasvg {
 
-inline const SVGTextPositioningElement* SVGTextFragment::element() const
-{
-    assert(position.node && position.node->isTextNode());
-    auto parent = position.node->parent();
-    assert(parent && parent->isTextPositioningElement());
-    return static_cast<const SVGTextPositioningElement*>(parent);
-}
-
 static float calculateBaselineOffset(const SVGTextPositioningElement* element)
 {
     return 0.f;
@@ -57,6 +49,25 @@ static float calculateTextAnchorOffset(const SVGTextPositioningElement* element,
     return 0.f;
 }
 
+inline const SVGTextNode* toSVGTextNode(const SVGNode* node)
+{
+    assert(node && node->isTextNode());
+    return static_cast<const SVGTextNode*>(node);
+}
+
+inline const SVGTextPositioningElement* toSVGTextPositioningElement(const SVGNode* node)
+{
+    assert(node && node->isTextPositioningElement());
+    return static_cast<const SVGTextPositioningElement*>(node);
+}
+
+SVGTextFragmentsBuilder::SVGTextFragmentsBuilder(std::u32string& text, SVGTextFragmentList& fragments)
+    : m_text(text), m_fragments(fragments)
+{
+    m_text.clear();
+    m_fragments.clear();
+}
+
 void SVGTextFragmentsBuilder::build(const SVGTextElement* element)
 {
     handleElement(element);
@@ -64,17 +75,16 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* element)
         fillCharacterPositions(position);
     }
 
+    std::u32string_view wholeText(m_text);
     for(const auto& textPosition : m_textPositions) {
         if(!textPosition.node->isTextNode())
             continue;
-        auto parent = textPosition.node->parent();
-        assert(parent && parent->isTextPositioningElement());
-        auto element = static_cast<const SVGTextPositioningElement*>(parent);
-        SVGTextFragment fragment(textPosition);
+        auto element = toSVGTextPositioningElement(textPosition.node->parent());
+        SVGTextFragment fragment(element);
         auto recordTextFragment = [&](auto startOffset, auto endOffset) {
-            auto text = std::u32string_view(m_text).substr(startOffset, endOffset - startOffset);
-            fragment.position.startOffset = startOffset;
-            fragment.position.endOffset = endOffset;
+            auto text = wholeText.substr(startOffset, endOffset - startOffset);
+            fragment.offset = startOffset;
+            fragment.length = endOffset - startOffset;
             fragment.width = element->font().measureText(text);
             m_fragments.push_back(fragment);
             m_x += fragment.width;
@@ -105,10 +115,10 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* element)
             if(startsNewTextChunk || shouldStartNewFragment || !didStartTextFragment) {
                 m_x = dx + characterPosition.x.value_or(m_x);
                 m_y = dy + characterPosition.y.value_or(m_y);
-                fragment.startsNewTextChunk = startsNewTextChunk;
                 fragment.x = m_x;
                 fragment.y = m_y - baselineOffset;
                 fragment.angle = angle;
+                fragment.startsNewTextChunk = startsNewTextChunk;
                 didStartTextFragment = true;
             }
 
@@ -121,8 +131,7 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* element)
     }
 
     auto handleTextChunk = [](auto begin, auto end) {
-        auto element = begin->element();
-        if(!needsTextAnchorAdjustment(element))
+        if(!needsTextAnchorAdjustment(begin->element))
             return;
         float chunkWidth = 0.f;
         const SVGTextFragment* lastFragment = nullptr;
@@ -134,7 +143,7 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* element)
             lastFragment = &fragment;
         }
 
-        auto chunkOffset = calculateTextAnchorOffset(element, chunkWidth);
+        auto chunkOffset = calculateTextAnchorOffset(begin->element, chunkWidth);
         for(auto it = begin; it != end; ++it) {
             SVGTextFragment& fragment = *it;
             fragment.x += chunkOffset;
@@ -162,7 +171,7 @@ void SVGTextFragmentsBuilder::handleText(const SVGTextNode* node)
     const auto& text = node->text();
     if(text.empty())
         return;
-    auto element = static_cast<const SVGTextPositioningElement*>(node->parent());
+    auto element = toSVGTextPositioningElement(node->parent());
     const auto startOffset = m_text.length();
     uint32_t lastCharacter = ' ';
     if(!m_text.empty()) {
@@ -190,9 +199,9 @@ void SVGTextFragmentsBuilder::handleElement(const SVGTextPositioningElement* ele
     m_textPositions.emplace_back(element, m_text.length(), m_text.length());
     for(const auto& child : element->children()) {
         if(child->isTextNode()) {
-            handleText(static_cast<SVGTextNode*>(child.get()));
+            handleText(toSVGTextNode(child.get()));
         } else if(child->isTextPositioningElement()) {
-            handleElement(static_cast<SVGTextPositioningElement*>(child.get()));
+            handleElement(toSVGTextPositioningElement(child.get()));
         }
     }
 
@@ -205,7 +214,7 @@ void SVGTextFragmentsBuilder::fillCharacterPositions(const SVGTextPosition& posi
 {
     if(!position.node->isTextPositioningElement())
         return;
-    auto element = static_cast<const SVGTextPositioningElement*>(position.node);
+    auto element = toSVGTextPositioningElement(position.node);
     const auto& xList = element->x();
     const auto& yList = element->y();
     const auto& dxList = element->dx();
@@ -270,12 +279,13 @@ void SVGTextPositioningElement::layoutElement(const SVGLayoutState& state)
     m_font = state.font();
     m_fill = getPaintServer(state.fill(), state.fill_opacity());
     m_stroke = getPaintServer(state.stroke(), state.stroke_opacity());
+    SVGGraphicsElement::layoutElement(state);
 
     LengthContext lengthContext(this);
     m_stroke_width = lengthContext.valueForLength(state.stroke_width(), LengthDirection::Diagonal);
     m_text_anchor = state.text_anchor();
     m_white_space = state.white_space();
-    SVGGraphicsElement::layoutElement(state);
+    m_direction = state.direction();
 }
 
 SVGTSpanElement::SVGTSpanElement(Document* document)
@@ -291,12 +301,13 @@ SVGTextElement::SVGTextElement(Document* document)
 void SVGTextElement::layout(SVGLayoutState& state)
 {
     SVGTextPositioningElement::layout(state);
-    SVGTextFragmentsBuilder(m_text, m_fragments).build(this);
+    SVGTextFragmentsBuilder fragmentsBuilder(m_text, m_fragments);
+    fragmentsBuilder.build(this);
 
     m_fillBoundingBox = Rect::Invalid;
     for(const auto& fragment : m_fragments) {
-        auto element = fragment.element();
-        auto fragmentRect = Rect(fragment.x, fragment.y - element->font().ascent(), fragment.width, element->font().height());
+        const auto& font = fragment.element->font();
+        auto fragmentRect = Rect(fragment.x, fragment.y - font.ascent(), fragment.width, font.height());
         auto fragmentTranform = Transform::translated(fragment.x, fragment.y);
         fragmentTranform.rotate(fragment.angle);
         fragmentTranform.translate(-fragment.x, -fragment.y);
@@ -319,23 +330,26 @@ void SVGTextElement::render(SVGRenderState& state) const
         newState->setColor(Color::White);
     }
 
-    std::u32string_view textView(m_text);
+    std::u32string_view wholeText(m_text);
     for(const auto& fragment : m_fragments) {
-        auto text = textView.substr(fragment.position.startOffset, fragment.position.endOffset - fragment.position.startOffset);
+        auto text = wholeText.substr(fragment.offset, fragment.length);
+        auto origin = Point(fragment.x, fragment.y);
         auto transform = newState.currentTransform();
-        Point origin(fragment.x, fragment.y);
         transform.translate(origin.x, origin.y);
         transform.rotate(fragment.angle);
         transform.translate(-origin.x, -origin.y);
 
-        auto element = fragment.element();
+        const auto& font = fragment.element->font();
         if(state.mode() == SVGRenderMode::Clipping) {
-            newState->fillText(text, element->font(), origin, transform);
+            newState->fillText(text, font, origin, transform);
         } else {
-            if(element->fill().applyPaint(newState)) {
-                newState->fillText(text, element->font(), origin, transform);
-            } else if(element->stroke().applyPaint(newState)) {
-                newState->strokeText(text, element->stroke_width(), element->font(), origin, transform);
+            const auto& fill = fragment.element->fill();
+            const auto& stroke = fragment.element->stroke();
+            auto stroke_width = fragment.element->stroke_width();
+            if(fill.applyPaint(newState)) {
+                newState->fillText(text, font, origin, transform);
+            } else if(stroke.applyPaint(newState)) {
+                newState->strokeText(text, stroke_width, font, origin, transform);
             }
         }
     }

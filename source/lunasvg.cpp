@@ -380,12 +380,12 @@ std::unique_ptr<Document> Document::loadFromData(const char* data, size_t length
 
 bool Document::addFontFace(const std::string& family, bool italic, bool bold, const std::string& filename)
 {
-    return fontFaceCache()->addFontFace(family, italic, bold, filename);
+    return !fontFaceCache()->addFontFace(family, italic, bold, filename).isNull();
 }
 
 bool Document::addFontFace(const std::string& family, bool italic, bool bold, const void* data, size_t length)
 {
-    return fontFaceCache()->addFontFace(family, italic, bold, data, length);
+    return !fontFaceCache()->addFontFace(family, italic, bold, data, length).isNull();
 }
 
 float Document::width() const

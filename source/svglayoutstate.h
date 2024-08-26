@@ -36,8 +36,12 @@ public:
     FillRule fill_rule() const { return m_fill_rule; }
     FillRule clip_rule() const { return m_clip_rule; }
 
+    FontStyle font_style() const { return m_font_style; }
+    FontWeight font_weight() const { return m_font_weight; }
+
     TextAnchor text_anchor() const { return m_text_anchor; }
     WhiteSpace white_space() const { return m_white_space; }
+    Direction direction() const { return m_direction; }
 
     Display display() const { return m_display; }
     Visibility visibility() const { return m_visibility; }
@@ -80,8 +84,12 @@ private:
     FillRule m_fill_rule = FillRule::NonZero;
     FillRule m_clip_rule = FillRule::NonZero;
 
+    FontStyle m_font_style = FontStyle::Normal;
+    FontWeight m_font_weight = FontWeight::Normal;
+
     TextAnchor m_text_anchor = TextAnchor::Start;
     WhiteSpace m_white_space = WhiteSpace::Default;
+    Direction m_direction = Direction::Ltr;
 
     Display m_display = Display::Inline;
     Visibility m_visibility = Visibility::Visible;
