@@ -266,9 +266,8 @@ bool Element::hasAttribute(const std::string& name) const
 
 const std::string& Element::getAttribute(const std::string& name) const
 {
-    static std::string emptyAttr;
     if(m_element == nullptr)
-        return emptyAttr;
+        return emptyString;
     return m_element->getAttribute(name);
 }
 
@@ -377,6 +376,16 @@ std::unique_ptr<Document> Document::loadFromData(const char* data, size_t length
         return nullptr;
     document->updateLayout();
     return document;
+}
+
+bool Document::addFontFace(const std::string& family, bool italic, bool bold, const std::string& filename)
+{
+    return fontFaceCache()->addFontFace(family, italic, bold, filename);
+}
+
+bool Document::addFontFace(const std::string& family, bool italic, bool bold, const void* data, size_t length)
+{
+    return fontFaceCache()->addFontFace(family, italic, bold, data, length);
 }
 
 float Document::width() const

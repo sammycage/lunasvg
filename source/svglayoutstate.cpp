@@ -196,6 +196,21 @@ static TextAnchor parseTextAnchor(std::string_view input)
     return parseEnumValue(input, entries, TextAnchor::Start);
 }
 
+static WhiteSpace parseWhiteSpace(std::string_view input)
+{
+    static const SVGEnumerationEntry<WhiteSpace> entries[] = {
+        {WhiteSpace::Default, "default"},
+        {WhiteSpace::Preserve, "preserve"},
+        {WhiteSpace::Default, "normal"},
+        {WhiteSpace::Default, "nowrap"},
+        {WhiteSpace::Default, "pre-line"},
+        {WhiteSpace::Preserve, "pre-wrap"},
+        {WhiteSpace::Preserve, "pre"}
+    };
+
+    return parseEnumValue(input, entries, WhiteSpace::Default);
+}
+
 static MaskType parseMaskType(std::string_view input)
 {
     static const SVGEnumerationEntry<MaskType> entries[] = {
@@ -255,6 +270,8 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
     , m_stroke_linejoin(parent.stroke_linejoin())
     , m_fill_rule(parent.fill_rule())
     , m_clip_rule(parent.clip_rule())
+    , m_text_anchor(parent.text_anchor())
+    , m_white_space(parent.white_space())
     , m_visibility(parent.visibility())
     , m_overflow(element->parent() ? Overflow::Hidden : Overflow::Visible)
     , m_marker_start(parent.marker_start())
@@ -319,6 +336,12 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
         case PropertyID::Clip_Rule:
             m_clip_rule = parseFillRule(input);
             break;
+        case PropertyID::Text_Anchor:
+            m_text_anchor = parseTextAnchor(input);
+            break;
+        case PropertyID::WhiteSpace:
+            m_white_space = parseWhiteSpace(input);
+            break;
         case PropertyID::Display:
             m_display = parseDisplay(input);
             break;
@@ -327,9 +350,6 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
             break;
         case PropertyID::Overflow:
             m_overflow = parseOverflow(input);
-            break;
-        case PropertyID::Text_Anchor:
-            m_text_anchor = parseTextAnchor(input);
             break;
         case PropertyID::Mask_Type:
             m_mask_type = parseMaskType(input);
@@ -356,6 +376,14 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
             break;
         }
     }
+}
+
+Font SVGLayoutState::font() const
+{
+    auto face = fontFaceCache()->getFontFace(m_font_family, false, false);
+    if(!m_font_family.empty() && face.isNull())
+        face = fontFaceCache()->getFontFace(emptyString, false, false);
+    return Font(face, m_font_size);
 }
 
 } // namespace lunasvg

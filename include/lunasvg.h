@@ -576,6 +576,27 @@ public:
     static std::unique_ptr<Document> loadFromData(const char* data, size_t length);
 
     /**
+     * @brief addFontFace
+     * @param family
+     * @param italic
+     * @param bold
+     * @param filename
+     * @return
+     */
+    static bool addFontFace(const std::string& family, bool italic, bool bold, const std::string& filename);
+
+    /**
+     * @brief addFontFace
+     * @param family
+     * @param italic
+     * @param bold
+     * @param data
+     * @param length
+     * @return
+     */
+    static bool addFontFace(const std::string& family, bool italic, bool bold, const void* data, size_t length);
+
+    /**
      * @brief width
      * @return
      */

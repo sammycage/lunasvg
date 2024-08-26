@@ -12,7 +12,6 @@ plutovg_dep = dependency('plutovg',
 
 lunasvg_sources = [
     'source/lunasvg.cpp',
-    'source/resource.cpp',
     'source/graphics.cpp',
     'source/svgelement.cpp',
     'source/svggeometryelement.cpp',
@@ -21,6 +20,7 @@ lunasvg_sources = [
     'source/svgproperty.cpp',
     'source/svglayoutstate.cpp',
     'source/svgrenderstate.cpp',
+    'source/svgtextelement.cpp'
 ]
 
 lunasvg_compile_args = []
@@ -41,7 +41,7 @@ lunasvg_lib = library('lunasvg', lunasvg_sources,
 lunasvg_dep = declare_dependency(
     link_with: lunasvg_lib,
     include_directories: include_directories('include'),
-    compile_args: lunasvg_compile_args,
+    compile_args: lunasvg_compile_args
 )
 
 meson.override_dependency('lunasvg', lunasvg_dep)

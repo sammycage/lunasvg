@@ -10,6 +10,9 @@ public:
     SVGLayoutState() = default;
     SVGLayoutState(const SVGLayoutState& parent, const SVGElement* element);
 
+    const SVGLayoutState* parent() const { return m_parent; }
+    const SVGElement* element() const { return m_element; }
+
     const Paint& fill() const { return m_fill; }
     const Paint& stroke() const { return m_stroke; }
 
@@ -33,10 +36,12 @@ public:
     FillRule fill_rule() const { return m_fill_rule; }
     FillRule clip_rule() const { return m_clip_rule; }
 
+    TextAnchor text_anchor() const { return m_text_anchor; }
+    WhiteSpace white_space() const { return m_white_space; }
+
     Display display() const { return m_display; }
     Visibility visibility() const { return m_visibility; }
     Overflow overflow() const { return m_overflow; }
-    TextAnchor text_anchor() const { return m_text_anchor; }
     MaskType mask_type() const { return m_mask_type; }
 
     const std::string& mask() const { return m_mask; }
@@ -46,8 +51,7 @@ public:
     const std::string& marker_end() const { return m_marker_end; }
     const std::string& font_family() const { return m_font_family; }
 
-    const SVGLayoutState* parent() const { return m_parent; }
-    const SVGElement* element() const { return m_element; }
+    Font font() const;
 
 private:
     const SVGLayoutState* m_parent = nullptr;
@@ -76,10 +80,12 @@ private:
     FillRule m_fill_rule = FillRule::NonZero;
     FillRule m_clip_rule = FillRule::NonZero;
 
+    TextAnchor m_text_anchor = TextAnchor::Start;
+    WhiteSpace m_white_space = WhiteSpace::Default;
+
     Display m_display = Display::Inline;
     Visibility m_visibility = Visibility::Visible;
     Overflow m_overflow = Overflow::Visible;
-    TextAnchor m_text_anchor = TextAnchor::Start;
     MaskType m_mask_type = MaskType::Luminance;
 
     std::string m_mask;

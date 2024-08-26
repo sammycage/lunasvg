@@ -9,6 +9,8 @@
 #include <memory>
 #include <vector>
 #include <array>
+#include <string>
+#include <map>
 
 namespace lunasvg {
 
@@ -392,6 +394,67 @@ private:
     int m_index;
 };
 
+class FontFace {
+public:
+    FontFace() = default;
+    FontFace(plutovg_font_face_t* face);
+    FontFace(const void* data, size_t length);
+    FontFace(const std::string& filename);
+    FontFace(const FontFace& face);
+    FontFace(FontFace&& face);
+    ~FontFace();
+
+    FontFace& operator=(const FontFace& face);
+    FontFace& operator=(FontFace&& face);
+
+    void swap(FontFace& face);
+
+    bool isNull() const { return m_face == nullptr; }
+    plutovg_font_face_t* get() const { return m_face; }
+
+private:
+    plutovg_font_face_t* release();
+    plutovg_font_face_t* m_face = nullptr;
+};
+
+class FontFaceCache {
+public:
+    bool addFontFace(const std::string& family, bool italic, bool bold, const std::string& filename);
+    bool addFontFace(const std::string& family, bool italic, bool bold, const void* data, size_t length);
+    bool addFontFace(const std::string& family, bool italic, bool bold, const FontFace& face);
+
+    FontFace getFontFace(const std::string& family, bool italic, bool bold) const;
+
+private:
+    FontFaceCache() = default;
+    using FontFaceEntry = std::tuple<bool, bool, FontFace>;
+    std::map<std::string, std::vector<FontFaceEntry>> m_table;
+    friend FontFaceCache* fontFaceCache();
+};
+
+FontFaceCache* fontFaceCache();
+
+class Font {
+public:
+    Font() = default;
+    Font(const FontFace& face, float size);
+
+    float ascent() const;
+    float descent() const;
+    float height() const;
+
+    float measureText(const std::u32string_view& text) const;
+
+    const FontFace& face() const { return m_face; }
+    float size() const { return m_size; }
+
+    bool isNull() const { return m_size <= 0.f || m_face.isNull(); }
+
+private:
+    FontFace m_face;
+    float m_size = 0.f;
+};
+
 enum class TextureType {
     Plain = PLUTOVG_TEXTURE_TYPE_PLAIN,
     Tiled = PLUTOVG_TEXTURE_TYPE_TILED
@@ -456,10 +519,15 @@ public:
 
     void fillPath(const Path& path, FillRule fillRule, const Transform& transform);
     void strokePath(const Path& path, const StrokeData& strokeData, const Transform& transform);
+
+    void fillText(const std::u32string_view& text, const Font& font, const Point& origin, const Transform& transform);
+    void strokeText(const std::u32string_view& text, float strokeWidth, const Font& font, const Point& origin, const Transform& transform);
+
     void clipPath(const Path& path, FillRule clipRule, const Transform& transform);
     void clipRect(const Rect& rect, FillRule clipRule, const Transform& transform);
-    void blendCanvas(const Canvas& canvas, BlendMode blendMode, float opacity);
+
     void drawImage(const Bitmap& image, const Rect& dstRect, const Rect& srcRect, const Transform& transform);
+    void blendCanvas(const Canvas& canvas, BlendMode blendMode, float opacity);
 
     void save();
     void restore();

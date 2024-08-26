@@ -1,10 +1,10 @@
 #include "svgelement.h"
-#include "svggeometryelement.h"
 #include "svgpaintelement.h"
+#include "svggeometryelement.h"
+#include "svgtextelement.h"
 #include "svgproperty.h"
 #include "svglayoutstate.h"
 #include "svgrenderstate.h"
-#include "resource.h"
 
 #include <cassert>
 
@@ -42,6 +42,8 @@ ElementID elementid(const std::string_view& name)
         {"style", ElementID::Style},
         {"svg", ElementID::Svg},
         {"symbol", ElementID::Symbol},
+        {"text", ElementID::Text},
+        {"tspan", ElementID::Tspan},
         {"use", ElementID::Use}
     };
 
@@ -107,6 +109,10 @@ std::unique_ptr<SVGElement> SVGElement::create(Document* document, ElementID id)
         return std::make_unique<SVGImageElement>(document);
     case ElementID::Style:
         return std::make_unique<SVGStyleElement>(document);
+    case ElementID::Text:
+        return std::make_unique<SVGTextElement>(document);
+    case ElementID::Tspan:
+        return std::make_unique<SVGTSpanElement>(document);
     default:
         assert(false);
     }
@@ -118,12 +124,6 @@ SVGElement::SVGElement(Document* document, ElementID id)
     : SVGNode(document)
     , m_id(id)
 {
-}
-
-static const std::string& emptyString()
-{
-    static std::string emptyString;
-    return emptyString;
 }
 
 bool SVGElement::hasAttribute(const std::string_view& name) const
@@ -138,7 +138,7 @@ const std::string& SVGElement::getAttribute(const std::string_view& name) const
 {
     auto id = propertyid(name);
     if(id == PropertyID::Unknown)
-        return emptyString();
+        return emptyString;
     return getAttribute(id);
 }
 
@@ -180,7 +180,7 @@ const std::string& SVGElement::getAttribute(PropertyID id) const
         }
     }
 
-    return emptyString();
+    return emptyString;
 }
 
 bool SVGElement::setAttribute(int specificity, PropertyID id, std::string value)
@@ -587,9 +587,9 @@ Transform SVGSVGElement::localTransform() const
         lengthContext.valueForLength(m_height)
     };
 
-    if(parent() == nullptr)
-        return viewBoxToViewTransform(viewportRect.size());
-    return SVGGraphicsElement::localTransform() * Transform::translated(viewportRect.x, viewportRect.y) * viewBoxToViewTransform(viewportRect.size());
+    if(parent())
+        return SVGGraphicsElement::localTransform() * Transform::translated(viewportRect.x, viewportRect.y) * viewBoxToViewTransform(viewportRect.size());
+    return viewBoxToViewTransform(viewportRect.size());
 }
 
 void SVGSVGElement::render(SVGRenderState& state) const
@@ -735,7 +735,7 @@ inline bool isDisallowedElement(const SVGElement* element)
     case ElementID::Svg:
     case ElementID::Symbol:
     case ElementID::Text:
-    case ElementID::TSpan:
+    case ElementID::Tspan:
     case ElementID::Use:
         return false;
     default:
@@ -825,6 +825,20 @@ void SVGImageElement::render(SVGRenderState& state) const
     newState.beginGroup(blendInfo);
     newState->drawImage(m_image, dstRect, srcRect, newState.currentTransform());
     newState.endGroup(blendInfo);
+}
+
+static Bitmap loadImageResource(const std::string& href)
+{
+    if(href.compare(0, 5, "data:") == 0) {
+        std::string_view input(href);
+        auto index = input.find(',', 5);
+        if(index == std::string_view::npos)
+            return Bitmap();
+        input.remove_prefix(index + 1);
+        return plutovg_surface_load_from_image_base64(input.data(), input.length());
+    }
+
+    return plutovg_surface_load_from_image_file(href.data());
 }
 
 void SVGImageElement::layoutElement(const SVGLayoutState& state)
@@ -1031,7 +1045,7 @@ bool SVGClipPathElement::requiresMasking() const
             continue;
         auto shapeElement = toSVGGeometryElement(element);
         if(shapeElement == nullptr) {
-            if(element->isTextContentElement())
+            if(element->isTextPositioningElement())
                 return true;
             if(element->id() != ElementID::Use)
                 continue;

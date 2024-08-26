@@ -27,7 +27,7 @@ public:
     virtual bool isPaintElement() const { return false; }
     virtual bool isGraphicsElement() const { return false; }
     virtual bool isGeometryElement() const { return false; }
-    virtual bool isTextContentElement() const { return false; }
+    virtual bool isTextPositioningElement() const { return false; }
 
     SVGRootElement* rootElement() const;
     Document* document() const { return m_document; }
@@ -42,6 +42,8 @@ private:
     Document* m_document;
     SVGElement* m_parent = nullptr;
 };
+
+static std::string emptyString;
 
 class SVGTextNode final : public SVGNode {
 public:
@@ -100,8 +102,8 @@ enum class ElementID : uint8_t {
     Style,
     Svg,
     Symbol,
-    TSpan,
     Text,
+    Tspan,
     Use
 };
 

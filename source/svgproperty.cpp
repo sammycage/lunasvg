@@ -17,6 +17,8 @@ PropertyID propertyid(const std::string_view& name)
         {"cx", PropertyID::Cx},
         {"cy", PropertyID::Cy},
         {"d", PropertyID::D},
+        {"dx", PropertyID::Dx},
+        {"dy", PropertyID::Dy},
         {"fx", PropertyID::Fx},
         {"fy", PropertyID::Fy},
         {"gradientTransform", PropertyID::GradientTransform},
@@ -39,17 +41,20 @@ PropertyID propertyid(const std::string_view& name)
         {"r", PropertyID::R},
         {"refX", PropertyID::RefX},
         {"refY", PropertyID::RefY},
+        {"rotate", PropertyID::Rotate},
         {"rx", PropertyID::Rx},
         {"ry", PropertyID::Ry},
         {"spreadMethod", PropertyID::SpreadMethod},
         {"style", PropertyID::Style},
         {"transform", PropertyID::Transform},
         {"viewBox", PropertyID::ViewBox},
+        {"white-space", PropertyID::WhiteSpace},
         {"width", PropertyID::Width},
         {"x", PropertyID::X},
         {"x1", PropertyID::X1},
         {"x2", PropertyID::X2},
         {"xlink:href", PropertyID::Href},
+        {"xml:space", PropertyID::WhiteSpace},
         {"y", PropertyID::Y},
         {"y1", PropertyID::Y1},
         {"y2", PropertyID::Y2}
@@ -94,7 +99,8 @@ PropertyID csspropertyid(const std::string_view& name)
         {"stroke-opacity", PropertyID::Stroke_Opacity},
         {"stroke-width", PropertyID::Stroke_Width},
         {"text-anchor", PropertyID::Text_Anchor},
-        {"visibility", PropertyID::Visibility}
+        {"visibility", PropertyID::Visibility},
+        {"white-space", PropertyID::WhiteSpace}
     };
 
     auto it = std::lower_bound(table, std::end(table), name, [](const auto& item, const auto& name) { return item.name < name; });

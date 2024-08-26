@@ -369,6 +369,141 @@ void PathIterator::next()
     m_index += m_elements[m_index].header.length;
 }
 
+FontFace::FontFace(plutovg_font_face_t* face)
+    : m_face(face)
+{
+}
+
+FontFace::FontFace(const void* data, size_t length)
+    : m_face(plutovg_font_face_load_from_data(data, length, 0, nullptr, nullptr))
+{
+}
+
+FontFace::FontFace(const std::string& filename)
+    : m_face(plutovg_font_face_load_from_file(filename.data(), 0))
+{
+}
+
+FontFace::FontFace(const FontFace& face)
+    : m_face(plutovg_font_face_reference(face.get()))
+{
+}
+
+FontFace::FontFace(FontFace&& face)
+    : m_face(face.release())
+{
+}
+
+FontFace::~FontFace()
+{
+    plutovg_font_face_destroy(m_face);
+}
+
+FontFace& FontFace::operator=(const FontFace& face)
+{
+    FontFace(face).swap(*this);
+    return *this;
+}
+
+FontFace& FontFace::operator=(FontFace&& face)
+{
+    FontFace(std::move(face)).swap(*this);
+    return *this;
+}
+
+void FontFace::swap(FontFace& face)
+{
+    std::swap(m_face, face.m_face);
+}
+
+plutovg_font_face_t* FontFace::release()
+{
+    return std::exchange(m_face, nullptr);
+}
+
+bool FontFaceCache::addFontFace(const std::string& family, bool italic, bool bold, const std::string& filename)
+{
+    return addFontFace(family, italic, bold, FontFace(filename));
+}
+
+bool FontFaceCache::addFontFace(const std::string& family, bool italic, bool bold, const void* data, size_t length)
+{
+    return addFontFace(family, italic, bold, FontFace(data, length));
+}
+
+bool FontFaceCache::addFontFace(const std::string& family, bool italic, bool bold, const FontFace& face)
+{
+    if(face.isNull())
+        return false;
+    m_table[family].emplace_back(italic, bold, face);
+    return true;
+}
+
+FontFace FontFaceCache::getFontFace(const std::string& family, bool italic, bool bold) const
+{
+    auto it = m_table.find(family);
+    if(it == m_table.end())
+        return FontFace();
+    auto select = [italic, bold](const FontFaceEntry& a, const FontFaceEntry& b) {
+        if(std::get<2>(a).isNull())
+            return b;
+        if(std::get<2>(b).isNull())
+            return a;
+        int aScore = (italic == std::get<0>(a)) + (bold == std::get<1>(a));
+        int bScore = (italic == std::get<0>(b)) + (bold == std::get<1>(b));
+        return aScore > bScore ? a : b;
+    };
+
+    FontFaceEntry entry;
+    for(const auto& item : it->second) {
+        entry = select(entry, item);
+    }
+
+    return std::get<2>(entry);
+}
+
+FontFaceCache* fontFaceCache()
+{
+    thread_local FontFaceCache cache;
+    return &cache;
+}
+
+Font::Font(const FontFace& face, float size)
+    : m_face(face), m_size(size)
+{
+}
+
+float Font::ascent() const
+{
+    float ascent = 0;
+    if(m_size > 0.f && !m_face.isNull())
+        plutovg_font_face_get_metrics(m_face.get(), m_size, &ascent, nullptr, nullptr, nullptr);
+    return ascent;
+}
+
+float Font::descent() const
+{
+    float descent = 0;
+    if(m_size > 0.f && !m_face.isNull())
+        plutovg_font_face_get_metrics(m_face.get(), m_size, nullptr, &descent, nullptr, nullptr);
+    return descent;
+}
+
+float Font::height() const
+{
+    float ascent = 0, descent = 0;
+    if(m_size > 0.f && !m_face.isNull())
+        plutovg_font_face_get_metrics(m_face.get(), m_size, &ascent, &descent, nullptr, nullptr);
+    return ascent + descent;
+}
+
+float Font::measureText(const std::u32string_view& text) const
+{
+    if(m_size > 0.f && !m_face.isNull())
+        return plutovg_font_face_text_extents(m_face.get(), m_size, text.data(), text.length(), PLUTOVG_TEXT_ENCODING_UTF32, nullptr);
+    return 0;
+}
+
 std::shared_ptr<Canvas> Canvas::create(const Bitmap& bitmap)
 {
     return std::shared_ptr<Canvas>(new Canvas(bitmap));
@@ -447,6 +582,35 @@ void Canvas::strokePath(const Path& path, const StrokeData& strokeData, const Tr
     plutovg_canvas_stroke_path(m_canvas, path.data());
 }
 
+void Canvas::fillText(const std::u32string_view& text, const Font& font, const Point& origin, const Transform& transform)
+{
+    if(text.empty() || font.isNull())
+        return;
+    plutovg_canvas_reset_matrix(m_canvas);
+    plutovg_canvas_translate(m_canvas, -m_x, -m_y);
+    plutovg_canvas_transform(m_canvas, &transform.matrix());
+    plutovg_canvas_set_fill_rule(m_canvas, PLUTOVG_FILL_RULE_NON_ZERO);
+    plutovg_canvas_set_operator(m_canvas, PLUTOVG_OPERATOR_SRC_OVER);
+    plutovg_canvas_set_font(m_canvas, font.face().get(), font.size());
+    plutovg_canvas_fill_text(m_canvas, text.data(), text.length(), PLUTOVG_TEXT_ENCODING_UTF32, origin.x, origin.y);
+}
+
+void Canvas::strokeText(const std::u32string_view& text, float strokeWidth, const Font& font, const Point& origin, const Transform& transform)
+{
+    plutovg_canvas_reset_matrix(m_canvas);
+    plutovg_canvas_translate(m_canvas, -m_x, -m_y);
+    plutovg_canvas_transform(m_canvas, &transform.matrix());
+    plutovg_canvas_set_line_width(m_canvas, strokeWidth);
+    plutovg_canvas_set_miter_limit(m_canvas, 4.f);
+    plutovg_canvas_set_line_cap(m_canvas, PLUTOVG_LINE_CAP_BUTT);
+    plutovg_canvas_set_line_join(m_canvas, PLUTOVG_LINE_JOIN_MITER);
+    plutovg_canvas_set_dash_offset(m_canvas, 0.f);
+    plutovg_canvas_set_dash_array(m_canvas, nullptr, 0);
+    plutovg_canvas_set_operator(m_canvas, PLUTOVG_OPERATOR_SRC_OVER);
+    plutovg_canvas_set_font(m_canvas, font.face().get(), font.size());
+    plutovg_canvas_stroke_text(m_canvas, text.data(), text.length(), PLUTOVG_TEXT_ENCODING_UTF32, origin.x, origin.y);
+}
+
 void Canvas::clipPath(const Path& path, FillRule clipRule, const Transform& transform)
 {
     plutovg_canvas_reset_matrix(m_canvas);
@@ -463,19 +627,6 @@ void Canvas::clipRect(const Rect& rect, FillRule clipRule, const Transform& tran
     plutovg_canvas_transform(m_canvas, &transform.matrix());
     plutovg_canvas_set_fill_rule(m_canvas, plutovg_fill_rule_t(clipRule));
     plutovg_canvas_clip_rect(m_canvas, rect.x, rect.y, rect.w, rect.h);
-}
-
-void Canvas::blendCanvas(const Canvas& canvas, BlendMode blendMode, float opacity)
-{
-    auto transform = Transform::translated(canvas.x(), canvas.y());
-    auto paint = plutovg_paint_create_texture(canvas.surface(), PLUTOVG_TEXTURE_TYPE_PLAIN, opacity, nullptr);
-    plutovg_canvas_reset_matrix(m_canvas);
-    plutovg_canvas_translate(m_canvas, -m_x, -m_y);
-    plutovg_canvas_transform(m_canvas, &transform.matrix());
-    plutovg_canvas_set_operator(m_canvas, plutovg_operator_t(blendMode));
-    plutovg_canvas_set_paint(m_canvas, paint);
-    plutovg_canvas_paint(m_canvas);
-    plutovg_paint_destroy(paint);
 }
 
 void Canvas::drawImage(const Bitmap& image, const Rect& dstRect, const Rect& srcRect, const Transform& transform)
@@ -496,6 +647,19 @@ void Canvas::drawImage(const Bitmap& image, const Rect& dstRect, const Rect& src
     plutovg_canvas_set_fill_rule(m_canvas, PLUTOVG_FILL_RULE_NON_ZERO);
     plutovg_canvas_clip_rect(m_canvas, 0, 0, dstRect.w, dstRect.h);
     plutovg_canvas_set_operator(m_canvas, PLUTOVG_OPERATOR_SRC_OVER);
+    plutovg_canvas_set_paint(m_canvas, paint);
+    plutovg_canvas_paint(m_canvas);
+    plutovg_paint_destroy(paint);
+}
+
+void Canvas::blendCanvas(const Canvas& canvas, BlendMode blendMode, float opacity)
+{
+    auto transform = Transform::translated(canvas.x(), canvas.y());
+    auto paint = plutovg_paint_create_texture(canvas.surface(), PLUTOVG_TEXTURE_TYPE_PLAIN, opacity, nullptr);
+    plutovg_canvas_reset_matrix(m_canvas);
+    plutovg_canvas_translate(m_canvas, -m_x, -m_y);
+    plutovg_canvas_transform(m_canvas, &transform.matrix());
+    plutovg_canvas_set_operator(m_canvas, plutovg_operator_t(blendMode));
     plutovg_canvas_set_paint(m_canvas, paint);
     plutovg_canvas_paint(m_canvas);
     plutovg_paint_destroy(paint);

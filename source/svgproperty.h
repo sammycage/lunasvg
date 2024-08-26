@@ -18,6 +18,8 @@ enum class PropertyID : uint8_t {
     Cy,
     D,
     Display,
+    Dx,
+    Dy,
     Fill,
     Fill_Opacity,
     Fill_Rule,
@@ -52,6 +54,7 @@ enum class PropertyID : uint8_t {
     R,
     RefX,
     RefY,
+    Rotate,
     Rx,
     Ry,
     SpreadMethod,
@@ -70,6 +73,7 @@ enum class PropertyID : uint8_t {
     Transform,
     ViewBox,
     Visibility,
+    WhiteSpace,
     Width,
     X,
     X1,
@@ -128,6 +132,11 @@ private:
     Color m_color = Color::Transparent;
 };
 
+enum class WhiteSpace : uint8_t {
+    Default,
+    Preserve
+};
+
 enum class Display : uint8_t {
     Inline,
     None
@@ -142,6 +151,11 @@ enum class Visibility : uint8_t {
 enum class Overflow : uint8_t {
     Visible,
     Hidden
+};
+
+enum class Direction : uint8_t {
+    Ltr,
+    Rtl
 };
 
 enum class TextAnchor : uint8_t {

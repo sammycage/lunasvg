@@ -691,7 +691,7 @@ bool Document::parse(const char* data, size_t length)
     auto handleText = [&](const std::string_view& text, bool in_cdata) {
         if(text.empty() || currentElement == nullptr || ignoring > 0)
             return;
-        if(currentElement->id() != ElementID::Text && currentElement->id() != ElementID::TSpan && currentElement->id() != ElementID::Style) {
+        if(currentElement->id() != ElementID::Text && currentElement->id() != ElementID::Tspan && currentElement->id() != ElementID::Style) {
             return;
         }
 
