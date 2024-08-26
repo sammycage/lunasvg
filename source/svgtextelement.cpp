@@ -303,20 +303,6 @@ void SVGTextElement::layout(SVGLayoutState& state)
     SVGTextPositioningElement::layout(state);
     SVGTextFragmentsBuilder fragmentsBuilder(m_text, m_fragments);
     fragmentsBuilder.build(this);
-
-    m_fillBoundingBox = Rect::Invalid;
-    for(const auto& fragment : m_fragments) {
-        const auto& font = fragment.element->font();
-        auto fragmentRect = Rect(fragment.x, fragment.y - font.ascent(), fragment.width, font.height());
-        auto fragmentTranform = Transform::translated(fragment.x, fragment.y);
-        fragmentTranform.rotate(fragment.angle);
-        fragmentTranform.translate(-fragment.x, -fragment.y);
-        m_fillBoundingBox.unite(fragmentTranform.mapRect(fragmentRect));
-    }
-
-    if(!m_fillBoundingBox.isValid()) {
-        m_fillBoundingBox = Rect::Empty;
-    }
 }
 
 void SVGTextElement::render(SVGRenderState& state) const
@@ -340,7 +326,7 @@ void SVGTextElement::render(SVGRenderState& state) const
         transform.translate(-origin.x, -origin.y);
 
         const auto& font = fragment.element->font();
-        if(state.mode() == SVGRenderMode::Clipping) {
+        if(newState.mode() == SVGRenderMode::Clipping) {
             newState->fillText(text, font, origin, transform);
         } else {
             const auto& fill = fragment.element->fill();
@@ -355,6 +341,26 @@ void SVGTextElement::render(SVGRenderState& state) const
     }
 
     newState.endGroup(blendInfo);
+}
+
+Rect SVGTextElement::boundingBox(bool includeStroke) const
+{
+    auto boundingBox = Rect::Invalid;
+    for(const auto& fragment : m_fragments) {
+        const auto& font = fragment.element->font();
+        const auto& stroke = fragment.element->stroke();
+        auto fragmentRect = Rect(fragment.x, fragment.y - font.ascent(), fragment.width, fragment.element->font_size());
+        if(includeStroke && stroke.isRenderable())
+            fragmentRect.inflate(fragment.element->stroke_width());
+        auto fragmentTranform = Transform::translated(fragment.x, fragment.y);
+        fragmentTranform.rotate(fragment.angle);
+        fragmentTranform.translate(-fragment.x, -fragment.y);
+        boundingBox.unite(fragmentTranform.mapRect(fragmentRect));
+    }
+
+    if(!boundingBox.isValid())
+        boundingBox = Rect::Empty;
+    return boundingBox;
 }
 
 } // namespace lunasvg

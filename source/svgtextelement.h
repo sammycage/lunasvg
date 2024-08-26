@@ -114,11 +114,14 @@ class SVGTextElement final : public SVGTextPositioningElement {
 public:
     SVGTextElement(Document* document);
 
+    Rect fillBoundingBox() const final { return boundingBox(false); }
+    Rect strokeBoundingBox() const final { return boundingBox(true); }
+
     void layout(SVGLayoutState& state) final;
     void render(SVGRenderState& state) const final;
 
 private:
-    Rect m_fillBoundingBox;
+    Rect boundingBox(bool includeStroke) const;
     SVGTextFragmentList m_fragments;
     std::u32string m_text;
 };
