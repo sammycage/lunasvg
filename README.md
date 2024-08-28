@@ -37,16 +37,31 @@ LunaSVG supports nearly all graphical features outlined in the SVG 1.1 and SVG 1
 
 `<a>` `<circle>` `<clipPath>` `<defs>` `<ellipse>` `<g>` `<image>` `<line>` `<linearGradient>` `<marker>` `<mask>` `<path>` `<pattern>` `<polygon>` `<polyline>` `<radialGradient>` `<rect>` `<stop>` `<style>` `<svg>` `<symbol>` `<text>` `<tspan>` `<use>`
 
+Here's a more concise version of the installation section:
+
+---
+
 ## Installation
 
-Ensure you have [Meson](http://mesonbuild.com) and [Ninja](http://ninja-build.org) installed.
+Follow the steps below to install lunasvg using either [Meson](https://mesonbuild.com/) or [CMake](https://cmake.org/).
+
+### Using Meson
 
 ```bash
 git clone https://github.com/sammycage/lunasvg.git
-cd plutovg
+cd lunasvg
 meson setup build
-ninja -C build
 ninja -C build install
+```
+
+### Using CMake
+
+```bash
+git clone --recursive https://github.com/sammycage/lunasvg.git
+cd lunasvg
+cmake -B build .
+make -C build -j2
+make -C build install
 ```
 
 ## Demo
