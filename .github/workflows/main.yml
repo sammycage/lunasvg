@@ -7,42 +7,57 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Install build dependencies
+        with:
+          submodules: true
+      - name: Build with meson
         run: |
           pip install meson
           pip install ninja
           
-      - name: Setup and Build
-        run: |
           meson setup build
           meson compile -C build
+
+      - name: Build with cmake
+        run: |
+          cmake .
+          cmake --build .
           
   macos:
     runs-on: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Install build dependencies
+        with:
+          submodules: true
+      - name: Build with meson
         run: |
           pip install meson
           pip install ninja
           
-      - name: Setup and Build
-        run: |
           meson setup build
           meson compile -C build
+
+      - name: Build with cmake
+        run: |
+          cmake .
+          cmake --build .
           
   windows:
     runs-on: windows-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Install build dependencies
+        with:
+          submodules: true
+      - name: Build with meson
         run: |
           pip install meson
           pip install ninja
           
-      - name: Setup and Build
-        run: |
           meson setup build
           meson compile -C build
+
+      - name: Build with cmake
+        run: |
+          cmake .
+          cmake --build .
