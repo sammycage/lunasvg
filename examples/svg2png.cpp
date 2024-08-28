@@ -62,6 +62,6 @@ int main(int argc, char** argv)
     basename.append(".png");
 
     bitmap.writeToPng(basename);
-    std::cout << "Generated PNG file : " << basename << std::endl;
+    std::cout << "Generated PNG file: " << basename << std::endl;
     return 0;
 }

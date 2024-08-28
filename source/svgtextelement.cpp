@@ -332,9 +332,9 @@ void SVGTextElement::render(SVGRenderState& state) const
             const auto& fill = fragment.element->fill();
             const auto& stroke = fragment.element->stroke();
             auto stroke_width = fragment.element->stroke_width();
-            if(fill.applyPaint(newState)) {
+            if(fill.applyPaint(newState))
                 newState->fillText(text, font, origin, transform);
-            } else if(stroke.applyPaint(newState)) {
+            if(stroke.applyPaint(newState)) {
                 newState->strokeText(text, stroke_width, font, origin, transform);
             }
         }
