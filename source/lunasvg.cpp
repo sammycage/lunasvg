@@ -378,14 +378,14 @@ std::unique_ptr<Document> Document::loadFromData(const char* data, size_t length
     return document;
 }
 
-bool Document::addFontFace(const std::string& family, bool italic, bool bold, const std::string& filename)
+bool Document::addFontFace(const std::string& family, bool bold, bool italic, const std::string& filename)
 {
-    return !fontFaceCache()->addFontFace(family, italic, bold, filename).isNull();
+    return !fontFaceCache()->addFontFace(family, bold, italic, filename).isNull();
 }
 
-bool Document::addFontFace(const std::string& family, bool italic, bool bold, const void* data, size_t length)
+bool Document::addFontFace(const std::string& family, bool bold, bool italic, const void* data, size_t length)
 {
-    return !fontFaceCache()->addFontFace(family, italic, bold, data, length).isNull();
+    return !fontFaceCache()->addFontFace(family, bold, italic, data, length).isNull();
 }
 
 float Document::width() const

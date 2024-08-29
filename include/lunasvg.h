@@ -578,23 +578,23 @@ public:
     /**
      * @brief addFontFace
      * @param family
-     * @param italic
      * @param bold
+     * @param italic
      * @param filename
      * @return
      */
-    static bool addFontFace(const std::string& family, bool italic, bool bold, const std::string& filename);
+    static bool addFontFace(const std::string& family, bool bold, bool italic, const std::string& filename);
 
     /**
      * @brief addFontFace
      * @param family
-     * @param italic
      * @param bold
+     * @param italic
      * @param data
      * @param length
      * @return
      */
-    static bool addFontFace(const std::string& family, bool italic, bool bold, const void* data, size_t length);
+    static bool addFontFace(const std::string& family, bool bold, bool italic, const void* data, size_t length);
 
     /**
      * @brief width

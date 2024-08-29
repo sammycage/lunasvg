@@ -421,12 +421,12 @@ private:
 
 class FontFaceCache {
 public:
-    FontFace addFontFace(const std::string& family, bool italic, bool bold, const std::string& filename);
-    FontFace addFontFace(const std::string& family, bool italic, bool bold, const void* data, size_t length);
-    FontFace addFontFace(const std::string& family, bool italic, bool bold, const FontFace& face);
+    FontFace addFontFace(const std::string& family, bool bold, bool italic, const std::string& filename);
+    FontFace addFontFace(const std::string& family, bool bold, bool italic, const void* data, size_t length);
+    FontFace addFontFace(const std::string& family, bool bold, bool italic, const FontFace& face);
 
-    FontFace getFallbackFontFace(bool italic, bool bold);
-    FontFace getFontFace(const std::string& family, bool italic, bool bold);
+    FontFace getFallbackFontFace(bool bold, bool italic);
+    FontFace getFontFace(const std::string& family, bool bold, bool italic);
 
 private:
     FontFaceCache() = default;

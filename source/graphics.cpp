@@ -421,77 +421,77 @@ plutovg_font_face_t* FontFace::release()
     return std::exchange(m_face, nullptr);
 }
 
-FontFace FontFaceCache::addFontFace(const std::string& family, bool italic, bool bold, const std::string& filename)
+FontFace FontFaceCache::addFontFace(const std::string& family, bool bold, bool italic, const std::string& filename)
 {
-    return addFontFace(family, italic, bold, FontFace(filename));
+    return addFontFace(family, bold, italic, FontFace(filename));
 }
 
-FontFace FontFaceCache::addFontFace(const std::string& family, bool italic, bool bold, const void* data, size_t length)
+FontFace FontFaceCache::addFontFace(const std::string& family, bool bold, bool italic, const void* data, size_t length)
 {
-    return addFontFace(family, italic, bold, FontFace(data, length));
+    return addFontFace(family, bold, italic, FontFace(data, length));
 }
 
-FontFace FontFaceCache::addFontFace(const std::string& family, bool italic, bool bold, const FontFace& face)
+FontFace FontFaceCache::addFontFace(const std::string& family, bool bold, bool italic, const FontFace& face)
 {
     if(!face.isNull())
-       m_table[family].emplace_back(italic, bold, face);
+        m_table[family].emplace_back(bold, italic, face);
     return face;
 }
 
 #ifdef _WIN32
 #define ARIAL_REGULAR "C:/Windows/Fonts/arial.ttf"
-#define ARIAL_ITALIC "C:/Windows/Fonts/ariali.ttf"
 #define ARIAL_BOLD "C:/Windows/Fonts/arialbd.ttf"
+#define ARIAL_ITALIC "C:/Windows/Fonts/ariali.ttf"
 #define ARIAL_BOLD_ITALIC "C:/Windows/Fonts/arialbi.ttf"
 #elif __APPLE__
 #define ARIAL_REGULAR "/Library/Fonts/Arial.ttf"
-#define ARIAL_ITALIC "/Library/Fonts/Arial Italic.ttf"
 #define ARIAL_BOLD "/Library/Fonts/Arial Bold.ttf"
+#define ARIAL_ITALIC "/Library/Fonts/Arial Italic.ttf"
 #define ARIAL_BOLD_ITALIC "/Library/Fonts/Arial Bold Italic.ttf"
 #else
 #define ARIAL_REGULAR "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
-#define ARIAL_ITALIC "/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf"
 #define ARIAL_BOLD "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+#define ARIAL_ITALIC "/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf"
 #define ARIAL_BOLD_ITALIC "/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf"
 #endif
 
-FontFace FontFaceCache::getFallbackFontFace(bool italic, bool bold)
+FontFace FontFaceCache::getFallbackFontFace(bool bold, bool italic)
 {
-    if(!italic && !bold)
+    if(!bold && !italic)
         return addFontFace(emptyString, false, false, ARIAL_REGULAR);
-    if(italic && !bold)
-        return addFontFace(emptyString, true, false, ARIAL_ITALIC);
-    if(!italic && bold)
-        return addFontFace(emptyString, false, true, ARIAL_BOLD);
+    if(bold && !italic)
+        return addFontFace(emptyString, true, false, ARIAL_BOLD);
+    if(!bold && italic)
+        return addFontFace(emptyString, false, true, ARIAL_ITALIC);
     return addFontFace(emptyString, true, true, ARIAL_BOLD_ITALIC);
 }
 
-FontFace FontFaceCache::getFontFace(const std::string& family, bool italic, bool bold)
+FontFace FontFaceCache::getFontFace(const std::string& family, bool bold, bool italic)
 {
     auto it = m_table.find(family);
     if(it == m_table.end()) {
         if(family.empty())
-            return getFallbackFontFace(italic, bold);
-        return getFontFace(emptyString, italic, bold);
+            return getFallbackFontFace(bold, italic);
+        return getFontFace(emptyString, bold, italic);
     }
 
     if(family.empty()) {
         for(const auto& item : it->second) {
-            if(italic == std::get<0>(item) && bold == std::get<1>(item)) {
+            if(bold == std::get<0>(item) && italic == std::get<1>(item)) {
                 return std::get<2>(item);
             }
         }
 
-        return getFallbackFontFace(italic, bold);
+        return getFallbackFontFace(bold, italic);
     }
 
-    auto select = [italic, bold](const FontFaceEntry& a, const FontFaceEntry& b) {
+    auto select = [bold, italic](const FontFaceEntry& a, const FontFaceEntry& b) {
         if(std::get<2>(a).isNull())
             return b;
         if(std::get<2>(b).isNull())
             return a;
-        int aScore = (italic == std::get<0>(a)) + (bold == std::get<1>(a));
-        int bScore = (italic == std::get<0>(b)) + (bold == std::get<1>(b));
+        int aScore = (bold == std::get<0>(a)) + (italic == std::get<1>(a));
+        int bScore = (bold == std::get<0>(b)) + (italic == std::get<1>(b));
         return aScore > bScore ? a : b;
     };
 

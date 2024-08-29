@@ -432,9 +432,9 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
 
 Font SVGLayoutState::font() const
 {
-    auto italic = m_font_style == FontStyle::Italic;
     auto bold = m_font_weight == FontWeight::Bold;
-    auto face = fontFaceCache()->getFontFace(m_font_family, italic, bold);
+    auto italic = m_font_style == FontStyle::Italic;
+    auto face = fontFaceCache()->getFontFace(m_font_family, bold, italic);
     return Font(face, m_font_size);
 }
 
