@@ -50,7 +50,7 @@ class SVGTextFragmentsBuilder {
 public:
     SVGTextFragmentsBuilder(std::u32string& text, SVGTextFragmentList& fragments);
 
-    void build(const SVGTextElement* element);
+    void build(const SVGTextElement* textElement);
 
 private:
     void handleText(const SVGTextNode* node);

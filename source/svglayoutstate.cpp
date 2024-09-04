@@ -104,7 +104,7 @@ static float parseNumberOrPercentage(std::string_view input, bool allowPercentag
     return !input.empty() ? defaultValue : std::clamp(value, 0.f, 1.f);
 }
 
-static Length parseLength(std::string_view input, LengthNegativeMode mode, const Length& defaultValue)
+static Length parseLength(const std::string_view& input, LengthNegativeMode mode, const Length& defaultValue)
 {
     Length value;
     if(!value.parse(input, mode))
@@ -143,7 +143,7 @@ static float parseFontSize(std::string_view input, const SVGLayoutState* state)
 }
 
 template<typename Enum, unsigned int N>
-static Enum parseEnumValue(std::string_view input, const SVGEnumerationEntry<Enum>(&entries)[N], Enum defaultValue)
+static Enum parseEnumValue(const std::string_view& input, const SVGEnumerationEntry<Enum>(&entries)[N], Enum defaultValue)
 {
     for(const auto& entry : entries) {
         if(input == entry.second) {
@@ -154,7 +154,7 @@ static Enum parseEnumValue(std::string_view input, const SVGEnumerationEntry<Enu
     return defaultValue;
 }
 
-static Display parseDisplay(std::string_view input)
+static Display parseDisplay(const std::string_view& input)
 {
     static const SVGEnumerationEntry<Display> entries[] = {
         {Display::Inline, "inline"},
@@ -164,7 +164,7 @@ static Display parseDisplay(std::string_view input)
     return parseEnumValue(input, entries, Display::Inline);
 }
 
-static Visibility parseVisibility(std::string_view input)
+static Visibility parseVisibility(const std::string_view& input)
 {
     static const SVGEnumerationEntry<Visibility> entries[] = {
         {Visibility::Visible, "visible"},
@@ -175,7 +175,7 @@ static Visibility parseVisibility(std::string_view input)
     return parseEnumValue(input, entries, Visibility::Visible);
 }
 
-static Overflow parseOverflow(std::string_view input)
+static Overflow parseOverflow(const std::string_view& input)
 {
     static const SVGEnumerationEntry<Overflow> entries[] = {
         {Overflow::Visible, "visible"},
@@ -185,7 +185,26 @@ static Overflow parseOverflow(std::string_view input)
     return parseEnumValue(input, entries, Overflow::Visible);
 }
 
-static FontStyle parseFontStyle(std::string_view input)
+static FontWeight parseFontWeight(const std::string_view& input)
+{
+    static const SVGEnumerationEntry<FontWeight> entries[] = {
+        {FontWeight::Normal, "normal"},
+        {FontWeight::Bold, "bold"},
+        {FontWeight::Normal, "100"},
+        {FontWeight::Normal, "200"},
+        {FontWeight::Normal, "300"},
+        {FontWeight::Normal, "400"},
+        {FontWeight::Normal, "500"},
+        {FontWeight::Bold, "600"},
+        {FontWeight::Bold, "700"},
+        {FontWeight::Bold, "800"},
+        {FontWeight::Bold, "900"}
+    };
+
+    return parseEnumValue(input, entries, FontWeight::Normal);
+}
+
+static FontStyle parseFontStyle(const std::string_view& input)
 {
     static const SVGEnumerationEntry<FontStyle> entries[] = {
         {FontStyle::Normal, "normal"},
@@ -196,26 +215,7 @@ static FontStyle parseFontStyle(std::string_view input)
     return parseEnumValue(input, entries, FontStyle::Normal);
 }
 
-static FontWeight parseFontWeight(std::string_view input)
-{
-    static const SVGEnumerationEntry<FontWeight> entries[] = {
-        {FontWeight::Normal, "normal"},
-        {FontWeight::Normal, "100"},
-        {FontWeight::Normal, "200"},
-        {FontWeight::Normal, "300"},
-        {FontWeight::Normal, "400"},
-        {FontWeight::Normal, "500"},
-        {FontWeight::Bold, "bold"},
-        {FontWeight::Bold, "600"},
-        {FontWeight::Bold, "700"},
-        {FontWeight::Bold, "800"},
-        {FontWeight::Bold, "900"}
-    };
-
-    return parseEnumValue(input, entries, FontWeight::Normal);
-}
-
-static Direction parseDirection(std::string_view input)
+static Direction parseDirection(const std::string_view& input)
 {
     static const SVGEnumerationEntry<Direction> entries[] = {
         {Direction::Ltr, "ltr"},
@@ -225,7 +225,7 @@ static Direction parseDirection(std::string_view input)
     return parseEnumValue(input, entries, Direction::Ltr);
 }
 
-static TextAnchor parseTextAnchor(std::string_view input)
+static TextAnchor parseTextAnchor(const std::string_view& input)
 {
     static const SVGEnumerationEntry<TextAnchor> entries[] = {
         {TextAnchor::Start, "start"},
@@ -236,7 +236,7 @@ static TextAnchor parseTextAnchor(std::string_view input)
     return parseEnumValue(input, entries, TextAnchor::Start);
 }
 
-static WhiteSpace parseWhiteSpace(std::string_view input)
+static WhiteSpace parseWhiteSpace(const std::string_view& input)
 {
     static const SVGEnumerationEntry<WhiteSpace> entries[] = {
         {WhiteSpace::Default, "default"},
@@ -251,7 +251,7 @@ static WhiteSpace parseWhiteSpace(std::string_view input)
     return parseEnumValue(input, entries, WhiteSpace::Default);
 }
 
-static MaskType parseMaskType(std::string_view input)
+static MaskType parseMaskType(const std::string_view& input)
 {
     static const SVGEnumerationEntry<MaskType> entries[] = {
         {MaskType::Luminance, "luminance"},
@@ -261,7 +261,7 @@ static MaskType parseMaskType(std::string_view input)
     return parseEnumValue(input, entries, MaskType::Luminance);
 }
 
-static FillRule parseFillRule(std::string_view input)
+static FillRule parseFillRule(const std::string_view& input)
 {
     static const SVGEnumerationEntry<FillRule> entries[] = {
         {FillRule::NonZero, "nonzero"},
@@ -271,7 +271,7 @@ static FillRule parseFillRule(std::string_view input)
     return parseEnumValue(input, entries, FillRule::NonZero);
 }
 
-static LineCap parseLineCap(std::string_view input)
+static LineCap parseLineCap(const std::string_view& input)
 {
     static const SVGEnumerationEntry<LineCap> entries[] = {
         {LineCap::Butt, "butt"},
@@ -282,7 +282,7 @@ static LineCap parseLineCap(std::string_view input)
     return parseEnumValue(input, entries, LineCap::Butt);
 }
 
-static LineJoin parseLineJoin(std::string_view input)
+static LineJoin parseLineJoin(const std::string_view& input)
 {
     static const SVGEnumerationEntry<LineJoin> entries[] = {
         {LineJoin::Miter, "miter"},
@@ -310,8 +310,8 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
     , m_stroke_linejoin(parent.stroke_linejoin())
     , m_fill_rule(parent.fill_rule())
     , m_clip_rule(parent.clip_rule())
-    , m_font_style(parent.font_style())
     , m_font_weight(parent.font_weight())
+    , m_font_style(parent.font_style())
     , m_text_anchor(parent.text_anchor())
     , m_white_space(parent.white_space())
     , m_direction(parent.direction())
@@ -379,11 +379,11 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
         case PropertyID::Clip_Rule:
             m_clip_rule = parseFillRule(input);
             break;
-        case PropertyID::Font_Style:
-            m_font_style = parseFontStyle(input);
-            break;
         case PropertyID::Font_Weight:
             m_font_weight = parseFontWeight(input);
+            break;
+        case PropertyID::Font_Style:
+            m_font_style = parseFontStyle(input);
             break;
         case PropertyID::Direction:
             m_direction = parseDirection(input);

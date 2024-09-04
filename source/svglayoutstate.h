@@ -36,8 +36,8 @@ public:
     FillRule fill_rule() const { return m_fill_rule; }
     FillRule clip_rule() const { return m_clip_rule; }
 
-    FontStyle font_style() const { return m_font_style; }
     FontWeight font_weight() const { return m_font_weight; }
+    FontStyle font_style() const { return m_font_style; }
 
     TextAnchor text_anchor() const { return m_text_anchor; }
     WhiteSpace white_space() const { return m_white_space; }
@@ -84,8 +84,8 @@ private:
     FillRule m_fill_rule = FillRule::NonZero;
     FillRule m_clip_rule = FillRule::NonZero;
 
-    FontStyle m_font_style = FontStyle::Normal;
     FontWeight m_font_weight = FontWeight::Normal;
+    FontStyle m_font_style = FontStyle::Normal;
 
     TextAnchor m_text_anchor = TextAnchor::Start;
     WhiteSpace m_white_space = WhiteSpace::Default;

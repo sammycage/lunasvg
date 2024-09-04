@@ -400,7 +400,7 @@ float Document::height() const
 
 Box Document::boundingBox() const
 {
-    return m_rootElement->paintBoundingBox();
+    return m_rootElement->localTransform().mapRect(m_rootElement->paintBoundingBox());
 }
 
 void Document::updateLayout()

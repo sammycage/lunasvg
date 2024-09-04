@@ -304,10 +304,10 @@ float LengthContext::valueForLength(const Length& length, LengthDirection direct
         return length.value() / 100.f;
     }
 
-    if(length.units() == LengthUnits::Em)
-        return length.value() * m_element->font_size();
     if(length.units() == LengthUnits::Ex)
         return length.value() * m_element->font_size() / 2.f;
+    if(length.units() == LengthUnits::Em)
+        return length.value() * m_element->font_size();
     return length.value();
 }
 
@@ -343,7 +343,7 @@ bool SVGLengthList::parse(std::string_view input)
             return false;
         input.remove_prefix(count);
         skipOptionalSpacesOrComma(input);
-        m_values.push_back(std::move(value));
+        m_values.push_back(value);
     }
 
     return true;
@@ -386,7 +386,7 @@ bool SVGNumberList::parse(std::string_view input)
         float value = 0.f;
         if(!parseNumber(input, value))
             return false;
-        skipOptionalSpaces(input);
+        skipOptionalSpacesOrComma(input);
         m_values.push_back(value);
     }
 

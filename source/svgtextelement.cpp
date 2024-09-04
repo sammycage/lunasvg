@@ -68,9 +68,9 @@ SVGTextFragmentsBuilder::SVGTextFragmentsBuilder(std::u32string& text, SVGTextFr
     m_fragments.clear();
 }
 
-void SVGTextFragmentsBuilder::build(const SVGTextElement* element)
+void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
 {
-    handleElement(element);
+    handleElement(textElement);
     for(const auto& position : m_textPositions) {
         fillCharacterPositions(position);
     }
@@ -190,7 +190,9 @@ void SVGTextFragmentsBuilder::handleText(const SVGTextNode* node)
         lastCharacter = currentCharacter;
     }
 
-    m_textPositions.emplace_back(node, startOffset, m_text.length());
+    if(startOffset < m_text.length()) {
+        m_textPositions.emplace_back(node, startOffset, m_text.length());
+    }
 }
 
 void SVGTextFragmentsBuilder::handleElement(const SVGTextPositioningElement* element)

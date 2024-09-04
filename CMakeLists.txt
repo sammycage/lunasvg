@@ -63,9 +63,6 @@ if(NOT BUILD_SHARED_LIBS)
     target_compile_definitions(lunasvg PUBLIC LUNASVG_BUILD_STATIC)
 endif()
 
-include(GNUInstallDirs)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/lunasvg.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lunasvg)
-
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/lunasvgConfig.cmake.in"
@@ -78,6 +75,12 @@ write_basic_package_version_file(lunasvgConfigVersion.cmake
     COMPATIBILITY SameMajorVersion
 )
 
+include(GNUInstallDirs)
+install(FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/lunasvg.h
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lunasvg
+)
+
 install(TARGETS lunasvg
     EXPORT lunasvgTargets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -87,8 +90,8 @@ install(TARGETS lunasvg
 
 install(EXPORT lunasvgTargets
     FILE lunasvgTargets.cmake
-    NAMESPACE lunasvg::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lunasvg
+    NAMESPACE lunasvg::
 )
 
 install(FILES
