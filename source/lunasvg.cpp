@@ -19,13 +19,13 @@ const char* lunasvg_version_string()
 
 namespace lunasvg {
 
-Bitmap::Bitmap(uint8_t* data, int width, int height, int stride)
-    : m_surface(plutovg_surface_create_for_data(data, width, height, stride))
+Bitmap::Bitmap(int width, int height)
+    : m_surface(plutovg_surface_create(width, height))
 {
 }
 
-Bitmap::Bitmap(int width, int height)
-    : m_surface(plutovg_surface_create(width, height))
+Bitmap::Bitmap(uint8_t* data, int width, int height, int stride)
+    : m_surface(plutovg_surface_create_for_data(data, width, height, stride))
 {
 }
 

@@ -63,14 +63,22 @@ typedef struct plutovg_surface plutovg_surface_t;
 typedef struct plutovg_matrix plutovg_matrix_t;
 
 /**
- * @brief lunasvg_version
- * @return
+ * @brief Returns the version of the lunasvg library encoded in a single integer.
+ *
+ * Encodes the version of the lunasvg library into a single integer for easier comparison.
+ * The version is typically represented by combining major, minor, and patch numbers into one integer.
+ *
+ * @return The lunasvg library version as a single integer.
  */
 LUNASVG_API int lunasvg_version(void);
 
 /**
- * @brief lunasvg_version_string
- * @return
+ * @brief Returns the lunasvg library version as a human-readable string in "X.Y.Z" format.
+ *
+ * Provides the version of the lunasvg library as a human-readable string in the format "X.Y.Z",
+ * where X represents the major version, Y the minor version, and Z the patch version.
+ *
+ * @return A pointer to a string containing the version in "X.Y.Z" format.
  */
 LUNASVG_API const char* lunasvg_version_string(void);
 
@@ -86,120 +94,120 @@ namespace lunasvg {
 class LUNASVG_API Bitmap {
 public:
     /**
-     * @brief Bitmap
+     * @brief Constructs a null bitmap.
      */
     Bitmap() = default;
 
     /**
-     * @brief Bitmap
-     * @param data
-     * @param width
-     * @param height
-     * @param stride
-     */
-    Bitmap(uint8_t* data, int width, int height, int stride);
-
-    /**
-     * @brief Bitmap
-     * @param width
-     * @param height
+     * @brief Constructs a bitmap with the specified width and height.
+     * @note A null bitmap will be returned if memory cannot be allocated.
+     * @param width The width of the bitmap in pixels.
+     * @param height The height of the bitmap in pixels.
      */
     Bitmap(int width, int height);
 
     /**
-     * @brief Bitmap
-     * @param bitmap
+     * @brief Constructs a bitmap with the provided pixel data, width, height, and stride.
+     *
+     * @param data A pointer to the raw pixel data in ARGB32 Premultiplied format.
+     * @param width The width of the bitmap in pixels.
+     * @param height The height of the bitmap in pixels.
+     * @param stride The number of bytes per row of pixel data (stride).
+    */
+    Bitmap(uint8_t* data, int width, int height, int stride);
+
+    /**
+     * @brief Copy constructor.
+     * @param bitmap The bitmap to copy.
      */
     Bitmap(const Bitmap& bitmap);
 
     /**
-     * @brief Bitmap
-     * @param bitmap
+     * @brief Move constructor.
+     * @param bitmap The bitmap to move.
      */
     Bitmap(Bitmap&& bitmap);
 
     /**
-     * @brief Bitmap
-     * @param surface
+     * @internal
      */
     Bitmap(plutovg_surface_t* surface) : m_surface(surface) {}
 
     /**
-     * @brief ~Bitmap
+     * @brief Cleans up any resources associated with the bitmap.
      */
     ~Bitmap();
 
     /**
-     * @brief Copy assignment operator
-     * @param bitmap
-     * @return
+     * @brief Copy assignment operator.
+     * @param bitmap The bitmap to copy.
+     * @return A reference to this bitmap.
      */
     Bitmap& operator=(const Bitmap& bitmap);
 
     /**
-     * @brief Move assignment operator
-     * @param bitmap
-     * @return
+     * @brief Move assignment operator.
+     * @param bitmap The bitmap to move.
+     * @return A reference to this bitmap.
      */
     Bitmap& operator=(Bitmap&& bitmap);
 
     /**
-     * @brief swap
-     * @param bitmap
+     * @brief Swaps the content of this bitmap with another.
+     * @param bitmap The bitmap to swap with.
      */
     void swap(Bitmap& bitmap);
 
     /**
-     * @brief data
-     * @return
+     * @brief Gets the pointer to the raw pixel data.
+     * @return A pointer to the raw pixel data.
      */
     uint8_t* data() const;
 
     /**
-     * @brief width
-     * @return
+     * @brief Gets the width of the bitmap.
+     * @return The width of the bitmap in pixels.
      */
     int width() const;
 
     /**
-     * @brief height
-     * @return
+     * @brief Gets the height of the bitmap.
+     * @return The height of the bitmap in pixels.
      */
     int height() const;
 
     /**
-     * @brief stride
-     * @return
+     * @brief Gets the stride of the bitmap.
+     * @return The number of bytes per row of pixel data (stride).
      */
     int stride() const;
 
     /**
-     * @brief clear
-     * @param value
+     * @brief Clears the bitmap with the specified color.
+     * @param The color value in 0xRRGGBBAA format.
      */
     void clear(uint32_t value);
 
     /**
-     * @brief convertToRGBA
+     * @brief Converts the bitmap pixel data from ARGB32 Premultiplied to RGBA Plain format in place.
      */
     void convertToRGBA();
 
     /**
-     * @brief isNull
-     * @return
+     * @brief Checks if the bitmap is null.
+     * @return True if the bitmap is null, false otherwise.
      */
     bool isNull() const { return m_surface == nullptr; }
 
     /**
-     * @brief writeToPng
-     * @param filename
-     * @return
+     * @brief Writes the bitmap to a PNG file.
+     * @param filename The name of the file to write.
+     * @return True if the file was written successfully, false otherwise.
      */
     bool writeToPng(const std::string& filename) const;
 
     /**
-     * @brief surface
-     * @return
+     * @internal
      */
     plutovg_surface_t* surface() const { return m_surface; }
 
@@ -211,237 +219,240 @@ private:
 class Rect;
 class Matrix;
 
+/**
+ * @brief Represents a 2D axis-aligned bounding box.
+ */
 class LUNASVG_API Box {
 public:
     /**
-     * @brief Box
+     * @brief Constructs a box with zero dimensions.
      */
     Box() = default;
 
     /**
-     * @brief Box
-     * @param x
-     * @param y
-     * @param w
-     * @param h
+     * @brief Constructs a box with the specified position and size.
+     * @param x The x-coordinate of the box's origin.
+     * @param y The y-coordinate of the box's origin.
+     * @param w The width of the box.
+     * @param h The height of the box.
      */
     Box(float x, float y, float w, float h);
 
     /**
-     * @brief Box
-     * @param rect
+     * @internal
      */
     Box(const Rect& rect);
 
     /**
-     * @brief transform
-     * @param matrix
-     * @return
+     * @brief Transforms the box using the specified matrix.
+     * @param matrix The transformation matrix.
+     * @return A reference to this box, modified by the transformation.
      */
     Box& transform(const Matrix& matrix);
 
     /**
-     * @brief transformed
-     * @param matrix
-     * @return
+     * @brief Returns a new box transformed by the specified matrix.
+     * @param matrix The transformation matrix.
+     * @return A new box, transformed by the matrix.
      */
     Box transformed(const Matrix& matrix) const;
 
-    float x{0};
-    float y{0};
-    float w{0};
-    float h{0};
+    float x{0}; ///< The x-coordinate of the box's origin.
+    float y{0}; ///< The y-coordinate of the box's origin.
+    float w{0}; ///< The width of the box.
+    float h{0}; ///< The height of the box.
 };
 
 class Transform;
 
+/**
+ * @brief Represents a 2D transformation matrix.
+ */
 class LUNASVG_API Matrix {
 public:
     /**
-     * @brief Matrix
+     * @brief Initializes the matrix to the identity matrix.
      */
     Matrix() = default;
 
     /**
-     * @brief Matrix
-     * @param a
-     * @param b
-     * @param c
-     * @param d
-     * @param e
-     * @param f
+     * @brief Constructs a matrix with the specified values.
+     * @param a The horizontal scaling factor.
+     * @param b The vertical shearing factor.
+     * @param c The horizontal shearing factor.
+     * @param d The vertical scaling factor.
+     * @param e The horizontal translation offset.
+     * @param f The vertical translation offset.
      */
     Matrix(float a, float b, float c, float d, float e, float f);
 
     /**
-     * @brief Matrix
-     * @param matrix
+     * @internal
      */
     Matrix(const plutovg_matrix_t& matrix);
 
     /**
-     * @brief Matrix
-     * @param transform
+     * @internal
      */
     Matrix(const Transform& transform);
 
     /**
-     * @brief multiply
-     * @param matrix
-     * @return
+     * @brief Multiplies this matrix with another matrix.
+     * @param matrix The matrix to multiply with.
+     * @return A reference to this matrix after multiplication.
      */
     Matrix& multiply(const Matrix& matrix);
 
     /**
-     * @brief rotate
-     * @param angle
-     * @return
+     * @brief Rotates this matrix by the specified angle.
+     * @param angle The rotation angle in degrees.
+     * @return A reference to this matrix after rotation.
      */
     Matrix& rotate(float angle);
 
     /**
-     * @brief rotate
-     * @param angle
-     * @param cx
-     * @param cy
-     * @return
+     * @brief Rotates this matrix by the specified angle around a point.
+     * @param angle The rotation angle in degrees.
+     * @param cx The x-coordinate of the center of rotation.
+     * @param cy The y-coordinate of the center of rotation.
+     * @return A reference to this matrix after rotation.
      */
     Matrix& rotate(float angle, float cx, float cy);
 
     /**
-     * @brief scale
-     * @param sx
-     * @param sy
-     * @return
+     * @brief Scales this matrix by the specified factors.
+     * @param sx The horizontal scaling factor.
+     * @param sy The vertical scaling factor.
+     * @return A reference to this matrix after scaling.
      */
     Matrix& scale(float sx, float sy);
 
     /**
-     * @brief shear
-     * @param shx
-     * @param shy
-     * @return
+     * @brief Shears this matrix by the specified factors.
+     * @param shx The horizontal shearing factor.
+     * @param shy The vertical shearing factor.
+     * @return A reference to this matrix after shearing.
      */
     Matrix& shear(float shx, float shy);
 
     /**
-     * @brief translate
-     * @param tx
-     * @param ty
-     * @return
+     * @brief Translates this matrix by the specified offsets.
+     * @param tx The horizontal translation offset.
+     * @param ty The vertical translation offset.
+     * @return A reference to this matrix after translation.
      */
     Matrix& translate(float tx, float ty);
 
     /**
-     * @brief postMultiply
-     * @param matrix
-     * @return
+     * @brief Post-multiplies this matrix with another matrix.
+     * @param matrix The matrix to post-multiply with.
+     * @return A reference to this matrix after post-multiplication.
      */
     Matrix& postMultiply(const Matrix& matrix);
 
     /**
-     * @brief postRotate
-     * @param angle
-     * @return
+     * @brief Post-rotates this matrix by the specified angle.
+     * @param angle The rotation angle in degrees.
+     * @return A reference to this matrix after post-rotation.
      */
     Matrix& postRotate(float angle);
 
     /**
-     * @brief postRotate
-     * @param angle
-     * @param cx
-     * @param cy
-     * @return
+     * @brief Post-rotates this matrix by the specified angle around a point.
+     * @param angle The rotation angle in degrees.
+     * @param cx The x-coordinate of the center of rotation.
+     * @param cy The y-coordinate of the center of rotation.
+     * @return A reference to this matrix after post-rotation.
      */
     Matrix& postRotate(float angle, float cx, float cy);
 
     /**
-     * @brief postScale
-     * @param sx
-     * @param sy
-     * @return
+     * @brief Post-scales this matrix by the specified factors.
+     * @param sx The horizontal scaling factor.
+     * @param sy The vertical scaling factor.
+     * @return A reference to this matrix after post-scaling.
      */
     Matrix& postScale(float sx, float sy);
 
     /**
-     * @brief postShear
-     * @param shx
-     * @param shy
-     * @return
+     * @brief Post-shears this matrix by the specified factors.
+     * @param shx The horizontal shearing factor.
+     * @param shy The vertical shearing factor.
+     * @return A reference to this matrix after post-shearing.
      */
     Matrix& postShear(float shx, float shy);
 
     /**
-     * @brief postTranslate
-     * @param tx
-     * @param ty
-     * @return
+     * @brief Post-translates this matrix by the specified offsets.
+     * @param tx The horizontal translation offset.
+     * @param ty The vertical translation offset.
+     * @return A reference to this matrix after post-translation.
      */
     Matrix& postTranslate(float tx, float ty);
 
     /**
-     * @brief invert
-     * @return
+     * @brief Inverts this matrix.
+     * @return A reference to this matrix after inversion.
      */
     Matrix& invert();
 
     /**
-     * @brief inverse
-     * @return
+     * @brief Returns the inverse of this matrix.
+     * @return A new matrix that is the inverse of this matrix.
      */
     Matrix inverse() const;
 
     /**
-     * @brief reset
+     * @brief Resets this matrix to the identity matrix.
      */
     void reset();
 
     /**
-     * @brief rotated
-     * @param angle
-     * @return
+     * @brief Creates a rotation matrix with the specified angle.
+     * @param angle The rotation angle in degrees.
+     * @return A new rotation matrix.
      */
     static Matrix rotated(float angle);
 
     /**
-     * @brief rotated
-     * @param angle
-     * @param cx
-     * @param cy
-     * @return
+     * @brief Creates a rotation matrix with the specified angle around a point.
+     * @param angle The rotation angle in degrees.
+     * @param cx The x-coordinate of the center of rotation.
+     * @param cy The y-coordinate of the center of rotation.
+     * @return A new rotation matrix.
      */
     static Matrix rotated(float angle, float cx, float cy);
 
     /**
-     * @brief scaled
-     * @param sx
-     * @param sy
-     * @return
+     * @brief Creates a scaling matrix with the specified factors.
+     * @param sx The horizontal scaling factor.
+     * @param sy The vertical scaling factor.
+     * @return A new scaling matrix.
      */
     static Matrix scaled(float sx, float sy);
 
     /**
-     * @brief sheared
-     * @param shx
-     * @param shy
-     * @return
+     * @brief Creates a shearing matrix with the specified factors.
+     * @param shx The horizontal shearing factor.
+     * @param shy The vertical shearing factor.
+     * @return A new shearing matrix.
      */
     static Matrix sheared(float shx, float shy);
 
     /**
-     * @brief translated
-     * @param tx
-     * @param ty
-     * @return
+     * @brief Creates a translation matrix with the specified offsets.
+     * @param tx The horizontal translation offset.
+     * @param ty The vertical translation offset.
+     * @return A new translation matrix.
      */
     static Matrix translated(float tx, float ty);
 
-    float a{1};
-    float b{0};
-    float c{0};
-    float d{1};
-    float e{0};
-    float f{0};
+    float a{1}; ///< The horizontal scaling factor.
+    float b{0}; ///< The vertical shearing factor.
+    float c{0}; ///< The horizontal shearing factor.
+    float d{1}; ///< The vertical scaling factor.
+    float e{0}; ///< The horizontal translation offset.
+    float f{0}; ///< The vertical translation offset.
 };
 
 class SVGElement;
