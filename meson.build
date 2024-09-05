@@ -7,6 +7,7 @@ project('lunasvg', 'cpp',
 
 plutovg_dep = dependency('plutovg',
     required: true,
+    version: '>=0.0.2',
     fallback: ['plutovg', 'plutovg_dep']
 )
 

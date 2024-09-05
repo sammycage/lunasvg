@@ -6,6 +6,16 @@ set(LUNASVG_VERSION_MICRO 0)
 
 project(lunasvg LANGUAGES CXX VERSION ${LUNASVG_VERSION_MAJOR}.${LUNASVG_VERSION_MINOR}.${LUNASVG_VERSION_MICRO})
 
+include(FetchContent)
+FetchContent_Declare(plutovg
+    GIT_REPOSITORY https://github.com/sammycage/plutovg.git
+    GIT_TAG v0.0.2
+    GIT_SHALLOW ON
+    FIND_PACKAGE_ARGS 0.0.2
+)
+
+FetchContent_MakeAvailable(plutovg)
+
 set(lunasvg_sources
     source/lunasvg.cpp
     source/graphics.cpp
@@ -31,11 +41,6 @@ set(lunasvg_headers
     source/svgrenderstate.h
     source/svgtextelement.h
 )
-
-find_package(plutovg 0.0.1 QUIET)
-if(NOT plutovg_FOUND)
-    add_subdirectory(plutovg)
-endif()
 
 add_library(lunasvg ${lunasvg_sources} ${lunasvg_headers})
 add_library(lunasvg::lunasvg ALIAS lunasvg)

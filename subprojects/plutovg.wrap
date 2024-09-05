@@ -1,6 +1,6 @@
 [wrap-git]
 url = https://github.com/sammycage/plutovg.git
-revision = head
+revision = v0.0.2
 depth = 1
 
 [provide]

@@ -53,7 +53,7 @@ ninja -C build install
 ### Using CMake
 
 ```bash
-git clone --recursive https://github.com/sammycage/lunasvg.git
+git clone https://github.com/sammycage/lunasvg.git
 cd lunasvg
 cmake -B build .
 make -C build -j2
