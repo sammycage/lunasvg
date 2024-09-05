@@ -112,21 +112,21 @@ static Length parseLength(const std::string_view& input, LengthNegativeMode mode
     return value;
 }
 
-static LengthList parseLengthList(std::string_view input, LengthNegativeMode mode)
+static LengthList parseDashArray(std::string_view input)
 {
+    if(input.compare("none") == 0)
+        return LengthList();
     LengthList values;
-    while(!input.empty()) {
+    do {
         size_t count = 0;
         while(count < input.length() && input[count] != ',' && !IS_WS(input[count]))
             ++count;
         Length value(0, LengthUnits::None);
-        if(!value.parse(input.substr(0, count), mode))
-            break;
+        if(!value.parse(input.substr(0, count), LengthNegativeMode::Forbid))
+            return LengthList();
         input.remove_prefix(count);
-        skipOptionalSpacesOrComma(input);
         values.push_back(std::move(value));
-    }
-
+    } while(skipOptionalSpacesOrComma(input));
     return values;
 }
 
@@ -365,7 +365,7 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
             m_stroke_dashoffset = parseLength(input, LengthNegativeMode::Allow, Length(0.f, LengthUnits::None));
             break;
         case PropertyID::Stroke_Dasharray:
-            m_stroke_dasharray = parseLengthList(input, LengthNegativeMode::Forbid);
+            m_stroke_dasharray = parseDashArray(input);
             break;
         case PropertyID::Stroke_Linecap:
             m_stroke_linecap = parseLineCap(input);
