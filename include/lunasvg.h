@@ -493,7 +493,7 @@ public:
     /**
      * @brief Renders the element onto a bitmap using a transformation matrix.
      * @param bitmap The bitmap to render onto.
-     * @param matrix The transformation matrix to apply during rendering. Defaults to the identity matrix.
+     * @param The root transformation matrix.
      */
     void render(Bitmap& bitmap, const Matrix& matrix = Matrix()) const;
 
@@ -502,7 +502,7 @@ public:
      * @param width The desired width in pixels, or -1 to auto-scale based on the intrinsic size.
      * @param height The desired height in pixels, or -1 to auto-scale based on the intrinsic size.
      * @param backgroundColor The background color in 0xRRGGBBAA format.
-     * @return A Bitmap containing the rendered element.
+     * @return A Bitmap containing the raster representation of the element.
      */
     Bitmap renderToBitmap(int width = -1, int height = -1, uint32_t backgroundColor = 0x00000000) const;
 
@@ -556,110 +556,109 @@ class SVGRootElement;
 class LUNASVG_API Document {
 public:
     /**
-     * @brief loadFromFile
-     * @param filename
-     * @return
+     * @brief Load an SVG document from a file.
+     * @param filename The path to the SVG file.
+     * @return A pointer to the loaded `Document`, or `nullptr` on failure.
      */
     static std::unique_ptr<Document> loadFromFile(const std::string& filename);
 
     /**
-     * @brief loadFromData
-     * @param string
-     * @return
+     * @brief Load an SVG document from a string.
+     * @param string The SVG data as a string.
+     * @return A pointer to the loaded `Document`, or `nullptr` on failure.
      */
     static std::unique_ptr<Document> loadFromData(const std::string& string);
 
     /**
-     * @brief loadFromData
-     * @param data
-     * @return
+     * @brief Load an SVG document from a null-terminated string.
+     * @param data The string containing the SVG data.
+     * @return A pointer to the loaded `Document`, or `nullptr` on failure.
      */
     static std::unique_ptr<Document> loadFromData(const char* data);
 
     /**
-     * @brief loadFromData
-     * @param data
-     * @param length
-     * @return
+     * @brief Load an SVG document from a string with a specified length.
+     * @param data The string containing the SVG data.
+     * @param length The length of the string in bytes.
+     * @return A pointer to the loaded `Document`, or `nullptr` on failure.
      */
     static std::unique_ptr<Document> loadFromData(const char* data, size_t length);
 
     /**
-     * @brief addFontFace
-     * @param family
-     * @param bold
-     * @param italic
-     * @param filename
-     * @return
+     * @brief Add a font face from a file to the cache.
+     * @param family The name of the font family.
+     * @param bold Use `true` for bold, `false` otherwise.
+     * @param italic Use `true` for italic, `false` otherwise.
+     * @param filename The path to the font file.
+     * @return `true` if the font face was successfully added to the cache, `false` otherwise.
      */
     static bool addFontFace(const std::string& family, bool bold, bool italic, const std::string& filename);
 
     /**
-     * @brief addFontFace
-     * @param family
-     * @param bold
-     * @param italic
-     * @param data
-     * @param length
-     * @return
+     * @brief Add a font face from memory to the cache.
+     * @param family The name of the font family.
+     * @param bold Use `true` for bold, `false` otherwise.
+     * @param italic Use `true` for italic, `false` otherwise.
+     * @param data A pointer to the memory buffer containing the font data.
+     * @param length The size of the memory buffer in bytes.
+     * @return `true` if the font face was successfully added to the cache, `false` otherwise.
      */
     static bool addFontFace(const std::string& family, bool bold, bool italic, const void* data, size_t length);
 
     /**
-     * @brief width
-     * @return
+     * @brief Returns the intrinsic width of the document in pixels.
+     * @return The width of the document.
      */
     float width() const;
 
     /**
-     * @brief height
-     * @return
+     * @brief Returns the intrinsic height of the document in pixels.
+     * @return The height of the document.
      */
     float height() const;
 
     /**
-     * @brief boundingBox
-     * @return
+     * @brief Returns the smallest rectangle that encloses the document content.
+     * @return A Box representing the bounding box of the document.
      */
     Box boundingBox() const;
 
     /**
-     * @brief updateLayout
+     * @brief Updates the layout of the document.
      */
     void updateLayout();
 
     /**
-     * @brief render
-     * @param bitmap
-     * @param matrix
+     * @brief Renders the document onto a bitmap using a transformation matrix.
+     * @param bitmap The bitmap to render onto.
+     * @param The root transformation matrix.
      */
     void render(Bitmap& bitmap, const Matrix& matrix = Matrix()) const;
 
     /**
-     * @brief renderToBitmap
-     * @param width
-     * @param height
-     * @param backgroundColor
-     * @return
+     * @brief Renders the document to a bitmap with specified dimensions.
+     * @param width The desired width in pixels, or -1 to auto-scale based on the intrinsic size.
+     * @param height The desired height in pixels, or -1 to auto-scale based on the intrinsic size.
+     * @param backgroundColor The background color in 0xRRGGBBAA format.
+     * @return A Bitmap containing the raster representation of the document.
      */
     Bitmap renderToBitmap(int width = -1, int height = -1, uint32_t backgroundColor = 0x00000000) const;
 
     /**
-     * @brief getElementById
-     * @param id
-     * @return
+     * @brief Retrieves an element by its ID.
+     * @param id The ID of the element to retrieve.
+     * @return The Element with the specified ID, or a null `Element` if not found.
      */
     Element getElementById(const std::string& id) const;
 
     /**
-     * @brief documentElement
-     * @return
+     * @brief Retrieves the document element.
+     * @return The root Element of the document.
      */
     Element documentElement() const;
 
     /**
-     * @brief rootElement
-     * @return
+     * @internal
      */
     SVGRootElement* rootElement() const { return m_rootElement.get(); }
 
