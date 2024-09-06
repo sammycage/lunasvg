@@ -280,7 +280,7 @@ void Element::setAttribute(const std::string& name, const std::string& value)
 
 void Element::render(Bitmap& bitmap, const Matrix& matrix) const
 {
-    if(m_element == nullptr)
+    if(m_element == nullptr || bitmap.isNull())
         return;
     auto canvas = Canvas::create(bitmap);
     SVGRenderState state(nullptr, nullptr, matrix, SVGRenderMode::Painting, canvas);

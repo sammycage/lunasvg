@@ -460,92 +460,90 @@ class SVGElement;
 class LUNASVG_API Element {
 public:
     /**
-     * @brief Element
+     * @brief Constructs a null element.
      */
     Element() = default;
 
     /**
-     * @brief Element
-     * @param element
+     * @internal
      */
     Element(SVGElement* element) : m_element(element) {}
 
     /**
-     * @brief hasAttribute
-     * @param name
-     * @return
+     * @brief Checks if the element has a specific attribute.
+     * @param name The name of the attribute to check.
+     * @return True if the element has the specified attribute, false otherwise.
      */
     bool hasAttribute(const std::string& name) const;
 
     /**
-     * @brief getAttribute
-     * @param name
-     * @return
+     * @brief Retrieves the value of an attribute.
+     * @param name The name of the attribute to retrieve.
+     * @return The value of the attribute as a string.
      */
     const std::string& getAttribute(const std::string& name) const;
 
     /**
-     * @brief setAttribute
-     * @param name
-     * @param value
+     * @brief Sets the value of an attribute.
+     * @param name The name of the attribute to set.
+     * @param value The value to assign to the attribute.
      */
     void setAttribute(const std::string& name, const std::string& value);
 
     /**
-     * @brief render
-     * @param bitmap
-     * @param matrix
+     * @brief Renders the element onto a bitmap using a transformation matrix.
+     * @param bitmap The bitmap to render onto.
+     * @param matrix The transformation matrix to apply during rendering. Defaults to the identity matrix.
      */
     void render(Bitmap& bitmap, const Matrix& matrix = Matrix()) const;
 
     /**
-     * @brief renderToBitmap
-     * @param width
-     * @param height
-     * @param backgroundColor
-     * @return
+     * @brief Renders the element to a bitmap with specified dimensions.
+     * @param width The desired width in pixels, or -1 to auto-scale based on the intrinsic size.
+     * @param height The desired height in pixels, or -1 to auto-scale based on the intrinsic size.
+     * @param backgroundColor The background color in 0xRRGGBBAA format.
+     * @return A Bitmap containing the rendered element.
      */
     Bitmap renderToBitmap(int width = -1, int height = -1, uint32_t backgroundColor = 0x00000000) const;
 
     /**
-     * @brief getLocalMatrix
-     * @return
+     * @brief Retrieves the local transformation matrix of the element.
+     * @return The matrix that applies only to the element, relative to its parent.
      */
     Matrix getLocalMatrix() const;
 
     /**
-     * @brief getGlobalMatrix
-     * @return
+     * @brief Retrieves the global transformation matrix of the element.
+     * @return The matrix combining the element's local and all parent transformations.
      */
     Matrix getGlobalMatrix() const;
 
     /**
-     * @brief getLocalBoundingBox
-     * @return
+     * @brief Retrieves the local bounding box of the element.
+     * @return A Box representing the bounding box after applying local transformations.
      */
     Box getLocalBoundingBox() const;
 
     /**
-     * @brief getGlobalBoundingBox
-     * @return
+     * @brief Retrieves the global bounding box of the element.
+     * @return A Box representing the bounding box after applying global transformations.
      */
     Box getGlobalBoundingBox() const;
 
     /**
-     * @brief getBoundingBox
-     * @return
+     * @brief Retrieves the bounding box of the element without any transformations.
+     * @return A Box representing the bounding box of the element without any transformations applied.
      */
     Box getBoundingBox() const;
 
     /**
-     * @brief isNull
-     * @return
+     * @brief Checks if the element is null.
+     * @return True if the element is null, false otherwise.
      */
     bool isNull() const { return m_element == nullptr; }
 
     /**
-     * @brief get
-     * @return
+     * @internal
      */
     SVGElement* get() { return m_element; }
 
