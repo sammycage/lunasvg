@@ -302,7 +302,7 @@ void Path::addRect(const Rect& rect)
 
 void Path::reset()
 {
-    plutovg_path_reset(ensure());
+    *this = Path();
 }
 
 Rect Path::boundingRect() const
@@ -325,13 +325,16 @@ bool Path::isUnique() const
 bool Path::parse(const char* data, size_t length)
 {
     plutovg_path_reset(ensure());
-    return plutovg_path_parse(ensure(), data, length);
+    return plutovg_path_parse(m_data, data, length);
 }
 
 plutovg_path_t* Path::ensure()
 {
-    if(!isUnique())
+    if(!isUnique()) {
+        plutovg_path_destroy(m_data);
         m_data = plutovg_path_clone(m_data);
+    }
+
     return m_data;
 }
 
