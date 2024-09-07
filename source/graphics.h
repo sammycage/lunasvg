@@ -394,7 +394,7 @@ private:
     int m_index;
 };
 
-static std::string emptyString;
+extern const std::string emptyString;
 
 class FontFace {
 public:
@@ -421,15 +421,14 @@ private:
 
 class FontFaceCache {
 public:
-    FontFace addFontFace(const std::string& family, bool bold, bool italic, const std::string& filename);
-    FontFace addFontFace(const std::string& family, bool bold, bool italic, const void* data, size_t length);
-    FontFace addFontFace(const std::string& family, bool bold, bool italic, const FontFace& face);
+    bool addFontFace(const std::string& family, bool bold, bool italic, const std::string& filename);
+    bool addFontFace(const std::string& family, bool bold, bool italic, const void* data, size_t length);
+    bool addFontFace(const std::string& family, bool bold, bool italic, const FontFace& face);
 
-    FontFace getFallbackFontFace(bool bold, bool italic);
     FontFace getFontFace(const std::string& family, bool bold, bool italic);
 
 private:
-    FontFaceCache() = default;
+    FontFaceCache();
     using FontFaceEntry = std::tuple<bool, bool, FontFace>;
     std::map<std::string, std::vector<FontFaceEntry>> m_table;
     friend FontFaceCache* fontFaceCache();
