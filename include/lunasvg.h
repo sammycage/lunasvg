@@ -297,21 +297,51 @@ public:
     Matrix(const Transform& transform);
 
     /**
-     * @brief Multiplies this matrix with another matrix.
+     * @brief Pre-multiplies this matrix with another matrix.
+     * @param matrix The matrix to multiply with.
+     * @return A new matrix that is the result of the multiplication.
+     */
+    Matrix operator*(const Matrix& matrix) const;
+
+    /**
+     * @brief Pre-multiplies this matrix with another matrix in-place.
+     * @param matrix The matrix to multiply with.
+     * @return A reference to this matrix after multiplication.
+     */
+    Matrix& operator*=(const Matrix& matrix);
+
+    /**
+     * @brief Pre-multiplies this matrix with another matrix.
      * @param matrix The matrix to multiply with.
      * @return A reference to this matrix after multiplication.
      */
     Matrix& multiply(const Matrix& matrix);
 
     /**
-     * @brief Rotates this matrix by the specified angle.
+     * @brief Pre-translates this matrix by the specified offsets.
+     * @param tx The horizontal translation offset.
+     * @param ty The vertical translation offset.
+     * @return A reference to this matrix after translation.
+     */
+    Matrix& translate(float tx, float ty);
+
+    /**
+     * @brief Pre-scales this matrix by the specified factors.
+     * @param sx The horizontal scaling factor.
+     * @param sy The vertical scaling factor.
+     * @return A reference to this matrix after scaling.
+     */
+    Matrix& scale(float sx, float sy);
+
+    /**
+     * @brief Pre-rotates this matrix by the specified angle.
      * @param angle The rotation angle in degrees.
      * @return A reference to this matrix after rotation.
      */
     Matrix& rotate(float angle);
 
     /**
-     * @brief Rotates this matrix by the specified angle around a point.
+     * @brief Pre-rotates this matrix by the specified angle around a point.
      * @param angle The rotation angle in degrees.
      * @param cx The x-coordinate of the center of rotation.
      * @param cy The y-coordinate of the center of rotation.
@@ -320,75 +350,12 @@ public:
     Matrix& rotate(float angle, float cx, float cy);
 
     /**
-     * @brief Scales this matrix by the specified factors.
-     * @param sx The horizontal scaling factor.
-     * @param sy The vertical scaling factor.
-     * @return A reference to this matrix after scaling.
-     */
-    Matrix& scale(float sx, float sy);
-
-    /**
-     * @brief Shears this matrix by the specified factors.
+     * @brief Pre-shears this matrix by the specified factors.
      * @param shx The horizontal shearing factor.
      * @param shy The vertical shearing factor.
      * @return A reference to this matrix after shearing.
      */
     Matrix& shear(float shx, float shy);
-
-    /**
-     * @brief Translates this matrix by the specified offsets.
-     * @param tx The horizontal translation offset.
-     * @param ty The vertical translation offset.
-     * @return A reference to this matrix after translation.
-     */
-    Matrix& translate(float tx, float ty);
-
-    /**
-     * @brief Post-multiplies this matrix with another matrix.
-     * @param matrix The matrix to post-multiply with.
-     * @return A reference to this matrix after post-multiplication.
-     */
-    Matrix& postMultiply(const Matrix& matrix);
-
-    /**
-     * @brief Post-rotates this matrix by the specified angle.
-     * @param angle The rotation angle in degrees.
-     * @return A reference to this matrix after post-rotation.
-     */
-    Matrix& postRotate(float angle);
-
-    /**
-     * @brief Post-rotates this matrix by the specified angle around a point.
-     * @param angle The rotation angle in degrees.
-     * @param cx The x-coordinate of the center of rotation.
-     * @param cy The y-coordinate of the center of rotation.
-     * @return A reference to this matrix after post-rotation.
-     */
-    Matrix& postRotate(float angle, float cx, float cy);
-
-    /**
-     * @brief Post-scales this matrix by the specified factors.
-     * @param sx The horizontal scaling factor.
-     * @param sy The vertical scaling factor.
-     * @return A reference to this matrix after post-scaling.
-     */
-    Matrix& postScale(float sx, float sy);
-
-    /**
-     * @brief Post-shears this matrix by the specified factors.
-     * @param shx The horizontal shearing factor.
-     * @param shy The vertical shearing factor.
-     * @return A reference to this matrix after post-shearing.
-     */
-    Matrix& postShear(float shx, float shy);
-
-    /**
-     * @brief Post-translates this matrix by the specified offsets.
-     * @param tx The horizontal translation offset.
-     * @param ty The vertical translation offset.
-     * @return A reference to this matrix after post-translation.
-     */
-    Matrix& postTranslate(float tx, float ty);
 
     /**
      * @brief Inverts this matrix.
@@ -408,6 +375,22 @@ public:
     void reset();
 
     /**
+     * @brief Creates a translation matrix with the specified offsets.
+     * @param tx The horizontal translation offset.
+     * @param ty The vertical translation offset.
+     * @return A new translation matrix.
+     */
+    static Matrix translated(float tx, float ty);
+
+    /**
+     * @brief Creates a scaling matrix with the specified factors.
+     * @param sx The horizontal scaling factor.
+     * @param sy The vertical scaling factor.
+     * @return A new scaling matrix.
+     */
+    static Matrix scaled(float sx, float sy);
+
+    /**
      * @brief Creates a rotation matrix with the specified angle.
      * @param angle The rotation angle in degrees.
      * @return A new rotation matrix.
@@ -424,28 +407,12 @@ public:
     static Matrix rotated(float angle, float cx, float cy);
 
     /**
-     * @brief Creates a scaling matrix with the specified factors.
-     * @param sx The horizontal scaling factor.
-     * @param sy The vertical scaling factor.
-     * @return A new scaling matrix.
-     */
-    static Matrix scaled(float sx, float sy);
-
-    /**
      * @brief Creates a shearing matrix with the specified factors.
      * @param shx The horizontal shearing factor.
      * @param shy The vertical shearing factor.
      * @return A new shearing matrix.
      */
     static Matrix sheared(float shx, float shy);
-
-    /**
-     * @brief Creates a translation matrix with the specified offsets.
-     * @param tx The horizontal translation offset.
-     * @param ty The vertical translation offset.
-     * @return A new translation matrix.
-     */
-    static Matrix translated(float tx, float ty);
 
     float a{1}; ///< The horizontal scaling factor.
     float b{0}; ///< The vertical shearing factor.

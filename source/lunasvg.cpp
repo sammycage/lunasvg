@@ -157,9 +157,29 @@ Matrix::Matrix(const Transform& transform)
 {
 }
 
+Matrix Matrix::operator*(const Matrix& matrix) const
+{
+    return Transform(*this) * Transform(matrix);
+}
+
+Matrix& Matrix::operator*=(const Matrix &matrix)
+{
+    return (*this = *this * matrix);
+}
+
 Matrix& Matrix::multiply(const Matrix& matrix)
 {
-    return (*this = Transform(*this) * Transform(matrix));
+    return (*this *= matrix);
+}
+
+Matrix& Matrix::scale(float sx, float sy)
+{
+    return multiply(scaled(sx, sy));
+}
+
+Matrix& Matrix::translate(float tx, float ty)
+{
+    return multiply(translated(tx, ty));
 }
 
 Matrix& Matrix::rotate(float angle)
@@ -172,49 +192,9 @@ Matrix& Matrix::rotate(float angle, float cx, float cy)
     return multiply(rotated(angle, cx, cy));
 }
 
-Matrix& Matrix::scale(float sx, float sy)
-{
-    return multiply(scaled(sx, sy));
-}
-
 Matrix& Matrix::shear(float shx, float shy)
 {
     return multiply(sheared(shx, shy));
-}
-
-Matrix& Matrix::translate(float tx, float ty)
-{
-    return multiply(translated(tx, ty));
-}
-
-Matrix& Matrix::postMultiply(const Matrix& matrix)
-{
-    return (*this = Transform(matrix) * Transform(*this));
-}
-
-Matrix& Matrix::postRotate(float angle)
-{
-    return postMultiply(rotated(angle));
-}
-
-Matrix& Matrix::postRotate(float angle, float cx, float cy)
-{
-    return postMultiply(rotated(angle, cx, cy));
-}
-
-Matrix& Matrix::postScale(float sx, float sy)
-{
-    return postMultiply(scaled(sx, sy));
-}
-
-Matrix& Matrix::postShear(float shx, float shy)
-{
-    return postMultiply(sheared(shx, shy));
-}
-
-Matrix& Matrix::postTranslate(float tx, float ty)
-{
-    return postMultiply(translated(tx, ty));
 }
 
 Matrix Matrix::inverse() const
@@ -232,6 +212,16 @@ void Matrix::reset()
     *this = Matrix(1, 0, 0, 1, 0, 0);
 }
 
+Matrix Matrix::translated(float tx, float ty)
+{
+    return Transform::translated(tx, ty);
+}
+
+Matrix Matrix::scaled(float sx, float sy)
+{
+    return Transform::scaled(sx, sy);
+}
+
 Matrix Matrix::rotated(float angle)
 {
     return Transform::rotated(angle);
@@ -242,19 +232,9 @@ Matrix Matrix::rotated(float angle, float cx, float cy)
     return Transform::rotated(angle, cx, cy);
 }
 
-Matrix Matrix::scaled(float sx, float sy)
-{
-    return Transform::scaled(sx, sy);
-}
-
 Matrix Matrix::sheared(float shx, float shy)
 {
     return Transform::sheared(shx, shy);
-}
-
-Matrix Matrix::translated(float tx, float ty)
-{
-    return Transform::translated(tx, ty);
 }
 
 bool Element::hasAttribute(const std::string& name) const

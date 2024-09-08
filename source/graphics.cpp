@@ -50,7 +50,17 @@ Transform& Transform::operator*=(const Transform& transform)
 
 Transform& Transform::multiply(const Transform& transform)
 {
-    return (*this = *this * transform);
+    return (*this *= transform);
+}
+
+Transform& Transform::translate(float tx, float ty)
+{
+    return multiply(translated(tx, ty));
+}
+
+Transform& Transform::scale(float sx, float sy)
+{
+    return multiply(scaled(sx, sy));
 }
 
 Transform& Transform::rotate(float angle)
@@ -63,24 +73,24 @@ Transform& Transform::rotate(float angle, float cx, float cy)
     return multiply(rotated(angle, cx, cy));
 }
 
-Transform& Transform::scale(float sx, float sy)
-{
-    return multiply(scaled(sx, sy));
-}
-
 Transform& Transform::shear(float shx, float shy)
 {
     return multiply(sheared(shx, shy));
 }
 
-Transform& Transform::translate(float tx, float ty)
-{
-    return multiply(translated(tx, ty));
-}
-
 Transform& Transform::postMultiply(const Transform& transform)
 {
     return (*this = transform * *this);
+}
+
+Transform& Transform::postTranslate(float tx, float ty)
+{
+    return postMultiply(translated(tx, ty));
+}
+
+Transform& Transform::postScale(float sx, float sy)
+{
+    return postMultiply(scaled(sx, sy));
 }
 
 Transform& Transform::postRotate(float angle)
@@ -93,19 +103,9 @@ Transform& Transform::postRotate(float angle, float cx, float cy)
     return postMultiply(rotated(angle, cx, cy));
 }
 
-Transform& Transform::postScale(float sx, float sy)
-{
-    return postMultiply(scaled(sx, sy));
-}
-
 Transform& Transform::postShear(float shx, float shy)
 {
     return postMultiply(sheared(shx, shy));
-}
-
-Transform& Transform::postTranslate(float tx, float ty)
-{
-    return postMultiply(translated(tx, ty));
 }
 
 Transform Transform::inverse() const
