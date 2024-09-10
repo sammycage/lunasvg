@@ -47,7 +47,8 @@ Follow the steps below to install LunaSVG using either [Meson](https://mesonbuil
 git clone https://github.com/sammycage/lunasvg.git
 cd lunasvg
 meson setup build
-ninja -C build install
+meson compile -C build
+meson install -C build
 ```
 
 ### Using CMake
@@ -56,8 +57,8 @@ ninja -C build install
 git clone https://github.com/sammycage/lunasvg.git
 cd lunasvg
 cmake -B build .
-make -C build -j2
-make -C build install
+cmake --build build
+cmake --install build
 ```
 
 ## Demo
