@@ -551,7 +551,7 @@ std::shared_ptr<Canvas> Canvas::create(float x, float y, float width, float heig
 
 std::shared_ptr<Canvas> Canvas::create(const Rect& extents)
 {
-    return std::shared_ptr<Canvas>(new Canvas(extents.x, extents.y, extents.w, extents.h));
+    return create(extents.x, extents.y, extents.w, extents.h);
 }
 
 void Canvas::setColor(const Color& color)
