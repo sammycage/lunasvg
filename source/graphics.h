@@ -329,7 +329,7 @@ enum class PathCommand {
 
 class Path {
 public:
-    Path();
+    Path() = default;
     Path(const Path& path);
     Path(Path&& path);
     ~Path();
@@ -359,6 +359,7 @@ public:
     Rect boundingRect() const;
     bool isEmpty() const;
     bool isUnique() const;
+    bool isNull() const { return m_data == nullptr; }
 
     bool parse(const char* data, size_t length);
 
@@ -367,7 +368,7 @@ public:
 private:
     plutovg_path_t* release();
     plutovg_path_t* ensure();
-    plutovg_path_t* m_data;
+    plutovg_path_t* m_data = nullptr;
 };
 
 inline void Path::swap(Path& path)

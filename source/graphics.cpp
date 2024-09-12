@@ -200,19 +200,6 @@ Transform Transform::translated(float tx, float ty)
     return matrix;
 }
 
-static plutovg_path_t* defaultPathData()
-{
-    static plutovg_path_t* path = nullptr;
-    if(path == nullptr)
-        path = plutovg_path_create();
-    return plutovg_path_reference(path);
-}
-
-Path::Path()
-    : m_data(defaultPathData())
-{
-}
-
 Path::Path(const Path& path)
     : m_data(plutovg_path_reference(path.data()))
 {
@@ -307,6 +294,8 @@ void Path::reset()
 
 Rect Path::boundingRect() const
 {
+    if(m_data == nullptr)
+        return Rect::Empty;
     plutovg_rect_t extents;
     plutovg_path_extents(m_data, &extents, false);
     return extents;
@@ -314,12 +303,16 @@ Rect Path::boundingRect() const
 
 bool Path::isEmpty() const
 {
-    return plutovg_path_get_elements(m_data, nullptr) == 0;
+    if(m_data)
+        return plutovg_path_get_elements(m_data, nullptr) == 0;
+    return true;
 }
 
 bool Path::isUnique() const
 {
-    return plutovg_path_get_reference_count(m_data) == 1;
+    if(m_data)
+        return plutovg_path_get_reference_count(m_data) == 1;
+    return true;
 }
 
 bool Path::parse(const char* data, size_t length)
@@ -330,7 +323,9 @@ bool Path::parse(const char* data, size_t length)
 
 plutovg_path_t* Path::ensure()
 {
-    if(!isUnique()) {
+    if(isNull()) {
+        m_data = plutovg_path_create();
+    } else if(!isUnique()) {
         plutovg_path_destroy(m_data);
         m_data = plutovg_path_clone(m_data);
     }
