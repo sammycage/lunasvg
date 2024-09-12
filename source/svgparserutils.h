@@ -11,34 +11,34 @@ constexpr bool IS_NUM(int cc) { return cc >= '0' && cc <= '9'; }
 constexpr bool IS_ALPHA(int cc) { return (cc >= 'a' && cc <= 'z') || (cc >= 'A' && cc <= 'Z'); }
 constexpr bool IS_WS(int cc) { return cc == ' ' || cc == '\t' || cc == '\n' || cc == '\r'; }
 
-inline void stripLeadingSpaces(std::string_view& input)
+constexpr void stripLeadingSpaces(std::string_view& input)
 {
     while(!input.empty() && IS_WS(input.front())) {
         input.remove_prefix(1);
     }
 }
 
-inline void stripTrailingSpaces(std::string_view& input)
+constexpr void stripTrailingSpaces(std::string_view& input)
 {
     while(!input.empty() && IS_WS(input.back())) {
         input.remove_suffix(1);
     }
 }
 
-inline void stripLeadingAndTrailingSpaces(std::string_view& input)
+constexpr void stripLeadingAndTrailingSpaces(std::string_view& input)
 {
     stripLeadingSpaces(input);
     stripTrailingSpaces(input);
 }
 
-inline bool skipOptionalSpaces(std::string_view& input)
+constexpr bool skipOptionalSpaces(std::string_view& input)
 {
     while(!input.empty() && IS_WS(input.front()))
         input.remove_prefix(1);
     return !input.empty();
 }
 
-inline bool skipOptionalSpacesOrDelimiter(std::string_view& input, char delimiter)
+constexpr bool skipOptionalSpacesOrDelimiter(std::string_view& input, char delimiter)
 {
     if(!input.empty() && !IS_WS(input.front()) && delimiter != input.front())
         return false;
@@ -52,12 +52,12 @@ inline bool skipOptionalSpacesOrDelimiter(std::string_view& input, char delimite
     return !input.empty();
 }
 
-inline bool skipOptionalSpacesOrComma(std::string_view& input)
+constexpr bool skipOptionalSpacesOrComma(std::string_view& input)
 {
     return skipOptionalSpacesOrDelimiter(input, ',');
 }
 
-inline bool skipDelimiter(std::string_view& input, char delimiter)
+constexpr bool skipDelimiter(std::string_view& input, char delimiter)
 {
     if(!input.empty() && input.front() == delimiter) {
         input.remove_prefix(1);
@@ -67,7 +67,7 @@ inline bool skipDelimiter(std::string_view& input, char delimiter)
     return false;
 }
 
-inline bool skipString(std::string_view& input, const std::string_view& value)
+constexpr bool skipString(std::string_view& input, const std::string_view& value)
 {
     if(input.size() >= value.size() && value == input.substr(0, value.size())) {
         input.remove_prefix(value.size());
@@ -77,7 +77,7 @@ inline bool skipString(std::string_view& input, const std::string_view& value)
     return false;
 }
 
-inline bool isIntegralDigit(char ch, int base)
+constexpr bool isIntegralDigit(char ch, int base)
 {
     if(IS_NUM(ch))
         return ch - '0' < base;
