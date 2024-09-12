@@ -202,7 +202,7 @@ Transform Transform::translated(float tx, float ty)
 
 static plutovg_path_t* defaultPathData()
 {
-    thread_local plutovg_path_t* path = nullptr;
+    static plutovg_path_t* path = nullptr;
     if(path == nullptr)
         path = plutovg_path_create();
     return plutovg_path_reference(path);
