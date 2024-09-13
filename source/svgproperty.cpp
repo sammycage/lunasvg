@@ -227,6 +227,7 @@ bool Length::parse(std::string_view input, LengthNegativeMode mode)
     case '%':
         m_value = value;
         m_units = LengthUnits::Percent;
+        input.remove_prefix(1);
         break;
     case 'p':
         input.remove_prefix(1);
