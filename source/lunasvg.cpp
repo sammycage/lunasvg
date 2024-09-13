@@ -116,6 +116,13 @@ bool Bitmap::writeToPng(const std::string& filename) const
     return false;
 }
 
+bool Bitmap::writeToPng(lunasvg_write_func_t callback, void* closure) const
+{
+    if(m_surface)
+        return plutovg_surface_write_to_png_stream(m_surface, callback, closure);
+    return false;
+}
+
 plutovg_surface_t* Bitmap::release()
 {
     return std::exchange(m_surface, nullptr);

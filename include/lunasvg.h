@@ -63,6 +63,14 @@ typedef struct plutovg_surface plutovg_surface_t;
 typedef struct plutovg_matrix plutovg_matrix_t;
 
 /**
+ * @brief A function pointer type for a write callback.
+ * @param closure A pointer to user-defined data or context.
+ * @param data A pointer to the data to be written.
+ * @param size The size of the data in bytes.
+ */
+typedef void (*lunasvg_write_func_t)(void* closure, void* data, int size);
+
+/**
  * @brief Returns the version of the lunasvg library encoded in a single integer.
  *
  * Encodes the version of the lunasvg library into a single integer for easier comparison.
@@ -205,6 +213,14 @@ public:
      * @return True if the file was written successfully, false otherwise.
      */
     bool writeToPng(const std::string& filename) const;
+
+    /**
+     * @brief Writes the bitmap to a PNG stream.
+     * @param callback Callback function for writing data.
+     * @param closure User-defined data passed to the callback.
+     * @return True if successful, false otherwise.
+     */
+    bool writeToPng(lunasvg_write_func_t callback, void* closure) const;
 
     /**
      * @internal
