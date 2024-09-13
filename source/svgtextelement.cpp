@@ -320,12 +320,9 @@ void SVGTextElement::render(SVGRenderState& state) const
 
     std::u32string_view wholeText(m_text);
     for(const auto& fragment : m_fragments) {
+        auto transform = newState.currentTransform() * Transform::rotated(fragment.angle, fragment.x, fragment.y);
         auto text = wholeText.substr(fragment.offset, fragment.length);
         auto origin = Point(fragment.x, fragment.y);
-        auto transform = newState.currentTransform();
-        transform.translate(origin.x, origin.y);
-        transform.rotate(fragment.angle);
-        transform.translate(-origin.x, -origin.y);
 
         const auto& font = fragment.element->font();
         if(newState.mode() == SVGRenderMode::Clipping) {
@@ -351,12 +348,10 @@ Rect SVGTextElement::boundingBox(bool includeStroke) const
     for(const auto& fragment : m_fragments) {
         const auto& font = fragment.element->font();
         const auto& stroke = fragment.element->stroke();
+        auto fragmentTranform = Transform::rotated(fragment.angle, fragment.x, fragment.y);
         auto fragmentRect = Rect(fragment.x, fragment.y - font.ascent(), fragment.width, fragment.element->font_size());
         if(includeStroke && stroke.isRenderable())
             fragmentRect.inflate(fragment.element->stroke_width() / 2.f);
-        auto fragmentTranform = Transform::translated(fragment.x, fragment.y);
-        fragmentTranform.rotate(fragment.angle);
-        fragmentTranform.translate(-fragment.x, -fragment.y);
         boundingBox.unite(fragmentTranform.mapRect(fragmentRect));
     }
 

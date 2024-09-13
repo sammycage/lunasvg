@@ -182,11 +182,6 @@ Matrix& Matrix::translate(float tx, float ty)
     return multiply(translated(tx, ty));
 }
 
-Matrix& Matrix::rotate(float angle)
-{
-    return multiply(rotated(angle));
-}
-
 Matrix& Matrix::rotate(float angle, float cx, float cy)
 {
     return multiply(rotated(angle, cx, cy));
@@ -220,11 +215,6 @@ Matrix Matrix::translated(float tx, float ty)
 Matrix Matrix::scaled(float sx, float sy)
 {
     return Transform::scaled(sx, sy);
-}
-
-Matrix Matrix::rotated(float angle)
-{
-    return Transform::rotated(angle);
 }
 
 Matrix Matrix::rotated(float angle, float cx, float cy)

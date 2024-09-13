@@ -63,11 +63,6 @@ Transform& Transform::scale(float sx, float sy)
     return multiply(scaled(sx, sy));
 }
 
-Transform& Transform::rotate(float angle)
-{
-    return multiply(rotated(angle));
-}
-
 Transform& Transform::rotate(float angle, float cx, float cy)
 {
     return multiply(rotated(angle, cx, cy));
@@ -91,11 +86,6 @@ Transform& Transform::postTranslate(float tx, float ty)
 Transform& Transform::postScale(float sx, float sy)
 {
     return postMultiply(scaled(sx, sy));
-}
-
-Transform& Transform::postRotate(float angle)
-{
-    return postMultiply(rotated(angle));
 }
 
 Transform& Transform::postRotate(float angle, float cx, float cy)
@@ -163,19 +153,17 @@ bool Transform::parse(const char* data, size_t length)
     return plutovg_matrix_parse(&m_matrix, data, length);
 }
 
-Transform Transform::rotated(float angle)
-{
-    plutovg_matrix_t matrix;
-    plutovg_matrix_init_rotate(&matrix, PLUTOVG_DEG2RAD(angle));
-    return matrix;
-}
-
 Transform Transform::rotated(float angle, float cx, float cy)
 {
     plutovg_matrix_t matrix;
-    plutovg_matrix_init_translate(&matrix, cx, cy);
-    plutovg_matrix_rotate(&matrix, PLUTOVG_DEG2RAD(angle));
-    plutovg_matrix_translate(&matrix, -cx, -cy);
+    if(cx == 0.f && cy == 0.f) {
+        plutovg_matrix_init_rotate(&matrix, PLUTOVG_DEG2RAD(angle));
+    } else {
+        plutovg_matrix_init_translate(&matrix, cx, cy);
+        plutovg_matrix_rotate(&matrix, PLUTOVG_DEG2RAD(angle));
+        plutovg_matrix_translate(&matrix, -cx, -cy);
+    }
+
     return matrix;
 }
 

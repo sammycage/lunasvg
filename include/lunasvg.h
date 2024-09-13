@@ -334,20 +334,13 @@ public:
     Matrix& scale(float sx, float sy);
 
     /**
-     * @brief Pre-rotates this matrix by the specified angle.
-     * @param angle The rotation angle in degrees.
-     * @return A reference to this matrix after rotation.
-     */
-    Matrix& rotate(float angle);
-
-    /**
      * @brief Pre-rotates this matrix by the specified angle around a point.
      * @param angle The rotation angle in degrees.
      * @param cx The x-coordinate of the center of rotation.
      * @param cy The y-coordinate of the center of rotation.
      * @return A reference to this matrix after rotation.
      */
-    Matrix& rotate(float angle, float cx, float cy);
+    Matrix& rotate(float angle, float cx = 0.f, float cy = 0.f);
 
     /**
      * @brief Pre-shears this matrix by the specified factors.
@@ -391,20 +384,13 @@ public:
     static Matrix scaled(float sx, float sy);
 
     /**
-     * @brief Creates a rotation matrix with the specified angle.
-     * @param angle The rotation angle in degrees.
-     * @return A new rotation matrix.
-     */
-    static Matrix rotated(float angle);
-
-    /**
      * @brief Creates a rotation matrix with the specified angle around a point.
      * @param angle The rotation angle in degrees.
      * @param cx The x-coordinate of the center of rotation.
      * @param cy The y-coordinate of the center of rotation.
      * @return A new rotation matrix.
      */
-    static Matrix rotated(float angle, float cx, float cy);
+    static Matrix rotated(float angle, float cx = 0.f, float cy = 0.f);
 
     /**
      * @brief Creates a shearing matrix with the specified factors.

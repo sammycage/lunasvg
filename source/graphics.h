@@ -281,15 +281,13 @@ public:
     Transform& multiply(const Transform& transform);
     Transform& translate(float tx, float ty);
     Transform& scale(float sx, float sy);
-    Transform& rotate(float angle);
-    Transform& rotate(float angle, float cx, float cy);
+    Transform& rotate(float angle, float cx = 0.f, float cy = 0.f);
     Transform& shear(float shx, float shy);
 
     Transform& postMultiply(const Transform& transform);
     Transform& postTranslate(float tx, float ty);
     Transform& postScale(float sx, float sy);
-    Transform& postRotate(float angle);
-    Transform& postRotate(float angle, float cx, float cy);
+    Transform& postRotate(float angle, float cx = 0.f, float cy = 0.f);
     Transform& postShear(float shx, float shy);
 
     Transform inverse() const;
@@ -310,7 +308,6 @@ public:
 
     static Transform translated(float tx, float ty);
     static Transform scaled(float sx, float sy);
-    static Transform rotated(float angle);
     static Transform rotated(float angle, float cx, float cy);
     static Transform sheared(float shx, float shy);
 
