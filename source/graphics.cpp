@@ -277,7 +277,8 @@ void Path::addRect(const Rect& rect)
 
 void Path::reset()
 {
-    *this = Path();
+    plutovg_path_destroy(m_data);
+    m_data = nullptr;
 }
 
 Rect Path::boundingRect() const
@@ -455,22 +456,42 @@ FontFace FontFaceCache::getFontFace(const std::string& family, bool bold, bool i
 
 FontFaceCache::FontFaceCache()
 {
-#ifdef _WIN32
-    addFontFace(emptyString, false, false, "C:/Windows/Fonts/arial.ttf");
-    addFontFace(emptyString, true, false, "C:/Windows/Fonts/arialbd.ttf");
-    addFontFace(emptyString, false, true, "C:/Windows/Fonts/ariali.ttf");
-    addFontFace(emptyString, true, true, "C:/Windows/Fonts/arialbi.ttf");
-#elif __APPLE__
-    addFontFace(emptyString, false, false, "/Library/Fonts/Arial.ttf");
-    addFontFace(emptyString, true, false, "/Library/Fonts/Arial Bold.ttf");
-    addFontFace(emptyString, false, true, "/Library/Fonts/Arial Italic.ttf");
-    addFontFace(emptyString, true, true, "/Library/Fonts/Arial Bold Italic.ttf");
-#elif __linux__
-    addFontFace(emptyString, false, false, "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
-    addFontFace(emptyString, true, false, "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf");
-    addFontFace(emptyString, false, true, "/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf");
-    addFontFace(emptyString, true, true, "/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf");
+    static const struct {
+        const char* filename;
+        const bool bold;
+        const bool italic;
+    } entries[] = {
+#if defined(_WIN32)
+        {"C:/Windows/Fonts/arial.ttf", false, false},
+        {"C:/Windows/Fonts/arialbd.ttf", true, false},
+        {"C:/Windows/Fonts/ariali.ttf", false, true},
+        {"C:/Windows/Fonts/arialbi.ttf", true, true},
+#elif defined(__APPLE__)
+        {"/Library/Fonts/Arial.ttf", false, false},
+        {"/Library/Fonts/Arial Bold.ttf", true, false},
+        {"/Library/Fonts/Arial Italic.ttf", false, true},
+        {"/Library/Fonts/Arial Bold Italic.ttf", true, true},
+
+        {"/System/Library/Fonts/Supplemental/Arial.ttf", false, false},
+        {"/System/Library/Fonts/Supplemental/Arial Bold.ttf", true, false},
+        {"/System/Library/Fonts/Supplemental/Arial Italic.ttf", false, true},
+        {"/System/Library/Fonts/Supplemental/Arial Bold Italic.ttf", true, true},
+#elif defined(__linux__)
+        {"/usr/share/fonts/dejavu/DejaVuSans.ttf", false, false},
+        {"/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf", true, false},
+        {"/usr/share/fonts/dejavu/DejaVuSans-Oblique.ttf", false, true},
+        {"/usr/share/fonts/dejavu/DejaVuSans-BoldOblique.ttf", true, true},
+
+        {"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", false, false},
+        {"/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", true, false},
+        {"/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf", false, true},
+        {"/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf", true, true},
 #endif
+    };
+
+    for(const auto& entry : entries) {
+        addFontFace(emptyString, entry.bold, entry.italic, entry.filename);
+    }
 }
 
 FontFaceCache* fontFaceCache()
