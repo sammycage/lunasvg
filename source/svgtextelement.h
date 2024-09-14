@@ -18,16 +18,16 @@ struct SVGCharacterPosition {
     std::optional<float> rotate;
 };
 
-using SVGCharacterPositions = std::map<uint32_t, SVGCharacterPosition>;
+using SVGCharacterPositions = std::map<size_t, SVGCharacterPosition>;
 
 struct SVGTextPosition {
-    SVGTextPosition(const SVGNode* node, uint32_t startOffset, uint32_t endOffset)
+    SVGTextPosition(const SVGNode* node, size_t startOffset, size_t endOffset)
         : node(node), startOffset(startOffset), endOffset(endOffset)
     {}
 
     const SVGNode* node;
-    uint32_t startOffset;
-    uint32_t endOffset;
+    size_t startOffset;
+    size_t endOffset;
 };
 
 using SVGTextPositionList = std::vector<SVGTextPosition>;
@@ -35,8 +35,8 @@ using SVGTextPositionList = std::vector<SVGTextPosition>;
 struct SVGTextFragment {
     explicit SVGTextFragment(const SVGTextPositioningElement* element) : element(element) {}
     const SVGTextPositioningElement* element;
-    uint32_t offset = 0;
-    uint32_t length = 0;
+    size_t offset = 0;
+    size_t length = 0;
     float x = 0;
     float y = 0;
     float angle = 0;
@@ -60,7 +60,7 @@ private:
     SVGTextFragmentList& m_fragments;
     SVGCharacterPositions m_characterPositions;
     SVGTextPositionList m_textPositions;
-    uint32_t m_characterOffset = 0;
+    size_t m_characterOffset = 0;
     float m_x = 0;
     float m_y = 0;
 };
