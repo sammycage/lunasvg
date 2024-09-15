@@ -398,8 +398,8 @@ class FontFace {
 public:
     FontFace() = default;
     FontFace(plutovg_font_face_t* face);
-    FontFace(const void* data, size_t length);
-    FontFace(const std::string& filename);
+    FontFace(const void* data, size_t length, plutovg_destroy_func_t destroy_func, void* closure);
+    FontFace(const char* filename);
     FontFace(const FontFace& face);
     FontFace(FontFace&& face);
     ~FontFace();
@@ -419,8 +419,6 @@ private:
 
 class FontFaceCache {
 public:
-    bool addFontFace(const std::string& family, bool bold, bool italic, const std::string& filename);
-    bool addFontFace(const std::string& family, bool bold, bool italic, const void* data, size_t length);
     bool addFontFace(const std::string& family, bool bold, bool italic, const FontFace& face);
 
     FontFace getFontFace(const std::string& family, bool bold, bool italic);

@@ -363,13 +363,13 @@ FontFace::FontFace(plutovg_font_face_t* face)
 {
 }
 
-FontFace::FontFace(const void* data, size_t length)
-    : m_face(plutovg_font_face_load_from_data(data, length, 0, nullptr, nullptr))
+FontFace::FontFace(const void* data, size_t length, plutovg_destroy_func_t destroy_func, void* closure)
+    : m_face(plutovg_font_face_load_from_data(data, length, 0, destroy_func, closure))
 {
 }
 
-FontFace::FontFace(const std::string& filename)
-    : m_face(plutovg_font_face_load_from_file(filename.data(), 0))
+FontFace::FontFace(const char* filename)
+    : m_face(plutovg_font_face_load_from_file(filename, 0))
 {
 }
 
@@ -408,16 +408,6 @@ void FontFace::swap(FontFace& face)
 plutovg_font_face_t* FontFace::release()
 {
     return std::exchange(m_face, nullptr);
-}
-
-bool FontFaceCache::addFontFace(const std::string& family, bool bold, bool italic, const std::string& filename)
-{
-    return addFontFace(family, bold, italic, FontFace(filename));
-}
-
-bool FontFaceCache::addFontFace(const std::string& family, bool bold, bool italic, const void* data, size_t length)
-{
-    return addFontFace(family, bold, italic, FontFace(data, length));
 }
 
 bool FontFaceCache::addFontFace(const std::string& family, bool bold, bool italic, const FontFace& face)
@@ -490,7 +480,7 @@ FontFaceCache::FontFaceCache()
     };
 
     for(const auto& entry : entries) {
-        addFontFace(emptyString, entry.bold, entry.italic, entry.filename);
+        addFontFace(emptyString, entry.bold, entry.italic, FontFace(entry.filename));
     }
 }
 

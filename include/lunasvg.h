@@ -63,6 +63,15 @@ typedef struct plutovg_surface plutovg_surface_t;
 typedef struct plutovg_matrix plutovg_matrix_t;
 
 /**
+ * @brief Callback for cleaning up resources.
+ *
+ * This function is called to release resources associated with a specific operation.
+ *
+ * @param closure A user-defined pointer to the resource or context to be freed.
+ */
+typedef void (*lunasvg_destroy_func_t)(void* closure);
+
+/**
  * @brief A function pointer type for a write callback.
  * @param closure A pointer to user-defined data or context.
  * @param data A pointer to the data to be written.
@@ -89,6 +98,29 @@ LUNASVG_API int lunasvg_version(void);
  * @return A pointer to a string containing the version in "X.Y.Z" format.
  */
 LUNASVG_API const char* lunasvg_version_string(void);
+
+/**
+* @brief Add a font face from a file to the cache.
+* @param family The name of the font family.
+* @param bold Use `true` for bold, `false` otherwise.
+* @param italic Use `true` for italic, `false` otherwise.
+* @param filename The path to the font file.
+* @return `true` if the font face was successfully added to the cache, `false` otherwise.
+*/
+LUNASVG_API bool lunasvg_add_font_face_from_file(const char* family, bool bold, bool italic, const char* filename);
+
+/**
+* @brief Add a font face from memory to the cache.
+* @param family The name of the font family.
+* @param bold Use `true` for bold, `false` otherwise.
+* @param italic Use `true` for italic, `false` otherwise.
+* @param data A pointer to the memory buffer containing the font data.
+* @param length The size of the memory buffer in bytes.
+* @param destroy_func Callback function to free the memory buffer when it is no longer needed.
+* @param closure User-defined pointer passed to the `destroy_func` callback.
+* @return `true` if the font face was successfully added to the cache, `false` otherwise.
+*/
+LUNASVG_API bool lunasvg_add_font_face_from_data(const char* family, bool bold, bool italic, const void* data, size_t length, lunasvg_destroy_func_t destroy_func, void* closure);
 
 #ifdef __cplusplus
 }
@@ -572,27 +604,6 @@ public:
      * @return A pointer to the loaded `Document`, or `nullptr` on failure.
      */
     static std::unique_ptr<Document> loadFromData(const char* data, size_t length);
-
-    /**
-     * @brief Add a font face from a file to the cache.
-     * @param family The name of the font family.
-     * @param bold Use `true` for bold, `false` otherwise.
-     * @param italic Use `true` for italic, `false` otherwise.
-     * @param filename The path to the font file.
-     * @return `true` if the font face was successfully added to the cache, `false` otherwise.
-     */
-    static bool addFontFace(const std::string& family, bool bold, bool italic, const std::string& filename);
-
-    /**
-     * @brief Add a font face from memory to the cache.
-     * @param family The name of the font family.
-     * @param bold Use `true` for bold, `false` otherwise.
-     * @param italic Use `true` for italic, `false` otherwise.
-     * @param data A pointer to the memory buffer containing the font data.
-     * @param length The size of the memory buffer in bytes.
-     * @return `true` if the font face was successfully added to the cache, `false` otherwise.
-     */
-    static bool addFontFace(const std::string& family, bool bold, bool italic, const void* data, size_t length);
 
     /**
      * @brief Returns the intrinsic width of the document in pixels.

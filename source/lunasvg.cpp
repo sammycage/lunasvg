@@ -17,6 +17,16 @@ const char* lunasvg_version_string()
     return LUNASVG_VERSION_STRING;
 }
 
+bool lunasvg_add_font_face_from_file(const char* family, bool bold, bool italic, const char* filename)
+{
+    return lunasvg::fontFaceCache()->addFontFace(family, bold, italic, lunasvg::FontFace(filename));
+}
+
+bool lunasvg_add_font_face_from_data(const char* family, bool bold, bool italic, const void* data, size_t length, lunasvg_destroy_func_t destroy_func, void* closure)
+{
+    return lunasvg::fontFaceCache()->addFontFace(family, bold, italic, lunasvg::FontFace(data, length, destroy_func, closure));
+}
+
 namespace lunasvg {
 
 Bitmap::Bitmap(int width, int height)
@@ -360,16 +370,6 @@ std::unique_ptr<Document> Document::loadFromData(const char* data, size_t length
         return nullptr;
     document->updateLayout();
     return document;
-}
-
-bool Document::addFontFace(const std::string& family, bool bold, bool italic, const std::string& filename)
-{
-    return fontFaceCache()->addFontFace(family, bold, italic, filename);
-}
-
-bool Document::addFontFace(const std::string& family, bool bold, bool italic, const void* data, size_t length)
-{
-    return fontFaceCache()->addFontFace(family, bold, italic, data, length);
 }
 
 float Document::width() const
