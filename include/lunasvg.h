@@ -506,21 +506,35 @@ public:
     Box getBoundingBox() const;
 
     /**
-     * @brief Checks if the element is null.
-     * @return True if the element is null, false otherwise.
-     */
-    bool isNull() const { return m_element == nullptr; }
-
-    /**
      * @brief Returns the parent element.
      * @return The parent element of this element. If this element has no parent, a null `Element` is returned.
      */
     Element parent() const;
 
     /**
+     * @brief Checks if the element is null.
+     * @return True if the element is null, false otherwise.
+     */
+    bool isNull() const { return m_element == nullptr; }
+
+    /**
+     * @brief Checks if two elements are equal.
+     * @param element The element to compare.
+     * @return True if equal, otherwise false.
+     */
+    bool operator==(const Element& element) const { return m_element == element.get(); }
+
+    /**
+     * @brief Checks if two elements are not equal.
+     * @param element The element to compare.
+     * @return True if not equal, otherwise false.
+     */
+    bool operator!=(const Element& element) const { return m_element != element.get(); }
+
+    /**
      * @internal
      */
-    SVGElement* get() { return m_element; }
+    SVGElement* get() const { return m_element; }
 
 private:
     SVGElement* m_element{nullptr};
