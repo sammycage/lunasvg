@@ -324,6 +324,13 @@ Box Element::getBoundingBox() const
     return Box();
 }
 
+Element Element::parent() const
+{
+    if(m_element)
+        return m_element->parent();
+    return Element();
+}
+
 std::unique_ptr<Document> Document::loadFromFile(const std::string& filename)
 {
     std::ifstream fs;

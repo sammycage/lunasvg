@@ -512,6 +512,12 @@ public:
     bool isNull() const { return m_element == nullptr; }
 
     /**
+     * @brief Returns the parent element.
+     * @return The parent element of this element. If this element has no parent, a null `Element` is returned.
+     */
+    Element parent() const;
+
+    /**
      * @internal
      */
     SVGElement* get() { return m_element; }
