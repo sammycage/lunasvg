@@ -345,28 +345,28 @@ public:
     Matrix(const Transform& transform);
 
     /**
-     * @brief Pre-multiplies this matrix with another matrix.
+     * @brief Multiplies this matrix with another matrix.
      * @param matrix The matrix to multiply with.
      * @return A new matrix that is the result of the multiplication.
      */
     Matrix operator*(const Matrix& matrix) const;
 
     /**
-     * @brief Pre-multiplies this matrix with another matrix in-place.
+     * @brief Multiplies this matrix with another matrix in place.
      * @param matrix The matrix to multiply with.
      * @return A reference to this matrix after multiplication.
      */
     Matrix& operator*=(const Matrix& matrix);
 
     /**
-     * @brief Pre-multiplies this matrix with another matrix.
+     * @brief Multiplies this matrix with another matrix.
      * @param matrix The matrix to multiply with.
      * @return A reference to this matrix after multiplication.
      */
     Matrix& multiply(const Matrix& matrix);
 
     /**
-     * @brief Pre-translates this matrix by the specified offsets.
+     * @brief Translates this matrix by the specified offsets.
      * @param tx The horizontal translation offset.
      * @param ty The vertical translation offset.
      * @return A reference to this matrix after translation.
@@ -374,7 +374,7 @@ public:
     Matrix& translate(float tx, float ty);
 
     /**
-     * @brief Pre-scales this matrix by the specified factors.
+     * @brief Scales this matrix by the specified factors.
      * @param sx The horizontal scaling factor.
      * @param sy The vertical scaling factor.
      * @return A reference to this matrix after scaling.
@@ -382,7 +382,7 @@ public:
     Matrix& scale(float sx, float sy);
 
     /**
-     * @brief Pre-rotates this matrix by the specified angle around a point.
+     * @brief Rotates this matrix by the specified angle around a point.
      * @param angle The rotation angle in degrees.
      * @param cx The x-coordinate of the center of rotation.
      * @param cy The y-coordinate of the center of rotation.
@@ -391,7 +391,7 @@ public:
     Matrix& rotate(float angle, float cx = 0.f, float cy = 0.f);
 
     /**
-     * @brief Pre-shears this matrix by the specified factors.
+     * @brief Shears this matrix by the specified factors.
      * @param shx The horizontal shearing factor.
      * @param shy The vertical shearing factor.
      * @return A reference to this matrix after shearing.
