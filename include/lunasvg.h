@@ -101,7 +101,7 @@ LUNASVG_API const char* lunasvg_version_string(void);
 
 /**
 * @brief Add a font face from a file to the cache.
-* @param family The name of the font family.
+* @param family The name of the font family. If an empty string is provided, the font will act as a fallback.
 * @param bold Use `true` for bold, `false` otherwise.
 * @param italic Use `true` for italic, `false` otherwise.
 * @param filename The path to the font file.
@@ -111,7 +111,7 @@ LUNASVG_API bool lunasvg_add_font_face_from_file(const char* family, bool bold, 
 
 /**
 * @brief Add a font face from memory to the cache.
-* @param family The name of the font family.
+* @param family The name of the font family. If an empty string is provided, the font will act as a fallback.
 * @param bold Use `true` for bold, `false` otherwise.
 * @param italic Use `true` for italic, `false` otherwise.
 * @param data A pointer to the memory buffer containing the font data.
