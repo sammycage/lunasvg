@@ -541,7 +541,7 @@ public:
      * @brief Returns the parent element.
      * @return The parent element of this element. If this element has no parent, a null `Element` is returned.
      */
-    Element parent() const;
+    Element parentElement() const;
 
     /**
      * @brief Checks if the element is null.

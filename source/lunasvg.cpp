@@ -334,7 +334,7 @@ Box Element::getBoundingBox() const
     return Box();
 }
 
-Element Element::parent() const
+Element Element::parentElement() const
 {
     if(m_element)
         return m_element->parent();
