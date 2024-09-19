@@ -8,7 +8,7 @@ namespace lunasvg {
 
 PropertyID propertyid(const std::string_view& name)
 {
-    const struct {
+    static const struct {
         std::string_view name;
         PropertyID value;
     } table[] = {
@@ -68,7 +68,7 @@ PropertyID propertyid(const std::string_view& name)
 
 PropertyID csspropertyid(const std::string_view& name)
 {
-    const struct {
+    static const struct {
         std::string_view name;
         PropertyID value;
     } table[] = {

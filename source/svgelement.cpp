@@ -17,7 +17,7 @@ SVGRootElement* SVGNode::rootElement() const
 
 ElementID elementid(const std::string_view& name)
 {
-    const struct {
+    static const struct {
         std::string_view name;
         ElementID value;
     } table[] = {

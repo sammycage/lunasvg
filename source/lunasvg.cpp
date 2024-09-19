@@ -253,9 +253,9 @@ bool Element::hasAttribute(const std::string& name) const
 
 const std::string& Element::getAttribute(const std::string& name) const
 {
-    if(m_element == nullptr)
-        return emptyString;
-    return m_element->getAttribute(name);
+    if(m_element)
+        return m_element->getAttribute(name);
+    return emptyString;
 }
 
 void Element::setAttribute(const std::string& name, const std::string& value)
