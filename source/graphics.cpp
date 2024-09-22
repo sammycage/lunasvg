@@ -667,10 +667,9 @@ void Canvas::drawImage(const Bitmap& image, const Rect& dstRect, const Rect& src
     plutovg_canvas_transform(m_canvas, &transform.matrix());
     plutovg_canvas_translate(m_canvas, dstRect.x, dstRect.y);
     plutovg_canvas_set_fill_rule(m_canvas, PLUTOVG_FILL_RULE_NON_ZERO);
-    plutovg_canvas_clip_rect(m_canvas, 0, 0, dstRect.w, dstRect.h);
     plutovg_canvas_set_operator(m_canvas, PLUTOVG_OPERATOR_SRC_OVER);
     plutovg_canvas_set_paint(m_canvas, paint);
-    plutovg_canvas_paint(m_canvas);
+    plutovg_canvas_fill_rect(m_canvas, 0, 0, dstRect.w, dstRect.h);
     plutovg_paint_destroy(paint);
 }
 
