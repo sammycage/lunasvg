@@ -309,7 +309,7 @@ void SVGTextElement::layout(SVGLayoutState& state)
 
 void SVGTextElement::render(SVGRenderState& state) const
 {
-    if(isVisibilityHidden() || isDisplayNone())
+    if(m_text.empty() || isVisibilityHidden() || isDisplayNone())
         return;
     SVGBlendInfo blendInfo(this);
     SVGRenderState newState(this, state, localTransform());

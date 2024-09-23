@@ -138,7 +138,7 @@ void SVGGeometryElement::updateMarkerPositions(SVGMarkerPositionList& positions,
 
 void SVGGeometryElement::render(SVGRenderState& state) const
 {
-    if(isVisibilityHidden() || isDisplayNone())
+    if(m_path.isNull() || isVisibilityHidden() || isDisplayNone())
         return;
     SVGBlendInfo blendInfo(this);
     SVGRenderState newState(this, state, localTransform());

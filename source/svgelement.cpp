@@ -812,12 +812,12 @@ Rect SVGImageElement::strokeBoundingBox() const
 
 void SVGImageElement::render(SVGRenderState& state) const
 {
-    if(isDisplayNone() || isVisibilityHidden())
-        return;
-    if(!m_image.width() || !m_image.height())
+    if(m_image.isNull() || isDisplayNone() || isVisibilityHidden())
         return;
     Rect dstRect(fillBoundingBox());
     Rect srcRect(0, 0, m_image.width(), m_image.height());
+    if(dstRect.isEmpty() || srcRect.isEmpty())
+        return;
     m_preserveAspectRatio.transformRect(dstRect, srcRect);
 
     SVGBlendInfo blendInfo(this);

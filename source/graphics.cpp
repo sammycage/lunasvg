@@ -606,8 +606,6 @@ void Canvas::strokePath(const Path& path, const StrokeData& strokeData, const Tr
 
 void Canvas::fillText(const std::u32string_view& text, const Font& font, const Point& origin, const Transform& transform)
 {
-    if(text.empty() || font.isNull())
-        return;
     plutovg_canvas_reset_matrix(m_canvas);
     plutovg_canvas_translate(m_canvas, -m_x, -m_y);
     plutovg_canvas_transform(m_canvas, &transform.matrix());
@@ -653,10 +651,6 @@ void Canvas::clipRect(const Rect& rect, FillRule clipRule, const Transform& tran
 
 void Canvas::drawImage(const Bitmap& image, const Rect& dstRect, const Rect& srcRect, const Transform& transform)
 {
-    if(dstRect.isEmpty() || srcRect.isEmpty()) {
-        return;
-    }
-
     auto xScale = dstRect.w / srcRect.w;
     auto yScale = dstRect.h / srcRect.h;
     plutovg_matrix_t matrix = {xScale, 0, 0, yScale, -srcRect.x * xScale, -srcRect.y * yScale};
