@@ -706,7 +706,7 @@ bool Document::parse(const char* data, size_t length)
             styleSheet.parseSheet(buffer);
         } else {
             auto node = std::make_unique<SVGTextNode>(this);
-            node->setText(buffer);
+            node->setData(buffer);
             currentElement->addChild(std::move(node));
         }
     };

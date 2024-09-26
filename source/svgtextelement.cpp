@@ -168,7 +168,7 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
 
 void SVGTextFragmentsBuilder::handleText(const SVGTextNode* node)
 {
-    const auto& text = node->text();
+    const auto& text = node->data();
     if(text.empty())
         return;
     auto element = toSVGTextPositioningElement(node->parent());

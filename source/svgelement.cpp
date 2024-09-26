@@ -61,7 +61,7 @@ SVGTextNode::SVGTextNode(Document* document)
 std::unique_ptr<SVGNode> SVGTextNode::clone(bool deep) const
 {
     auto node = std::make_unique<SVGTextNode>(document());
-    node->setText(m_text);
+    node->setData(m_data);
     return node;
 }
 

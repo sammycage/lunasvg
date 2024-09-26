@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
 #if !defined(LUNASVG_BUILD_STATIC) && (defined(_WIN32) || defined(__CYGWIN__))
 #define LUNASVG_EXPORT __declspec(dllexport)
@@ -456,19 +457,104 @@ public:
     float f{0}; ///< The vertical translation offset.
 };
 
+class SVGNode;
+class SVGTextNode;
 class SVGElement;
 
-class LUNASVG_API Element {
+class Element;
+class TextNode;
+
+class LUNASVG_API Node {
+public:
+    /**
+     * @brief Node
+     */
+    Node() = default;
+
+    /**
+     * @brief isTextNode
+     * @return
+     */
+    bool isTextNode() const;
+
+    /**
+     * @brief isElement
+     * @return
+     */
+    bool isElement() const;
+
+    /**
+     * @brief toTextNode
+     * @return
+     */
+    TextNode toTextNode() const;
+
+    /**
+     * @brief toElement
+     * @return
+     */
+    Element toElement() const;
+
+    /**
+     * @brief Checks if the node is null.
+     * @return True if the node is null, false otherwise.
+     */
+    bool isNull() const { return m_node == nullptr; }
+
+    /**
+     * @brief Checks if two nodes are equal.
+     * @param element The node to compare.
+     * @return True if equal, otherwise false.
+     */
+    bool operator==(const Node& node) const { return m_node == node.m_node; }
+
+    /**
+     * @brief Checks if two nodes are not equal.
+     * @param element The node to compare.
+     * @return True if not equal, otherwise false.
+     */
+    bool operator!=(const Node& node) const { return m_node != node.m_node; }
+
+protected:
+    Node(SVGNode* node);
+    SVGNode* node() const { return m_node; }
+    SVGNode* m_node{nullptr};
+    friend class Element;
+};
+
+using NodeList = std::vector<Node>;
+
+class LUNASVG_API TextNode : public Node {
+public:
+    /**
+     * @brief TextNode
+     */
+    TextNode() = default;
+
+    /**
+     * @brief data
+     * @return
+     */
+    const std::string& data() const;
+
+    /**
+     * @brief setData
+     * @param data
+     */
+    void setData(const std::string& data);
+
+private:
+    TextNode(SVGTextNode* text);
+    SVGTextNode* text() const;
+    friend class Node;
+};
+
+class LUNASVG_API Element : public Node {
 public:
     /**
      * @brief Constructs a null element.
      */
     Element() = default;
-
-    /**
-     * @internal
-     */
-    Element(SVGElement* element) : m_element(element) {}
 
     /**
      * @brief Checks if the element has a specific attribute.
@@ -544,32 +630,16 @@ public:
     Element parentElement() const;
 
     /**
-     * @brief Checks if the element is null.
-     * @return True if the element is null, false otherwise.
+     * @brief children
+     * @return
      */
-    bool isNull() const { return m_element == nullptr; }
-
-    /**
-     * @brief Checks if two elements are equal.
-     * @param element The element to compare.
-     * @return True if equal, otherwise false.
-     */
-    bool operator==(const Element& element) const { return m_element == element.get(); }
-
-    /**
-     * @brief Checks if two elements are not equal.
-     * @param element The element to compare.
-     * @return True if not equal, otherwise false.
-     */
-    bool operator!=(const Element& element) const { return m_element != element.get(); }
-
-    /**
-     * @internal
-     */
-    SVGElement* get() const { return m_element; }
+    NodeList children() const;
 
 private:
-    SVGElement* m_element{nullptr};
+    Element(SVGElement* element);
+    SVGElement* element() const;
+    friend class Node;
+    friend class Document;
 };
 
 class SVGRootElement;

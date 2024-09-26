@@ -49,13 +49,13 @@ public:
 
     bool isTextNode() const final { return true; }
 
-    void setText(std::string text) { m_text = std::move(text); }
-    const std::string& text() const { return m_text; }
+    void setData(const std::string& data) { m_data = data; }
+    const std::string& data() const { return m_data; }
 
     std::unique_ptr<SVGNode> clone(bool deep) const final;
 
 private:
-    std::string m_text;
+    std::string m_data;
 };
 
 class Attribute {
