@@ -467,31 +467,31 @@ class TextNode;
 class LUNASVG_API Node {
 public:
     /**
-     * @brief Node
+     * @brief Constructs a null node.
      */
     Node() = default;
 
     /**
-     * @brief isTextNode
-     * @return
+     * @brief Checks if the node is a text node.
+     * @return True if the node is a text node, false otherwise.
      */
     bool isTextNode() const;
 
     /**
-     * @brief isElement
-     * @return
+     * @brief Checks if the node is an element node.
+     * @return True if the node is an element node, false otherwise.
      */
     bool isElement() const;
 
     /**
-     * @brief toTextNode
-     * @return
+     * @brief Converts the node to a TextNode.
+     * @return A TextNode or a null node if conversion is not possible.
      */
     TextNode toTextNode() const;
 
     /**
-     * @brief toElement
-     * @return
+     * @brief Converts the node to an Element.
+     * @return An Element or a null node if conversion is not possible.
      */
     Element toElement() const;
 
@@ -527,19 +527,19 @@ using NodeList = std::vector<Node>;
 class LUNASVG_API TextNode : public Node {
 public:
     /**
-     * @brief TextNode
+     * @brief Constructs a null text node.
      */
     TextNode() = default;
 
     /**
-     * @brief data
-     * @return
+     * @brief Returns the text content of the node.
+     * @return A string representing the text content.
      */
     const std::string& data() const;
 
     /**
-     * @brief setData
-     * @param data
+     * @brief Sets the text content of the node.
+     * @param data The new text content to set.
      */
     void setData(const std::string& data);
 
@@ -630,8 +630,8 @@ public:
     Element parentElement() const;
 
     /**
-     * @brief children
-     * @return
+     * @brief Returns the child nodes of this node.
+     * @return A NodeList containing the child nodes.
      */
     NodeList children() const;
 
