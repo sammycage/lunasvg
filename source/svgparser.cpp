@@ -360,9 +360,7 @@ bool StyleSheet::parseRule(std::string_view& input, Rule& rule)
     rule.declarations.clear();
     if(!parseSelectors(input, rule.selectors))
         return false;
-    if(!parseDeclarations(input, rule.declarations))
-        return false;
-    return true;
+    return parseDeclarations(input, rule.declarations);
 }
 
 bool StyleSheet::parseSelectors(std::string_view& input, SelectorList& selectors)

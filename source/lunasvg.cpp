@@ -262,14 +262,14 @@ bool Node::isElement() const
 TextNode Node::toTextNode() const
 {
     if(m_node && m_node->isTextNode())
-        return TextNode(static_cast<SVGTextNode*>(m_node));
+        return static_cast<SVGTextNode*>(m_node);
     return TextNode();
 }
 
 Element Node::toElement() const
 {
     if(m_node && m_node->isElement())
-        return Element(static_cast<SVGElement*>(m_node));
+        return static_cast<SVGElement*>(m_node);
     return Element();
 }
 
@@ -405,7 +405,7 @@ NodeList Element::children() const
         return NodeList();
     NodeList children;
     for(const auto& child : element()->children())
-        children.push_back(Node(child.get()));
+        children.push_back(child.get());
     return children;
 }
 

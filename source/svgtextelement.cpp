@@ -184,7 +184,7 @@ void SVGTextFragmentsBuilder::handleText(const SVGTextNode* node)
         auto currentCharacter = plutovg_text_iterator_next(&it);
         if(currentCharacter == '\t' || currentCharacter == '\n' || currentCharacter == '\r')
             currentCharacter = ' ';
-        if(element->white_space() == WhiteSpace::Default && currentCharacter == ' ' && lastCharacter == ' ')
+        if(currentCharacter == ' ' && lastCharacter == ' ' && element->white_space() == WhiteSpace::Default)
             continue;
         m_text.push_back(currentCharacter);
         lastCharacter = currentCharacter;
