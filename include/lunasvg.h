@@ -496,6 +496,12 @@ public:
     Element toElement() const;
 
     /**
+     * @brief Returns the parent element.
+     * @return The parent element of this node. If this node has no parent, a null `Element` is returned.
+     */
+    Element parentElement() const;
+
+    /**
      * @brief Checks if the node is null.
      * @return True if the node is null, false otherwise.
      */
@@ -622,12 +628,6 @@ public:
      * @return A Box representing the bounding box of the element without any transformations applied.
      */
     Box getBoundingBox() const;
-
-    /**
-     * @brief Returns the parent element.
-     * @return The parent element of this element. If this element has no parent, a null `Element` is returned.
-     */
-    Element parentElement() const;
 
     /**
      * @brief Returns the child nodes of this node.

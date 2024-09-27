@@ -273,6 +273,13 @@ Element Node::toElement() const
     return Element();
 }
 
+Element Node::parentElement() const
+{
+    if(m_node)
+        return m_node->parent();
+    return Element();
+}
+
 TextNode::TextNode(SVGTextNode* text)
     : Node(text)
 {
@@ -390,13 +397,6 @@ Box Element::getBoundingBox() const
     if(m_node)
         return element()->paintBoundingBox();
     return Box();
-}
-
-Element Element::parentElement() const
-{
-    if(m_node)
-        return element()->parent();
-    return Element();
 }
 
 NodeList Element::children() const
