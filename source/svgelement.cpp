@@ -142,12 +142,12 @@ const std::string& SVGElement::getAttribute(const std::string_view& name) const
     return getAttribute(id);
 }
 
-bool SVGElement::setAttribute(const std::string_view& name, std::string value)
+bool SVGElement::setAttribute(const std::string_view& name, const std::string& value)
 {
     auto id = propertyid(name);
     if(id == PropertyID::Unknown)
         return false;
-    return setAttribute(0x1000, id, std::move(value));
+    return setAttribute(0x1000, id, value);
 }
 
 const Attribute* SVGElement::findAttribute(PropertyID id) const
@@ -183,20 +183,20 @@ const std::string& SVGElement::getAttribute(PropertyID id) const
     return emptyString;
 }
 
-bool SVGElement::setAttribute(int specificity, PropertyID id, std::string value)
+bool SVGElement::setAttribute(int specificity, PropertyID id, const std::string& value)
 {
     for(auto& attribute : m_attributes) {
         if(id == attribute.id()) {
             if(specificity < attribute.specificity())
                 return false;
             parseAttribute(id, value);
-            attribute = Attribute(specificity, id, std::move(value));
+            attribute = Attribute(specificity, id, value);
             return true;
         }
     }
 
     parseAttribute(id, value);
-    m_attributes.emplace_front(specificity, id, std::move(value));
+    m_attributes.emplace_front(specificity, id, value);
     return true;
 }
 

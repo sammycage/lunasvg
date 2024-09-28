@@ -126,12 +126,12 @@ public:
 
     bool hasAttribute(const std::string_view& name) const;
     const std::string& getAttribute(const std::string_view& name) const;
-    bool setAttribute(const std::string_view& name, std::string value);
+    bool setAttribute(const std::string_view& name, const std::string& value);
 
     const Attribute* findAttribute(PropertyID id) const;
     bool hasAttribute(PropertyID id) const;
     const std::string& getAttribute(PropertyID id) const;
-    bool setAttribute(int specificity, PropertyID id, std::string value);
+    bool setAttribute(int specificity, PropertyID id, const std::string& value);
     void setAttributes(const AttributeList& attributes);
     bool setAttribute(const Attribute& attribute);
 
