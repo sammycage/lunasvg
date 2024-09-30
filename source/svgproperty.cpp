@@ -48,7 +48,6 @@ PropertyID propertyid(const std::string_view& name)
         {"style", PropertyID::Style},
         {"transform", PropertyID::Transform},
         {"viewBox", PropertyID::ViewBox},
-        {"white-space", PropertyID::WhiteSpace},
         {"width", PropertyID::Width},
         {"x", PropertyID::X},
         {"x1", PropertyID::X1},
