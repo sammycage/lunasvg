@@ -1,5 +1,8 @@
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+include_directories(/usr/local/include/lunasvg/)
+link_directories(/usr/local/lib/)
+
 add_executable(svg2png svg2png.cpp)
-target_link_libraries(svg2png lunasvg)
+target_link_libraries(svg2png lunasvg plutovg)
