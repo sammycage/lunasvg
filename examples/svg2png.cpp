@@ -38,7 +38,7 @@ bool setup(int argc, char** argv, std::string& filename, std::uint32_t& width, s
     return argc > 1;
 }
 
-int main(int argc, char** argv)
+int main(int argc, char* argv[])
 {
     std::string filename;
     std::uint32_t width = 0, height = 0;

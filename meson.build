@@ -33,7 +33,6 @@ lunasvg_lib = library('lunasvg', lunasvg_sources,
     include_directories: include_directories('include', 'source'),
     dependencies: plutovg_dep,
     version: meson.project_version(),
-    c_args: ['-DLUNASVG_BUILD'] + lunasvg_compile_args,
     cpp_args: ['-DLUNASVG_BUILD'] + lunasvg_compile_args,
     gnu_symbol_visibility: 'hidden',
     install: true

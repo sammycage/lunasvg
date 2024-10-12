@@ -116,8 +116,7 @@ static GradientStops buildGradientStops(const SVGGradientElement* element, float
 {
     GradientStops gradientStops;
     for(const auto& child : element->children()) {
-        auto element = toSVGElement(child);
-        if(element && element->id() == ElementID::Stop) {
+        if(auto element = toSVGElement(child); element && element->id() == ElementID::Stop) {
             auto stopElement = static_cast<SVGStopElement*>(element);
             gradientStops.push_back(stopElement->gradientStop(opacity));
         }
