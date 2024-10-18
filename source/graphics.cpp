@@ -417,12 +417,10 @@ bool FontFaceCache::addFontFace(const std::string& family, bool bold, bool itali
     return !face.isNull();
 }
 
-FontFace FontFaceCache::getFontFace(const std::string& family, bool bold, bool italic)
+FontFace FontFaceCache::getFontFace(const std::string_view& family, bool bold, bool italic)
 {
     auto it = m_table.find(family);
     if(it == m_table.end()) {
-        if(!family.empty())
-            return getFontFace(emptyString, bold, italic);
         return FontFace();
     }
 
