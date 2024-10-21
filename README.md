@@ -37,7 +37,43 @@ LunaSVG supports nearly all graphical features outlined in the SVG 1.1 and SVG 1
 
 ## Installation
 
-Follow the steps below to install LunaSVG using either [Meson](https://mesonbuild.com/) or [CMake](https://cmake.org/).
+Follow the steps below to install LunaSVG using either [CMake](https://cmake.org/) or [Meson](https://mesonbuild.com/).
+
+### Using CMake
+
+```bash
+git clone https://github.com/sammycage/lunasvg.git
+cd lunasvg
+cmake -B build .
+cmake --build build
+cmake --install build
+```
+
+After installing LunaSVG, you can include the library in your CMake projects using `find_package`:
+
+```cmake
+find_package(lunasvg REQUIRED)
+
+# Link LunaSVG to your target
+target_link_libraries(your_target_name PRIVATE lunasvg::lunasvg)
+```
+
+Alternatively, you can use CMake's `FetchContent` to include LunaSVG directly in your project without needing to install it first:
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(
+    lunasvg
+    GIT_REPOSITORY https://github.com/sammycage/lunasvg.git
+    GIT_TAG master  # Specify the desired branch or tag
+)
+FetchContent_MakeAvailable(lunasvg)
+
+# Link LunaSVG to your target
+target_link_libraries(your_target_name PRIVATE lunasvg::lunasvg)
+```
+
+Replace `your_target_name` with the name of your executable or library target.
 
 ### Using Meson
 
@@ -49,14 +85,28 @@ meson compile -C build
 meson install -C build
 ```
 
-### Using CMake
+After installing LunaSVG, you can include the library in your Meson projects using the `dependency` function:
 
-```bash
-git clone https://github.com/sammycage/lunasvg.git
-cd lunasvg
-cmake -B build .
-cmake --build build
-cmake --install build
+```meson
+lunasvg_dep = dependency('lunasvg', required: true)
+```
+
+Alternatively, add `lunasvg.wrap` to your `subprojects` directory to include LunaSVG directly in your project without needing to install it first. Create a file named `lunasvg.wrap` with the following content:
+
+```ini
+[wrap-git]
+url = https://github.com/sammycage/lunasvg.git
+revision = head
+depth = 1
+
+[provide]
+lunasvg = lunasvg_dep
+```
+
+You can retrieve the dependency from the wrap fallback with:
+
+```meson
+lunasvg_dep = dependency('lunasvg', fallback: ['lunasvg', 'lunasvg_dep'])
 ```
 
 ## Demo
@@ -81,6 +131,7 @@ $ svg2png input.svg 512x512 0xff00ffff
 - [PICsimLab](https://github.com/lcgamboa/picsimlab)
 - [MoneyManagerEx](https://github.com/moneymanagerex/moneymanagerex)
 - [RmlUi](https://github.com/mikke89/RmlUi)
+- [EKA2L1](https://github.com/EKA2L1/EKA2L1)
 - [ObEngine](https://github.com/ObEngine/ObEngine)
 - [OTTO](https://github.com/bitfieldaudio/OTTO)
 - [EmulationStation-DE](https://gitlab.com/es-de/emulationstation-de)
@@ -88,3 +139,4 @@ $ svg2png input.svg 512x512 0xff00ffff
 - [Dear ImGui](https://github.com/ocornut/imgui)
 - [Multi Theft Auto: San Andreas](https://github.com/multitheftauto/mtasa-blue)
 - [eScada Solutions](https://www.escadasolutions.com)
+- [CARLA Simulator](https://carla.org/)
