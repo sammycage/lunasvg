@@ -558,23 +558,17 @@ void Canvas::setColor(float r, float g, float b, float a)
 
 void Canvas::setLinearGradient(float x1, float y1, float x2, float y2, SpreadMethod spread, const GradientStops& stops, const Transform& transform)
 {
-    auto paint = plutovg_paint_create_linear_gradient(x1, y1, x2, y2, plutovg_spread_method_t(spread), stops.data(), stops.size(), &transform.matrix());
-    plutovg_canvas_set_paint(m_canvas, paint);
-    plutovg_paint_destroy(paint);
+    plutovg_canvas_set_linear_gradient(m_canvas, x1, y1, x2, y2, static_cast<plutovg_spread_method_t>(spread), stops.data(), stops.size(), &transform.matrix());
 }
 
 void Canvas::setRadialGradient(float cx, float cy, float r, float fx, float fy, SpreadMethod spread, const GradientStops& stops, const Transform& transform)
 {
-    auto paint = plutovg_paint_create_radial_gradient(cx, cy, r, fx, fy, 0.f, plutovg_spread_method_t(spread), stops.data(), stops.size(), &transform.matrix());
-    plutovg_canvas_set_paint(m_canvas, paint);
-    plutovg_paint_destroy(paint);
+    plutovg_canvas_set_radial_gradient(m_canvas, cx, cy, r, fx, fy, 0.f, static_cast<plutovg_spread_method_t>(spread), stops.data(), stops.size(), &transform.matrix());
 }
 
 void Canvas::setTexture(const Canvas& source, TextureType type, float opacity, const Transform& transform)
 {
-    auto paint = plutovg_paint_create_texture(source.surface(), plutovg_texture_type_t(type), opacity, &transform.matrix());
-    plutovg_canvas_set_paint(m_canvas, paint);
-    plutovg_paint_destroy(paint);
+    plutovg_canvas_set_texture(m_canvas, source.surface(), static_cast<plutovg_texture_type_t>(type), opacity, &transform.matrix());
 }
 
 void Canvas::fillPath(const Path& path, FillRule fillRule, const Transform& transform)
@@ -582,7 +576,7 @@ void Canvas::fillPath(const Path& path, FillRule fillRule, const Transform& tran
     plutovg_canvas_reset_matrix(m_canvas);
     plutovg_canvas_translate(m_canvas, -m_x, -m_y);
     plutovg_canvas_transform(m_canvas, &transform.matrix());
-    plutovg_canvas_set_fill_rule(m_canvas, plutovg_fill_rule_t(fillRule));
+    plutovg_canvas_set_fill_rule(m_canvas, static_cast<plutovg_fill_rule_t>(fillRule));
     plutovg_canvas_set_operator(m_canvas, PLUTOVG_OPERATOR_SRC_OVER);
     plutovg_canvas_fill_path(m_canvas, path.data());
 }
@@ -594,8 +588,8 @@ void Canvas::strokePath(const Path& path, const StrokeData& strokeData, const Tr
     plutovg_canvas_transform(m_canvas, &transform.matrix());
     plutovg_canvas_set_line_width(m_canvas, strokeData.lineWidth());
     plutovg_canvas_set_miter_limit(m_canvas, strokeData.miterLimit());
-    plutovg_canvas_set_line_cap(m_canvas, plutovg_line_cap_t(strokeData.lineCap()));
-    plutovg_canvas_set_line_join(m_canvas, plutovg_line_join_t(strokeData.lineJoin()));
+    plutovg_canvas_set_line_cap(m_canvas, static_cast<plutovg_line_cap_t>(strokeData.lineCap()));
+    plutovg_canvas_set_line_join(m_canvas, static_cast<plutovg_line_join_t>(strokeData.lineJoin()));
     plutovg_canvas_set_dash_offset(m_canvas, strokeData.dashOffset());
     plutovg_canvas_set_dash_array(m_canvas, strokeData.dashArray().data(), strokeData.dashArray().size());
     plutovg_canvas_set_operator(m_canvas, PLUTOVG_OPERATOR_SRC_OVER);
@@ -634,7 +628,7 @@ void Canvas::clipPath(const Path& path, FillRule clipRule, const Transform& tran
     plutovg_canvas_reset_matrix(m_canvas);
     plutovg_canvas_translate(m_canvas, -m_x, -m_y);
     plutovg_canvas_transform(m_canvas, &transform.matrix());
-    plutovg_canvas_set_fill_rule(m_canvas, plutovg_fill_rule_t(clipRule));
+    plutovg_canvas_set_fill_rule(m_canvas, static_cast<plutovg_fill_rule_t>(clipRule));
     plutovg_canvas_clip_path(m_canvas, path.data());
 }
 
@@ -643,7 +637,7 @@ void Canvas::clipRect(const Rect& rect, FillRule clipRule, const Transform& tran
     plutovg_canvas_reset_matrix(m_canvas);
     plutovg_canvas_translate(m_canvas, -m_x, -m_y);
     plutovg_canvas_transform(m_canvas, &transform.matrix());
-    plutovg_canvas_set_fill_rule(m_canvas, plutovg_fill_rule_t(clipRule));
+    plutovg_canvas_set_fill_rule(m_canvas, static_cast<plutovg_fill_rule_t>(clipRule));
     plutovg_canvas_clip_rect(m_canvas, rect.x, rect.y, rect.w, rect.h);
 }
 
@@ -651,31 +645,25 @@ void Canvas::drawImage(const Bitmap& image, const Rect& dstRect, const Rect& src
 {
     auto xScale = dstRect.w / srcRect.w;
     auto yScale = dstRect.h / srcRect.h;
-    plutovg_matrix_t matrix = {xScale, 0, 0, yScale, -srcRect.x * xScale, -srcRect.y * yScale};
-
-    auto paint = plutovg_paint_create_texture(image.surface(), PLUTOVG_TEXTURE_TYPE_PLAIN, 1.f, &matrix);
+    auto matrix = PLUTOVG_MAKE_MATRIX(xScale, 0, 0, yScale, -srcRect.x * xScale, -srcRect.y * yScale);
     plutovg_canvas_reset_matrix(m_canvas);
     plutovg_canvas_translate(m_canvas, -m_x, -m_y);
     plutovg_canvas_transform(m_canvas, &transform.matrix());
     plutovg_canvas_translate(m_canvas, dstRect.x, dstRect.y);
     plutovg_canvas_set_fill_rule(m_canvas, PLUTOVG_FILL_RULE_NON_ZERO);
     plutovg_canvas_set_operator(m_canvas, PLUTOVG_OPERATOR_SRC_OVER);
-    plutovg_canvas_set_paint(m_canvas, paint);
+    plutovg_canvas_set_texture(m_canvas, image.surface(), PLUTOVG_TEXTURE_TYPE_PLAIN, 1.f, &matrix);
     plutovg_canvas_fill_rect(m_canvas, 0, 0, dstRect.w, dstRect.h);
-    plutovg_paint_destroy(paint);
 }
 
 void Canvas::blendCanvas(const Canvas& canvas, BlendMode blendMode, float opacity)
 {
-    auto transform = Transform::translated(canvas.x(), canvas.y());
-    auto paint = plutovg_paint_create_texture(canvas.surface(), PLUTOVG_TEXTURE_TYPE_PLAIN, opacity, nullptr);
+    auto matrix = PLUTOVG_MAKE_TRANSLATE(static_cast<float>(canvas.x()), static_cast<float>(canvas.y()));
     plutovg_canvas_reset_matrix(m_canvas);
     plutovg_canvas_translate(m_canvas, -m_x, -m_y);
-    plutovg_canvas_transform(m_canvas, &transform.matrix());
-    plutovg_canvas_set_operator(m_canvas, plutovg_operator_t(blendMode));
-    plutovg_canvas_set_paint(m_canvas, paint);
+    plutovg_canvas_set_operator(m_canvas, static_cast<plutovg_operator_t>(blendMode));
+    plutovg_canvas_set_texture(m_canvas, canvas.surface(), PLUTOVG_TEXTURE_TYPE_PLAIN, opacity, &matrix);
     plutovg_canvas_paint(m_canvas);
-    plutovg_paint_destroy(paint);
 }
 
 void Canvas::save()
