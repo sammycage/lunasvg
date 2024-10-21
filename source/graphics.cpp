@@ -645,7 +645,7 @@ void Canvas::drawImage(const Bitmap& image, const Rect& dstRect, const Rect& src
 {
     auto xScale = dstRect.w / srcRect.w;
     auto yScale = dstRect.h / srcRect.h;
-    auto matrix = PLUTOVG_MAKE_MATRIX(xScale, 0, 0, yScale, -srcRect.x * xScale, -srcRect.y * yScale);
+    plutovg_matrix_t matrix = { xScale, 0, 0, yScale, -srcRect.x * xScale, -srcRect.y * yScale };
     plutovg_canvas_reset_matrix(m_canvas);
     plutovg_canvas_translate(m_canvas, -m_x, -m_y);
     plutovg_canvas_transform(m_canvas, &transform.matrix());
@@ -658,7 +658,7 @@ void Canvas::drawImage(const Bitmap& image, const Rect& dstRect, const Rect& src
 
 void Canvas::blendCanvas(const Canvas& canvas, BlendMode blendMode, float opacity)
 {
-    auto matrix = PLUTOVG_MAKE_TRANSLATE(static_cast<float>(canvas.x()), static_cast<float>(canvas.y()));
+    plutovg_matrix_t matrix = { 1, 0, 0, 1, static_cast<float>(canvas.x()), static_cast<float>(canvas.y()) };
     plutovg_canvas_reset_matrix(m_canvas);
     plutovg_canvas_translate(m_canvas, -m_x, -m_y);
     plutovg_canvas_set_operator(m_canvas, static_cast<plutovg_operator_t>(blendMode));
