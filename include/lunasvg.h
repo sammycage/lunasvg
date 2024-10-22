@@ -243,9 +243,9 @@ public:
     /**
      * @brief Checks if the bitmap is valid.
      * @deprecated This function has been deprecated. Use `isNull()` instead to check whether the bitmap is null.
-     * @return True if the bitmap is null, false otherwise.
+     * @return True if the bitmap is valid, false otherwise.
      */
-    bool valid() const { return isNull(); }
+    bool valid() const { return !isNull(); }
 
     /**
      * @brief Writes the bitmap to a PNG file.
