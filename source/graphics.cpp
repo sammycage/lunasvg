@@ -417,11 +417,35 @@ bool FontFaceCache::addFontFace(const std::string& family, bool bold, bool itali
     return !face.isNull();
 }
 
+void FontFaceCache::registerMissingFontCallback(const std::function<const std::string(const std::string&, bool, bool)>& callback)
+{
+    m_callback = callback;
+}
+
+FontFace FontFaceCache::tryRequestFontFace(const std::string_view& family, bool bold, bool italic)
+{
+    if (m_callback == nullptr) {
+        return FontFace();
+    }
+    std::string filename = m_callback(std::string(family), bold, italic);
+    if (filename.empty()) {
+        return FontFace();
+    }
+    auto face = FontFace(filename.c_str());
+    if(!face.isNull()) {
+        addFontFace(std::string(family), bold, italic, face);
+        return face;
+    }
+    else {
+        return FontFace();
+    }
+}
+
 FontFace FontFaceCache::getFontFace(const std::string_view& family, bool bold, bool italic)
 {
     auto it = m_table.find(family);
     if(it == m_table.end()) {
-        return FontFace();
+        return tryRequestFontFace(family, bold, italic);
     }
 
     auto select = [bold, italic](const FontFaceEntry& a, const FontFaceEntry& b) {
@@ -438,6 +462,11 @@ FontFace FontFaceCache::getFontFace(const std::string_view& family, bool bold, b
     for(const auto& item : it->second) {
         entry = select(entry, item);
     }
+
+    if(bold != std::get<0>(entry) || italic != std::get<1>(entry)) {
+        return tryRequestFontFace(family, bold, italic);
+    }
+
 
     return std::get<2>(entry);
 }
