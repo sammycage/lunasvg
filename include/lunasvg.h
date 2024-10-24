@@ -27,6 +27,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <functional>
 
 #if !defined(LUNASVG_BUILD_STATIC) && (defined(_WIN32) || defined(__CYGWIN__))
 #define LUNASVG_EXPORT __declspec(dllexport)
@@ -128,6 +129,50 @@ LUNASVG_API bool lunasvg_add_font_face_from_data(const char* family, bool bold, 
 #endif
 
 namespace lunasvg {
+
+/**
+ * @brief A callback function type to handle missing fonts.
+ * @param family The name of the font family.
+ * @param bold Use `true` for bold, `false` otherwise.
+ * @param italic Use `true` for italic, `false` otherwise.
+ * @return The path to the font file or an empty string if the font is not found.
+ */
+typedef std::function<const std::string(const std::string& family, bool bold, bool italic)> MissingFontCallback;
+
+/**
+ * @brief Allows to user to load custom fonts.
+ */
+namespace LUNASVG_API FontManager {
+    /**
+     * @brief Add a font face from a file to the cache.
+     * @param family The name of the font family. If an empty string is provided, the font will act as a fallback.
+     * @param bold Use `true` for bold, `false` otherwise.
+     * @param italic Use `true` for italic, `false` otherwise.
+     * @param filename The path to the font file.
+     * @return `true` if the font face was successfully added to the cache, `false` otherwise.
+     */
+    bool addFromFile(const std::string& family, bool bold, bool italic, const std::string& filename);
+
+    /**
+     * @brief Add a font face from memory to the cache.
+     * @param family The name of the font family. If an empty string is provided, the font will act as a fallback.
+     * @param bold Use `true` for bold, `false` otherwise.
+     * @param italic Use `true` for italic, `false` otherwise.
+     * @param data A pointer to the memory buffer containing the font data.
+     * @param length The size of the memory buffer in bytes.
+     * @param destroy_func Callback function to free the memory buffer when it is no longer needed.
+     * @param closure User-defined pointer passed to the `destroy_func` callback.
+     * @return `true` if the font face was successfully added to the cache, `false` otherwise.
+     */
+    bool addFromData(const std::string& family, bool bold, bool italic, const void* data, size_t length, lunasvg_destroy_func_t destroy_func, void* closure);
+
+
+    /**
+     * @brief Registers a callback function to handle missing fonts.
+     * @param callback The callback function to register.
+     */
+    void registerMissingFontCalback(MissingFontCallback callback);
+}
 
 /**
 * @note Bitmap pixel format is ARGB32_Premultiplied.

@@ -11,6 +11,7 @@
 #include <array>
 #include <string>
 #include <map>
+#include <functional>
 
 namespace lunasvg {
 
@@ -421,12 +422,16 @@ class FontFaceCache {
 public:
     bool addFontFace(const std::string& family, bool bold, bool italic, const FontFace& face);
     FontFace getFontFace(const std::string_view& family, bool bold, bool italic);
+    void registerMissingFontCallback(const std::function<const std::string(const std::string&, bool, bool)>& callback);
 
 private:
     FontFaceCache();
     using FontFaceEntry = std::tuple<bool, bool, FontFace>;
     std::map<std::string, std::vector<FontFaceEntry>, std::less<>> m_table;
+    std::function<const std::string(const std::string&, bool, bool)> m_callback = nullptr;
     friend FontFaceCache* fontFaceCache();
+
+    FontFace tryRequestFontFace(const std::string_view& family, bool bold, bool italic);
 };
 
 FontFaceCache* fontFaceCache();
