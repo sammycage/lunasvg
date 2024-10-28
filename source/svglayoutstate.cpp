@@ -99,9 +99,15 @@ static float parseNumberOrPercentage(std::string_view input, bool allowPercentag
     float value;
     if(!parseNumber(input, value))
         return defaultValue;
-    if(allowPercentage && skipDelimiter(input, '%'))
-        value /= 100.f;
-    return !input.empty() ? defaultValue : std::clamp(value, 0.f, 1.f);
+    if(allowPercentage) {
+        if(skipDelimiter(input, '%'))
+            value /= 100.f;
+        value = std::clamp(value, 0.f, 1.f);
+    }
+
+    if(!input.empty())
+        return defaultValue;
+    return value;
 }
 
 static Length parseLength(const std::string_view& input, LengthNegativeMode mode, const Length& defaultValue)
