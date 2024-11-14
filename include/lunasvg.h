@@ -683,6 +683,12 @@ public:
     static std::unique_ptr<Document> loadFromData(const char* data, size_t length);
 
     /**
+     * @brief Applies a CSS stylesheet to the document.
+     * @param content A string containing the CSS rules to apply.
+     */
+    void applyStyleSheet(const std::string& content);
+
+    /**
      * @brief Returns the intrinsic width of the document in pixels.
      * @return The width of the document.
      */

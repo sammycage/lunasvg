@@ -683,7 +683,7 @@ inline bool readIdentifier(std::string_view& input, std::string& output)
 bool Document::parse(const char* data, size_t length)
 {
     std::string buffer;
-    StyleSheet styleSheet;
+    std::string styleSheet;
     SVGElement* currentElement = nullptr;
     int ignoring = 0;
     auto handleText = [&](const std::string_view& text, bool in_cdata) {
@@ -701,7 +701,7 @@ bool Document::parse(const char* data, size_t length)
 
         if(currentElement->id() == ElementID::Style) {
             removeStyleComments(buffer);
-            styleSheet.parseSheet(buffer);
+            styleSheet.append(buffer);
         } else {
             auto node = std::make_unique<SVGTextNode>(this);
             node->setData(buffer);
@@ -871,6 +871,15 @@ bool Document::parse(const char* data, size_t length)
 
     if(m_rootElement == nullptr || ignoring > 0 || !input.empty())
         return false;
+    applyStyleSheet(styleSheet);
+    m_rootElement->build();
+    return true;
+}
+
+void Document::applyStyleSheet(const std::string& content)
+{
+    StyleSheet styleSheet;
+    styleSheet.parseSheet(content);
     if(!styleSheet.isEmpty()) {
         styleSheet.sortRules();
         m_rootElement->transverse([&styleSheet](SVGNode* node) {
@@ -888,9 +897,6 @@ bool Document::parse(const char* data, size_t length)
             return true;
         });
     }
-
-    m_rootElement->build();
-    return true;
 }
 
 } // namespace lunasvg
