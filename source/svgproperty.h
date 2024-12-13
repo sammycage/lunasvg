@@ -9,6 +9,7 @@ namespace lunasvg {
 
 enum class PropertyID : uint8_t {
     Unknown = 0,
+    Baseline_Shift,
     Class,
     ClipPathUnits,
     Clip_Path,
@@ -325,6 +326,27 @@ private:
     const LengthDirection m_direction;
     const LengthNegativeMode m_negativeMode;
     LengthList m_values;
+};
+
+class BaselineShift {
+public:
+    enum class Type {
+        Baseline,
+        Sub,
+        Super,
+        Length
+    };
+
+    BaselineShift() = default;
+    BaselineShift(Type type) : m_type(type) {}
+    BaselineShift(const Length& length) : m_type(Type::Length), m_length(length) {}
+
+    Type type() const { return m_type; }
+    const Length& length() const { return m_length; }
+
+private:
+    Type m_type{Type::Baseline};
+    Length m_length;
 };
 
 class SVGNumber : public SVGProperty {

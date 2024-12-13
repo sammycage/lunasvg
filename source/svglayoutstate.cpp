@@ -118,6 +118,17 @@ static Length parseLength(const std::string_view& input, LengthNegativeMode mode
     return value;
 }
 
+static BaselineShift parseBaselineShift(const std::string_view& input)
+{
+    if(input.compare("baseline") == 0)
+        return BaselineShift::Type::Baseline;
+    if(input.compare("sub") == 0)
+        return BaselineShift::Type::Sub;
+    if(input.compare("super") == 0)
+        return BaselineShift::Type::Super;
+    return parseLength(input, LengthNegativeMode::Allow, Length(0.f, LengthUnits::None));
+}
+
 static LengthList parseDashArray(std::string_view input)
 {
     if(input.compare("none") == 0)
@@ -363,6 +374,9 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
             break;
         case PropertyID::Font_Size:
             m_font_size = parseFontSize(input, this);
+            break;
+        case PropertyID::Baseline_Shift:
+            m_baseline_shit = parseBaselineShift(input);
             break;
         case PropertyID::Stroke_Width:
             m_stroke_width = parseLength(input, LengthNegativeMode::Forbid, Length(1.f, LengthUnits::None));

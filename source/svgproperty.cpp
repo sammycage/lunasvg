@@ -71,6 +71,7 @@ PropertyID csspropertyid(const std::string_view& name)
         std::string_view name;
         PropertyID value;
     } table[] = {
+        {"baseline-shift", PropertyID::Baseline_Shift},
         {"clip-path", PropertyID::Clip_Path},
         {"clip-rule", PropertyID::Clip_Rule},
         {"color", PropertyID::Color},
@@ -240,8 +241,8 @@ bool Length::parse(std::string_view input, LengthNegativeMode mode)
             m_value = value * dpi / 72.f;
         else
             return false;
-        input.remove_prefix(1);
         m_units = LengthUnits::Px;
+        input.remove_prefix(1);
         break;
     case 'i':
         input.remove_prefix(1);

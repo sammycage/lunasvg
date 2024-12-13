@@ -26,6 +26,7 @@ public:
     float stroke_miterlimit() const { return m_stroke_miterlimit; }
     float font_size() const { return m_font_size; }
 
+    const BaselineShift& baseline_shit() const { return m_baseline_shit; }
     const Length& stroke_width() const { return m_stroke_width; }
     const Length& stroke_dashoffset() const { return m_stroke_dashoffset; }
     const LengthList& stroke_dasharray() const { return m_stroke_dasharray; }
@@ -74,6 +75,7 @@ private:
     float m_stroke_miterlimit = 4.f;
     float m_font_size = 12.f;
 
+    BaselineShift m_baseline_shit;
     Length m_stroke_width{1.f, LengthUnits::None};
     Length m_stroke_dashoffset{0.f, LengthUnits::None};
     LengthList m_stroke_dasharray;

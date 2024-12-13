@@ -388,7 +388,7 @@ public:
 
 private:
     const plutovg_path_element_t* m_elements;
-    int m_size;
+    const int m_size;
     int m_index;
 };
 

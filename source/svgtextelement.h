@@ -80,6 +80,7 @@ public:
     const Font& font() const { return m_font; }
     const SVGPaintServer& fill() const { return m_fill; }
     const SVGPaintServer& stroke() const { return m_stroke; }
+    const BaselineShift& baseline_shit() const { return m_baseline_shit; }
 
     float stroke_width() const { return m_stroke_width; }
     TextAnchor text_anchor() const { return m_text_anchor; }
@@ -98,6 +99,7 @@ private:
     Font m_font;
     SVGPaintServer m_fill;
     SVGPaintServer m_stroke;
+    BaselineShift m_baseline_shit;
 
     float m_stroke_width = 1.f;
     TextAnchor m_text_anchor = TextAnchor::Start;

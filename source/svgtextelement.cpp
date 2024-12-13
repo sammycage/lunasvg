@@ -8,7 +8,26 @@ namespace lunasvg {
 
 static float calculateBaselineOffset(const SVGTextPositioningElement* element)
 {
-    return 0.f;
+    const auto& baselineShift = element->baseline_shit();
+    if(baselineShift.type() == BaselineShift::Type::Baseline) {
+        return 0.f;
+    }
+
+    const auto& font = element->font();
+    if(baselineShift.type() == BaselineShift::Type::Sub)
+        return -font.height() / 2.f;
+    if(baselineShift.type() == BaselineShift::Type::Super) {
+        return font.height() / 2.f;
+    }
+
+    const auto& length = baselineShift.length();
+    if(length.units() == LengthUnits::Percent)
+        return length.value() * font.size() / 100.f;
+    if(length.units() == LengthUnits::Ex)
+        return length.value() * font.size() / 2.f;
+    if(length.units() == LengthUnits::Em)
+        return length.value() * font.size();
+    return length.value();
 }
 
 static bool needsTextAnchorAdjustment(const SVGTextPositioningElement* element)
@@ -281,6 +300,7 @@ void SVGTextPositioningElement::layoutElement(const SVGLayoutState& state)
     m_font = state.font();
     m_fill = getPaintServer(state.fill(), state.fill_opacity());
     m_stroke = getPaintServer(state.stroke(), state.stroke_opacity());
+    m_baseline_shit = state.baseline_shit();
     SVGGraphicsElement::layoutElement(state);
 
     LengthContext lengthContext(this);
