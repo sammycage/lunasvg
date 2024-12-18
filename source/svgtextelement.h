@@ -80,9 +80,9 @@ public:
     const Font& font() const { return m_font; }
     const SVGPaintServer& fill() const { return m_fill; }
     const SVGPaintServer& stroke() const { return m_stroke; }
-    const BaselineShift& baseline_shit() const { return m_baseline_shit; }
 
     float stroke_width() const { return m_stroke_width; }
+    float baseline_offset() const { return m_baseline_offset; }
     TextAnchor text_anchor() const { return m_text_anchor; }
     WhiteSpace white_space() const { return m_white_space; }
     Direction direction() const { return m_direction; }
@@ -90,6 +90,7 @@ public:
     void layoutElement(const SVGLayoutState& state) override;
 
 private:
+    float convertBaselineOffset(const BaselineShift& baselineShift) const;
     SVGLengthList m_x;
     SVGLengthList m_y;
     SVGLengthList m_dx;
@@ -99,9 +100,9 @@ private:
     Font m_font;
     SVGPaintServer m_fill;
     SVGPaintServer m_stroke;
-    BaselineShift m_baseline_shit;
 
     float m_stroke_width = 1.f;
+    float m_baseline_offset = 0.f;
     TextAnchor m_text_anchor = TextAnchor::Start;
     WhiteSpace m_white_space = WhiteSpace::Default;
     Direction m_direction = Direction::Ltr;

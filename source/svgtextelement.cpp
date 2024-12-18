@@ -6,28 +6,24 @@
 
 namespace lunasvg {
 
+inline const SVGTextNode* toSVGTextNode(const SVGNode* node)
+{
+    assert(node && node->isTextNode());
+    return static_cast<const SVGTextNode*>(node);
+}
+
+inline const SVGTextPositioningElement* toSVGTextPositioningElement(const SVGNode* node)
+{
+    assert(node && node->isTextPositioningElement());
+    return static_cast<const SVGTextPositioningElement*>(node);
+}
+
 static float calculateBaselineOffset(const SVGTextPositioningElement* element)
 {
-    const auto& baselineShift = element->baseline_shit();
-    if(baselineShift.type() == BaselineShift::Type::Baseline) {
-        return 0.f;
-    }
-
-    const auto& font = element->font();
-    if(baselineShift.type() == BaselineShift::Type::Sub)
-        return -font.height() / 2.f;
-    if(baselineShift.type() == BaselineShift::Type::Super) {
-        return font.height() / 2.f;
-    }
-
-    const auto& length = baselineShift.length();
-    if(length.units() == LengthUnits::Percent)
-        return length.value() * font.size() / 100.f;
-    if(length.units() == LengthUnits::Ex)
-        return length.value() * font.size() / 2.f;
-    if(length.units() == LengthUnits::Em)
-        return length.value() * font.size();
-    return length.value();
+    auto offset = element->baseline_offset();
+    for(auto parent = element->parent(); parent->isTextPositioningElement(); parent = parent->parent())
+        offset += toSVGTextPositioningElement(parent)->baseline_offset();
+    return offset;
 }
 
 static bool needsTextAnchorAdjustment(const SVGTextPositioningElement* element)
@@ -66,18 +62,6 @@ static float calculateTextAnchorOffset(const SVGTextPositioningElement* element,
     }
 
     return 0.f;
-}
-
-inline const SVGTextNode* toSVGTextNode(const SVGNode* node)
-{
-    assert(node && node->isTextNode());
-    return static_cast<const SVGTextNode*>(node);
-}
-
-inline const SVGTextPositioningElement* toSVGTextPositioningElement(const SVGNode* node)
-{
-    assert(node && node->isTextPositioningElement());
-    return static_cast<const SVGTextPositioningElement*>(node);
 }
 
 SVGTextFragmentsBuilder::SVGTextFragmentsBuilder(std::u32string& text, SVGTextFragmentList& fragments)
@@ -300,14 +284,34 @@ void SVGTextPositioningElement::layoutElement(const SVGLayoutState& state)
     m_font = state.font();
     m_fill = getPaintServer(state.fill(), state.fill_opacity());
     m_stroke = getPaintServer(state.stroke(), state.stroke_opacity());
-    m_baseline_shit = state.baseline_shit();
     SVGGraphicsElement::layoutElement(state);
 
     LengthContext lengthContext(this);
     m_stroke_width = lengthContext.valueForLength(state.stroke_width(), LengthDirection::Diagonal);
+    m_baseline_offset = convertBaselineOffset(state.baseline_shit());
     m_text_anchor = state.text_anchor();
     m_white_space = state.white_space();
     m_direction = state.direction();
+}
+
+float SVGTextPositioningElement::convertBaselineOffset(const BaselineShift& baselineShift) const
+{
+    if(baselineShift.type() == BaselineShift::Type::Baseline)
+        return 0.f;
+    if(baselineShift.type() == BaselineShift::Type::Sub)
+        return -m_font.height() / 2.f;
+    if(baselineShift.type() == BaselineShift::Type::Super) {
+        return m_font.height() / 2.f;
+    }
+
+    const auto& length = baselineShift.length();
+    if(length.units() == LengthUnits::Percent)
+        return length.value() * m_font.size() / 100.f;
+    if(length.units() == LengthUnits::Ex)
+        return length.value() * m_font.size() / 2.f;
+    if(length.units() == LengthUnits::Em)
+        return length.value() * m_font.size();
+    return length.value();
 }
 
 SVGTSpanElement::SVGTSpanElement(Document* document)
