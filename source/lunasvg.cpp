@@ -29,6 +29,18 @@ bool lunasvg_add_font_face_from_data(const char* family, bool bold, bool italic,
 
 namespace lunasvg {
 
+bool FontManager::addFromFile(const std::string& family, bool bold, bool italic, const std::string& filename) {
+    return lunasvg_add_font_face_from_file(family.c_str(), bold, italic, filename.c_str());
+}
+
+bool FontManager::addFromData(const std::string& family, bool bold, bool italic, const void* data, size_t length, lunasvg_destroy_func_t destroy_func, void* closure) {
+    return lunasvg_add_font_face_from_data(family.c_str(), bold, italic, data, length, destroy_func, closure);
+}
+
+void FontManager::registerMissingFontCalback(std::function<const std::string(const std::string& family, bool bold, bool italic)> callback) {
+    fontFaceCache()->registerMissingFontCallback(callback);
+}
+
 Bitmap::Bitmap(int width, int height)
     : m_surface(plutovg_surface_create(width, height))
 {
