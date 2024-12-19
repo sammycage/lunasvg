@@ -9,6 +9,7 @@ namespace lunasvg {
 
 enum class PropertyID : uint8_t {
     Unknown = 0,
+    Alignment_Baseline,
     Baseline_Shift,
     Class,
     ClipPathUnits,
@@ -20,6 +21,7 @@ enum class PropertyID : uint8_t {
     D,
     Direction,
     Display,
+    Dominant_Baseline,
     Dx,
     Dy,
     Fill,
@@ -160,6 +162,36 @@ enum class FontStyle : uint8_t {
 enum class FontWeight : uint8_t {
     Normal,
     Bold
+};
+
+enum class AlignmentBaseline : uint8_t {
+    Auto,
+    Baseline,
+    BeforeEdge,
+    TextBeforeEdge,
+    Middle,
+    Central,
+    AfterEdge,
+    TextAfterEdge,
+    Ideographic,
+    Alphabetic,
+    Hanging,
+    Mathematical
+};
+
+enum class DominantBaseline : uint8_t {
+    Auto,
+    UseScript,
+    NoChange,
+    ResetSize,
+    Ideographic,
+    Alphabetic,
+    Hanging,
+    Mathematical,
+    Central,
+    Middle,
+    TextAfterEdge,
+    TextBeforeEdge
 };
 
 enum class TextAnchor : uint8_t {

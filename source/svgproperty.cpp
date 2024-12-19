@@ -71,12 +71,14 @@ PropertyID csspropertyid(const std::string_view& name)
         std::string_view name;
         PropertyID value;
     } table[] = {
+        {"alignment-baseline", PropertyID::Alignment_Baseline},
         {"baseline-shift", PropertyID::Baseline_Shift},
         {"clip-path", PropertyID::Clip_Path},
         {"clip-rule", PropertyID::Clip_Rule},
         {"color", PropertyID::Color},
         {"direction", PropertyID::Direction},
         {"display", PropertyID::Display},
+        {"dominant-baseline", PropertyID::Dominant_Baseline},
         {"fill", PropertyID::Fill},
         {"fill-opacity", PropertyID::Fill_Opacity},
         {"fill-rule", PropertyID::Fill_Rule},

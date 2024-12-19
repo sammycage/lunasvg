@@ -18,11 +18,76 @@ inline const SVGTextPositioningElement* toSVGTextPositioningElement(const SVGNod
     return static_cast<const SVGTextPositioningElement*>(node);
 }
 
+static AlignmentBaseline resolveDominantBaseline(const SVGTextPositioningElement* element)
+{
+    switch(element->dominant_baseline()) {
+    case DominantBaseline::Auto:
+    case DominantBaseline::UseScript:
+    case DominantBaseline::NoChange:
+    case DominantBaseline::ResetSize:
+        return AlignmentBaseline::Auto;
+    case DominantBaseline::Ideographic:
+        return AlignmentBaseline::Ideographic;
+    case DominantBaseline::Alphabetic:
+        return AlignmentBaseline::Alphabetic;
+    case DominantBaseline::Hanging:
+        return AlignmentBaseline::Hanging;
+    case DominantBaseline::Mathematical:
+        return AlignmentBaseline::Mathematical;
+    case DominantBaseline::Central:
+        return AlignmentBaseline::Central;
+    case DominantBaseline::Middle:
+        return AlignmentBaseline::Middle;
+    case DominantBaseline::TextAfterEdge:
+        return AlignmentBaseline::TextAfterEdge;
+    case DominantBaseline::TextBeforeEdge:
+        return AlignmentBaseline::TextBeforeEdge;
+    default:
+        assert(false);
+    }
+
+    return AlignmentBaseline::Auto;
+}
+
 static float calculateBaselineOffset(const SVGTextPositioningElement* element)
 {
     auto offset = element->baseline_offset();
-    for(auto parent = element->parent(); parent->isTextPositioningElement(); parent = parent->parent())
+    for(auto parent = element->parent(); parent->isTextPositioningElement(); parent = parent->parent()) {
         offset += toSVGTextPositioningElement(parent)->baseline_offset();
+    }
+
+    auto baseline = element->alignment_baseline();
+    if(baseline == AlignmentBaseline::Baseline || baseline == AlignmentBaseline::Auto) {
+        baseline = resolveDominantBaseline(element);
+    }
+
+    const auto& font = element->font();
+    switch(baseline) {
+    case AlignmentBaseline::BeforeEdge:
+    case AlignmentBaseline::TextBeforeEdge:
+        offset -= font.ascent();
+        break;
+    case AlignmentBaseline::Middle:
+        offset -= font.xHeight() / 2.f;
+        break;
+    case AlignmentBaseline::Central:
+        offset -= (font.ascent() - font.descent()) / 2.f;
+        break;
+    case AlignmentBaseline::AfterEdge:
+    case AlignmentBaseline::TextAfterEdge:
+    case AlignmentBaseline::Ideographic:
+        offset -= font.descent();
+        break;
+    case AlignmentBaseline::Hanging:
+        offset -= font.ascent() * 8.f / 10.f;
+        break;
+    case AlignmentBaseline::Mathematical:
+        offset -= font.ascent() / 2.f;
+        break;
+    default:
+        break;
+    }
+
     return offset;
 }
 
@@ -289,6 +354,8 @@ void SVGTextPositioningElement::layoutElement(const SVGLayoutState& state)
     LengthContext lengthContext(this);
     m_stroke_width = lengthContext.valueForLength(state.stroke_width(), LengthDirection::Diagonal);
     m_baseline_offset = convertBaselineOffset(state.baseline_shit());
+    m_alignment_baseline = state.alignment_baseline();
+    m_dominant_baseline = state.dominant_baseline();
     m_text_anchor = state.text_anchor();
     m_white_space = state.white_space();
     m_direction = state.direction();

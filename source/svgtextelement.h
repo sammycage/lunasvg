@@ -83,6 +83,8 @@ public:
 
     float stroke_width() const { return m_stroke_width; }
     float baseline_offset() const { return m_baseline_offset; }
+    AlignmentBaseline alignment_baseline() const { return m_alignment_baseline; }
+    DominantBaseline dominant_baseline() const { return m_dominant_baseline; }
     TextAnchor text_anchor() const { return m_text_anchor; }
     WhiteSpace white_space() const { return m_white_space; }
     Direction direction() const { return m_direction; }
@@ -103,6 +105,8 @@ private:
 
     float m_stroke_width = 1.f;
     float m_baseline_offset = 0.f;
+    AlignmentBaseline m_alignment_baseline = AlignmentBaseline::Auto;
+    DominantBaseline m_dominant_baseline = DominantBaseline::Auto;
     TextAnchor m_text_anchor = TextAnchor::Start;
     WhiteSpace m_white_space = WhiteSpace::Default;
     Direction m_direction = Direction::Ltr;

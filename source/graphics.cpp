@@ -517,6 +517,14 @@ float Font::height() const
     return ascent + descent;
 }
 
+float Font::xHeight() const
+{
+    plutovg_rect_t extents = {0};
+    if(m_size > 0.f && !m_face.isNull())
+        plutovg_font_face_get_glyph_metrics(m_face.get(), m_size, 'x', nullptr, nullptr, &extents);
+    return extents.h;
+}
+
 float Font::measureText(const std::u32string_view& text) const
 {
     if(m_size > 0.f && !m_face.isNull())

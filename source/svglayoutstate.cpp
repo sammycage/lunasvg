@@ -232,6 +232,46 @@ static FontStyle parseFontStyle(const std::string_view& input)
     return parseEnumValue(input, entries, FontStyle::Normal);
 }
 
+static AlignmentBaseline parseAlignmentBaseline(const std::string_view& input)
+{
+    static const SVGEnumerationEntry<AlignmentBaseline> entries[] = {
+        {AlignmentBaseline::Auto, "auto"},
+        {AlignmentBaseline::Baseline, "baseline"},
+        {AlignmentBaseline::BeforeEdge, "before-edge"},
+        {AlignmentBaseline::TextBeforeEdge, "text-before-edge"},
+        {AlignmentBaseline::Middle, "middle"},
+        {AlignmentBaseline::Central, "central"},
+        {AlignmentBaseline::AfterEdge, "after-edge"},
+        {AlignmentBaseline::TextAfterEdge, "text-after-edge"},
+        {AlignmentBaseline::Ideographic, "ideographic"},
+        {AlignmentBaseline::Alphabetic, "alphabetic"},
+        {AlignmentBaseline::Hanging, "hanging"},
+        {AlignmentBaseline::Mathematical, "mathematical"}
+    };
+
+    return parseEnumValue(input, entries, AlignmentBaseline::Auto);
+}
+
+static DominantBaseline parseDominantBaseline(const std::string_view& input)
+{
+    static const SVGEnumerationEntry<DominantBaseline> entries[] = {
+        {DominantBaseline::Auto, "auto"},
+        {DominantBaseline::UseScript, "use-script"},
+        {DominantBaseline::NoChange, "no-change"},
+        {DominantBaseline::ResetSize, "reset-size"},
+        {DominantBaseline::Ideographic, "ideographic"},
+        {DominantBaseline::Alphabetic, "alphabetic"},
+        {DominantBaseline::Hanging, "hanging"},
+        {DominantBaseline::Mathematical, "mathematical"},
+        {DominantBaseline::Central, "central"},
+        {DominantBaseline::Middle, "middle"},
+        {DominantBaseline::TextAfterEdge, "text-after-edge"},
+        {DominantBaseline::TextBeforeEdge, "text-before-edge"}
+    };
+
+    return parseEnumValue(input, entries, DominantBaseline::Auto);
+}
+
 static Direction parseDirection(const std::string_view& input)
 {
     static const SVGEnumerationEntry<Direction> entries[] = {
@@ -329,6 +369,7 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
     , m_clip_rule(parent.clip_rule())
     , m_font_weight(parent.font_weight())
     , m_font_style(parent.font_style())
+    , m_dominant_baseline(parent.dominant_baseline())
     , m_text_anchor(parent.text_anchor())
     , m_white_space(parent.white_space())
     , m_direction(parent.direction())
@@ -404,6 +445,12 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
             break;
         case PropertyID::Font_Style:
             m_font_style = parseFontStyle(input);
+            break;
+        case PropertyID::Alignment_Baseline:
+            m_alignment_baseline = parseAlignmentBaseline(input);
+            break;
+        case PropertyID::Dominant_Baseline:
+            m_dominant_baseline = parseDominantBaseline(input);
             break;
         case PropertyID::Direction:
             m_direction = parseDirection(input);

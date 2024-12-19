@@ -439,6 +439,7 @@ public:
     float ascent() const;
     float descent() const;
     float height() const;
+    float xHeight() const;
 
     float measureText(const std::u32string_view& text) const;
 

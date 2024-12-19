@@ -40,6 +40,9 @@ public:
     FontWeight font_weight() const { return m_font_weight; }
     FontStyle font_style() const { return m_font_style; }
 
+    AlignmentBaseline alignment_baseline() const { return m_alignment_baseline; }
+    DominantBaseline dominant_baseline() const { return m_dominant_baseline; }
+
     TextAnchor text_anchor() const { return m_text_anchor; }
     WhiteSpace white_space() const { return m_white_space; }
     Direction direction() const { return m_direction; }
@@ -88,6 +91,9 @@ private:
 
     FontWeight m_font_weight = FontWeight::Normal;
     FontStyle m_font_style = FontStyle::Normal;
+
+    AlignmentBaseline m_alignment_baseline = AlignmentBaseline::Auto;
+    DominantBaseline m_dominant_baseline = DominantBaseline::Auto;
 
     TextAnchor m_text_anchor = TextAnchor::Start;
     WhiteSpace m_white_space = WhiteSpace::Default;
