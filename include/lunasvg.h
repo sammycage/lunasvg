@@ -644,7 +644,7 @@ public:
 
 private:
     Element(SVGElement* element);
-    SVGElement* element() const;
+    SVGElement* element(bool layout = false) const;
     friend class Node;
     friend class Document;
 };
@@ -707,9 +707,14 @@ public:
     Box boundingBox() const;
 
     /**
-     * @brief Updates the layout of the document.
+     * @brief Updates the layout of the document if needed.
      */
     void updateLayout();
+
+    /**
+     * @brief Forces an immediate layout update.
+     */
+    void forceLayout();
 
     /**
      * @brief Renders the document onto a bitmap using a transformation matrix.

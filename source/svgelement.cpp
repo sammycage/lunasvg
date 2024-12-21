@@ -214,6 +214,7 @@ bool SVGElement::setAttribute(const Attribute& attribute)
 
 void SVGElement::parseAttribute(PropertyID id, const std::string& value)
 {
+    rootElement()->setNeedsLayout();
     if(auto property = getProperty(id)) {
         property->parse(value);
     }
@@ -618,6 +619,13 @@ SVGRootElement::SVGRootElement(Document* document)
 {
 }
 
+SVGRootElement* SVGRootElement::updateLayout()
+{
+    if(needsLayout())
+        forceLayout();
+    return this;
+}
+
 SVGElement* SVGRootElement::getElementById(const std::string_view& id) const
 {
     auto it = m_idCache.find(id);
@@ -671,6 +679,12 @@ void SVGRootElement::layout(SVGLayoutState& state)
             m_intrinsicHeight = boundingBox.bottom();
         }
     }
+}
+
+void SVGRootElement::forceLayout()
+{
+    SVGLayoutState state;
+    layout(state);
 }
 
 SVGUseElement::SVGUseElement(Document* document)

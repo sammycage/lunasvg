@@ -334,14 +334,21 @@ public:
     float intrinsicWidth() const { return m_intrinsicWidth; }
     float intrinsicHeight() const { return m_intrinsicHeight; }
 
+    void setNeedsLayout() { m_intrinsicWidth = -1.f; }
+    bool needsLayout() const { return m_intrinsicWidth == -1.f; }
+
+    SVGRootElement* updateLayout();
+
     SVGElement* getElementById(const std::string_view& id) const;
     void addElementById(const std::string& id, SVGElement* element);
     void layout(SVGLayoutState& state) final;
 
+    void forceLayout();
+
 private:
     std::map<std::string, SVGElement*, std::less<>> m_idCache;
-    float m_intrinsicWidth{0};
-    float m_intrinsicHeight{0};
+    float m_intrinsicWidth{-1.f};
+    float m_intrinsicHeight{-1.f};
 };
 
 class SVGUseElement final : public SVGGraphicsElement, public SVGURIReference {
