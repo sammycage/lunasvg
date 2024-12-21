@@ -684,7 +684,7 @@ public:
 
     /**
      * @brief Applies a CSS stylesheet to the document.
-     * @param content A string containing the CSS rules to apply.
+     * @param content A string containing the CSS rules to apply, with comments removed.
      */
     void applyStyleSheet(const std::string& content);
 
