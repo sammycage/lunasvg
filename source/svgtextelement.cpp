@@ -71,7 +71,7 @@ static float calculateBaselineOffset(const SVGTextPositioningElement* element)
         offset -= font.xHeight() / 2.f;
         break;
     case AlignmentBaseline::Central:
-        offset -= (font.ascent() - font.descent()) / 2.f;
+        offset -= (font.ascent() + font.descent()) / 2.f;
         break;
     case AlignmentBaseline::AfterEdge:
     case AlignmentBaseline::TextAfterEdge:
