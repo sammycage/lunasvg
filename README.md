@@ -31,7 +31,7 @@ int main()
 
 ---
 
-### Dynamic Styling Example
+## Dynamic Styling Example
 
 ```cpp
 #include <lunasvg.h>
@@ -93,7 +93,7 @@ int main()
 
 | `summer.png` | `winter.png` |
 | --- | --- |
-| ![summer](https://github.com/user-attachments/assets/c7f16780-23f8-4acd-906a-2242f2d0d33b) | ![winter](https://github.com/user-attachments/assets/fdd65288-11c7-4e16-bb5a-2bf28de57145) |
+| ![summer.png](https://github.com/user-attachments/assets/c7f16780-23f8-4acd-906a-2242f2d0d33b) | ![winter.png](https://github.com/user-attachments/assets/fdd65288-11c7-4e16-bb5a-2bf28de57145) |
 
 ## Features
 
