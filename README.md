@@ -29,6 +29,72 @@ int main()
 
 ![tiger.png](https://github.com/user-attachments/assets/b87bbf92-6dd1-4b29-a890-99cfffce66b8)
 
+---
+
+### Dynamic Styling Example
+
+```cpp
+#include <lunasvg.h>
+
+using namespace lunasvg;
+
+static const char kLandspaceContent[] = R"SVG(
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <!-- Background (Sky) -->
+  <rect width="800" height="600" class="sky"/>
+
+  <!-- Sun -->
+  <circle cx="650" cy="150" r="80" class="sun" />
+
+  <!-- Clouds -->
+  <ellipse cx="200" cy="150" rx="100" ry="40" class="cloud" />
+  <ellipse cx="250" cy="200" rx="120" ry="50" class="cloud" />
+  <ellipse cx="500" cy="80" rx="150" ry="60" class="cloud" />
+  <ellipse cx="550" cy="120" rx="120" ry="50" class="cloud" />
+
+  <!-- Mountains -->
+  <polygon points="0,450 200,200 400,450" class="mountain" />
+  <polygon points="200,450 400,100 600,450" class="mountain" />
+  <polygon points="400,450 600,250 800,450" class="mountain" />
+
+  <!-- Foreground (Ground) -->
+  <rect y="450" width="800" height="150" class="ground" />
+</svg>
+)SVG";
+
+static const char kSummerStyle[] = R"CSS(
+.sky { fill: #4A90E2; }
+.sun { fill: #FF7F00; }
+.mountain { fill: #2E3A59; }
+.cloud { fill: #FFFFFF; opacity: 0.8; }
+.ground { fill: #2E8B57; }
+)CSS";
+
+static const char kWinterStyle[] = R"CSS(
+.sky { fill: #87CEEB; }
+.sun { fill: #ADD8E6; }
+.mountain { fill: #2F4F4F; }
+.cloud { fill: #FFFFFF; opacity: 0.8; }
+.ground { fill: #FFFAFA; }
+)CSS";
+
+int main()
+{
+    auto document = Document::loadFromData(kLandspaceContent);
+
+    document->applyStyleSheet(kSummerStyle);
+    document->renderToBitmap().writeToPng("summer.png");
+
+    document->applyStyleSheet(kWinterStyle);
+    document->renderToBitmap().writeToPng("winter.png");
+    return 0;
+}
+```
+
+| `summer.png` | `winter.png` |
+| --- | --- |
+| ![summer](https://github.com/user-attachments/assets/c7f16780-23f8-4acd-906a-2242f2d0d33b) | ![winter](https://github.com/user-attachments/assets/fdd65288-11c7-4e16-bb5a-2bf28de57145) |
+
 ## Features
 
 LunaSVG supports nearly all graphical features outlined in the SVG 1.1 and SVG 1.2 Tiny specifications. The primary exceptions are animation, filters, and scripts. As LunaSVG is designed for static rendering, animation is unlikely to be supported in the future. However, support for filters may be added. It currently handles a wide variety of elements, including:
