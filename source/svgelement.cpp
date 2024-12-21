@@ -419,15 +419,15 @@ void SVGElement::build()
 
 void SVGElement::layoutElement(const SVGLayoutState& state)
 {
+    m_paintBoundingBox = Rect::Invalid;
+    m_clipper = getClipper(state.clip_path());
+    m_masker = getMasker(state.mask());
+    m_opacity = state.opacity();
+
     m_font_size = state.font_size();
     m_display = state.display();
     m_overflow = state.overflow();
     m_visibility = state.visibility();
-    m_opacity = state.opacity();
-
-    m_paintBoundingBox = Rect::Invalid;
-    m_clipper = getClipper(state.clip_path());
-    m_masker = getMasker(state.mask());
 }
 
 void SVGElement::layoutChildren(SVGLayoutState& state)

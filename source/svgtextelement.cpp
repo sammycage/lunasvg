@@ -57,7 +57,7 @@ static float calculateBaselineOffset(const SVGTextPositioningElement* element)
     }
 
     auto baseline = element->alignment_baseline();
-    if(baseline == AlignmentBaseline::Baseline || baseline == AlignmentBaseline::Auto) {
+    if(baseline == AlignmentBaseline::Auto || baseline == AlignmentBaseline::Baseline) {
         baseline = resolveDominantBaseline(element);
     }
 
@@ -94,7 +94,7 @@ static float calculateBaselineOffset(const SVGTextPositioningElement* element)
 static bool needsTextAnchorAdjustment(const SVGTextPositioningElement* element)
 {
     auto direction = element->direction();
-    switch (element->text_anchor()) {
+    switch(element->text_anchor()) {
     case TextAnchor::Start:
         return direction == Direction::Rtl;
     case TextAnchor::Middle:
@@ -111,7 +111,7 @@ static bool needsTextAnchorAdjustment(const SVGTextPositioningElement* element)
 static float calculateTextAnchorOffset(const SVGTextPositioningElement* element, float width)
 {
     auto direction = element->direction();
-    switch (element->text_anchor()) {
+    switch(element->text_anchor()) {
     case TextAnchor::Start:
         if(direction == Direction::Ltr)
             return 0.f;

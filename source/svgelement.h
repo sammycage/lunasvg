@@ -191,6 +191,11 @@ public:
     bool isElement() const final { return true; }
 
 private:
+    mutable Rect m_paintBoundingBox = Rect::Invalid;
+    const SVGClipPathElement* m_clipper = nullptr;
+    const SVGMaskElement* m_masker = nullptr;
+    float m_opacity = 1.f;
+
     float m_font_size = 12.f;
     Display m_display = Display::Inline;
     Overflow m_overflow = Overflow::Visible;
@@ -200,11 +205,6 @@ private:
     AttributeList m_attributes;
     SVGPropertyList m_properties;
     SVGNodeList m_children;
-
-    mutable Rect m_paintBoundingBox = Rect::Invalid;
-    const SVGClipPathElement* m_clipper = nullptr;
-    const SVGMaskElement* m_masker = nullptr;
-    float m_opacity = 1.f;
 };
 
 inline const SVGElement* toSVGElement(const SVGNode* node)
