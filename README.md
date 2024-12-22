@@ -31,7 +31,7 @@ int main()
 
 ---
 
-## Dynamic Styling Example
+## Dynamic Styling
 
 ```cpp
 #include <lunasvg.h>
