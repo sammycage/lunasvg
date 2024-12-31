@@ -6,15 +6,12 @@ set(LUNASVG_VERSION_MICRO 0)
 
 project(lunasvg LANGUAGES CXX VERSION ${LUNASVG_VERSION_MAJOR}.${LUNASVG_VERSION_MINOR}.${LUNASVG_VERSION_MICRO})
 
-include(FetchContent)
-FetchContent_Declare(plutovg
-    GIT_REPOSITORY https://github.com/sammycage/plutovg.git
-    GIT_TAG main
-    GIT_SHALLOW ON
-    FIND_PACKAGE_ARGS 0.0.4
-)
-
-FetchContent_MakeAvailable(plutovg)
+option(LUNASVG_USE_SYSTEM_PLUTOVG "Use installed version of plutovg instead of bundled submodule" OFF)
+if (LUNASVG_USE_SYSTEM_PLUTOVG)
+    find_package(plutovg 0.0.4 REQUIRED)
+else()
+    add_subdirectory(third_party/plutovg)
+endif()
 
 set(lunasvg_sources
     source/lunasvg.cpp
