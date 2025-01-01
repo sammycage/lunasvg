@@ -6,11 +6,9 @@ set(LUNASVG_VERSION_MICRO 0)
 
 project(lunasvg LANGUAGES CXX VERSION ${LUNASVG_VERSION_MAJOR}.${LUNASVG_VERSION_MINOR}.${LUNASVG_VERSION_MICRO})
 
-option(LUNASVG_USE_SYSTEM_PLUTOVG "Use installed version of plutovg instead of bundled submodule" OFF)
-if (LUNASVG_USE_SYSTEM_PLUTOVG)
-    find_package(plutovg 0.0.4 REQUIRED)
-else()
-    add_subdirectory(third_party/plutovg)
+find_package(plutovg 0.0.4 QUIET)
+if(NOT plutovg_FOUND)
+    add_subdirectory(plutovg)
 endif()
 
 set(lunasvg_sources
