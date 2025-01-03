@@ -53,6 +53,12 @@ SVGTextNode::SVGTextNode(Document* document)
 {
 }
 
+void SVGTextNode::setData(const std::string& data)
+{
+    rootElement()->setNeedsLayout();
+    m_data.assign(data);
+}
+
 std::unique_ptr<SVGNode> SVGTextNode::clone(bool deep) const
 {
     auto node = std::make_unique<SVGTextNode>(document());

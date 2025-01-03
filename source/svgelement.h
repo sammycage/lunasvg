@@ -50,8 +50,8 @@ public:
 
     bool isTextNode() const final { return true; }
 
-    void setData(const std::string& data) { m_data = data; }
     const std::string& data() const { return m_data; }
+    void setData(const std::string& data);
 
     std::unique_ptr<SVGNode> clone(bool deep) const final;
 
