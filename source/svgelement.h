@@ -1,13 +1,13 @@
 #ifndef LUNASVG_SVGELEMENT_H
 #define LUNASVG_SVGELEMENT_H
 
+#include "lunasvg.h"
+#include "svgproperty.h"
+
 #include <string>
 #include <forward_list>
 #include <list>
 #include <map>
-
-#include "svgproperty.h"
-#include "lunasvg.h"
 
 namespace lunasvg {
 
@@ -29,10 +29,11 @@ public:
     virtual bool isGeometryElement() const { return false; }
     virtual bool isTextPositioningElement() const { return false; }
 
-    SVGRootElement* rootElement() const;
     Document* document() const { return m_document; }
-    void setParent(SVGElement* parent) { m_parent = parent; }
+    SVGRootElement* rootElement() const { return m_document->rootElement(); }
+
     SVGElement* parent() const { return m_parent; }
+    void setParent(SVGElement* parent) { m_parent = parent; }
 
     virtual std::unique_ptr<SVGNode> clone(bool deep) const = 0;
 

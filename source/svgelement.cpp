@@ -10,11 +10,6 @@
 
 namespace lunasvg {
 
-SVGRootElement* SVGNode::rootElement() const
-{
-    return document()->rootElement();
-}
-
 ElementID elementid(const std::string_view& name)
 {
     static const struct {
