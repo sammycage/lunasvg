@@ -387,7 +387,7 @@ public:
     Rect fillBoundingBox() const final;
     Rect strokeBoundingBox() const final;
     void render(SVGRenderState& state) const final;
-    void layoutElement(const SVGLayoutState& state) final;
+    void parseAttribute(PropertyID id, const std::string& value) final;
 
 private:
     SVGLength m_x;

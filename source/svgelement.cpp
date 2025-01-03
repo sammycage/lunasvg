@@ -856,10 +856,11 @@ static Bitmap loadImageResource(const std::string& href)
     return plutovg_surface_load_from_image_file(href.data());
 }
 
-void SVGImageElement::layoutElement(const SVGLayoutState& state)
+void SVGImageElement::parseAttribute(PropertyID id, const std::string& value)
 {
-    m_image = loadImageResource(hrefString());
-    SVGGraphicsElement::layoutElement(state);
+    if(id == PropertyID::Href)
+        m_image = loadImageResource(value);
+    SVGGraphicsElement::parseAttribute(id, value);
 }
 
 SVGSymbolElement::SVGSymbolElement(Document* document)
