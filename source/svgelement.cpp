@@ -1041,7 +1041,7 @@ void SVGClipPathElement::applyClipPath(SVGRenderState& state) const
             shapeElement = toSVGGeometryElement(element->firstChild());
         }
 
-        if(shapeElement == nullptr || shapeElement->isDisplayNone() || shapeElement->isVisibilityHidden())
+        if(shapeElement == nullptr || !shapeElement->isRenderable())
             continue;
         state->clipPath(shapeElement->path(), shapeElement->clip_rule(), clipTransform * shapeElement->localTransform());
         return;
@@ -1070,7 +1070,7 @@ bool SVGClipPathElement::requiresMasking() const
             shapeElement = toSVGGeometryElement(element->firstChild());
         }
 
-        if(shapeElement == nullptr || shapeElement->isDisplayNone() || shapeElement->isVisibilityHidden())
+        if(shapeElement == nullptr || !shapeElement->isRenderable())
             continue;
         if(prevShapeElement || shapeElement->clipper())
             return true;

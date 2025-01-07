@@ -36,6 +36,8 @@ public:
     Rect strokeBoundingBox() const override;
     void layoutElement(const SVGLayoutState& state) override;
 
+    bool isRenderable() const { return !m_path.isNull() && !isDisplayNone() && !isVisibilityHidden(); }
+
     FillRule fill_rule() const { return m_fill_rule; }
     FillRule clip_rule() const { return m_clip_rule; }
 
