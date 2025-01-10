@@ -303,6 +303,7 @@ public:
     float yScale() const;
 
     const plutovg_matrix_t& matrix() const { return m_matrix; }
+    plutovg_matrix_t& matrix() { return m_matrix; }
 
     bool parse(const char* data, size_t length);
 
@@ -357,10 +358,9 @@ public:
     bool isEmpty() const;
     bool isUnique() const;
     bool isNull() const { return m_data == nullptr; }
+    plutovg_path_t* data() const { return m_data; }
 
     bool parse(const char* data, size_t length);
-
-    plutovg_path_t* data() const { return m_data; }
 
 private:
     plutovg_path_t* release();

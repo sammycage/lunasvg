@@ -277,8 +277,14 @@ void Path::addRect(const Rect& rect)
 
 void Path::reset()
 {
-    plutovg_path_destroy(m_data);
-    m_data = nullptr;
+    if(m_data == nullptr)
+        return;
+    if(isUnique()) {
+        plutovg_path_reset(m_data);
+    } else {
+        plutovg_path_destroy(m_data);
+        m_data = nullptr;
+    }
 }
 
 Rect Path::boundingRect() const
@@ -301,7 +307,7 @@ bool Path::isUnique() const
 {
     if(m_data)
         return plutovg_path_get_reference_count(m_data) == 1;
-    return true;
+    return false;
 }
 
 bool Path::parse(const char* data, size_t length)

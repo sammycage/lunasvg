@@ -42,6 +42,7 @@ public:
     FillRule clip_rule() const { return m_clip_rule; }
 
     virtual Rect updateShape(Path& path) = 0;
+
     void updateMarkerPositions(SVGMarkerPositionList& positions, const SVGLayoutState& state);
     void render(SVGRenderState& state) const override;
 

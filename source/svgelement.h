@@ -373,7 +373,7 @@ private:
     SVGLength m_height;
 };
 
-class SVGImageElement final : public SVGGraphicsElement, public SVGURIReference {
+class SVGImageElement final : public SVGGraphicsElement {
 public:
     SVGImageElement(Document* document);
 
@@ -453,6 +453,7 @@ public:
 
     void applyClipMask(SVGRenderState& state) const;
     void applyClipPath(SVGRenderState& state) const;
+
     bool requiresMasking() const;
 
 private:
@@ -473,6 +474,7 @@ public:
     Rect maskRect(const SVGElement* element) const;
     Rect maskBoundingBox(const SVGElement* element) const;
     void applyMask(SVGRenderState& state) const;
+
     void layoutElement(const SVGLayoutState& state) final;
 
 private:

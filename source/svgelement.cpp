@@ -793,7 +793,6 @@ std::unique_ptr<SVGElement> SVGUseElement::cloneTargetElement(SVGElement* target
 
 SVGImageElement::SVGImageElement(Document* document)
     : SVGGraphicsElement(document, ElementID::Image)
-    , SVGURIReference(this)
     , m_x(PropertyID::X, LengthDirection::Horizontal, LengthNegativeMode::Allow, 0.f, LengthUnits::None)
     , m_y(PropertyID::Y, LengthDirection::Vertical, LengthNegativeMode::Allow, 0.f, LengthUnits::None)
     , m_width(PropertyID::Width, LengthDirection::Horizontal, LengthNegativeMode::Forbid, 100.f, LengthUnits::Percent)
@@ -858,9 +857,11 @@ static Bitmap loadImageResource(const std::string& href)
 
 void SVGImageElement::parseAttribute(PropertyID id, const std::string& value)
 {
-    if(id == PropertyID::Href)
+    if(id == PropertyID::Href) {
         m_image = loadImageResource(value);
-    SVGGraphicsElement::parseAttribute(id, value);
+    } else {
+        SVGGraphicsElement::parseAttribute(id, value);
+    }
 }
 
 SVGSymbolElement::SVGSymbolElement(Document* document)

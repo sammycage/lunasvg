@@ -272,7 +272,7 @@ Rect SVGCircleElement::updateShape(Path& path)
 {
     LengthContext lengthContext(this);
     auto r = lengthContext.valueForLength(m_r);
-    if(r <= 0.f || r <= 0.f) {
+    if(r <= 0.f) {
         return Rect::Empty;
     }
 

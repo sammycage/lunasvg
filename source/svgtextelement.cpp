@@ -152,7 +152,7 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
         auto recordTextFragment = [&](auto startOffset, auto endOffset) {
             auto text = wholeText.substr(startOffset, endOffset - startOffset);
             fragment.offset = startOffset;
-            fragment.length = endOffset - startOffset;
+            fragment.length = text.length();
             fragment.width = element->font().measureText(text);
             m_fragments.push_back(fragment);
             m_x += fragment.width;
@@ -265,7 +265,7 @@ void SVGTextFragmentsBuilder::handleText(const SVGTextNode* node)
 
 void SVGTextFragmentsBuilder::handleElement(const SVGTextPositioningElement* element)
 {
-    auto itemIndex = m_textPositions.size();
+    const auto itemIndex = m_textPositions.size();
     m_textPositions.emplace_back(element, m_text.length(), m_text.length());
     for(const auto& child : element->children()) {
         if(child->isTextNode()) {
@@ -394,13 +394,12 @@ SVGTextElement::SVGTextElement(Document* document)
 void SVGTextElement::layout(SVGLayoutState& state)
 {
     SVGTextPositioningElement::layout(state);
-    SVGTextFragmentsBuilder fragmentsBuilder(m_text, m_fragments);
-    fragmentsBuilder.build(this);
+    SVGTextFragmentsBuilder(m_text, m_fragments).build(this);
 }
 
 void SVGTextElement::render(SVGRenderState& state) const
 {
-    if(m_text.empty() || isVisibilityHidden() || isDisplayNone())
+    if(m_fragments.empty() || isVisibilityHidden() || isDisplayNone())
         return;
     SVGBlendInfo blendInfo(this);
     SVGRenderState newState(this, state, localTransform());
