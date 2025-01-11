@@ -52,8 +52,10 @@ static AlignmentBaseline resolveDominantBaseline(const SVGTextPositioningElement
 static float calculateBaselineOffset(const SVGTextPositioningElement* element)
 {
     auto offset = element->baseline_offset();
-    for(auto parent = element->parent(); parent->isTextPositioningElement(); parent = parent->parent()) {
+    auto parent = element->parentElement();
+    while(parent->isTextPositioningElement()) {
         offset += toSVGTextPositioningElement(parent)->baseline_offset();
+        parent = parent->parentElement();
     }
 
     auto baseline = element->alignment_baseline();
@@ -147,7 +149,7 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
     for(const auto& textPosition : m_textPositions) {
         if(!textPosition.node->isTextNode())
             continue;
-        auto element = toSVGTextPositioningElement(textPosition.node->parent());
+        auto element = toSVGTextPositioningElement(textPosition.node->parentElement());
         SVGTextFragment fragment(element);
         auto recordTextFragment = [&](auto startOffset, auto endOffset) {
             auto text = wholeText.substr(startOffset, endOffset - startOffset);
@@ -239,7 +241,7 @@ void SVGTextFragmentsBuilder::handleText(const SVGTextNode* node)
     const auto& text = node->data();
     if(text.empty())
         return;
-    auto element = toSVGTextPositioningElement(node->parent());
+    auto element = toSVGTextPositioningElement(node->parentElement());
     const auto startOffset = m_text.length();
     uint32_t lastCharacter = ' ';
     if(!m_text.empty()) {

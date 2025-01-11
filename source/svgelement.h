@@ -32,8 +32,8 @@ public:
     Document* document() const { return m_document; }
     SVGRootElement* rootElement() const { return m_document->rootElement(); }
 
-    SVGElement* parent() const { return m_parent; }
-    void setParent(SVGElement* parent) { m_parent = parent; }
+    SVGElement* parentElement() const { return m_parentElement; }
+    void setParentElement(SVGElement* parent) { m_parentElement = parent; }
 
     virtual std::unique_ptr<SVGNode> clone(bool deep) const = 0;
 
@@ -41,7 +41,7 @@ private:
     SVGNode(const SVGNode&) = delete;
     SVGNode& operator=(const SVGNode&) = delete;
     Document* m_document;
-    SVGElement* m_parent = nullptr;
+    SVGElement* m_parentElement = nullptr;
 };
 
 class SVGTextNode final : public SVGNode {

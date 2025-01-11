@@ -223,9 +223,10 @@ void SVGElement::parseAttribute(PropertyID id, const std::string& value)
 
 SVGElement* SVGElement::previousElement() const
 {
-    if(!parent())
+    auto parent = parentElement();
+    if(parent == nullptr)
         return nullptr;
-    const auto& children = parent()->children();
+    const auto& children = parent->children();
     auto it = children.begin();
     auto end = children.end();
     SVGElement* element = nullptr;
@@ -243,9 +244,10 @@ SVGElement* SVGElement::previousElement() const
 
 SVGElement* SVGElement::nextElement() const
 {
-    if(!parent())
+    auto parent = parentElement();
+    if(parent == nullptr)
         return nullptr;
-    const auto& children = parent()->children();
+    const auto& children = parent->children();
     auto it = children.rbegin();
     auto end = children.rend();
     SVGElement* element = nullptr;
@@ -263,7 +265,7 @@ SVGElement* SVGElement::nextElement() const
 
 SVGNode* SVGElement::addChild(std::unique_ptr<SVGNode> child)
 {
-    child->setParent(this);
+    child->setParentElement(this);
     m_children.push_back(std::move(child));
     return &*m_children.back();
 }
@@ -372,8 +374,8 @@ SVGProperty* SVGElement::getProperty(PropertyID id) const
 
 Size SVGElement::currentViewportSize() const
 {
-    auto parentElement = parent();
-    if(parentElement == nullptr) {
+    auto parent = parentElement();
+    if(parent == nullptr) {
         auto element = static_cast<const SVGSVGElement*>(this);
         const auto& viewBox = element->viewBox();
         if(viewBox.value().isValid())
@@ -381,8 +383,8 @@ Size SVGElement::currentViewportSize() const
         return Size(300, 150);
     }
 
-    if(parentElement->id() == ElementID::Svg) {
-        auto element = static_cast<const SVGSVGElement*>(parentElement);
+    if(parent->id() == ElementID::Svg) {
+        auto element = static_cast<const SVGSVGElement*>(parent);
         const auto& viewBox = element->viewBox();
         if(viewBox.value().isValid())
             return viewBox.value().size();
@@ -392,7 +394,7 @@ Size SVGElement::currentViewportSize() const
         return Size(width, height);
     }
 
-    return parentElement->currentViewportSize();
+    return parent->currentViewportSize();
 }
 
 void SVGElement::cloneChildren(SVGElement* parentElement) const
@@ -589,7 +591,7 @@ Transform SVGSVGElement::localTransform() const
         lengthContext.valueForLength(m_height)
     };
 
-    if(parent())
+    if(parentElement())
         return SVGGraphicsElement::localTransform() * Transform::translated(viewportRect.x, viewportRect.y) * viewBoxToViewTransform(viewportRect.size());
     return viewBoxToViewTransform(viewportRect.size());
 }
@@ -763,12 +765,12 @@ std::unique_ptr<SVGElement> SVGUseElement::cloneTargetElement(SVGElement* target
     if(targetElement == this || isDisallowedElement(targetElement))
         return nullptr;
     const auto& idAttr = targetElement->getAttribute(PropertyID::Id);
-    auto parentElement = parent();
-    while(parentElement) {
-        auto attribute = parentElement->findAttribute(PropertyID::Id);
+    auto parent = parentElement();
+    while(parent) {
+        auto attribute = parent->findAttribute(PropertyID::Id);
         if(attribute && idAttr == attribute->value())
             return nullptr;
-        parentElement = parentElement->parent();
+        parent = parent->parentElement();
     }
 
     auto tagId = targetElement->id();

@@ -113,7 +113,7 @@ bool RuleData::match(const SVGElement* element) const
         switch(it->combinator) {
         case SimpleSelector::Combinator::Child:
         case SimpleSelector::Combinator::Descendant:
-            element = element->parent();
+            element = element->parentElement();
             break;
         case SimpleSelector::Combinator::DirectAdjacent:
         case SimpleSelector::Combinator::InDirectAdjacent:
@@ -227,7 +227,7 @@ bool RuleData::matchPseudoClassSelector(const PseudoClassSelector& selector, con
     if(selector.type == PseudoClassSelector::Type::Empty)
         return element->children().empty();
     if(selector.type == PseudoClassSelector::Type::Root)
-        return element->parent() == nullptr;
+        return element->parentElement() == nullptr;
     if(selector.type == PseudoClassSelector::Type::Is) {
         for(const auto& subSelector : selector.subSelectors) {
             for(const auto& simpleSelector : subSelector) {
@@ -784,7 +784,7 @@ bool Document::parse(const char* data, size_t length)
                 auto id = elementid(buffer);
                 if(id != currentElement->id())
                     return false;
-                currentElement = currentElement->parent();
+                currentElement = currentElement->parentElement();
             } else {
                 --ignoring;
             }

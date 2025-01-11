@@ -275,7 +275,7 @@ Element Node::toElement() const
 Element Node::parentElement() const
 {
     if(m_node)
-        return m_node->parent();
+        return m_node->parentElement();
     return Element();
 }
 
@@ -376,7 +376,7 @@ Matrix Element::getGlobalMatrix() const
     if(m_node == nullptr)
         return Matrix();
     auto transform = element(true)->localTransform();
-    for(auto parent = element()->parent(); parent; parent = parent->parent())
+    for(auto parent = element()->parentElement(); parent; parent = parent->parentElement())
         transform.postMultiply(parent->localTransform());
     return transform;
 }
