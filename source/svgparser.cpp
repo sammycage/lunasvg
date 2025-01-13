@@ -227,7 +227,7 @@ bool RuleData::matchPseudoClassSelector(const PseudoClassSelector& selector, con
     if(selector.type == PseudoClassSelector::Type::Empty)
         return element->children().empty();
     if(selector.type == PseudoClassSelector::Type::Root)
-        return element->parentElement() == nullptr;
+        return element->isRootElement();
     if(selector.type == PseudoClassSelector::Type::Is) {
         for(const auto& subSelector : selector.subSelectors) {
             for(const auto& simpleSelector : subSelector) {

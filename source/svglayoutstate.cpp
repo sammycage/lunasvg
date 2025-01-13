@@ -374,7 +374,7 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
     , m_white_space(parent.white_space())
     , m_direction(parent.direction())
     , m_visibility(parent.visibility())
-    , m_overflow(element->parentElement() ? Overflow::Hidden : Overflow::Visible)
+    , m_overflow(element->isRootElement() ? Overflow::Visible : Overflow::Hidden)
     , m_marker_start(parent.marker_start())
     , m_marker_mid(parent.marker_mid())
     , m_marker_end(parent.marker_end())

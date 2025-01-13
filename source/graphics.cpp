@@ -305,9 +305,7 @@ bool Path::isEmpty() const
 
 bool Path::isUnique() const
 {
-    if(m_data)
-        return plutovg_path_get_reference_count(m_data) == 1;
-    return false;
+    return plutovg_path_get_reference_count(m_data) == 1;
 }
 
 bool Path::parse(const char* data, size_t length)

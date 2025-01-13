@@ -35,6 +35,8 @@ public:
     SVGElement* parentElement() const { return m_parentElement; }
     void setParentElement(SVGElement* parent) { m_parentElement = parent; }
 
+    bool isRootElement() const { return m_parentElement == nullptr; }
+
     virtual std::unique_ptr<SVGNode> clone(bool deep) const = 0;
 
 private:
@@ -140,6 +142,7 @@ public:
 
     SVGElement* previousElement() const;
     SVGElement* nextElement() const;
+
     SVGNode* addChild(std::unique_ptr<SVGNode> child);
     SVGNode* firstChild() const;
     SVGNode* lastChild() const;

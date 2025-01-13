@@ -591,9 +591,9 @@ Transform SVGSVGElement::localTransform() const
         lengthContext.valueForLength(m_height)
     };
 
-    if(parentElement())
-        return SVGGraphicsElement::localTransform() * Transform::translated(viewportRect.x, viewportRect.y) * viewBoxToViewTransform(viewportRect.size());
-    return viewBoxToViewTransform(viewportRect.size());
+    if(isRootElement())
+        return viewBoxToViewTransform(viewportRect.size());
+    return SVGGraphicsElement::localTransform() * Transform::translated(viewportRect.x, viewportRect.y) * viewBoxToViewTransform(viewportRect.size());
 }
 
 void SVGSVGElement::render(SVGRenderState& state) const
