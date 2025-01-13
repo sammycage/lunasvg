@@ -58,6 +58,8 @@ void SVGGeometryElement::layoutElement(const SVGLayoutState& state)
 
 void SVGGeometryElement::updateMarkerPositions(SVGMarkerPositionList& positions, const SVGLayoutState& state)
 {
+    if(m_path.isEmpty())
+        return;
     auto markerStart = getMarker(state.marker_start());
     auto markerMid = getMarker(state.marker_mid());
     auto markerEnd = getMarker(state.marker_end());
