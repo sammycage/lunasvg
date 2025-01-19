@@ -510,9 +510,13 @@ bool SVGPreserveAspectRatio::parse(std::string_view input)
 Rect SVGPreserveAspectRatio::getClipRect(const Rect& viewBoxRect, const Size& viewportSize) const
 {
     assert(!viewBoxRect.isEmpty() && !viewportSize.isEmpty());
-    if(m_meetOrSlice == MeetOrSlice::Meet)
-        return viewBoxRect;
-    auto scale = std::max(viewportSize.w / viewBoxRect.w, viewportSize.h / viewBoxRect.h);
+    auto xScale = viewportSize.w / viewBoxRect.w;
+    auto yScale = viewportSize.h / viewBoxRect.h;
+    if(m_alignType == AlignType::None) {
+        return Rect(viewBoxRect.x, viewBoxRect.y, viewportSize.w / xScale, viewportSize.h / yScale);
+    }
+
+    auto scale = (m_meetOrSlice == MeetOrSlice::Meet) ? std::min(xScale, yScale) : std::max(xScale, yScale);
     auto xOffset = -viewBoxRect.x * scale;
     auto yOffset = -viewBoxRect.y * scale;
     auto viewWidth = viewBoxRect.w * scale;
