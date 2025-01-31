@@ -108,7 +108,7 @@ Follow the steps below to install LunaSVG using either [CMake](https://cmake.org
 ### Using CMake
 
 ```bash
-git clone https://github.com/sammycage/lunasvg.git
+git clone --recursive https://github.com/sammycage/lunasvg.git
 cd lunasvg
 cmake -B build .
 cmake --build build
