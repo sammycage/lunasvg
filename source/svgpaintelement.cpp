@@ -178,16 +178,17 @@ bool SVGRadialGradientElement::applyPaint(SVGRenderState& state, float opacity) 
     if(gradientStops.empty())
         return false;
     LengthContext lengthContext(this, attributes.gradientUnits());
-    auto fx = lengthContext.valueForLength(attributes.fx());
-    auto fy = lengthContext.valueForLength(attributes.fy());
-    auto cx = lengthContext.valueForLength(attributes.cx());
-    auto cy = lengthContext.valueForLength(attributes.cy());
     auto r = lengthContext.valueForLength(attributes.r());
     if(r == 0.f || gradientStops.size() == 1) {
         const auto& lastStop = gradientStops.back();
         state->setColor(lastStop.color.r, lastStop.color.g, lastStop.color.b, lastStop.color.a);
         return true;
     }
+
+    auto fx = lengthContext.valueForLength(attributes.fx());
+    auto fy = lengthContext.valueForLength(attributes.fy());
+    auto cx = lengthContext.valueForLength(attributes.cx());
+    auto cy = lengthContext.valueForLength(attributes.cy());
 
     auto spreadMethod = attributes.spreadMethod();
     auto gradientUnits = attributes.gradientUnits();
@@ -300,6 +301,7 @@ bool SVGPatternElement::applyPaint(SVGRenderState& state, float opacity) const
 
     SVGRenderState newState(this, &state, patternImageTransform, SVGRenderMode::Painting, patternImage);
     patternContentElement->renderChildren(newState);
+
     auto patternTransform = attributes.patternTransform();
     patternTransform.translate(patternRect.x, patternRect.y);
     patternTransform.scale(1.f / xScale, 1.f / yScale);
