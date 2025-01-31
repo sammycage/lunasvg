@@ -6,11 +6,6 @@ set(LUNASVG_VERSION_MICRO 0)
 
 project(lunasvg LANGUAGES CXX VERSION ${LUNASVG_VERSION_MAJOR}.${LUNASVG_VERSION_MINOR}.${LUNASVG_VERSION_MICRO})
 
-find_package(plutovg 0.0.4 QUIET)
-if(NOT plutovg_FOUND)
-    add_subdirectory(plutovg)
-endif()
-
 set(lunasvg_sources
     source/lunasvg.cpp
     source/graphics.cpp
@@ -36,6 +31,11 @@ set(lunasvg_headers
     source/svgrenderstate.h
     source/svgtextelement.h
 )
+
+find_package(plutovg 0.0.4 QUIET)
+if(NOT plutovg_FOUND)
+    add_subdirectory(plutovg)
+endif()
 
 add_library(lunasvg ${lunasvg_sources} ${lunasvg_headers})
 add_library(lunasvg::lunasvg ALIAS lunasvg)
