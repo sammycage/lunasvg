@@ -233,13 +233,10 @@ inline SVGElement* toSVGElement(const std::unique_ptr<SVGNode>& node)
 template<typename T>
 inline void SVGElement::transverse(T callback)
 {
-    if(!callback(this))
-        return;
+    callback(this);
     for(const auto& child : m_children) {
         if(auto element = toSVGElement(child)) {
             element->transverse(callback);
-        } else if(!callback(child.get())) {
-            return;
         }
     }
 }
