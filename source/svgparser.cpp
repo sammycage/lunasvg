@@ -461,11 +461,11 @@ static bool parseCombinator(std::string_view& input, SimpleSelector::Combinator&
         input.remove_prefix(1);
     }
 
-    if(skipDelimiter(input, '>'))
+    if(skipDelimiterAndOptionalSpaces(input, '>'))
         combinator = SimpleSelector::Combinator::Child;
-    else if(skipDelimiter(input, '+'))
+    else if(skipDelimiterAndOptionalSpaces(input, '+'))
         combinator = SimpleSelector::Combinator::DirectAdjacent;
-    else if(skipDelimiter(input, '~'))
+    else if(skipDelimiterAndOptionalSpaces(input, '~'))
         combinator = SimpleSelector::Combinator::InDirectAdjacent;
     return combinator != SimpleSelector::Combinator::None;
 }
@@ -479,7 +479,7 @@ static bool parseSelector(std::string_view& input, Selector& selector)
         if(!parseSimpleSelector(input, simpleSelector, failed))
             return !failed && (combinator == SimpleSelector::Combinator::Descendant);
         selector.push_back(std::move(simpleSelector));
-    } while(parseCombinator(input, combinator) && skipOptionalSpaces(input));
+    } while(parseCombinator(input, combinator));
     return true;
 }
 
@@ -490,7 +490,7 @@ static bool parseSelectors(std::string_view& input, SelectorList& selectors)
         if(!parseSelector(input, selector))
             return false;
         selectors.push_back(std::move(selector));
-    } while(skipDelimiter(input, ',') && skipOptionalSpaces(input));
+    } while(skipDelimiterAndOptionalSpaces(input, ','));
     return true;
 }
 
@@ -578,6 +578,18 @@ static RuleDataList parseStyleSheet(std::string_view input)
     }
 
     return rules;
+}
+
+static SelectorList parseQuerySelectors(std::string_view input)
+{
+    SelectorList selectors;
+    stripLeadingAndTrailingSpaces(input);
+    if(!parseSelectors(input, selectors)
+        || !input.empty()) {
+        return SelectorList();
+    }
+
+    return selectors;
 }
 
 inline void parseInlineStyle(std::string_view input, SVGElement* element)
@@ -907,6 +919,24 @@ void Document::applyStyleSheet(const std::string& content)
             }
         });
     }
+}
+
+ElementList Document::querySelectorAll(const std::string& content) const
+{
+    auto selectors = parseQuerySelectors(content);
+    if(selectors.empty())
+        return ElementList();
+    ElementList elements;
+    m_rootElement->transverse([&](SVGElement* element) {
+        for(const auto& selector : selectors) {
+            if(matchSelector(selector, element)) {
+                elements.push_back(element);
+                break;
+            }
+        }
+    });
+
+    return elements;
 }
 
 } // namespace lunasvg

@@ -57,6 +57,17 @@ constexpr bool skipOptionalSpacesOrComma(std::string_view& input)
     return skipOptionalSpacesOrDelimiter(input, ',');
 }
 
+constexpr bool skipDelimiterAndOptionalSpaces(std::string_view& input, char delimiter)
+{
+    if(!input.empty() && input.front() == delimiter) {
+        input.remove_prefix(1);
+        skipOptionalSpaces(input);
+        return true;
+    }
+
+    return false;
+}
+
 constexpr bool skipDelimiter(std::string_view& input, char delimiter)
 {
     if(!input.empty() && input.front() == delimiter) {

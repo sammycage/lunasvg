@@ -649,6 +649,8 @@ private:
     friend class Document;
 };
 
+using ElementList = std::vector<Element>;
+
 class SVGRootElement;
 
 class LUNASVG_API Document {
@@ -687,6 +689,13 @@ public:
      * @param content A string containing the CSS rules to apply, with comments removed.
      */
     void applyStyleSheet(const std::string& content);
+
+    /**
+     * @brief Selects all elements that match the given CSS selector(s).
+     * @param content A string containing the CSS selector(s) to match elements.
+     * @return A list of elements matching the selector(s).
+     */
+    ElementList querySelectorAll(const std::string& content) const;
 
     /**
      * @brief Returns the intrinsic width of the document in pixels.
