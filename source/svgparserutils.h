@@ -93,18 +93,29 @@ constexpr bool isIntegralDigit(char ch, int base)
     if(IS_NUM(ch))
         return ch - '0' < base;
     if(IS_ALPHA(ch))
-        return (ch >= 'a' && ch < 'a' + std::min(base, 36) - 10) || (ch >= 'A' && ch < 'A' + std::min(base, 36) - 10);
+        return (ch >= 'a' && ch < 'a' + base - 10) || (ch >= 'A' && ch < 'A' + base - 10);
     return false;
+}
+
+constexpr int toIntegralDigit(char ch)
+{
+    if(IS_NUM(ch))
+        return ch - '0';
+    if(ch >= 'a')
+        return ch - 'a' + 10;
+    return ch - 'A' + 10;
 }
 
 template<typename T>
 inline bool parseInteger(std::string_view& input, T& integer, int base = 10)
 {
-    static const T intMax = std::numeric_limits<T>::max();
-    static const bool isSigned = std::numeric_limits<T>::is_signed;
+    constexpr bool isSigned = std::numeric_limits<T>::is_signed;
+    constexpr T intMax = std::numeric_limits<T>::max();
     const T maxMultiplier = intMax / static_cast<T>(base);
 
+    T value = 0;
     bool isNegative = false;
+
     if(!input.empty() && input.front() == '+') {
         input.remove_prefix(1);
     } else if(!input.empty() && isSigned && input.front() == '-') {
@@ -112,27 +123,19 @@ inline bool parseInteger(std::string_view& input, T& integer, int base = 10)
         isNegative = true;
     }
 
-    T value = 0;
     if(input.empty() || !isIntegralDigit(input.front(), base))
         return false;
     do {
-        const char ch = input.front();
-        int digitValue;
-        if(IS_NUM(ch))
-            digitValue = ch - '0';
-        else if(ch >= 'a')
-            digitValue = ch - 'a' + 10;
-        else
-            digitValue = ch - 'A' + 10;
+        const int digitValue = toIntegralDigit(input.front());
         if(value > maxMultiplier || (value == maxMultiplier && static_cast<T>(digitValue) > (intMax % static_cast<T>(base)) + isNegative))
             return false;
         value = static_cast<T>(base) * value + static_cast<T>(digitValue);
         input.remove_prefix(1);
     } while(!input.empty() && isIntegralDigit(input.front(), base));
 
-    using signed_t = typename std::make_signed<T>::type;
+    using SignedType = typename std::make_signed<T>::type;
     if(isNegative)
-        integer = -static_cast<signed_t>(value);
+        integer = -static_cast<SignedType>(value);
     else
         integer = value;
     return true;
@@ -141,15 +144,12 @@ inline bool parseInteger(std::string_view& input, T& integer, int base = 10)
 template<typename T>
 inline bool parseNumber(std::string_view& input, T& number)
 {
-    T integer, fraction;
-    int sign, expsign, exponent;
-
     constexpr T maxValue = std::numeric_limits<T>::max();
-    fraction = 0;
-    integer = 0;
-    exponent = 0;
-    sign = 1;
-    expsign = 1;
+    T integer = 0;
+    T fraction = 0;
+    int exponent = 0;
+    int sign = 1;
+    int expsign = 1;
 
     if(!input.empty() && input.front() == '+') {
         input.remove_prefix(1);
@@ -171,7 +171,7 @@ inline bool parseNumber(std::string_view& input, T& number)
         input.remove_prefix(1);
         if(input.empty() || !IS_NUM(input.front()))
             return false;
-        T divisor = 1;
+        T divisor = static_cast<T>(1);
         do {
             fraction = static_cast<T>(10) * fraction + (input.front() - '0');
             divisor *= static_cast<T>(10);
