@@ -1,5 +1,5 @@
 project('lunasvg', 'cpp',
-    version: '3.1.1',
+    version: '3.2.0',
     license: 'MIT',
     meson_version: '>=0.59.0',
     default_options: ['cpp_std=c++17']
