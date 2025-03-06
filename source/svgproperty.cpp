@@ -26,6 +26,7 @@ PropertyID propertyid(const std::string_view& name)
         {"height", PropertyID::Height},
         {"href", PropertyID::Href},
         {"id", PropertyID::Id},
+        {"lengthAdjust", PropertyID::LengthAdjust},
         {"markerHeight", PropertyID::MarkerHeight},
         {"markerUnits", PropertyID::MarkerUnits},
         {"markerWidth", PropertyID::MarkerWidth},
@@ -46,6 +47,7 @@ PropertyID propertyid(const std::string_view& name)
         {"ry", PropertyID::Ry},
         {"spreadMethod", PropertyID::SpreadMethod},
         {"style", PropertyID::Style},
+        {"textLength", PropertyID::TextLength},
         {"transform", PropertyID::Transform},
         {"viewBox", PropertyID::ViewBox},
         {"width", PropertyID::Width},
@@ -155,6 +157,17 @@ bool SVGEnumeration<MarkerUnits>::parse(std::string_view input)
     static const SVGEnumerationEntry<MarkerUnits> entries[] = {
         {MarkerUnits::StrokeWidth, "strokeWidth"},
         {MarkerUnits::UserSpaceOnUse, "userSpaceOnUse"}
+    };
+
+    return parseEnum(input, entries);
+}
+
+template<>
+bool SVGEnumeration<LengthAdjust>::parse(std::string_view input)
+{
+    static const SVGEnumerationEntry<LengthAdjust> entries[] = {
+        {LengthAdjust::Spacing, "spacing"},
+        {LengthAdjust::SpacingAndGlyphs, "spacingAndGlyphs"}
     };
 
     return parseEnum(input, entries);

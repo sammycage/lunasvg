@@ -38,6 +38,7 @@ enum class PropertyID : uint8_t {
     Height,
     Href,
     Id,
+    LengthAdjust,
     MarkerHeight,
     MarkerUnits,
     MarkerWidth,
@@ -75,6 +76,7 @@ enum class PropertyID : uint8_t {
     Stroke_Opacity,
     Stroke_Width,
     Style,
+    TextLength,
     Text_Anchor,
     Transform,
     ViewBox,
@@ -223,6 +225,11 @@ enum class Units : uint8_t {
 enum class MarkerUnits : uint8_t {
     StrokeWidth,
     UserSpaceOnUse
+};
+
+enum class LengthAdjust : uint8_t {
+    Spacing,
+    SpacingAndGlyphs
 };
 
 template<typename Enum>

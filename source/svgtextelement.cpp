@@ -131,6 +131,69 @@ static float calculateTextAnchorOffset(const SVGTextPositioningElement* element,
     return 0.f;
 }
 
+using SVGTextFragmentIterator = SVGTextFragmentList::iterator;
+
+static void handleTextChunk(SVGTextFragmentIterator begin, SVGTextFragmentIterator end)
+{
+    const SVGTextFragment& firstFragment = *begin;
+    auto handleTextAnchor = needsTextAnchorAdjustment(firstFragment.element);
+    auto handleTextLength = firstFragment.element->hasAttribute(PropertyID::TextLength);
+    if(!handleTextAnchor && !handleTextLength)
+        return;
+    if(handleTextLength) {
+        float chunkWidth = 0;
+        size_t numCharacters = 0;
+        const SVGTextFragment* lastFragment = nullptr;
+        for(auto it = begin; it != end; ++it) {
+            const SVGTextFragment& fragment = *it;
+            numCharacters += fragment.length;
+            chunkWidth += fragment.width;
+            if(lastFragment)
+                chunkWidth += fragment.x - (lastFragment->x + lastFragment->width);
+            lastFragment = &fragment;
+        }
+
+        LengthContext lengthContext(firstFragment.element);
+        auto textLength = lengthContext.valueForLength(firstFragment.element->textLength());
+        if(firstFragment.element->lengthAdjust() == LengthAdjust::Spacing) {
+            size_t characterOffset = 0;
+            auto textLengthShift = (textLength - chunkWidth) / numCharacters;
+            for(auto it = begin; it != end; ++it) {
+                SVGTextFragment& fragment = *it;
+                fragment.x += textLengthShift * characterOffset;
+                characterOffset += fragment.length;
+            }
+        } else {
+            auto textLengthScale = textLength / chunkWidth;
+            auto lengthAdjustTransform = Transform::translated(firstFragment.x, firstFragment.y);
+            lengthAdjustTransform.scale(textLengthScale, 1.f);
+            lengthAdjustTransform.translate(-firstFragment.x, -firstFragment.y);
+            for(auto it = begin; it != end; ++it) {
+                SVGTextFragment& fragment = *it;
+                fragment.lengthAdjustTransform = lengthAdjustTransform;
+            }
+        }
+    }
+
+    if(handleTextAnchor) {
+        float chunkWidth = 0;
+        const SVGTextFragment* lastFragment = nullptr;
+        for(auto it = begin; it != end; ++it) {
+            const SVGTextFragment& fragment = *it;
+            chunkWidth += fragment.width;
+            if(lastFragment)
+                chunkWidth += fragment.x - (lastFragment->x + lastFragment->width);
+            lastFragment = &fragment;
+        }
+
+        auto chunkOffset = calculateTextAnchorOffset(firstFragment.element, chunkWidth);
+        for(auto it = begin; it != end; ++it) {
+            SVGTextFragment& fragment = *it;
+            fragment.x += chunkOffset;
+        }
+    }
+}
+
 SVGTextFragmentsBuilder::SVGTextFragmentsBuilder(std::u32string& text, SVGTextFragmentList& fragments)
     : m_text(text), m_fragments(fragments)
 {
@@ -160,6 +223,7 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
             m_x += fragment.width;
         };
 
+        auto needsTextLengthSpacing = element->lengthAdjust() == LengthAdjust::Spacing && element->hasAttribute(PropertyID::TextLength);
         auto baselineOffset = calculateBaselineOffset(element);
         auto startOffset = textPosition.startOffset;
         auto textOffset = textPosition.startOffset;
@@ -175,7 +239,7 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
             auto dx = characterPosition.dx.value_or(0);
             auto dy = characterPosition.dy.value_or(0);
 
-            auto shouldStartNewFragment = characterPosition.x || characterPosition.y || dx || dy || angle || angle != lastAngle;
+            auto shouldStartNewFragment = needsTextLengthSpacing || characterPosition.x || characterPosition.y || dx || dy || angle || angle != lastAngle;
             if(shouldStartNewFragment && didStartTextFragment) {
                 recordTextFragment(startOffset, textOffset);
                 startOffset = textOffset;
@@ -199,26 +263,6 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
 
         recordTextFragment(startOffset, textOffset);
     }
-
-    auto handleTextChunk = [](auto begin, auto end) {
-        if(!needsTextAnchorAdjustment(begin->element))
-            return;
-        float chunkWidth = 0.f;
-        const SVGTextFragment* lastFragment = nullptr;
-        for(auto it = begin; it != end; ++it) {
-            const SVGTextFragment& fragment = *it;
-            chunkWidth += fragment.width;
-            if(lastFragment)
-                chunkWidth += fragment.x - (lastFragment->x + lastFragment->width);
-            lastFragment = &fragment;
-        }
-
-        auto chunkOffset = calculateTextAnchorOffset(begin->element, chunkWidth);
-        for(auto it = begin; it != end; ++it) {
-            SVGTextFragment& fragment = *it;
-            fragment.x += chunkOffset;
-        }
-    };
 
     if(m_fragments.empty())
         return;
@@ -338,12 +382,16 @@ SVGTextPositioningElement::SVGTextPositioningElement(Document* document, Element
     , m_dx(PropertyID::Dx, LengthDirection::Horizontal, LengthNegativeMode::Allow)
     , m_dy(PropertyID::Dy, LengthDirection::Vertical, LengthNegativeMode::Allow)
     , m_rotate(PropertyID::Rotate)
+    , m_textLength(PropertyID::TextLength, LengthDirection::Horizontal, LengthNegativeMode::Forbid)
+    , m_lengthAdjust(PropertyID::LengthAdjust, LengthAdjust::Spacing)
 {
     addProperty(m_x);
     addProperty(m_y);
     addProperty(m_dx);
     addProperty(m_dy);
     addProperty(m_rotate);
+    addProperty(m_textLength);
+    addProperty(m_lengthAdjust);
 }
 
 void SVGTextPositioningElement::layoutElement(const SVGLayoutState& state)
@@ -412,7 +460,7 @@ void SVGTextElement::render(SVGRenderState& state) const
 
     std::u32string_view wholeText(m_text);
     for(const auto& fragment : m_fragments) {
-        auto transform = newState.currentTransform() * Transform::rotated(fragment.angle, fragment.x, fragment.y);
+        auto transform = newState.currentTransform() * Transform::rotated(fragment.angle, fragment.x, fragment.y) * fragment.lengthAdjustTransform;
         auto text = wholeText.substr(fragment.offset, fragment.length);
         auto origin = Point(fragment.x, fragment.y);
 
@@ -440,7 +488,7 @@ Rect SVGTextElement::boundingBox(bool includeStroke) const
     for(const auto& fragment : m_fragments) {
         const auto& font = fragment.element->font();
         const auto& stroke = fragment.element->stroke();
-        auto fragmentTranform = Transform::rotated(fragment.angle, fragment.x, fragment.y);
+        auto fragmentTranform = Transform::rotated(fragment.angle, fragment.x, fragment.y) * fragment.lengthAdjustTransform;
         auto fragmentRect = Rect(fragment.x, fragment.y - font.ascent(), fragment.width, fragment.element->font_size());
         if(includeStroke && stroke.isRenderable())
             fragmentRect.inflate(fragment.element->stroke_width() / 2.f);

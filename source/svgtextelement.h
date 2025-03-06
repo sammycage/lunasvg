@@ -35,6 +35,7 @@ using SVGTextPositionList = std::vector<SVGTextPosition>;
 struct SVGTextFragment {
     explicit SVGTextFragment(const SVGTextPositioningElement* element) : element(element) {}
     const SVGTextPositioningElement* element;
+    Transform lengthAdjustTransform;
     size_t offset = 0;
     size_t length = 0;
     float x = 0;
@@ -77,6 +78,9 @@ public:
     const LengthList& dy() const { return m_dy.values(); }
     const NumberList& rotate() const { return m_rotate.values(); }
 
+    const SVGLength& textLength() const { return m_textLength; }
+    LengthAdjust lengthAdjust() const { return m_lengthAdjust.value(); }
+
     const Font& font() const { return m_font; }
     const SVGPaintServer& fill() const { return m_fill; }
     const SVGPaintServer& stroke() const { return m_stroke; }
@@ -98,6 +102,9 @@ private:
     SVGLengthList m_dx;
     SVGLengthList m_dy;
     SVGNumberList m_rotate;
+
+    SVGLength m_textLength;
+    SVGEnumeration<LengthAdjust> m_lengthAdjust;
 
     Font m_font;
     SVGPaintServer m_fill;
