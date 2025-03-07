@@ -136,11 +136,7 @@ using SVGTextFragmentIterator = SVGTextFragmentList::iterator;
 static void handleTextChunk(SVGTextFragmentIterator begin, SVGTextFragmentIterator end)
 {
     const SVGTextFragment& firstFragment = *begin;
-    auto handleTextAnchor = needsTextAnchorAdjustment(firstFragment.element);
-    auto handleTextLength = firstFragment.element->hasAttribute(PropertyID::TextLength);
-    if(!handleTextAnchor && !handleTextLength)
-        return;
-    if(handleTextLength) {
+    if(firstFragment.element->hasAttribute(PropertyID::TextLength)) {
         float chunkWidth = 0;
         size_t numCharacters = 0;
         const SVGTextFragment* lastFragment = nullptr;
@@ -155,27 +151,30 @@ static void handleTextChunk(SVGTextFragmentIterator begin, SVGTextFragmentIterat
 
         LengthContext lengthContext(firstFragment.element);
         auto textLength = lengthContext.valueForLength(firstFragment.element->textLength());
-        if(firstFragment.element->lengthAdjust() == LengthAdjust::Spacing) {
-            size_t characterOffset = 0;
-            auto textLengthShift = (textLength - chunkWidth) / numCharacters;
-            for(auto it = begin; it != end; ++it) {
-                SVGTextFragment& fragment = *it;
-                fragment.x += textLengthShift * characterOffset;
-                characterOffset += fragment.length;
-            }
-        } else {
-            auto textLengthScale = textLength / chunkWidth;
-            auto lengthAdjustTransform = Transform::translated(firstFragment.x, firstFragment.y);
-            lengthAdjustTransform.scale(textLengthScale, 1.f);
-            lengthAdjustTransform.translate(-firstFragment.x, -firstFragment.y);
-            for(auto it = begin; it != end; ++it) {
-                SVGTextFragment& fragment = *it;
-                fragment.lengthAdjustTransform = lengthAdjustTransform;
+        if(textLength > 0.f && chunkWidth > 0.f) {
+            if(firstFragment.element->lengthAdjust() == LengthAdjust::SpacingAndGlyphs) {
+                auto textLengthScale = textLength / chunkWidth;
+                auto lengthAdjustTransform = Transform::translated(firstFragment.x, firstFragment.y);
+                lengthAdjustTransform.scale(textLengthScale, 1.f);
+                lengthAdjustTransform.translate(-firstFragment.x, -firstFragment.y);
+                for(auto it = begin; it != end; ++it) {
+                    SVGTextFragment& fragment = *it;
+                    fragment.lengthAdjustTransform = lengthAdjustTransform;
+                }
+            } else if(numCharacters > 1) {
+                assert(firstFragment.element->lengthAdjust() == LengthAdjust::Spacing);
+                size_t characterOffset = 0;
+                auto textLengthShift = (textLength - chunkWidth) / (numCharacters - 1);
+                for(auto it = begin; it != end; ++it) {
+                    SVGTextFragment& fragment = *it;
+                    fragment.x += textLengthShift * characterOffset;
+                    characterOffset += fragment.length;
+                }
             }
         }
     }
 
-    if(handleTextAnchor) {
+    if(needsTextAnchorAdjustment(firstFragment.element)) {
         float chunkWidth = 0;
         const SVGTextFragment* lastFragment = nullptr;
         for(auto it = begin; it != end; ++it) {
