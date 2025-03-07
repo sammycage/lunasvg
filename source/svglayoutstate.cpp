@@ -207,6 +207,8 @@ static FontWeight parseFontWeight(const std::string_view& input)
     static const SVGEnumerationEntry<FontWeight> entries[] = {
         {FontWeight::Normal, "normal"},
         {FontWeight::Bold, "bold"},
+        {FontWeight::Bold, "bolder"},
+        {FontWeight::Normal, "lighter"},
         {FontWeight::Normal, "100"},
         {FontWeight::Normal, "200"},
         {FontWeight::Normal, "300"},
