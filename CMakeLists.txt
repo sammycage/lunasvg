@@ -6,7 +6,7 @@ set(LUNASVG_VERSION_MICRO 1)
 
 project(lunasvg LANGUAGES CXX VERSION ${LUNASVG_VERSION_MAJOR}.${LUNASVG_VERSION_MINOR}.${LUNASVG_VERSION_MICRO})
 
-find_package(plutovg 0.0.4 QUIET)
+find_package(plutovg 1.0.0 QUIET)
 if(NOT plutovg_FOUND)
     add_subdirectory(plutovg)
 endif()
