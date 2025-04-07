@@ -1,0 +1,2 @@
+option('examples', type : 'feature', value : 'auto')
+option('tests', type : 'feature', value : 'auto')
