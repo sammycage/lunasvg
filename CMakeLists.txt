@@ -6,8 +6,17 @@ set(LUNASVG_VERSION_MICRO 1)
 
 project(lunasvg LANGUAGES CXX VERSION ${LUNASVG_VERSION_MAJOR}.${LUNASVG_VERSION_MINOR}.${LUNASVG_VERSION_MICRO})
 
-find_package(plutovg 1.0.0 QUIET)
+option(USE_SYSTEM_PLUTOVG "Use system plutovg library" OFF)
+
+if(USE_SYSTEM_PLUTOVG)
+    find_package(plutovg 1.0.0 QUIET)
+    if(NOT plutovg_FOUND)
+        message(WARNING "Could not find: plutovg>=1.0.0. Falling back to plutovg submodule.")
+    endif()
+endif()
+
 if(NOT plutovg_FOUND)
+    message(STATUS "Using plutovg submodule.")
     add_subdirectory(plutovg)
 endif()
 
@@ -57,7 +66,12 @@ target_include_directories(lunasvg PUBLIC
     $<INSTALL_INTERFACE:include/lunasvg>
 )
 
-target_link_libraries(lunasvg PRIVATE plutovg::plutovg)
+if(USE_SYSTEM_PLUTOVG AND plutovg_FOUND)
+    target_link_libraries(lunasvg PRIVATE plutovg::plutovg)
+else()
+    target_link_libraries(lunasvg PRIVATE plutovg)
+endif()
+
 target_compile_definitions(lunasvg PRIVATE LUNASVG_BUILD)
 if(NOT BUILD_SHARED_LIBS)
     target_compile_definitions(lunasvg PUBLIC LUNASVG_BUILD_STATIC)

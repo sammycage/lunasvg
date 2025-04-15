@@ -142,6 +142,17 @@ target_link_libraries(your_target_name PRIVATE lunasvg::lunasvg)
 
 Replace `your_target_name` with the name of your executable or library target.
 
+Build Options
+LunaSVG provides several build options that can be configured using -D flags when running cmake. Below is a list of available options:
+
+USE_SYSTEM_PLUTOVG (default: OFF): Use the system-installed plutovg library (version 1.0.0 or higher) instead of the bundled submodule. If the system library is not found, the build will fall back to using the submodule.
+Example:
+
+```bash
+cmake -B build -DUSE_SYSTEM_PLUTOVG=ON .
+cmake --build build
+```
+
 ### Using Meson
 
 ```bash
