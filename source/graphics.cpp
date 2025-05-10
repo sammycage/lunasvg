@@ -543,7 +543,7 @@ std::shared_ptr<Canvas> Canvas::create(const Bitmap& bitmap)
 
 std::shared_ptr<Canvas> Canvas::create(float x, float y, float width, float height)
 {
-    constexpr int kMaxSize = 1 << 24;
+    constexpr int kMaxSize = 1 << 15;
     if(width <= 0 || height <= 0 || width > kMaxSize || height > kMaxSize)
         return std::shared_ptr<Canvas>(new Canvas(0, 0, 1, 1));
     auto l = static_cast<int>(std::floor(x));

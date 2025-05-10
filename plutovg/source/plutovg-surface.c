@@ -11,7 +11,8 @@
 
 static plutovg_surface_t* plutovg_surface_create_uninitialized(int width, int height)
 {
-    if(width > STBI_MAX_DIMENSIONS || height > STBI_MAX_DIMENSIONS)
+    static const int kMaxSize = 1 << 15;
+    if(width > kMaxSize || height > kMaxSize)
         return NULL;
     const size_t size = width * height * 4;
     plutovg_surface_t* surface = malloc(size + sizeof(plutovg_surface_t));
