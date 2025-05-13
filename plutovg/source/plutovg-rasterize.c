@@ -172,7 +172,7 @@ static void ft_outline_destroy(PVG_FT_Outline* outline)
     free(outline);
 }
 
-#define FT_COORD(x) (PVG_FT_Pos)((x) * 64)
+#define FT_COORD(x) (PVG_FT_Pos)(roundf(x * 64))
 static void ft_outline_move_to(PVG_FT_Outline* ft, float x, float y)
 {
     ft->points[ft->n_points].x = FT_COORD(x);
