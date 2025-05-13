@@ -1694,10 +1694,10 @@ void PVG_FT_Outline_Get_CBox(const PVG_FT_Outline* outline, PVG_FT_BBox* acbox)
     }
 
     if ( ras.clipping ) {
-        clip->xMin = ras.min_ex * ONE_PIXEL;
-        clip->yMin = ras.min_ey * ONE_PIXEL;
-        clip->xMax = ras.max_ex * ONE_PIXEL;
-        clip->yMax = ras.max_ey * ONE_PIXEL;
+        clip->xMin = (ras.min_ex - 1) * ONE_PIXEL;
+        clip->yMin = (ras.min_ey - 1) * ONE_PIXEL;
+        clip->xMax = (ras.max_ex + 1) * ONE_PIXEL;
+        clip->yMax = (ras.max_ey + 1) * ONE_PIXEL;
     }
 
     ras.count_ex = ras.max_ex - ras.min_ex;
