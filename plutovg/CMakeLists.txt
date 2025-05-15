@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 set(PLUTOVG_VERSION_MAJOR 1)
-set(PLUTOVG_VERSION_MINOR 0)
+set(PLUTOVG_VERSION_MINOR 1)
 set(PLUTOVG_VERSION_MICRO 0)
 
 project(plutovg LANGUAGES C VERSION ${PLUTOVG_VERSION_MAJOR}.${PLUTOVG_VERSION_MINOR}.${PLUTOVG_VERSION_MICRO})
@@ -55,13 +55,15 @@ target_include_directories(plutovg PUBLIC
 
 find_library(MATH_LIBRARY m)
 if(MATH_LIBRARY)
-    target_link_libraries(plutovg PRIVATE ${MATH_LIBRARY})
+    target_link_libraries(plutovg PRIVATE m)
 endif()
 
 target_compile_definitions(plutovg PRIVATE PLUTOVG_BUILD)
 if(NOT BUILD_SHARED_LIBS)
     target_compile_definitions(plutovg PUBLIC PLUTOVG_BUILD_STATIC)
 endif()
+
+include(GNUInstallDirs)
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
@@ -75,7 +77,6 @@ write_basic_package_version_file(plutovgConfigVersion.cmake
     COMPATIBILITY SameMajorVersion
 )
 
-include(GNUInstallDirs)
 install(FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/plutovg.h
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/plutovg
@@ -103,6 +104,42 @@ install(FILES
 export(EXPORT plutovgTargets
     FILE ${CMAKE_CURRENT_BINARY_DIR}/plutovgTargets.cmake
     NAMESPACE plutovg::
+)
+
+file(RELATIVE_PATH plutovg_pc_prefix_relative
+    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pkgconfig"
+    "${CMAKE_INSTALL_PREFIX}"
+)
+
+set(plutovg_pc_cflags "")
+set(plutovg_pc_libs_private "")
+
+if(MATH_LIBRARY)
+    string(APPEND plutovg_pc_libs_private " -lm")
+endif()
+
+if(NOT BUILD_SHARED_LIBS)
+    string(APPEND plutovg_pc_cflags " -DPLUTOVG_BUILD_STATIC")
+endif()
+
+string(CONFIGURE [[
+prefix=${pcfiledir}/@plutovg_pc_prefix_relative@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+
+Name: PlutoVG
+Description: Tiny 2D vector graphics library in C
+Version: @PROJECT_VERSION@
+
+Cflags: -I${includedir}/plutovg@plutovg_pc_cflags@
+Libs: -L${libdir} -lplutovg
+Libs.private:@plutovg_pc_libs_private@
+]] plutovg_pc @ONLY)
+
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/plutovg.pc" "${plutovg_pc}")
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/plutovg.pc"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
 )
 
 option(PLUTOVG_BUILD_EXAMPLES "Build examples" ON)

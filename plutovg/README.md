@@ -1,4 +1,4 @@
-[![Releases](https://img.shields.io/badge/Version-1.0.0-orange.svg)](https://github.com/sammycage/plutovg/releases)
+[![Releases](https://img.shields.io/badge/Version-1.1.0-orange.svg)](https://github.com/sammycage/plutovg/releases)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/sammycage/plutovg/blob/main/LICENSE)
 [![Build Status](https://github.com/sammycage/plutovg/actions/workflows/main.yml/badge.svg)](https://github.com/sammycage/plutovg/actions)
 [![CodeFactor](https://www.codefactor.io/repository/github/sammycage/plutovg/badge)](https://www.codefactor.io/repository/github/sammycage/plutovg)

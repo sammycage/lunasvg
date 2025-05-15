@@ -806,11 +806,11 @@ PVG_FT_END_STMNT
   {
       f1 &= 10;
       f2 &= 10;
-      if((f1 | f2) == 0 ) // Fully visible
+      if((f1 | f2) == 0) /* Fully visible */
       {
           gray_render_line( RAS_VAR_ x1, y1, x2, y2 );
       }
-      else if(f1 == f2) // Invisible by Y
+      else if(f1 == f2) /* Invisible by Y */
       {
           return;
       }
@@ -827,25 +827,25 @@ PVG_FT_END_STMNT
           clip_y1 = ras.clip_box.yMin;
           clip_y2 = ras.clip_box.yMax;
 
-          if(f1 & 8) // y1 < clip_y1
+          if(f1 & 8) /* y1 < clip_y1 */
           {
               tx1 = x1 + PVG_FT_MulDiv(clip_y1-y1, x2-x1, y2-y1);
               ty1 = clip_y1;
           }
 
-          if(f1 & 2) // y1 > clip_y2
+          if(f1 & 2) /* y1 > clip_y2 */
           {
               tx1 = x1 + PVG_FT_MulDiv(clip_y2-y1, x2-x1, y2-y1);
               ty1 = clip_y2;
           }
 
-          if(f2 & 8) // y2 < clip_y1
+          if(f2 & 8) /* y2 < clip_y1 */
           {
               tx2 = x1 + PVG_FT_MulDiv(clip_y1-y1, x2-x1, y2-y1);
               ty2 = clip_y1;
           }
 
-          if(f2 & 2) // y2 > clip_y2
+          if(f2 & 2) /* y2 > clip_y2 */
           {
               tx2 = x1 + PVG_FT_MulDiv(clip_y2-y1, x2-x1, y2-y1);
               ty2 = clip_y2;
@@ -871,7 +871,7 @@ PVG_FT_END_STMNT
           f1 = ras.clip_flags;
           f2 = gray_clip_flags( RAS_VAR_ x2, y2 );
 
-          if((f1 & 10) == (f2 & 10) && (f1 & 10) != 0)
+          if((f1 & 10) == (f2 & 10) && (f1 & 10) != 0) /* Invisible by Y */
           {
               ras.clip_flags = f2;
               goto End;
@@ -885,36 +885,36 @@ PVG_FT_END_STMNT
 
           switch(((f1 & 5) << 1) | (f2 & 5))
           {
-          case 0: // Visible by X
+          case 0: /* Visible by X */
               gray_vline( RAS_VAR_ x1, y1, x2, y2, f1, f2);
               break;
 
-          case 1: // x2 > clip_x2
+          case 1: /* x2 > clip_x2 */
               y3 = y1 + PVG_FT_MulDiv(clip_x2-x1, y2-y1, x2-x1);
               f3 = gray_clip_vflags( RAS_VAR_ y3 );
               gray_vline( RAS_VAR_ x1, y1, clip_x2, y3, f1, f3);
               gray_vline( RAS_VAR_ clip_x2, y3, clip_x2, y2, f3, f2);
               break;
 
-          case 2: // x1 > clip_x2
+          case 2: /* x1 > clip_x2 */
               y3 = y1 + PVG_FT_MulDiv(clip_x2-x1, y2-y1, x2-x1);
               f3 = gray_clip_vflags( RAS_VAR_ y3 );
               gray_vline( RAS_VAR_ clip_x2, y1, clip_x2, y3, f1, f3);
               gray_vline( RAS_VAR_ clip_x2, y3, x2, y2, f3, f2);
               break;
 
-          case 3: // x1 > clip_x2 && x2 > clip_x2
+          case 3: /* x1 > clip_x2 && x2 > clip_x2 */
               gray_vline( RAS_VAR_ clip_x2, y1, clip_x2, y2, f1, f2);
               break;
 
-          case 4: // x2 < clip_x1
+          case 4: /* x2 < clip_x1 */
               y3 = y1 + PVG_FT_MulDiv(clip_x1-x1, y2-y1, x2-x1);
               f3 = gray_clip_vflags( RAS_VAR_ y3 );
               gray_vline( RAS_VAR_ x1, y1, clip_x1, y3, f1, f3);
               gray_vline( RAS_VAR_ clip_x1, y3, clip_x1, y2, f3, f2);
               break;
 
-          case 6: // x1 > clip_x2 && x2 < clip_x1
+          case 6: /* x1 > clip_x2 && x2 < clip_x1 */
               y3 = y1 + PVG_FT_MulDiv(clip_x2-x1, y2-y1, x2-x1);
               y4 = y1 + PVG_FT_MulDiv(clip_x1-x1, y2-y1, x2-x1);
               f3 = gray_clip_vflags( RAS_VAR_ y3 );
@@ -924,14 +924,14 @@ PVG_FT_END_STMNT
               gray_vline( RAS_VAR_ clip_x1, y4, clip_x1, y2, f4, f2);
               break;
 
-          case 8: // x1 < clip_x1
+          case 8: /* x1 < clip_x1 */
               y3 = y1 + PVG_FT_MulDiv(clip_x1-x1, y2-y1, x2-x1);
               f3 = gray_clip_vflags( RAS_VAR_ y3 );
               gray_vline( RAS_VAR_ clip_x1, y1, clip_x1, y3, f1, f3);
               gray_vline( RAS_VAR_ clip_x1, y3, x2, y2, f3, f2);
               break;
 
-          case 9:  // x1 < clip_x1 && x2 > clip_x2
+          case 9:  /* x1 < clip_x1 && x2 > clip_x2 */
               y3 = y1 + PVG_FT_MulDiv(clip_x1-x1, y2-y1, x2-x1);
               y4 = y1 + PVG_FT_MulDiv(clip_x2-x1, y2-y1, x2-x1);
               f3 = gray_clip_vflags( RAS_VAR_ y3 );
@@ -941,7 +941,7 @@ PVG_FT_END_STMNT
               gray_vline( RAS_VAR_ clip_x2, y4, clip_x2, y2, f4, f2);
               break;
 
-          case 12: // x1 < clip_x1 && x2 < clip_x1
+          case 12: /* x1 < clip_x1 && x2 < clip_x1 */
               gray_vline( RAS_VAR_ clip_x1, y1, clip_x1, y2, f1, f2);
               break;
           }
@@ -1693,12 +1693,10 @@ void PVG_FT_Outline_Get_CBox(const PVG_FT_Outline* outline, PVG_FT_BBox* acbox)
         ras.clipping = 1;
     }
 
-    if ( ras.clipping ) {
-        clip->xMin = (ras.min_ex - 1) * ONE_PIXEL;
-        clip->yMin = (ras.min_ey - 1) * ONE_PIXEL;
-        clip->xMax = (ras.max_ex + 1) * ONE_PIXEL;
-        clip->yMax = (ras.max_ey + 1) * ONE_PIXEL;
-    }
+    clip->xMin = (ras.min_ex - 1) * ONE_PIXEL;
+    clip->yMin = (ras.min_ey - 1) * ONE_PIXEL;
+    clip->xMax = (ras.max_ex + 1) * ONE_PIXEL;
+    clip->yMax = (ras.max_ey + 1) * ONE_PIXEL;
 
     ras.count_ex = ras.max_ex - ras.min_ex;
     ras.count_ey = ras.max_ey - ras.min_ey;
