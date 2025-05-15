@@ -49,6 +49,8 @@ set(lunasvg_headers
 add_library(lunasvg ${lunasvg_sources} ${lunasvg_headers})
 add_library(lunasvg::lunasvg ALIAS lunasvg)
 
+target_link_libraries(lunasvg PRIVATE plutovg::plutovg)
+
 set_target_properties(lunasvg PROPERTIES
     SOVERSION ${LUNASVG_VERSION_MAJOR}
     CXX_VISIBILITY_PRESET hidden
@@ -66,16 +68,12 @@ target_include_directories(lunasvg PUBLIC
     $<INSTALL_INTERFACE:include/lunasvg>
 )
 
-if(USE_SYSTEM_PLUTOVG AND plutovg_FOUND)
-    target_link_libraries(lunasvg PRIVATE plutovg::plutovg)
-else()
-    target_link_libraries(lunasvg PRIVATE plutovg)
-endif()
-
 target_compile_definitions(lunasvg PRIVATE LUNASVG_BUILD)
 if(NOT BUILD_SHARED_LIBS)
     target_compile_definitions(lunasvg PUBLIC LUNASVG_BUILD_STATIC)
 endif()
+
+include(GNUInstallDirs)
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
@@ -89,7 +87,6 @@ write_basic_package_version_file(lunasvgConfigVersion.cmake
     COMPATIBILITY SameMajorVersion
 )
 
-include(GNUInstallDirs)
 install(FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/include/lunasvg.h
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lunasvg
