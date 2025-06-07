@@ -3,6 +3,8 @@
 [![Build Status](https://github.com/sammycage/lunasvg/actions/workflows/main.yml/badge.svg)](https://github.com/sammycage/lunasvg/actions)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/sammycage)
 
+> Interested in HTML rendering? Explore a related library, [PlutoBook](https://github.com/plutoprint/plutobook), built for paged HTML rendering.
+
 # LunaSVG
 
 LunaSVG is an SVG rendering library in C++, designed to be lightweight and portable, offering efficient rendering and manipulation of Scalable Vector Graphics (SVG) files.
