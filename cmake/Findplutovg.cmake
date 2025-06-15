@@ -1,0 +1,25 @@
+
+find_package(plutovg ${plutovg_FIND_VERSION} QUIET CONFIG)
+if(plutovg_FOUND)
+    return()
+endif()
+
+find_package(PkgConfig QUIET)
+if (PKG_CONFIG_FOUND)
+    pkg_check_modules(_PLUTOVG plutovg>=${plutovg_FIND_VERSION} QUIET)
+
+    if (_PLUTOVG_FOUND)
+        add_library(plutovg::plutovg UNKNOWN IMPORTED)
+
+        set(plutovg_FOUND ON)
+        if (NOT BUILD_STATIC)
+            set_target_properties(plutovg::plutovg PROPERTIES IMPORTED_LOCATION_NOCONFIG "${_PLUTOVG_LINK_LIBRARIES}")
+            target_include_directories(plutovg::plutovg INTERFACE ${_PLUTOVG_INCLUDE_DIRS})
+            target_compile_options(plutovg::plutovg INTERFACE ${_PLUTOVG_CFLAGS_OTHER})
+        else()
+            set_target_properties(plutovg::plutovg PROPERTIES IMPORTED_LOCATION_NOCONFIG "${_PLUTOVG_STATIC_LINK_LIBRARIES}")
+            target_include_directories(plutovg::plutovg INTERFACE ${_PLUTOVG_STATIC_INCLUDE_DIRS})
+            target_compile_options(plutovg::plutovg INTERFACE ${_PLUTOVG_STATIC_CFLAGS_OTHER})
+        endif()
+    endif()
+endif()
