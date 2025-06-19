@@ -8,6 +8,8 @@ project(lunasvg LANGUAGES CXX VERSION ${LUNASVG_VERSION_MAJOR}.${LUNASVG_VERSION
 
 option(USE_SYSTEM_PLUTOVG "Use system plutovg library" OFF)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 if(USE_SYSTEM_PLUTOVG)
     find_package(plutovg 1.0.0 QUIET)
     if(NOT plutovg_FOUND)
