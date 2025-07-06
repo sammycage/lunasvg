@@ -6,9 +6,20 @@ set(LUNASVG_VERSION_MICRO 0)
 
 project(lunasvg LANGUAGES CXX VERSION ${LUNASVG_VERSION_MAJOR}.${LUNASVG_VERSION_MINOR}.${LUNASVG_VERSION_MICRO})
 
-option(USE_SYSTEM_PLUTOVG "Use system plutovg library" OFF)
+# Determine if lunasvg is built as a subproject (using add_subdirectory)
+# or if it is the master project.
+if(NOT DEFINED LUNASVG_MASTER_PROJECT)
+    set(LUNASVG_MASTER_PROJECT OFF)
+    if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+        set(LUNASVG_MASTER_PROJECT ON)
+    endif()
+endif()
 
-if(USE_SYSTEM_PLUTOVG)
+option(LUNASVG_BUILD_EXAMPLES "Build examples" ${LUNASVG_MASTER_PROJECT})
+option(LUNASVG_INSTALL "Generate the install target" ON)
+option(LUNASVG_USE_SYSTEM_PLUTOVG "Use system plutovg library" OFF)
+
+if(LUNASVG_USE_SYSTEM_PLUTOVG)
     find_package(plutovg 1.0.0 QUIET)
     if(NOT plutovg_FOUND)
         message(WARNING "Could not find: plutovg>=1.0.0. Falling back to plutovg submodule.")
@@ -73,80 +84,81 @@ if(NOT BUILD_SHARED_LIBS)
     target_compile_definitions(lunasvg PUBLIC LUNASVG_BUILD_STATIC)
 endif()
 
-include(GNUInstallDirs)
+if(LUNASVG_INSTALL)
+    include(GNUInstallDirs)
 
-include(CMakePackageConfigHelpers)
-configure_package_config_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/lunasvgConfig.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/lunasvgConfig.cmake"
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lunasvg
-)
+    include(CMakePackageConfigHelpers)
+    configure_package_config_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/lunasvgConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/lunasvgConfig.cmake"
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lunasvg
+    )
 
-write_basic_package_version_file(lunasvgConfigVersion.cmake
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
+    write_basic_package_version_file(lunasvgConfigVersion.cmake
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMajorVersion
+    )
 
-install(FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/lunasvg.h
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lunasvg
-)
+    install(FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/lunasvg.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lunasvg
+    )
 
-install(TARGETS lunasvg
-    EXPORT lunasvgTargets
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+    install(TARGETS lunasvg
+        EXPORT lunasvgTargets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
 
-install(EXPORT lunasvgTargets
-    FILE lunasvgTargets.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lunasvg
-    NAMESPACE lunasvg::
-)
+    install(EXPORT lunasvgTargets
+        FILE lunasvgTargets.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lunasvg
+        NAMESPACE lunasvg::
+    )
 
-install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/lunasvgConfig.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/lunasvgConfigVersion.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lunasvg
-)
+    install(FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/lunasvgConfig.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/lunasvgConfigVersion.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lunasvg
+    )
 
-export(EXPORT lunasvgTargets
-    FILE ${CMAKE_CURRENT_BINARY_DIR}/lunasvgTargets.cmake
-    NAMESPACE lunasvg::
-)
+    export(EXPORT lunasvgTargets
+        FILE ${CMAKE_CURRENT_BINARY_DIR}/lunasvgTargets.cmake
+        NAMESPACE lunasvg::
+    )
 
-file(RELATIVE_PATH lunasvg_pc_prefix_relative
-    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pkgconfig"
-    "${CMAKE_INSTALL_PREFIX}"
-)
+    file(RELATIVE_PATH lunasvg_pc_prefix_relative
+        "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pkgconfig"
+        "${CMAKE_INSTALL_PREFIX}"
+    )
 
-set(lunasvg_pc_cflags "")
-if(NOT BUILD_SHARED_LIBS)
-    string(APPEND lunasvg_pc_cflags " -DLUNASVG_BUILD_STATIC")
-endif()
+    set(lunasvg_pc_cflags "")
+    if(NOT BUILD_SHARED_LIBS)
+        string(APPEND lunasvg_pc_cflags " -DLUNASVG_BUILD_STATIC")
+    endif()
 
-string(CONFIGURE [[
-prefix=${pcfiledir}/@lunasvg_pc_prefix_relative@
-includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
-libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+    string(CONFIGURE [[
+    prefix=${pcfiledir}/@lunasvg_pc_prefix_relative@
+    includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+    libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
 
-Name: LunaSVG
-Description: SVG rendering and manipulation library in C++
-Version: @PROJECT_VERSION@
+    Name: LunaSVG
+    Description: SVG rendering and manipulation library in C++
+    Version: @PROJECT_VERSION@
 
-Requires.private: plutovg
-Cflags: -I${includedir}/lunasvg@lunasvg_pc_cflags@
-Libs: -L${libdir} -llunasvg
-]] lunasvg_pc @ONLY)
+    Requires.private: plutovg
+    Cflags: -I${includedir}/lunasvg@lunasvg_pc_cflags@
+    Libs: -L${libdir} -llunasvg
+    ]] lunasvg_pc @ONLY)
 
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/lunasvg.pc" "${lunasvg_pc}")
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/lunasvg.pc" "${lunasvg_pc}")
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/lunasvg.pc"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
-)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/lunasvg.pc"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
+    )
+endif() # LUNASVG_INSTALL
 
-option(LUNASVG_BUILD_EXAMPLES "Build examples" ON)
 if(LUNASVG_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
