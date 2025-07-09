@@ -356,6 +356,28 @@ SVGPaintElement* SVGElement::getPainter(const std::string_view& id) const
     return nullptr;
 }
 
+SVGElement* SVGElement::elementFromPoint(float x, float y)
+{
+    auto it = m_children.rbegin();
+    auto end = m_children.rend();
+    for(; it != end; ++it) {
+        auto child = toSVGElement(*it);
+        if(child && !child->isHiddenElement()) {
+            if(auto element = child->elementFromPoint(x, y)) {
+                return element;
+            }
+        }
+    }
+
+    auto transform = localTransform();
+    for(auto parent = parentElement(); parent; parent = parent->parentElement())
+        transform.postMultiply(parent->localTransform());
+    auto bbox = transform.mapRect(paintBoundingBox());
+    if(bbox.contains(x, y))
+        return this;
+    return nullptr;
+}
+
 void SVGElement::addProperty(SVGProperty& value)
 {
     m_properties.push_front(&value);

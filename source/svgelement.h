@@ -162,6 +162,8 @@ public:
     SVGMaskElement* getMasker(const std::string_view& id) const;
     SVGPaintElement* getPainter(const std::string_view& id) const;
 
+    SVGElement* elementFromPoint(float x, float y);
+
     template<typename T>
     void transverse(T callback);
 

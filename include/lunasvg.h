@@ -742,6 +742,14 @@ public:
     Bitmap renderToBitmap(int width = -1, int height = -1, uint32_t backgroundColor = 0x00000000) const;
 
     /**
+     * @brief Returns the topmost element under the specified point.
+     * @param x The x-coordinate in viewport space.
+     * @param y The y-coordinate in viewport space.
+     * @return The topmost Element at the given point, or a null `Element` if no match is found.
+     */
+    Element elementFromPoint(float x, float y) const;
+
+    /**
      * @brief Retrieves an element by its ID.
      * @param id The ID of the element to retrieve.
      * @return The Element with the specified ID, or a null `Element` if not found.

@@ -505,6 +505,11 @@ Bitmap Document::renderToBitmap(int width, int height, uint32_t backgroundColor)
     return bitmap;
 }
 
+Element Document::elementFromPoint(float x, float y) const
+{
+    return m_rootElement->updateLayout()->elementFromPoint(x, y);
+}
+
 Element Document::getElementById(const std::string& id) const
 {
     return m_rootElement->getElementById(id);

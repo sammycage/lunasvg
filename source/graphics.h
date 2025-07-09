@@ -199,6 +199,9 @@ public:
     constexpr void inflate(float dx, float dy) { x -= dx; y -= dy; w += dx * 2.f; h += dy * 2.f; }
     constexpr void inflate(float d) { inflate(d, d); }
 
+    constexpr bool contains(float px, float py) const { return px >= x && px <= x + w && py >= y && py <= y + h; }
+    constexpr bool contains(const Point& p) const { return contains(p.x, p.y); }
+
     constexpr Rect intersected(const Rect& rect) const;
     constexpr Rect united(const Rect& rect) const;
 
