@@ -29,7 +29,10 @@
 extern "C" {
 #endif
 
-#if !defined(PLUTOVG_BUILD_STATIC) && (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(PLUTOVG_BUILD_STATIC)
+#define PLUTOVG_EXPORT
+#define PLUTOVG_IMPORT
+#elif (defined(_WIN32) || defined(__CYGWIN__))
 #define PLUTOVG_EXPORT __declspec(dllexport)
 #define PLUTOVG_IMPORT __declspec(dllimport)
 #elif defined(__GNUC__) && (__GNUC__ >= 4)
@@ -47,7 +50,7 @@ extern "C" {
 #endif
 
 #define PLUTOVG_VERSION_MAJOR 1
-#define PLUTOVG_VERSION_MINOR 1
+#define PLUTOVG_VERSION_MINOR 2
 #define PLUTOVG_VERSION_MICRO 0
 
 #define PLUTOVG_VERSION_ENCODE(major, minor, micro) (((major) * 10000) + ((minor) * 100) + ((micro) * 1))

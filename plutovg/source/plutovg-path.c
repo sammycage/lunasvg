@@ -38,7 +38,7 @@ plutovg_path_command_t plutovg_path_iterator_next(plutovg_path_iterator_t* it, p
 plutovg_path_t* plutovg_path_create(void)
 {
     plutovg_path_t* path = malloc(sizeof(plutovg_path_t));
-    path->ref_count = 1;
+    plutovg_init_ref_count(path);
     path->num_points = 0;
     path->num_contours = 0;
     path->num_curves = 0;
@@ -51,7 +51,7 @@ plutovg_path_t* plutovg_path_reference(plutovg_path_t* path)
 {
     if(path == NULL)
         return NULL;
-    ++path->ref_count;
+    plutovg_increment_ref_count(path);
     return path;
 }
 
@@ -59,7 +59,7 @@ void plutovg_path_destroy(plutovg_path_t* path)
 {
     if(path == NULL)
         return;
-    if(--path->ref_count == 0) {
+    if(plutovg_decrement_ref_count(path)) {
         plutovg_array_destroy(path->elements);
         free(path);
     }
@@ -67,9 +67,7 @@ void plutovg_path_destroy(plutovg_path_t* path)
 
 int plutovg_path_get_reference_count(const plutovg_path_t* path)
 {
-    if(path)
-        return path->ref_count;
-    return 0;
+    return plutovg_get_ref_count(path);
 }
 
 int plutovg_path_get_elements(const plutovg_path_t* path, const plutovg_path_element_t** elements)

@@ -385,7 +385,7 @@ int plutovg_color_parse(plutovg_color_t* color, const char* data, int length)
 static void* plutovg_paint_create(plutovg_paint_type_t type, size_t size)
 {
     plutovg_paint_t* paint = malloc(size);
-    paint->ref_count = 1;
+    plutovg_init_ref_count(paint);
     paint->type = type;
     return paint;
 }
@@ -469,7 +469,7 @@ plutovg_paint_t* plutovg_paint_reference(plutovg_paint_t* paint)
 {
     if(paint == NULL)
         return NULL;
-    ++paint->ref_count;
+    plutovg_increment_ref_count(paint);
     return paint;
 }
 
@@ -477,7 +477,7 @@ void plutovg_paint_destroy(plutovg_paint_t* paint)
 {
     if(paint == NULL)
         return;
-    if(--paint->ref_count == 0) {
+    if(plutovg_decrement_ref_count(paint)) {
         if(paint->type == PLUTOVG_PAINT_TYPE_TEXTURE) {
             plutovg_texture_paint_t* texture = (plutovg_texture_paint_t*)(paint);
             plutovg_surface_destroy(texture->surface);
@@ -489,7 +489,5 @@ void plutovg_paint_destroy(plutovg_paint_t* paint)
 
 int plutovg_paint_get_reference_count(const plutovg_paint_t* paint)
 {
-    if(paint)
-        return paint->ref_count;
-    return 0;
+    return plutovg_get_ref_count(paint);
 }

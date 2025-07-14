@@ -1,4 +1,4 @@
-#include "plutovg.h"
+#include "plutovg-private.h"
 #include "plutovg-utils.h"
 
 #include <stdio.h>
@@ -108,6 +108,39 @@ plutovg_codepoint_t plutovg_text_iterator_next(plutovg_text_iterator_t* it)
     return codepoint;
 }
 
+#if defined(_WIN32)
+
+#include <windows.h>
+
+typedef CRITICAL_SECTION plutovg_mutex_t;
+
+#define plutovg_mutex_init(mutex) InitializeCriticalSection(mutex)
+#define plutovg_mutex_lock(mutex) EnterCriticalSection(mutex)
+#define plutovg_mutex_unlock(mutex) LeaveCriticalSection(mutex)
+#define plutovg_mutex_destroy(mutex) DeleteCriticalSection(mutex)
+
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && !defined(__STDC_NO_THREADS__)
+
+#include <threads.h>
+
+typedef mtx_t plutovg_mutex_t;
+
+#define plutovg_mutex_init(mutex) mtx_init(mutex, mtx_recursive)
+#define plutovg_mutex_lock(mutex) mtx_lock(mutex)
+#define plutovg_mutex_unlock(mutex) mtx_unlock(mutex)
+#define plutovg_mutex_destroy(mutex) mtx_destroy(mutex)
+
+#else
+
+typedef int plutovg_mutex_t;
+
+#define plutovg_mutex_init(mutex) ((void)(mutex))
+#define plutovg_mutex_lock(mutex) ((void)(mutex))
+#define plutovg_mutex_unlock(mutex) ((void)(mutex))
+#define plutovg_mutex_destroy(mutex) ((void)(mutex))
+
+#endif
+
 typedef struct {
     stbtt_vertex* vertices;
     int nvertices;
@@ -122,7 +155,7 @@ typedef struct {
 
 #define GLYPH_CACHE_SIZE 256
 struct plutovg_font_face {
-    int ref_count;
+    plutovg_ref_count_t ref_count;
     int ascent;
     int descent;
     int line_gap;
@@ -131,6 +164,7 @@ struct plutovg_font_face {
     int x2;
     int y2;
     stbtt_fontinfo info;
+    plutovg_mutex_t mutex;
     glyph_t** glyphs[GLYPH_CACHE_SIZE];
     plutovg_destroy_func_t destroy_func;
     void* closure;
@@ -179,10 +213,11 @@ plutovg_font_face_t* plutovg_font_face_load_from_data(const void* data, unsigned
     }
 
     plutovg_font_face_t* face = malloc(sizeof(plutovg_font_face_t));
-    face->ref_count = 1;
+    plutovg_init_ref_count(face);
     face->info = info;
     stbtt_GetFontVMetrics(&face->info, &face->ascent, &face->descent, &face->line_gap);
     stbtt_GetFontBoundingBox(&face->info, &face->x1, &face->y1, &face->x2, &face->y2);
+    plutovg_mutex_init(&face->mutex);
     memset(face->glyphs, 0, sizeof(face->glyphs));
     face->destroy_func = destroy_func;
     face->closure = closure;
@@ -193,7 +228,7 @@ plutovg_font_face_t* plutovg_font_face_reference(plutovg_font_face_t* face)
 {
     if(face == NULL)
         return NULL;
-    ++face->ref_count;
+    plutovg_increment_ref_count(face);
     return face;
 }
 
@@ -201,7 +236,8 @@ void plutovg_font_face_destroy(plutovg_font_face_t* face)
 {
     if(face == NULL)
         return;
-    if(--face->ref_count == 0) {
+    if(plutovg_decrement_ref_count(face)) {
+        plutovg_mutex_lock(&face->mutex);
         for(int i = 0; i < GLYPH_CACHE_SIZE; i++) {
             if(face->glyphs[i] == NULL)
                 continue;
@@ -216,6 +252,8 @@ void plutovg_font_face_destroy(plutovg_font_face_t* face)
             free(face->glyphs[i]);
         }
 
+        plutovg_mutex_unlock(&face->mutex);
+        plutovg_mutex_destroy(&face->mutex);
         if(face->destroy_func)
             face->destroy_func(face->closure);
         free(face);
@@ -224,9 +262,7 @@ void plutovg_font_face_destroy(plutovg_font_face_t* face)
 
 int plutovg_font_face_get_reference_count(const plutovg_font_face_t* face)
 {
-    if(face)
-        return face->ref_count;
-    return 0;
+    return plutovg_get_ref_count(face);
 }
 
 static float plutovg_font_face_get_scale(const plutovg_font_face_t* face, float size)
@@ -250,6 +286,8 @@ void plutovg_font_face_get_metrics(const plutovg_font_face_t* face, float size, 
 
 static glyph_t* plutovg_font_face_get_glyph(plutovg_font_face_t* face, plutovg_codepoint_t codepoint)
 {
+    plutovg_mutex_lock(&face->mutex);
+
     unsigned int msb = (codepoint >> 8) & 0xFF;
     if(face->glyphs[msb] == NULL) {
         face->glyphs[msb] = calloc(GLYPH_CACHE_SIZE, sizeof(glyph_t*));
@@ -266,6 +304,7 @@ static glyph_t* plutovg_font_face_get_glyph(plutovg_font_face_t* face, plutovg_c
         face->glyphs[msb][lsb] = glyph;
     }
 
+    plutovg_mutex_unlock(&face->mutex);
     return face->glyphs[msb][lsb];
 }
 

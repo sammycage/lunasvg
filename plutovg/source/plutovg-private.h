@@ -3,8 +3,41 @@
 
 #include "plutovg.h"
 
+#if defined(_WIN32)
+
+#include <windows.h>
+
+typedef LONG plutovg_ref_count_t;
+
+#define plutovg_init_ref_count(ob) ((ob)->ref_count = 1)
+#define plutovg_increment_ref_count(ob) InterlockedIncrement(&(ob)->ref_count)
+#define plutovg_decrement_ref_count(ob) (InterlockedDecrement(&(ob)->ref_count) == 0)
+#define plutovg_get_ref_count(ob) ((ob) ? InterlockedCompareExchange((LONG*)&(ob)->ref_count, 0, 0) : 0)
+
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && !defined(__STDC_NO_ATOMICS__)
+
+#include <stdatomic.h>
+
+typedef atomic_int plutovg_ref_count_t;
+
+#define plutovg_init_ref_count(ob) atomic_init(&(ob)->ref_count, 1)
+#define plutovg_increment_ref_count(ob) atomic_fetch_add(&(ob)->ref_count, 1)
+#define plutovg_decrement_ref_count(ob) (atomic_fetch_sub(&(ob)->ref_count, 1) == 1)
+#define plutovg_get_ref_count(ob) ((ob) ? atomic_load(&(ob)->ref_count) : 0)
+
+#else
+
+typedef int plutovg_ref_count_t;
+
+#define plutovg_init_ref_count(ob) ((ob)->ref_count = 1)
+#define plutovg_increment_ref_count(ob) (++(ob)->ref_count)
+#define plutovg_decrement_ref_count(ob) (--(ob)->ref_count == 0)
+#define plutovg_get_ref_count(ob) ((ob) ? (ob)->ref_count : 0)
+
+#endif
+
 struct plutovg_surface {
-    int ref_count;
+    plutovg_ref_count_t ref_count;
     int width;
     int height;
     int stride;
@@ -12,7 +45,7 @@ struct plutovg_surface {
 };
 
 struct plutovg_path {
-    int ref_count;
+    plutovg_ref_count_t ref_count;
     int num_points;
     int num_contours;
     int num_curves;
@@ -31,7 +64,7 @@ typedef enum {
 } plutovg_paint_type_t;
 
 struct plutovg_paint {
-    int ref_count;
+    plutovg_ref_count_t ref_count;
     plutovg_paint_type_t type;
 };
 
@@ -120,7 +153,7 @@ typedef struct plutovg_state {
 } plutovg_state_t;
 
 struct plutovg_canvas {
-    int ref_count;
+    plutovg_ref_count_t ref_count;
     plutovg_surface_t* surface;
     plutovg_path_t* path;
     plutovg_state_t* state;
