@@ -416,12 +416,13 @@ plutovg_font_face_t* FontFace::release()
 
 bool FontFaceCache::addFontFace(const std::string& family, bool bold, bool italic, const FontFace& face)
 {
+    std::lock_guard guard(m_mutex);
     if(!face.isNull())
         m_table[family].emplace_back(bold, italic, face);
     return !face.isNull();
 }
 
-FontFace FontFaceCache::getFontFace(const std::string_view& family, bool bold, bool italic)
+FontFace FontFaceCache::getFontFace(const std::string_view& family, bool bold, bool italic) const
 {
     auto it = m_table.find(family);
     if(it == m_table.end()) {
@@ -488,7 +489,7 @@ FontFaceCache::FontFaceCache()
 
 FontFaceCache* fontFaceCache()
 {
-    thread_local FontFaceCache cache;
+    static FontFaceCache cache;
     return &cache;
 }
 
