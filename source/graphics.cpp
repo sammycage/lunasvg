@@ -416,75 +416,47 @@ plutovg_font_face_t* FontFace::release()
 
 bool FontFaceCache::addFontFace(const std::string& family, bool bold, bool italic, const FontFace& face)
 {
-    std::lock_guard guard(m_mutex);
     if(!face.isNull())
-        m_table[family].emplace_back(bold, italic, face);
+        plutovg_font_face_cache_add(m_cache, family.data(), bold, italic, face.get());
     return !face.isNull();
 }
 
-FontFace FontFaceCache::getFontFace(const std::string_view& family, bool bold, bool italic) const
+FontFace FontFaceCache::getFontFace(const std::string& family, bool bold, bool italic) const
 {
-    auto it = m_table.find(family);
-    if(it == m_table.end()) {
-        return FontFace();
+    if(auto face = plutovg_font_face_cache_get(m_cache, family.data(), bold, italic)) {
+        return face;
     }
 
-    auto select = [bold, italic](const FontFaceEntry& a, const FontFaceEntry& b) {
-        if(std::get<2>(a).isNull())
-            return b;
-        if(std::get<2>(b).isNull())
-            return a;
-        int aScore = (bold == std::get<0>(a)) + (italic == std::get<1>(a));
-        int bScore = (bold == std::get<0>(b)) + (italic == std::get<1>(b));
-        return aScore > bScore ? a : b;
+    static const struct {
+        const char* generic;
+        const char* fallback;
+    } generic_fallbacks[] = {
+#if defined(__linux__)
+        {"sans-serif", "DejaVu Sans"},
+        {"serif", "DejaVu Serif"},
+        {"monospace", "DejaVu Sans Mono"},
+#else
+        {"sans-serif", "Arial"},
+        {"serif", "Times New Roman"},
+        {"monospace", "Courier New"},
+#endif
+        {"cursive", "Comic Sans MS"},
+        {"fantasy", "Impact"}
     };
 
-    FontFaceEntry entry;
-    for(const auto& item : it->second) {
-        entry = select(entry, item);
+    for(auto value : generic_fallbacks) {
+        if(value.generic == family || family.empty()) {
+            return plutovg_font_face_cache_get(m_cache, value.fallback, bold, italic);
+        }
     }
 
-    return std::get<2>(entry);
+    return FontFace();
 }
 
 FontFaceCache::FontFaceCache()
+    : m_cache(plutovg_font_face_cache_create())
 {
-    static const struct {
-        const char* filename;
-        const bool bold;
-        const bool italic;
-    } entries[] = {
-#if defined(_WIN32)
-        {"C:/Windows/Fonts/arial.ttf", false, false},
-        {"C:/Windows/Fonts/arialbd.ttf", true, false},
-        {"C:/Windows/Fonts/ariali.ttf", false, true},
-        {"C:/Windows/Fonts/arialbi.ttf", true, true},
-#elif defined(__APPLE__)
-        {"/Library/Fonts/Arial.ttf", false, false},
-        {"/Library/Fonts/Arial Bold.ttf", true, false},
-        {"/Library/Fonts/Arial Italic.ttf", false, true},
-        {"/Library/Fonts/Arial Bold Italic.ttf", true, true},
-
-        {"/System/Library/Fonts/Supplemental/Arial.ttf", false, false},
-        {"/System/Library/Fonts/Supplemental/Arial Bold.ttf", true, false},
-        {"/System/Library/Fonts/Supplemental/Arial Italic.ttf", false, true},
-        {"/System/Library/Fonts/Supplemental/Arial Bold Italic.ttf", true, true},
-#elif defined(__linux__)
-        {"/usr/share/fonts/dejavu/DejaVuSans.ttf", false, false},
-        {"/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf", true, false},
-        {"/usr/share/fonts/dejavu/DejaVuSans-Oblique.ttf", false, true},
-        {"/usr/share/fonts/dejavu/DejaVuSans-BoldOblique.ttf", true, true},
-
-        {"/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", false, false},
-        {"/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", true, false},
-        {"/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf", false, true},
-        {"/usr/share/fonts/truetype/dejavu/DejaVuSans-BoldOblique.ttf", true, true},
-#endif
-    };
-
-    for(const auto& entry : entries) {
-        addFontFace(emptyString, entry.bold, entry.italic, FontFace(entry.filename));
-    }
+    plutovg_font_face_cache_load_sys(m_cache);
 }
 
 FontFaceCache* fontFaceCache()

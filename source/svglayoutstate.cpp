@@ -520,7 +520,10 @@ Font SVGLayoutState::font() const
             stripLeadingAndTrailingSpaces(family);
         }
 
-        face = fontFaceCache()->getFontFace(family, bold, italic);
+        std::string font_family(family);
+        if(!font_family.empty()) {
+            face = fontFaceCache()->getFontFace(font_family, bold, italic);
+        }
     }
 
     if(face.isNull())

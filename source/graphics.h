@@ -3,7 +3,6 @@
 
 #include <plutovg.h>
 
-#include <mutex>
 #include <cstdint>
 #include <algorithm>
 #include <utility>
@@ -424,13 +423,11 @@ private:
 class FontFaceCache {
 public:
     bool addFontFace(const std::string& family, bool bold, bool italic, const FontFace& face);
-    FontFace getFontFace(const std::string_view& family, bool bold, bool italic) const;
+    FontFace getFontFace(const std::string& family, bool bold, bool italic) const;
 
 private:
     FontFaceCache();
-    using FontFaceEntry = std::tuple<bool, bool, FontFace>;
-    std::map<std::string, std::vector<FontFaceEntry>, std::less<>> m_table;
-    std::mutex m_mutex;
+    plutovg_font_face_cache_t* m_cache;
     friend FontFaceCache* fontFaceCache();
 };
 
