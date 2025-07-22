@@ -7,9 +7,8 @@ set(LUNASVG_VERSION_MICRO 0)
 project(lunasvg LANGUAGES CXX VERSION ${LUNASVG_VERSION_MAJOR}.${LUNASVG_VERSION_MINOR}.${LUNASVG_VERSION_MICRO})
 
 option(USE_SYSTEM_PLUTOVG "Use system plutovg library" OFF)
-
 if(USE_SYSTEM_PLUTOVG)
-    find_package(plutovg 1.0.0 QUIET)
+    find_package(plutovg 1.3.0 QUIET)
     if(NOT plutovg_FOUND)
         message(WARNING "Could not find: plutovg>=1.0.0. Falling back to plutovg submodule.")
     endif()
@@ -17,6 +16,7 @@ endif()
 
 if(NOT plutovg_FOUND)
     message(STATUS "Using plutovg submodule.")
+    set(PLUTOVG_BUILD_EXAMPLES OFF CACHE BOOL "Disable plutovg examples" FORCE)
     add_subdirectory(plutovg)
 endif()
 
@@ -50,7 +50,6 @@ add_library(lunasvg ${lunasvg_sources} ${lunasvg_headers})
 add_library(lunasvg::lunasvg ALIAS lunasvg)
 
 target_link_libraries(lunasvg PRIVATE plutovg::plutovg)
-
 set_target_properties(lunasvg PROPERTIES
     SOVERSION ${LUNASVG_VERSION_MAJOR}
     CXX_VISIBILITY_PRESET hidden
@@ -74,8 +73,8 @@ if(NOT BUILD_SHARED_LIBS)
 endif()
 
 include(GNUInstallDirs)
-
 include(CMakePackageConfigHelpers)
+
 configure_package_config_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/lunasvgConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/lunasvgConfig.cmake"
