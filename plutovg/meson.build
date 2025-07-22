@@ -1,8 +1,8 @@
 project('plutovg', 'c',
-    version: '1.2.0',
+    version: '1.3.0',
     license: 'MIT',
     meson_version: '>=0.59.0',
-    default_options: ['c_std=c11']
+    default_options: ['c_std=gnu11,c11']
 )
 
 plutovg_deps = []
@@ -16,13 +16,18 @@ plutovg_c_args += cc.get_supported_arguments(
     '-Wno-unused-function'
 )
 
-math_dep = cc.find_library('m', required: false)
-if math_dep.found()
-    plutovg_deps += [math_dep]
+if get_option('font-face-cache-load').disabled()
+    plutovg_c_args += ['-DPLUTOVG_DISABLE_FONT_FACE_CACHE_LOAD']
 endif
 
 if get_option('default_library') == 'static'
+    plutovg_c_args += ['-DPLUTOVG_BUILD_STATIC']
     plutovg_compile_args += ['-DPLUTOVG_BUILD_STATIC']
+endif
+
+math_dep = cc.find_library('m', required: false)
+if math_dep.found()
+    plutovg_deps += [math_dep]
 endif
 
 plutovg_sources = [

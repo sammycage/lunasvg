@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 set(PLUTOVG_VERSION_MAJOR 1)
-set(PLUTOVG_VERSION_MINOR 2)
+set(PLUTOVG_VERSION_MINOR 3)
 set(PLUTOVG_VERSION_MICRO 0)
 
 project(plutovg LANGUAGES C VERSION ${PLUTOVG_VERSION_MAJOR}.${PLUTOVG_VERSION_MINOR}.${PLUTOVG_VERSION_MICRO})
@@ -64,6 +64,11 @@ endif()
 target_compile_definitions(plutovg PRIVATE PLUTOVG_BUILD)
 if(NOT BUILD_SHARED_LIBS)
     target_compile_definitions(plutovg PUBLIC PLUTOVG_BUILD_STATIC)
+endif()
+
+option(PLUTOVG_DISABLE_FONT_FACE_CACHE_LOAD "Disable loading font face cache from files and directories" OFF)
+if(PLUTOVG_DISABLE_FONT_FACE_CACHE_LOAD)
+    target_compile_definitions(plutovg PRIVATE PLUTOVG_DISABLE_FONT_FACE_CACHE_LOAD)
 endif()
 
 configure_package_config_file(

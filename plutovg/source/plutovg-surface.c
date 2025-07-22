@@ -18,7 +18,7 @@ static plutovg_surface_t* plutovg_surface_create_uninitialized(int width, int he
     plutovg_surface_t* surface = malloc(size + sizeof(plutovg_surface_t));
     if(surface == NULL)
         return NULL;
-    plutovg_init_ref_count(surface);
+    plutovg_init_reference(surface);
     surface->width = width;
     surface->height = height;
     surface->stride = width * 4;
@@ -37,7 +37,7 @@ plutovg_surface_t* plutovg_surface_create(int width, int height)
 plutovg_surface_t* plutovg_surface_create_for_data(unsigned char* data, int width, int height, int stride)
 {
     plutovg_surface_t* surface = malloc(sizeof(plutovg_surface_t));
-    plutovg_init_ref_count(surface);
+    plutovg_init_reference(surface);
     surface->width = width;
     surface->height = height;
     surface->stride = stride;
@@ -150,24 +150,20 @@ cleanup:
 
 plutovg_surface_t* plutovg_surface_reference(plutovg_surface_t* surface)
 {
-    if(surface == NULL)
-        return NULL;
-    plutovg_increment_ref_count(surface);
+    plutovg_increment_reference(surface);
     return surface;
 }
 
 void plutovg_surface_destroy(plutovg_surface_t* surface)
 {
-    if(surface == NULL)
-        return;
-    if(plutovg_decrement_ref_count(surface)) {
+    if(plutovg_destroy_reference(surface)) {
         free(surface);
     }
 }
 
 int plutovg_surface_get_reference_count(const plutovg_surface_t* surface)
 {
-    return plutovg_get_ref_count(surface);
+    return plutovg_get_reference_count(surface);
 }
 
 unsigned char* plutovg_surface_get_data(const plutovg_surface_t* surface)
