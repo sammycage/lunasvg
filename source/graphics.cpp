@@ -681,11 +681,18 @@ void Canvas::convertToLuminanceMask()
         auto pixels = reinterpret_cast<uint32_t*>(data + stride * y);
         for(int x = 0; x < width; x++) {
             auto pixel = pixels[x];
+            auto a = (pixel >> 24) & 0xFF;
             auto r = (pixel >> 16) & 0xFF;
             auto g = (pixel >> 8) & 0xFF;
             auto b = (pixel >> 0) & 0xFF;
-            auto l = (2*r + 3*g + b) / 6;
-            pixels[x] = l << 24;
+            if(a) {
+                r = (r * 255) / a;
+                g = (g * 255) / a;
+                b = (b * 255) / a;
+            }
+
+            auto l = (r * 0.2125f + g * 0.7154f + b * 0.0721f);
+            pixels[x] = static_cast<uint32_t>(l * (a / 255.f)) << 24;
         }
     }
 }
