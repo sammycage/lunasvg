@@ -10,7 +10,7 @@ option(USE_SYSTEM_PLUTOVG "Use system plutovg library" OFF)
 if(USE_SYSTEM_PLUTOVG)
     find_package(plutovg 1.3.0 QUIET)
     if(NOT plutovg_FOUND)
-        message(WARNING "Could not find: plutovg>=1.0.0. Falling back to plutovg submodule.")
+        message(WARNING "Could not find: plutovg>=1.3.0. Falling back to plutovg submodule.")
     endif()
 endif()
 
