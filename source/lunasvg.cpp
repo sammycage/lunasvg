@@ -359,7 +359,7 @@ Bitmap Element::renderToBitmap(int width, int height, uint32_t backgroundColor) 
 
     Matrix matrix(xScale, 0, 0, yScale, -elementBounds.x * xScale, -elementBounds.y * yScale);
     Bitmap bitmap(width, height);
-    bitmap.clear(backgroundColor);
+    if(backgroundColor) bitmap.clear(backgroundColor);
     render(bitmap, matrix);
     return bitmap;
 }
@@ -500,7 +500,7 @@ Bitmap Document::renderToBitmap(int width, int height, uint32_t backgroundColor)
 
     Matrix matrix(xScale, 0, 0, yScale, 0, 0);
     Bitmap bitmap(width, height);
-    bitmap.clear(backgroundColor);
+    if(backgroundColor) bitmap.clear(backgroundColor);
     render(bitmap, matrix);
     return bitmap;
 }
