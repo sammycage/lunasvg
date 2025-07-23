@@ -515,6 +515,12 @@ public:
     bool isNull() const { return m_node == nullptr; }
 
     /**
+     * @brief Checks if the node is not null.
+     * @return True if the node is not null, false otherwise.
+     */
+    operator bool() const { return !isNull(); }
+
+    /**
      * @brief Checks if two nodes are equal.
      * @param element The node to compare.
      * @return True if equal, otherwise false.
