@@ -624,7 +624,7 @@ void Canvas::drawImage(const Bitmap& image, const Rect& dstRect, const Rect& src
 {
     auto xScale = dstRect.w / srcRect.w;
     auto yScale = dstRect.h / srcRect.h;
-    auto matrix = PLUTOVG_MAKE_MATRIX(xScale, 0, 0, yScale, -srcRect.x * xScale, -srcRect.y * yScale);
+    plutovg_matrix_t matrix = { xScale, 0, 0, yScale, -srcRect.x * xScale, -srcRect.y * yScale };
     plutovg_canvas_set_matrix(m_canvas, &m_translation);
     plutovg_canvas_transform(m_canvas, &transform.matrix());
     plutovg_canvas_translate(m_canvas, dstRect.x, dstRect.y);
@@ -636,7 +636,7 @@ void Canvas::drawImage(const Bitmap& image, const Rect& dstRect, const Rect& src
 
 void Canvas::blendCanvas(const Canvas& canvas, BlendMode blendMode, float opacity)
 {
-    auto matrix = PLUTOVG_MAKE_TRANSLATE(static_cast<float>(canvas.x()), static_cast<float>(canvas.y()));
+    plutovg_matrix_t matrix = { 1, 0, 0, 1, static_cast<float>(canvas.x()), static_cast<float>(canvas.y()) };
     plutovg_canvas_set_matrix(m_canvas, &m_translation);
     plutovg_canvas_set_operator(m_canvas, static_cast<plutovg_operator_t>(blendMode));
     plutovg_canvas_set_texture(m_canvas, canvas.surface(), PLUTOVG_TEXTURE_TYPE_PLAIN, opacity, &matrix);
@@ -698,7 +698,7 @@ Canvas::~Canvas()
 Canvas::Canvas(const Bitmap& bitmap)
     : m_surface(plutovg_surface_reference(bitmap.surface()))
     , m_canvas(plutovg_canvas_create(m_surface))
-    , m_translation(PLUTOVG_MAKE_TRANSLATE(0.f, 0.f))
+    , m_translation({1, 0, 0, 1, 0, 0})
     , m_x(0), m_y(0)
 {
 }
@@ -706,7 +706,7 @@ Canvas::Canvas(const Bitmap& bitmap)
 Canvas::Canvas(int x, int y, int width, int height)
     : m_surface(plutovg_surface_create(width, height))
     , m_canvas(plutovg_canvas_create(m_surface))
-    , m_translation(PLUTOVG_MAKE_TRANSLATE(-static_cast<float>(x), -static_cast<float>(y)))
+    , m_translation({1, 0, 0, 1, -static_cast<float>(x), -static_cast<float>(y)})
     , m_x(x), m_y(y)
 {
 }
