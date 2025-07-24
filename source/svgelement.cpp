@@ -673,7 +673,7 @@ SVGRootElement::SVGRootElement(Document* document)
 {
 }
 
-SVGRootElement* SVGRootElement::updateLayout()
+SVGRootElement* SVGRootElement::layoutIfNeeded()
 {
     if(needsLayout())
         forceLayout();

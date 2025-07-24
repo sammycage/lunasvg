@@ -650,7 +650,7 @@ public:
 
 private:
     Element(SVGElement* element);
-    SVGElement* element(bool layout = false) const;
+    SVGElement* element(bool layoutIfNeeded = false) const;
     friend class Node;
     friend class Document;
 };
@@ -768,11 +768,6 @@ public:
      */
     Element documentElement() const;
 
-    /**
-     * @internal
-     */
-    SVGRootElement* rootElement() const { return m_rootElement.get(); }
-
     Document(Document&&);
     Document& operator=(Document&&);
     ~Document();
@@ -781,8 +776,11 @@ private:
     Document();
     Document(const Document&) = delete;
     Document& operator=(const Document&) = delete;
+    SVGRootElement* rootElement(bool layoutIfNeeded = false) const;
     bool parse(const char* data, size_t length);
     std::unique_ptr<SVGRootElement> m_rootElement;
+    friend class SVGURIReference;
+    friend class SVGNode;
 };
 
 } //namespace lunasvg

@@ -342,7 +342,7 @@ public:
     void setNeedsLayout() { m_intrinsicWidth = -1.f; }
     bool needsLayout() const { return m_intrinsicWidth == -1.f; }
 
-    SVGRootElement* updateLayout();
+    SVGRootElement* layoutIfNeeded();
 
     SVGElement* getElementById(const std::string_view& id) const;
     void addElementById(const std::string& id, SVGElement* element);
