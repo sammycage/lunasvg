@@ -1,2 +1,8 @@
 option('examples', type : 'feature', value : 'auto')
 option('tests', type : 'feature', value : 'auto')
+
+option('load-system-fonts',
+	type : 'feature',
+    value : 'auto',
+    description : 'Enable automatic loading of fonts from system directories'
+)

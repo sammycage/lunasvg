@@ -456,7 +456,9 @@ FontFace FontFaceCache::getFontFace(const std::string& family, bool bold, bool i
 FontFaceCache::FontFaceCache()
     : m_cache(plutovg_font_face_cache_create())
 {
+#ifndef LUNASVG_DISABLE_LOAD_SYSTEM_FONTS
     plutovg_font_face_cache_load_sys(m_cache);
+#endif
 }
 
 FontFaceCache* fontFaceCache()

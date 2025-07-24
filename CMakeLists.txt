@@ -72,6 +72,11 @@ if(NOT BUILD_SHARED_LIBS)
     target_compile_definitions(lunasvg PUBLIC LUNASVG_BUILD_STATIC)
 endif()
 
+option(LUNASVG_DISABLE_LOAD_SYSTEM_FONTS "Disable automatic loading of fonts from system directories" OFF)
+if(LUNASVG_DISABLE_LOAD_SYSTEM_FONTS)
+    target_compile_definitions(lunasvg PRIVATE LUNASVG_DISABLE_LOAD_SYSTEM_FONTS)
+endif()
+
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 

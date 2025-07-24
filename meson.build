@@ -25,15 +25,22 @@ lunasvg_sources = [
 ]
 
 lunasvg_compile_args = []
+lunasvg_cpp_args = ['-DLUNASVG_BUILD']
+
 if get_option('default_library') == 'static'
     lunasvg_compile_args += ['-DLUNASVG_BUILD_STATIC']
+    lunasvg_cpp_args += ['-DLUNASVG_BUILD_STATIC']
+endif
+
+if get_option('load-system-fonts').disabled()
+    lunasvg_cpp_args += ['-DLUNASVG_DISABLE_LOAD_SYSTEM_FONTS']
 endif
 
 lunasvg_lib = library('lunasvg', lunasvg_sources,
     include_directories: include_directories('include', 'source'),
     dependencies: plutovg_dep,
     version: meson.project_version(),
-    cpp_args: ['-DLUNASVG_BUILD'] + lunasvg_compile_args,
+    cpp_args: lunasvg_cpp_args,
     gnu_symbol_visibility: 'hidden',
     install: true
 )
