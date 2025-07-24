@@ -458,6 +458,7 @@ void SVGElement::layoutElement(const SVGLayoutState& state)
     m_display = state.display();
     m_overflow = state.overflow();
     m_visibility = state.visibility();
+    m_pointer_events = state.pointer_events();
 }
 
 void SVGElement::layoutChildren(SVGLayoutState& state)
