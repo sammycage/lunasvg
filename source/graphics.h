@@ -550,6 +550,7 @@ private:
     Canvas(int x, int y, int width, int height);
     plutovg_surface_t* m_surface;
     plutovg_canvas_t* m_canvas;
+    plutovg_matrix_t m_translation;
     const int m_x;
     const int m_y;
 };

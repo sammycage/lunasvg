@@ -558,8 +558,7 @@ void Canvas::setTexture(const Canvas& source, TextureType type, float opacity, c
 
 void Canvas::fillPath(const Path& path, FillRule fillRule, const Transform& transform)
 {
-    plutovg_canvas_reset_matrix(m_canvas);
-    plutovg_canvas_translate(m_canvas, -m_x, -m_y);
+    plutovg_canvas_set_matrix(m_canvas, &m_translation);
     plutovg_canvas_transform(m_canvas, &transform.matrix());
     plutovg_canvas_set_fill_rule(m_canvas, static_cast<plutovg_fill_rule_t>(fillRule));
     plutovg_canvas_set_operator(m_canvas, PLUTOVG_OPERATOR_SRC_OVER);
@@ -568,8 +567,7 @@ void Canvas::fillPath(const Path& path, FillRule fillRule, const Transform& tran
 
 void Canvas::strokePath(const Path& path, const StrokeData& strokeData, const Transform& transform)
 {
-    plutovg_canvas_reset_matrix(m_canvas);
-    plutovg_canvas_translate(m_canvas, -m_x, -m_y);
+    plutovg_canvas_set_matrix(m_canvas, &m_translation);
     plutovg_canvas_transform(m_canvas, &transform.matrix());
     plutovg_canvas_set_line_width(m_canvas, strokeData.lineWidth());
     plutovg_canvas_set_miter_limit(m_canvas, strokeData.miterLimit());
@@ -583,8 +581,7 @@ void Canvas::strokePath(const Path& path, const StrokeData& strokeData, const Tr
 
 void Canvas::fillText(const std::u32string_view& text, const Font& font, const Point& origin, const Transform& transform)
 {
-    plutovg_canvas_reset_matrix(m_canvas);
-    plutovg_canvas_translate(m_canvas, -m_x, -m_y);
+    plutovg_canvas_set_matrix(m_canvas, &m_translation);
     plutovg_canvas_transform(m_canvas, &transform.matrix());
     plutovg_canvas_set_fill_rule(m_canvas, PLUTOVG_FILL_RULE_NON_ZERO);
     plutovg_canvas_set_operator(m_canvas, PLUTOVG_OPERATOR_SRC_OVER);
@@ -594,8 +591,7 @@ void Canvas::fillText(const std::u32string_view& text, const Font& font, const P
 
 void Canvas::strokeText(const std::u32string_view& text, float strokeWidth, const Font& font, const Point& origin, const Transform& transform)
 {
-    plutovg_canvas_reset_matrix(m_canvas);
-    plutovg_canvas_translate(m_canvas, -m_x, -m_y);
+    plutovg_canvas_set_matrix(m_canvas, &m_translation);
     plutovg_canvas_transform(m_canvas, &transform.matrix());
     plutovg_canvas_set_line_width(m_canvas, strokeWidth);
     plutovg_canvas_set_miter_limit(m_canvas, 4.f);
@@ -610,8 +606,7 @@ void Canvas::strokeText(const std::u32string_view& text, float strokeWidth, cons
 
 void Canvas::clipPath(const Path& path, FillRule clipRule, const Transform& transform)
 {
-    plutovg_canvas_reset_matrix(m_canvas);
-    plutovg_canvas_translate(m_canvas, -m_x, -m_y);
+    plutovg_canvas_set_matrix(m_canvas, &m_translation);
     plutovg_canvas_transform(m_canvas, &transform.matrix());
     plutovg_canvas_set_fill_rule(m_canvas, static_cast<plutovg_fill_rule_t>(clipRule));
     plutovg_canvas_clip_path(m_canvas, path.data());
@@ -619,8 +614,7 @@ void Canvas::clipPath(const Path& path, FillRule clipRule, const Transform& tran
 
 void Canvas::clipRect(const Rect& rect, FillRule clipRule, const Transform& transform)
 {
-    plutovg_canvas_reset_matrix(m_canvas);
-    plutovg_canvas_translate(m_canvas, -m_x, -m_y);
+    plutovg_canvas_set_matrix(m_canvas, &m_translation);
     plutovg_canvas_transform(m_canvas, &transform.matrix());
     plutovg_canvas_set_fill_rule(m_canvas, static_cast<plutovg_fill_rule_t>(clipRule));
     plutovg_canvas_clip_rect(m_canvas, rect.x, rect.y, rect.w, rect.h);
@@ -630,9 +624,8 @@ void Canvas::drawImage(const Bitmap& image, const Rect& dstRect, const Rect& src
 {
     auto xScale = dstRect.w / srcRect.w;
     auto yScale = dstRect.h / srcRect.h;
-    plutovg_matrix_t matrix = { xScale, 0, 0, yScale, -srcRect.x * xScale, -srcRect.y * yScale };
-    plutovg_canvas_reset_matrix(m_canvas);
-    plutovg_canvas_translate(m_canvas, -m_x, -m_y);
+    auto matrix = PLUTOVG_MAKE_MATRIX(xScale, 0, 0, yScale, -srcRect.x * xScale, -srcRect.y * yScale);
+    plutovg_canvas_set_matrix(m_canvas, &m_translation);
     plutovg_canvas_transform(m_canvas, &transform.matrix());
     plutovg_canvas_translate(m_canvas, dstRect.x, dstRect.y);
     plutovg_canvas_set_fill_rule(m_canvas, PLUTOVG_FILL_RULE_NON_ZERO);
@@ -643,9 +636,8 @@ void Canvas::drawImage(const Bitmap& image, const Rect& dstRect, const Rect& src
 
 void Canvas::blendCanvas(const Canvas& canvas, BlendMode blendMode, float opacity)
 {
-    plutovg_matrix_t matrix = { 1, 0, 0, 1, static_cast<float>(canvas.x()), static_cast<float>(canvas.y()) };
-    plutovg_canvas_reset_matrix(m_canvas);
-    plutovg_canvas_translate(m_canvas, -m_x, -m_y);
+    auto matrix = PLUTOVG_MAKE_TRANSLATE(static_cast<float>(canvas.x()), static_cast<float>(canvas.y()));
+    plutovg_canvas_set_matrix(m_canvas, &m_translation);
     plutovg_canvas_set_operator(m_canvas, static_cast<plutovg_operator_t>(blendMode));
     plutovg_canvas_set_texture(m_canvas, canvas.surface(), PLUTOVG_TEXTURE_TYPE_PLAIN, opacity, &matrix);
     plutovg_canvas_paint(m_canvas);
@@ -706,6 +698,7 @@ Canvas::~Canvas()
 Canvas::Canvas(const Bitmap& bitmap)
     : m_surface(plutovg_surface_reference(bitmap.surface()))
     , m_canvas(plutovg_canvas_create(m_surface))
+    , m_translation(PLUTOVG_MAKE_TRANSLATE(0.f, 0.f))
     , m_x(0), m_y(0)
 {
 }
@@ -713,6 +706,7 @@ Canvas::Canvas(const Bitmap& bitmap)
 Canvas::Canvas(int x, int y, int width, int height)
     : m_surface(plutovg_surface_create(width, height))
     , m_canvas(plutovg_canvas_create(m_surface))
+    , m_translation(PLUTOVG_MAKE_TRANSLATE(-static_cast<float>(x), -static_cast<float>(y)))
     , m_x(x), m_y(y)
 {
 }
