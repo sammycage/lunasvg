@@ -10,7 +10,6 @@
 #include <vector>
 #include <array>
 #include <string>
-#include <map>
 
 namespace lunasvg {
 
