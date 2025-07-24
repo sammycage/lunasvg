@@ -98,6 +98,69 @@ int main()
 | --- | --- |
 | ![summer.png](https://github.com/user-attachments/assets/c7f16780-23f8-4acd-906a-2242f2d0d33b) | ![winter.png](https://github.com/user-attachments/assets/fdd65288-11c7-4e16-bb5a-2bf28de57145) |
 
+---
+
+## Hit Testing
+
+This example demonstrates SVG element hit testing using `elementFromPoint(x, y)` in LunaSVG. It loads an SVG containing three shapes, performs point-based hit detection, and applies a skew transform with a black stroke to each matched element. The results are saved as `original.png` and `modified.png` for visual comparison.
+
+```cpp
+#include <lunasvg.h>
+
+#include <utility>
+#include <iostream>
+
+using namespace lunasvg;
+
+static const char kSVGContent[] = R"SVG(
+<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect id="red-rect" x="20" y="20" width="100" height="100" fill="red"/>
+  <circle id="blue-circle" cx="200" cy="70" r="50" fill="blue"/>
+  <rect id="green-rect" x="300" y="30" width="70" height="130" fill="green"/>
+</svg>
+)SVG";
+
+int main()
+{
+    auto document = Document::loadFromData(kSVGContent);
+
+    document->renderToBitmap().writeToPng("original.png");
+
+    const std::pair<float, float> points[] = {
+        {30,  30}, // inside red-rect
+        {200, 70}, // center of blue-circle
+        {310, 50}, // inside green-rect
+        {0,    0}, // outside all shapes
+    };
+
+    for(const auto& [x, y] : points) {
+        if(auto element = document->elementFromPoint(x, y)) {
+            std::cout << "Element at (" << x << ", " << y << "): " << element.getAttribute("id") << "\n";
+
+            element.setAttribute("stroke", "black");
+            element.setAttribute("stroke-width", "3");
+            element.setAttribute("transform", "skewX(9)");
+        } else {
+            std::cout << "No element found at (" << x << ", " << y << ")\n";
+        }
+    }
+
+    document->renderToBitmap().writeToPng("modified.png");
+    return 0;
+}
+```
+
+| `original.png` | `modified.png` |
+| --- | --- |
+| ![original.png](https://github.com/user-attachments/assets/bbffbd84-6311-484b-bfe3-219d7aec055b) | ![modified.png](https://github.com/user-attachments/assets/a7f6e502-a64f-48d5-8a01-901ad15b108b) |
+
+```log
+Element at (30, 30): red-rect
+Element at (200, 70): blue-circle
+Element at (310, 50): green-rect
+No element found at (0, 0)
+```
+
 ## Features
 
 LunaSVG supports nearly all graphical features outlined in the SVG 1.1 and SVG 1.2 Tiny specifications. The primary exceptions are animation, filters, and scripts. As LunaSVG is designed for static rendering, animation is unlikely to be supported in the future. However, support for filters may be added. It currently handles a wide variety of elements, including:
