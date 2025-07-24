@@ -50,6 +50,7 @@ public:
     Display display() const { return m_display; }
     Visibility visibility() const { return m_visibility; }
     Overflow overflow() const { return m_overflow; }
+    PointerEvents pointer_events() const { return m_pointer_events; }
     MaskType mask_type() const { return m_mask_type; }
 
     const std::string& mask() const { return m_mask; }
@@ -102,6 +103,7 @@ private:
     Display m_display = Display::Inline;
     Visibility m_visibility = Visibility::Visible;
     Overflow m_overflow = Overflow::Visible;
+    PointerEvents m_pointer_events = PointerEvents::Auto;
     MaskType m_mask_type = MaskType::Luminance;
 
     std::string m_mask;

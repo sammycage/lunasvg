@@ -95,6 +95,7 @@ PropertyID csspropertyid(const std::string_view& name)
         {"mask-type", PropertyID::Mask_Type},
         {"opacity", PropertyID::Opacity},
         {"overflow", PropertyID::Overflow},
+        {"pointer-events", PropertyID::PointerEvents},
         {"stop-color", PropertyID::Stop_Color},
         {"stop-opacity", PropertyID::Stop_Opacity},
         {"stroke", PropertyID::Stroke},

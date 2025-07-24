@@ -369,12 +369,16 @@ SVGElement* SVGElement::elementFromPoint(float x, float y)
         }
     }
 
-    auto transform = localTransform();
-    for(auto parent = parentElement(); parent; parent = parent->parentElement())
-        transform.postMultiply(parent->localTransform());
-    auto bbox = transform.mapRect(paintBoundingBox());
-    if(bbox.contains(x, y))
-        return this;
+    if(isPointableElement()) {
+        auto transform = localTransform();
+        for(auto parent = parentElement(); parent; parent = parent->parentElement())
+            transform.postMultiply(parent->localTransform());
+        auto bbox = transform.mapRect(paintBoundingBox());
+        if(bbox.contains(x, y)) {
+            return this;
+        }
+    }
+
     return nullptr;
 }
 
@@ -503,6 +507,31 @@ bool SVGElement::isHiddenElement() const
     default:
         return false;
     }
+}
+
+bool SVGElement::isPointableElement() const
+{
+    if(m_pointer_events != PointerEvents::None
+        && m_visibility != Visibility::Hidden
+        && m_display != Display::None
+        && m_opacity != 0.f) {
+        switch(m_id) {
+        case ElementID::Line:
+        case ElementID::Rect:
+        case ElementID::Ellipse:
+        case ElementID::Circle:
+        case ElementID::Polyline:
+        case ElementID::Polygon:
+        case ElementID::Path:
+        case ElementID::Text:
+        case ElementID::Image:
+            return true;
+        default:
+            break;
+        }
+    }
+
+    return false;
 }
 
 SVGStyleElement::SVGStyleElement(Document* document)

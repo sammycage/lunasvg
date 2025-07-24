@@ -202,6 +202,25 @@ static Overflow parseOverflow(const std::string_view& input)
     return parseEnumValue(input, entries, Overflow::Visible);
 }
 
+static PointerEvents parsePointerEvents(const std::string_view& input)
+{
+    static const SVGEnumerationEntry<PointerEvents> entries[] = {
+        {PointerEvents::None,"none"},
+        {PointerEvents::Auto,"auto"},
+        {PointerEvents::Stroke,"stroke"},
+        {PointerEvents::Fill,"fill"},
+        {PointerEvents::Painted,"painted"},
+        {PointerEvents::Visible,"visible"},
+        {PointerEvents::VisibleStroke,"visibleStroke"},
+        {PointerEvents::VisibleFill,"visibleFill"},
+        {PointerEvents::VisiblePainted,"visiblePainted"},
+        {PointerEvents::BoundingBox,"bounding-box"},
+        {PointerEvents::All,"all"},
+    };
+
+    return parseEnumValue(input, entries, PointerEvents::Auto);
+}
+
 static FontWeight parseFontWeight(const std::string_view& input)
 {
     static const SVGEnumerationEntry<FontWeight> entries[] = {
@@ -377,6 +396,7 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
     , m_direction(parent.direction())
     , m_visibility(parent.visibility())
     , m_overflow(element->isRootElement() ? Overflow::Visible : Overflow::Hidden)
+    , m_pointer_events(parent.pointer_events())
     , m_marker_start(parent.marker_start())
     , m_marker_mid(parent.marker_mid())
     , m_marker_end(parent.marker_end())
@@ -471,6 +491,9 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
             break;
         case PropertyID::Overflow:
             m_overflow = parseOverflow(input);
+            break;
+        case PropertyID::PointerEvents:
+            m_pointer_events = parsePointerEvents(input);
             break;
         case PropertyID::Mask_Type:
             m_mask_type = parseMaskType(input);

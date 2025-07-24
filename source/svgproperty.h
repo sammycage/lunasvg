@@ -56,6 +56,7 @@ enum class PropertyID : uint8_t {
     PatternContentUnits,
     PatternTransform,
     PatternUnits,
+    PointerEvents,
     Points,
     PreserveAspectRatio,
     R,
@@ -154,6 +155,20 @@ enum class Visibility : uint8_t {
 enum class Overflow : uint8_t {
     Visible,
     Hidden
+};
+
+enum class PointerEvents : uint8_t {
+    None,
+    Auto,
+    Stroke,
+    Fill,
+    Painted,
+    Visible,
+    VisibleStroke,
+    VisibleFill,
+    VisiblePainted,
+    BoundingBox,
+    All
 };
 
 enum class FontStyle : uint8_t {
