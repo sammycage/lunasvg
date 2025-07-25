@@ -685,8 +685,8 @@ void Canvas::convertToLuminanceMask()
                 b = (b * 255) / a;
             }
 
-            auto l = (r * 0.2125f + g * 0.7154f + b * 0.0721f);
-            pixels[x] = static_cast<uint32_t>(l * (a / 255.f)) << 24;
+            auto l = (r * 0.2125 + g * 0.7154 + b * 0.0721);
+            pixels[x] = static_cast<uint32_t>(l * (a / 255.0)) << 24;
         }
     }
 }
