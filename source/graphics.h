@@ -399,7 +399,7 @@ extern const std::string emptyString;
 class FontFace {
 public:
     FontFace() = default;
-    FontFace(plutovg_font_face_t* face);
+    explicit FontFace(plutovg_font_face_t* face);
     FontFace(const void* data, size_t length, plutovg_destroy_func_t destroy_func, void* closure);
     FontFace(const char* filename);
     FontFace(const FontFace& face);

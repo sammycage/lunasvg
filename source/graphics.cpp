@@ -363,7 +363,7 @@ void PathIterator::next()
 const std::string emptyString;
 
 FontFace::FontFace(plutovg_font_face_t* face)
-    : m_face(face)
+    : m_face(plutovg_font_face_reference(face))
 {
 }
 
@@ -424,7 +424,7 @@ bool FontFaceCache::addFontFace(const std::string& family, bool bold, bool itali
 FontFace FontFaceCache::getFontFace(const std::string& family, bool bold, bool italic) const
 {
     if(auto face = plutovg_font_face_cache_get(m_cache, family.data(), bold, italic)) {
-        return face;
+        return FontFace(face);
     }
 
     static const struct {
@@ -446,7 +446,7 @@ FontFace FontFaceCache::getFontFace(const std::string& family, bool bold, bool i
 
     for(auto value : generic_fallbacks) {
         if(value.generic == family || family.empty()) {
-            return plutovg_font_face_cache_get(m_cache, value.fallback, bold, italic);
+            return FontFace(plutovg_font_face_cache_get(m_cache, value.fallback, bold, italic));
         }
     }
 
