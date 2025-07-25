@@ -28,7 +28,10 @@
 #include <string>
 #include <vector>
 
-#if !defined(LUNASVG_BUILD_STATIC) && (defined(_WIN32) || defined(__CYGWIN__))
+#if defined(LUNASVG_BUILD_STATIC)
+#define LUNASVG_EXPORT
+#define LUNASVG_IMPORT
+#elif (defined(_WIN32) || defined(__CYGWIN__))
 #define LUNASVG_EXPORT __declspec(dllexport)
 #define LUNASVG_IMPORT __declspec(dllimport)
 #elif defined(__GNUC__) && (__GNUC__ >= 4)
@@ -783,6 +786,6 @@ private:
     friend class SVGNode;
 };
 
-} //namespace lunasvg
+} // namespace lunasvg
 
 #endif // LUNASVG_H
