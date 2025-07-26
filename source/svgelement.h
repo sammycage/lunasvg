@@ -120,6 +120,8 @@ class SVGPaintElement;
 class SVGLayoutState;
 class SVGRenderState;
 
+extern const std::string emptyString;
+
 class SVGElement : public SVGNode {
 public:
     static std::unique_ptr<SVGElement> create(Document* document, ElementID id);

@@ -360,8 +360,6 @@ void PathIterator::next()
     m_index += m_elements[m_index].header.length;
 }
 
-const std::string emptyString;
-
 FontFace::FontFace(plutovg_font_face_t* face)
     : m_face(plutovg_font_face_reference(face))
 {

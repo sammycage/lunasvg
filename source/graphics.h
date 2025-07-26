@@ -394,8 +394,6 @@ private:
     int m_index;
 };
 
-extern const std::string emptyString;
-
 class FontFace {
 public:
     FontFace() = default;

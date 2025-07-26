@@ -66,6 +66,8 @@ std::unique_ptr<SVGNode> SVGTextNode::clone(bool deep) const
     return node;
 }
 
+const std::string emptyString;
+
 std::unique_ptr<SVGElement> SVGElement::create(Document* document, ElementID id)
 {
     switch(id) {
