@@ -49,7 +49,7 @@
 #endif
 
 #define LUNASVG_VERSION_MAJOR 3
-#define LUNASVG_VERSION_MINOR 3
+#define LUNASVG_VERSION_MINOR 4
 #define LUNASVG_VERSION_MICRO 0
 
 #define LUNASVG_VERSION_ENCODE(major, minor, micro) (((major) * 10000) + ((minor) * 100) + ((micro) * 1))
