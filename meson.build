@@ -61,7 +61,7 @@ endif
 pkgmod = import('pkgconfig')
 pkgmod.generate(lunasvg_lib,
     name: 'LunaSVG',
-    description: 'SVG rendering library',
+    description: 'SVG rendering and manipulation library',
     filebase: 'lunasvg',
     subdirs: 'lunasvg'
 )

@@ -136,7 +136,7 @@ includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
 
 Name: LunaSVG
-Description: SVG rendering and manipulation library in C++
+Description: SVG rendering and manipulation library
 Version: @PROJECT_VERSION@
 
 Requires.private: plutovg
@@ -145,7 +145,6 @@ Libs: -L${libdir} -llunasvg
 ]] lunasvg_pc @ONLY)
 
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/lunasvg.pc" "${lunasvg_pc}")
-
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/lunasvg.pc"
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
 )
