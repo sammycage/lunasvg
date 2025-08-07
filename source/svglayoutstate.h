@@ -45,6 +45,7 @@ public:
 
     TextAnchor text_anchor() const { return m_text_anchor; }
     WhiteSpace white_space() const { return m_white_space; }
+    WritingMode writing_mode() const { return m_writing_mode; }
     Direction direction() const { return m_direction; }
 
     Display display() const { return m_display; }
@@ -98,6 +99,7 @@ private:
 
     TextAnchor m_text_anchor = TextAnchor::Start;
     WhiteSpace m_white_space = WhiteSpace::Default;
+    WritingMode m_writing_mode = WritingMode::Horizontal;
     Direction m_direction = Direction::Ltr;
 
     Display m_display = Display::Inline;

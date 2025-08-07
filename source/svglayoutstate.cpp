@@ -303,6 +303,23 @@ static Direction parseDirection(const std::string_view& input)
     return parseEnumValue(input, entries, Direction::Ltr);
 }
 
+static WritingMode parseWritingMode(const std::string_view& input)
+{
+    static const SVGEnumerationEntry<WritingMode> entries[] = {
+        {WritingMode::Horizontal, "horizontal-tb"},
+        {WritingMode::Vertical, "vertical-rl"},
+        {WritingMode::Vertical, "vertical-lr"},
+        {WritingMode::Horizontal, "lr-tb"},
+        {WritingMode::Horizontal, "lr"},
+        {WritingMode::Horizontal, "rl-tb"},
+        {WritingMode::Horizontal, "rl"},
+        {WritingMode::Vertical, "tb-rl"},
+        {WritingMode::Vertical, "tb"}
+    };
+
+    return parseEnumValue(input, entries, WritingMode::Horizontal);
+}
+
 static TextAnchor parseTextAnchor(const std::string_view& input)
 {
     static const SVGEnumerationEntry<TextAnchor> entries[] = {
@@ -393,6 +410,7 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
     , m_dominant_baseline(parent.dominant_baseline())
     , m_text_anchor(parent.text_anchor())
     , m_white_space(parent.white_space())
+    , m_writing_mode(parent.writing_mode())
     , m_direction(parent.direction())
     , m_visibility(parent.visibility())
     , m_overflow(element->isRootElement() ? Overflow::Visible : Overflow::Hidden)
@@ -482,6 +500,9 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
             break;
         case PropertyID::WhiteSpace:
             m_white_space = parseWhiteSpace(input);
+            break;
+        case PropertyID::WritingMode:
+            m_writing_mode = parseWritingMode(input);
             break;
         case PropertyID::Display:
             m_display = parseDisplay(input);

@@ -42,6 +42,7 @@ struct SVGTextFragment {
     float y = 0;
     float angle = 0;
     float width = 0;
+    float height = 0;
     bool startsNewTextChunk = false;
 };
 
@@ -85,6 +86,8 @@ public:
     const SVGPaintServer& fill() const { return m_fill; }
     const SVGPaintServer& stroke() const { return m_stroke; }
 
+    bool isVerticalWritingMode() const { return m_writing_mode == WritingMode::Vertical; }
+
     float stroke_width() const { return m_stroke_width; }
     float baseline_offset() const { return m_baseline_offset; }
     AlignmentBaseline alignment_baseline() const { return m_alignment_baseline; }
@@ -116,6 +119,7 @@ private:
     DominantBaseline m_dominant_baseline = DominantBaseline::Auto;
     TextAnchor m_text_anchor = TextAnchor::Start;
     WhiteSpace m_white_space = WhiteSpace::Default;
+    WritingMode m_writing_mode = WritingMode::Horizontal;
     Direction m_direction = Direction::Ltr;
 };
 

@@ -22,6 +22,9 @@ static AlignmentBaseline resolveDominantBaseline(const SVGTextPositioningElement
 {
     switch(element->dominant_baseline()) {
     case DominantBaseline::Auto:
+        if(element->isVerticalWritingMode())
+            return AlignmentBaseline::Central;
+        return AlignmentBaseline::Alphabetic;
     case DominantBaseline::UseScript:
     case DominantBaseline::NoChange:
     case DominantBaseline::ResetSize:
@@ -133,29 +136,54 @@ static float calculateTextAnchorOffset(const SVGTextPositioningElement* element,
 
 using SVGTextFragmentIterator = SVGTextFragmentList::iterator;
 
+static float calculateTextChunkLength(SVGTextFragmentIterator begin, SVGTextFragmentIterator end, bool isVerticalText)
+{
+    float chunkLength = 0;
+    const SVGTextFragment* lastFragment = nullptr;
+    for(auto it = begin; it != end; ++it) {
+        const SVGTextFragment& fragment = *it;
+        chunkLength += isVerticalText ? fragment.height : fragment.width;
+        if(!lastFragment) {
+            lastFragment = &fragment;
+            continue;
+        }
+
+        if(isVerticalText) {
+            chunkLength += fragment.y - (lastFragment->y + lastFragment->height);
+        } else {
+            chunkLength += fragment.x - (lastFragment->x + lastFragment->width);
+        }
+
+        lastFragment = &fragment;
+    }
+
+    return chunkLength;
+}
+
 static void handleTextChunk(SVGTextFragmentIterator begin, SVGTextFragmentIterator end)
 {
     const SVGTextFragment& firstFragment = *begin;
+    const auto isVerticalText = firstFragment.element->isVerticalWritingMode();
     if(firstFragment.element->hasAttribute(PropertyID::TextLength)) {
-        float chunkWidth = 0;
-        size_t numCharacters = 0;
-        const SVGTextFragment* lastFragment = nullptr;
-        for(auto it = begin; it != end; ++it) {
-            const SVGTextFragment& fragment = *it;
-            numCharacters += fragment.length;
-            chunkWidth += fragment.width;
-            if(lastFragment)
-                chunkWidth += fragment.x - (lastFragment->x + lastFragment->width);
-            lastFragment = &fragment;
-        }
-
         LengthContext lengthContext(firstFragment.element);
         auto textLength = lengthContext.valueForLength(firstFragment.element->textLength());
-        if(textLength > 0.f && chunkWidth > 0.f) {
+        auto chunkLength = calculateTextChunkLength(begin, end, isVerticalText);
+        if(textLength > 0.f && chunkLength > 0.f) {
+            size_t numCharacters = 0;
+            for(auto it = begin; it != end; ++it) {
+                const SVGTextFragment& fragment = *it;
+                numCharacters += fragment.length;
+            }
+
             if(firstFragment.element->lengthAdjust() == LengthAdjust::SpacingAndGlyphs) {
-                auto textLengthScale = textLength / chunkWidth;
+                auto textLengthScale = textLength / chunkLength;
                 auto lengthAdjustTransform = Transform::translated(firstFragment.x, firstFragment.y);
-                lengthAdjustTransform.scale(textLengthScale, 1.f);
+                if(isVerticalText) {
+                    lengthAdjustTransform.scale(1.f, textLengthScale);
+                } else {
+                    lengthAdjustTransform.scale(textLengthScale, 1.f);
+                }
+
                 lengthAdjustTransform.translate(-firstFragment.x, -firstFragment.y);
                 for(auto it = begin; it != end; ++it) {
                     SVGTextFragment& fragment = *it;
@@ -164,10 +192,15 @@ static void handleTextChunk(SVGTextFragmentIterator begin, SVGTextFragmentIterat
             } else if(numCharacters > 1) {
                 assert(firstFragment.element->lengthAdjust() == LengthAdjust::Spacing);
                 size_t characterOffset = 0;
-                auto textLengthShift = (textLength - chunkWidth) / (numCharacters - 1);
+                auto textLengthShift = (textLength - chunkLength) / (numCharacters - 1);
                 for(auto it = begin; it != end; ++it) {
                     SVGTextFragment& fragment = *it;
-                    fragment.x += textLengthShift * characterOffset;
+                    if(isVerticalText) {
+                        fragment.y += textLengthShift * characterOffset;
+                    } else {
+                        fragment.x += textLengthShift * characterOffset;
+                    }
+
                     characterOffset += fragment.length;
                 }
             }
@@ -175,20 +208,15 @@ static void handleTextChunk(SVGTextFragmentIterator begin, SVGTextFragmentIterat
     }
 
     if(needsTextAnchorAdjustment(firstFragment.element)) {
-        float chunkWidth = 0;
-        const SVGTextFragment* lastFragment = nullptr;
-        for(auto it = begin; it != end; ++it) {
-            const SVGTextFragment& fragment = *it;
-            chunkWidth += fragment.width;
-            if(lastFragment)
-                chunkWidth += fragment.x - (lastFragment->x + lastFragment->width);
-            lastFragment = &fragment;
-        }
-
-        auto chunkOffset = calculateTextAnchorOffset(firstFragment.element, chunkWidth);
+        auto chunkLength = calculateTextChunkLength(begin, end, isVerticalText);
+        auto chunkOffset = calculateTextAnchorOffset(firstFragment.element, chunkLength);
         for(auto it = begin; it != end; ++it) {
             SVGTextFragment& fragment = *it;
-            fragment.x += chunkOffset;
+            if(isVerticalText) {
+                fragment.y += chunkOffset;
+            } else {
+                fragment.x += chunkOffset;
+            }
         }
     }
 }
@@ -212,14 +240,23 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
         if(!textPosition.node->isTextNode())
             continue;
         auto element = toSVGTextPositioningElement(textPosition.node->parentElement());
+        const auto isVerticalText = element->isVerticalWritingMode();
+        const auto& font = element->font();
+
         SVGTextFragment fragment(element);
         auto recordTextFragment = [&](auto startOffset, auto endOffset) {
             auto text = wholeText.substr(startOffset, endOffset - startOffset);
             fragment.offset = startOffset;
             fragment.length = text.length();
-            fragment.width = element->font().measureText(text);
+            fragment.width = font.measureText(text);
+            fragment.height = font.height();
+            if(isVerticalText) {
+                m_y += fragment.height;
+            } else {
+                m_x += fragment.width;
+            }
+
             m_fragments.push_back(fragment);
-            m_x += fragment.width;
         };
 
         auto needsTextLengthSpacing = element->lengthAdjust() == LengthAdjust::Spacing && element->hasAttribute(PropertyID::TextLength);
@@ -238,7 +275,7 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
             auto dx = characterPosition.dx.value_or(0);
             auto dy = characterPosition.dy.value_or(0);
 
-            auto shouldStartNewFragment = needsTextLengthSpacing || characterPosition.x || characterPosition.y || dx || dy || angle || angle != lastAngle;
+            auto shouldStartNewFragment = needsTextLengthSpacing || isVerticalText || characterPosition.x || characterPosition.y || dx || dy || angle || angle != lastAngle;
             if(shouldStartNewFragment && didStartTextFragment) {
                 recordTextFragment(startOffset, textOffset);
                 startOffset = textOffset;
@@ -248,9 +285,9 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
             if(startsNewTextChunk || shouldStartNewFragment || !didStartTextFragment) {
                 m_x = dx + characterPosition.x.value_or(m_x);
                 m_y = dy + characterPosition.y.value_or(m_y);
-                fragment.x = m_x;
-                fragment.y = m_y - baselineOffset;
-                fragment.angle = angle;
+                fragment.x = isVerticalText ? m_x + baselineOffset : m_x;
+                fragment.y = isVerticalText ? m_y : m_y - baselineOffset;
+                fragment.angle = isVerticalText ? angle + 90 : angle;
                 fragment.startsNewTextChunk = startsNewTextChunk;
                 didStartTextFragment = true;
             }
@@ -407,6 +444,7 @@ void SVGTextPositioningElement::layoutElement(const SVGLayoutState& state)
     m_dominant_baseline = state.dominant_baseline();
     m_text_anchor = state.text_anchor();
     m_white_space = state.white_space();
+    m_writing_mode = state.writing_mode();
     m_direction = state.direction();
 }
 

@@ -108,7 +108,8 @@ PropertyID csspropertyid(const std::string_view& name)
         {"stroke-width", PropertyID::Stroke_Width},
         {"text-anchor", PropertyID::Text_Anchor},
         {"visibility", PropertyID::Visibility},
-        {"white-space", PropertyID::WhiteSpace}
+        {"white-space", PropertyID::WhiteSpace},
+        {"writing-mode", PropertyID::WritingMode}
     };
 
     auto it = std::lower_bound(table, std::end(table), name, [](const auto& item, const auto& name) { return item.name < name; });

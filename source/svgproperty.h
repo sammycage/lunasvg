@@ -84,6 +84,7 @@ enum class PropertyID : uint8_t {
     Visibility,
     WhiteSpace,
     Width,
+    WritingMode,
     X,
     X1,
     X2,
@@ -220,6 +221,11 @@ enum class TextAnchor : uint8_t {
 enum class WhiteSpace : uint8_t {
     Default,
     Preserve
+};
+
+enum class WritingMode : uint8_t {
+    Horizontal,
+    Vertical
 };
 
 enum class Direction : uint8_t {
