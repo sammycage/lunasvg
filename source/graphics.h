@@ -435,9 +435,9 @@ public:
     Font() = default;
     Font(const FontFace& face, float size);
 
-    float ascent() const;
-    float descent() const;
-    float height() const;
+    float ascent() const { return m_ascent; }
+    float descent() const { return m_descent; }
+    float height() const { return m_ascent - m_descent; }
     float xHeight() const;
 
     float measureText(const std::u32string_view& text) const;
@@ -450,6 +450,8 @@ public:
 private:
     FontFace m_face;
     float m_size = 0.f;
+    float m_ascent = 0.f;
+    float m_descent = 0.f;
 };
 
 enum class TextureType {

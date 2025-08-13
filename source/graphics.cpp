@@ -468,30 +468,9 @@ FontFaceCache* fontFaceCache()
 Font::Font(const FontFace& face, float size)
     : m_face(face), m_size(size)
 {
-}
-
-float Font::ascent() const
-{
-    float ascent = 0;
-    if(m_size > 0.f && !m_face.isNull())
-        plutovg_font_face_get_metrics(m_face.get(), m_size, &ascent, nullptr, nullptr, nullptr);
-    return ascent;
-}
-
-float Font::descent() const
-{
-    float descent = 0;
-    if(m_size > 0.f && !m_face.isNull())
-        plutovg_font_face_get_metrics(m_face.get(), m_size, nullptr, &descent, nullptr, nullptr);
-    return descent;
-}
-
-float Font::height() const
-{
-    float ascent = 0, descent = 0;
-    if(m_size > 0.f && !m_face.isNull())
-        plutovg_font_face_get_metrics(m_face.get(), m_size, &ascent, &descent, nullptr, nullptr);
-    return ascent - descent;
+    if(m_size > 0.f && !m_face.isNull()) {
+        plutovg_font_face_get_metrics(m_face.get(), m_size, &m_ascent, &m_descent, nullptr, nullptr);
+    }
 }
 
 float Font::xHeight() const
