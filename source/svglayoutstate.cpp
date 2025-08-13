@@ -147,6 +147,13 @@ static LengthList parseDashArray(std::string_view input)
     return values;
 }
 
+static Length parseLengthOrNormal(std::string_view input)
+{
+    if(input.compare("normal") == 0)
+        return Length(0, LengthUnits::None);
+    return parseLength(input, LengthNegativeMode::Allow, Length(0, LengthUnits::None));
+}
+
 static float parseFontSize(std::string_view input, const SVGLayoutState* state)
 {
     auto length = parseLength(input, LengthNegativeMode::Forbid, Length(12, LengthUnits::None));
@@ -408,6 +415,8 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
     , m_stroke_opacity(parent.stroke_opacity())
     , m_stroke_miterlimit(parent.stroke_miterlimit())
     , m_font_size(parent.font_size())
+    , m_letter_spacing(parent.letter_spacing())
+    , m_word_spacing(parent.word_spacing())
     , m_stroke_width(parent.stroke_width())
     , m_stroke_dashoffset(parent.stroke_dashoffset())
     , m_stroke_dasharray(parent.stroke_dasharray())
@@ -466,6 +475,12 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
             break;
         case PropertyID::Font_Size:
             m_font_size = parseFontSize(input, this);
+            break;
+        case PropertyID::Letter_Spacing:
+            m_letter_spacing = parseLengthOrNormal(input);
+            break;
+        case PropertyID::Word_Spacing:
+            m_word_spacing = parseLengthOrNormal(input);
             break;
         case PropertyID::Baseline_Shift:
             m_baseline_shit = parseBaselineShift(input);

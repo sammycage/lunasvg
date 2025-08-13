@@ -88,6 +88,7 @@ PropertyID csspropertyid(const std::string_view& name)
         {"font-size", PropertyID::Font_Size},
         {"font-style", PropertyID::Font_Style},
         {"font-weight", PropertyID::Font_Weight},
+        {"letter-spacing", PropertyID::Letter_Spacing},
         {"marker-end", PropertyID::Marker_End},
         {"marker-mid", PropertyID::Marker_Mid},
         {"marker-start", PropertyID::Marker_Start},
@@ -110,6 +111,7 @@ PropertyID csspropertyid(const std::string_view& name)
         {"text-orientation", PropertyID::Text_Orientation},
         {"visibility", PropertyID::Visibility},
         {"white-space", PropertyID::White_Space},
+        {"word-spacing", PropertyID::Word_Spacing},
         {"writing-mode", PropertyID::Writing_Mode}
     };
 

@@ -90,6 +90,8 @@ public:
     bool isUprightTextOrientation() const { return m_text_orientation == TextOrientation::Upright; }
 
     float stroke_width() const { return m_stroke_width; }
+    float letter_spacing() const { return m_letter_spacing; }
+    float word_spacing() const { return m_word_spacing; }
     float baseline_offset() const { return m_baseline_offset; }
     AlignmentBaseline alignment_baseline() const { return m_alignment_baseline; }
     DominantBaseline dominant_baseline() const { return m_dominant_baseline; }
@@ -115,6 +117,8 @@ private:
     SVGPaintServer m_stroke;
 
     float m_stroke_width = 1.f;
+    float m_letter_spacing = 0.f;
+    float m_word_spacing = 0.f;
     float m_baseline_offset = 0.f;
     AlignmentBaseline m_alignment_baseline = AlignmentBaseline::Auto;
     DominantBaseline m_dominant_baseline = DominantBaseline::Auto;

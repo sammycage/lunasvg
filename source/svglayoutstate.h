@@ -26,6 +26,9 @@ public:
     float stroke_miterlimit() const { return m_stroke_miterlimit; }
     float font_size() const { return m_font_size; }
 
+    const Length& letter_spacing() const { return m_letter_spacing; }
+    const Length& word_spacing() const { return m_word_spacing; }
+
     const BaselineShift& baseline_shit() const { return m_baseline_shit; }
     const Length& stroke_width() const { return m_stroke_width; }
     const Length& stroke_dashoffset() const { return m_stroke_dashoffset; }
@@ -80,6 +83,9 @@ private:
     float m_stop_opacity = 1.f;
     float m_stroke_miterlimit = 4.f;
     float m_font_size = 12.f;
+
+    Length m_letter_spacing{0.f, LengthUnits::None};
+    Length m_word_spacing{0.f, LengthUnits::None};
 
     BaselineShift m_baseline_shit;
     Length m_stroke_width{1.f, LengthUnits::None};

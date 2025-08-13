@@ -267,6 +267,8 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
         auto startOffset = textPosition.startOffset;
         auto textOffset = textPosition.startOffset;
         auto didStartTextFragment = false;
+        auto applySpacingToNextCharacter = false;
+        auto lastCharacter = 0u;
         auto lastAngle = 0.f;
         while(textOffset < textPosition.endOffset) {
             SVGCharacterPosition characterPosition;
@@ -274,13 +276,16 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
                 characterPosition = m_characterPositions.at(m_characterOffset);
             }
 
+            auto currentCharacter = wholeText.at(textOffset);
             auto angle = characterPosition.rotate.value_or(0);
             auto dx = characterPosition.dx.value_or(0);
             auto dy = characterPosition.dy.value_or(0);
 
-            auto shouldStartNewFragment = needsTextLengthSpacing || isVerticalText || characterPosition.x || characterPosition.y || dx || dy || angle || angle != lastAngle;
+            auto shouldStartNewFragment = needsTextLengthSpacing || isVerticalText || applySpacingToNextCharacter
+                || characterPosition.x || characterPosition.y || dx || dy || angle || angle != lastAngle;
             if(shouldStartNewFragment && didStartTextFragment) {
                 recordTextFragment(startOffset, textOffset);
+                applySpacingToNextCharacter = false;
                 startOffset = textOffset;
             }
 
@@ -295,7 +300,24 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
                 didStartTextFragment = true;
             }
 
+            auto spacing = element->letter_spacing();
+            if(currentCharacter && lastCharacter && element->word_spacing()) {
+                if(currentCharacter == ' ' && lastCharacter != ' ') {
+                    spacing += element->word_spacing();
+                }
+            }
+
+            if(spacing) {
+                applySpacingToNextCharacter = true;
+                if(isVerticalText) {
+                    m_y += spacing;
+                } else {
+                    m_x += spacing;
+                }
+            }
+
             lastAngle = angle;
+            lastCharacter = currentCharacter;
             ++textOffset;
             ++m_characterOffset;
         }
@@ -442,6 +464,9 @@ void SVGTextPositioningElement::layoutElement(const SVGLayoutState& state)
 
     LengthContext lengthContext(this);
     m_stroke_width = lengthContext.valueForLength(state.stroke_width(), LengthDirection::Diagonal);
+    m_letter_spacing = lengthContext.valueForLength(state.letter_spacing(), LengthDirection::Diagonal);
+    m_word_spacing = lengthContext.valueForLength(state.word_spacing(), LengthDirection::Diagonal);
+
     m_baseline_offset = convertBaselineOffset(state.baseline_shit());
     m_alignment_baseline = state.alignment_baseline();
     m_dominant_baseline = state.dominant_baseline();
