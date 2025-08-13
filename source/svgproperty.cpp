@@ -107,6 +107,7 @@ PropertyID csspropertyid(const std::string_view& name)
         {"stroke-opacity", PropertyID::Stroke_Opacity},
         {"stroke-width", PropertyID::Stroke_Width},
         {"text-anchor", PropertyID::Text_Anchor},
+        {"text-orientation", PropertyID::Text_Orientation},
         {"visibility", PropertyID::Visibility},
         {"white-space", PropertyID::White_Space},
         {"writing-mode", PropertyID::Writing_Mode}

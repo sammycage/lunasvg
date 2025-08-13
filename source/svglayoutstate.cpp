@@ -320,6 +320,16 @@ static WritingMode parseWritingMode(const std::string_view& input)
     return parseEnumValue(input, entries, WritingMode::Horizontal);
 }
 
+static TextOrientation parseTextOrientation(const std::string_view& input)
+{
+    static const SVGEnumerationEntry<TextOrientation> entries[] = {
+        {TextOrientation::Mixed, "mixed"},
+        {TextOrientation::Upright, "upright"}
+    };
+
+    return parseEnumValue(input, entries, TextOrientation::Mixed);
+}
+
 static TextAnchor parseTextAnchor(const std::string_view& input)
 {
     static const SVGEnumerationEntry<TextAnchor> entries[] = {
@@ -411,6 +421,7 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
     , m_text_anchor(parent.text_anchor())
     , m_white_space(parent.white_space())
     , m_writing_mode(parent.writing_mode())
+    , m_text_orientation(parent.text_orientation())
     , m_direction(parent.direction())
     , m_visibility(parent.visibility())
     , m_overflow(element->isRootElement() ? Overflow::Visible : Overflow::Hidden)
@@ -503,6 +514,9 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
             break;
         case PropertyID::Writing_Mode:
             m_writing_mode = parseWritingMode(input);
+            break;
+        case PropertyID::Text_Orientation:
+            m_text_orientation = parseTextOrientation(input);
             break;
         case PropertyID::Display:
             m_display = parseDisplay(input);

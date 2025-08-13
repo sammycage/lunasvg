@@ -78,6 +78,7 @@ enum class PropertyID : uint8_t {
     Stroke_Width,
     Style,
     Text_Anchor,
+    Text_Orientation,
     TextLength,
     Transform,
     ViewBox,
@@ -226,6 +227,11 @@ enum class WhiteSpace : uint8_t {
 enum class WritingMode : uint8_t {
     Horizontal,
     Vertical
+};
+
+enum class TextOrientation : uint8_t {
+    Mixed,
+    Upright
 };
 
 enum class Direction : uint8_t {

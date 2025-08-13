@@ -241,6 +241,7 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
             continue;
         auto element = toSVGTextPositioningElement(textPosition.node->parentElement());
         const auto isVerticalText = element->isVerticalWritingMode();
+        const auto isUprightText = element->isUprightTextOrientation();
         const auto& font = element->font();
 
         SVGTextFragment fragment(element);
@@ -251,7 +252,9 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
             fragment.width = font.measureText(text);
             fragment.height = font.height();
             if(isVerticalText) {
-                m_y += fragment.height;
+                if(isUprightText)
+                    fragment.y += font.ascent();
+                m_y += isUprightText ? fragment.height : fragment.width;
             } else {
                 m_x += fragment.width;
             }
@@ -287,7 +290,7 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
                 m_y = dy + characterPosition.y.value_or(m_y);
                 fragment.x = isVerticalText ? m_x + baselineOffset : m_x;
                 fragment.y = isVerticalText ? m_y : m_y - baselineOffset;
-                fragment.angle = isVerticalText ? angle + 90 : angle;
+                fragment.angle = isVerticalText && !isUprightText ? angle + 90 : angle;
                 fragment.startsNewTextChunk = startsNewTextChunk;
                 didStartTextFragment = true;
             }
@@ -445,6 +448,7 @@ void SVGTextPositioningElement::layoutElement(const SVGLayoutState& state)
     m_text_anchor = state.text_anchor();
     m_white_space = state.white_space();
     m_writing_mode = state.writing_mode();
+    m_text_orientation = state.text_orientation();
     m_direction = state.direction();
 }
 
