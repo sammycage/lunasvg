@@ -469,7 +469,7 @@ Font::Font(const FontFace& face, float size)
     : m_face(face), m_size(size)
 {
     if(m_size > 0.f && !m_face.isNull()) {
-        plutovg_font_face_get_metrics(m_face.get(), m_size, &m_ascent, &m_descent, nullptr, nullptr);
+        plutovg_font_face_get_metrics(m_face.get(), m_size, &m_ascent, &m_descent, &m_lineGap, nullptr);
     }
 }
 

@@ -250,10 +250,8 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
             fragment.offset = startOffset;
             fragment.length = text.length();
             fragment.width = font.measureText(text);
-            fragment.height = font.height();
+            fragment.height = font.height() + font.lineGap();
             if(isVerticalText) {
-                if(isUprightText)
-                    fragment.y += font.height();
                 m_y += isUprightText ? fragment.height : fragment.width;
             } else {
                 m_x += fragment.width;
@@ -295,7 +293,15 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
                 m_y = dy + characterPosition.y.value_or(m_y);
                 fragment.x = isVerticalText ? m_x + baselineOffset : m_x;
                 fragment.y = isVerticalText ? m_y : m_y - baselineOffset;
-                fragment.angle = isVerticalText && !isUprightText ? angle + 90 : angle;
+                fragment.angle = angle;
+                if(isVerticalText) {
+                    if(isUprightText) {
+                        fragment.y += font.height();
+                    } else {
+                        fragment.angle += 90;
+                    }
+                }
+
                 fragment.startsNewTextChunk = startsNewTextChunk;
                 didStartTextFragment = true;
             }

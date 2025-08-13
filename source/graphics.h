@@ -438,6 +438,7 @@ public:
     float ascent() const { return m_ascent; }
     float descent() const { return m_descent; }
     float height() const { return m_ascent - m_descent; }
+    float lineGap() const { return m_lineGap; }
     float xHeight() const;
 
     float measureText(const std::u32string_view& text) const;
@@ -452,6 +453,7 @@ private:
     float m_size = 0.f;
     float m_ascent = 0.f;
     float m_descent = 0.f;
+    float m_lineGap = 0.f;
 };
 
 enum class TextureType {
