@@ -530,7 +530,7 @@ Rect SVGTextElement::boundingBox(bool includeStroke) const
         const auto& font = fragment.element->font();
         const auto& stroke = fragment.element->stroke();
         auto fragmentTranform = Transform::rotated(fragment.angle, fragment.x, fragment.y) * fragment.lengthAdjustTransform;
-        auto fragmentRect = Rect(fragment.x, fragment.y - font.ascent(), fragment.width, fragment.element->font_size());
+        auto fragmentRect = Rect(fragment.x, fragment.y - font.ascent(), fragment.width, fragment.height);
         if(includeStroke && stroke.isRenderable())
             fragmentRect.inflate(fragment.element->stroke_width() / 2.f);
         boundingBox.unite(fragmentTranform.mapRect(fragmentRect));

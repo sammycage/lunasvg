@@ -491,7 +491,7 @@ float Font::height() const
     float ascent = 0, descent = 0;
     if(m_size > 0.f && !m_face.isNull())
         plutovg_font_face_get_metrics(m_face.get(), m_size, &ascent, &descent, nullptr, nullptr);
-    return ascent + descent;
+    return ascent - descent;
 }
 
 float Font::xHeight() const
