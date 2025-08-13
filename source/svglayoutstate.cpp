@@ -498,10 +498,10 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
         case PropertyID::Text_Anchor:
             m_text_anchor = parseTextAnchor(input);
             break;
-        case PropertyID::WhiteSpace:
+        case PropertyID::White_Space:
             m_white_space = parseWhiteSpace(input);
             break;
-        case PropertyID::WritingMode:
+        case PropertyID::Writing_Mode:
             m_writing_mode = parseWritingMode(input);
             break;
         case PropertyID::Display:
@@ -513,7 +513,7 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
         case PropertyID::Overflow:
             m_overflow = parseOverflow(input);
             break;
-        case PropertyID::PointerEvents:
+        case PropertyID::Pointer_Events:
             m_pointer_events = parsePointerEvents(input);
             break;
         case PropertyID::Mask_Type:

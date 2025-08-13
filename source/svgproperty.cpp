@@ -55,7 +55,7 @@ PropertyID propertyid(const std::string_view& name)
         {"x1", PropertyID::X1},
         {"x2", PropertyID::X2},
         {"xlink:href", PropertyID::Href},
-        {"xml:space", PropertyID::WhiteSpace},
+        {"xml:space", PropertyID::White_Space},
         {"y", PropertyID::Y},
         {"y1", PropertyID::Y1},
         {"y2", PropertyID::Y2}
@@ -95,7 +95,7 @@ PropertyID csspropertyid(const std::string_view& name)
         {"mask-type", PropertyID::Mask_Type},
         {"opacity", PropertyID::Opacity},
         {"overflow", PropertyID::Overflow},
-        {"pointer-events", PropertyID::PointerEvents},
+        {"pointer-events", PropertyID::Pointer_Events},
         {"stop-color", PropertyID::Stop_Color},
         {"stop-opacity", PropertyID::Stop_Opacity},
         {"stroke", PropertyID::Stroke},
@@ -108,8 +108,8 @@ PropertyID csspropertyid(const std::string_view& name)
         {"stroke-width", PropertyID::Stroke_Width},
         {"text-anchor", PropertyID::Text_Anchor},
         {"visibility", PropertyID::Visibility},
-        {"white-space", PropertyID::WhiteSpace},
-        {"writing-mode", PropertyID::WritingMode}
+        {"white-space", PropertyID::White_Space},
+        {"writing-mode", PropertyID::Writing_Mode}
     };
 
     auto it = std::lower_bound(table, std::end(table), name, [](const auto& item, const auto& name) { return item.name < name; });
