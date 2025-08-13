@@ -253,7 +253,7 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
             fragment.height = font.height();
             if(isVerticalText) {
                 if(isUprightText)
-                    fragment.y += font.ascent();
+                    fragment.y += font.height();
                 m_y += isUprightText ? fragment.height : fragment.width;
             } else {
                 m_x += fragment.width;
