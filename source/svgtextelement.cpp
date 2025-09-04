@@ -270,8 +270,8 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
         auto lastAngle = 0.f;
         while(textOffset < textPosition.endOffset) {
             SVGCharacterPosition characterPosition;
-            if(m_characterPositions.count(m_characterOffset) > 0) {
-                characterPosition = m_characterPositions.at(m_characterOffset);
+            if(auto it = m_characterPositions.find(m_characterOffset); it != m_characterPositions.end()) {
+                characterPosition = it->second;
             }
 
             auto currentCharacter = wholeText.at(textOffset);
@@ -298,7 +298,7 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
                     if(isUprightText) {
                         fragment.y += font.height();
                     } else {
-                        fragment.angle += 90;
+                        fragment.angle += 90.f;
                     }
                 }
 

@@ -38,12 +38,12 @@ struct SVGTextFragment {
     Transform lengthAdjustTransform;
     size_t offset = 0;
     size_t length = 0;
+    bool startsNewTextChunk = false;
     float x = 0;
     float y = 0;
-    float angle = 0;
     float width = 0;
     float height = 0;
-    bool startsNewTextChunk = false;
+    float angle = 0;
 };
 
 using SVGTextFragmentList = std::vector<SVGTextFragment>;
