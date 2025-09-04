@@ -378,6 +378,8 @@ void SVGTextFragmentsBuilder::handleText(const SVGTextNode* node)
 
 void SVGTextFragmentsBuilder::handleElement(const SVGTextPositioningElement* element)
 {
+    if(element->isDisplayNone())
+        return;
     const auto itemIndex = m_textPositions.size();
     m_textPositions.emplace_back(element, m_text.length(), m_text.length());
     for(const auto& child : element->children()) {
@@ -532,6 +534,8 @@ void SVGTextElement::render(SVGRenderState& state) const
 
     std::u32string_view wholeText(m_text);
     for(const auto& fragment : m_fragments) {
+        if(fragment.element->isVisibilityHidden())
+            continue;
         auto transform = newState.currentTransform() * Transform::rotated(fragment.angle, fragment.x, fragment.y) * fragment.lengthAdjustTransform;
         auto text = wholeText.substr(fragment.offset, fragment.length);
         auto origin = Point(fragment.x, fragment.y);
