@@ -231,6 +231,18 @@ Rect SVGRectElement::updateShape(Path& path)
     return Rect(x, y, width, height);
 }
 
+SVGAnimationTarget* SVGRectElement::getAnimationName(const std::string_view& name)
+{
+    if (name == "x") return m_x.animationTarget();
+    if (name == "y") return m_y.animationTarget();
+    if (name == "width") return m_width.animationTarget();
+    if (name == "height") return m_height.animationTarget();
+    if (name == "rx") return m_rx.animationTarget();
+    if (name == "ry") return m_ry.animationTarget();
+
+    return nullptr;
+}
+
 SVGEllipseElement::SVGEllipseElement(Document* document)
     : SVGGeometryElement(document, ElementID::Ellipse)
     , m_cx(PropertyID::Cx, LengthDirection::Horizontal, LengthNegativeMode::Allow)
@@ -259,6 +271,16 @@ Rect SVGEllipseElement::updateShape(Path& path)
     return Rect(cx - rx, cy - ry, rx + rx, ry + ry);
 }
 
+SVGAnimationTarget* SVGEllipseElement::getAnimationName(const std::string_view& name)
+{
+    if (name == "cx") return m_cx.animationTarget();
+    if (name == "cy") return m_cy.animationTarget();
+    if (name == "rx") return m_rx.animationTarget();
+    if (name == "ry") return m_ry.animationTarget();
+
+    return nullptr;
+}
+
 SVGCircleElement::SVGCircleElement(Document* document)
     : SVGGeometryElement(document, ElementID::Circle)
     , m_cx(PropertyID::Cx, LengthDirection::Horizontal, LengthNegativeMode::Allow)
@@ -282,6 +304,15 @@ Rect SVGCircleElement::updateShape(Path& path)
     auto cy = lengthContext.valueForLength(m_cy);
     path.addEllipse(cx, cy, r, r);
     return Rect(cx - r, cy - r, r + r, r + r);
+}
+
+SVGAnimationTarget* SVGCircleElement::getAnimationName(const std::string_view& name)
+{
+    if (name == "cx") return m_cx.animationTarget();
+    if (name == "cy") return m_cy.animationTarget();
+    if (name == "r") return m_r.animationTarget();
+
+    return nullptr;
 }
 
 SVGPolyElement::SVGPolyElement(Document* document, ElementID id)

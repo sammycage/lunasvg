@@ -29,12 +29,12 @@ bool lunasvg_add_font_face_from_data(const char* family, bool bold, bool italic,
 namespace lunasvg {
 
 Bitmap::Bitmap(int width, int height)
-    : m_surface(plutovg_surface_create(width, height))
+    : m_surface(plutovg_surface_create(width, height, 0))
 {
 }
 
 Bitmap::Bitmap(uint8_t* data, int width, int height, int stride)
-    : m_surface(plutovg_surface_create_for_data(data, width, height, stride))
+    : m_surface(plutovg_surface_create_for_data(data, width, height, stride, 0))
 {
 }
 
@@ -158,6 +158,21 @@ Box Box::transformed(const Matrix& matrix) const
     return Transform(matrix).mapRect(*this);
 }
 
+std::string Box::toString() const
+{
+    std::string box("box(");
+    box += std::to_string(x);
+    box += ' ';
+    box += std::to_string(y);
+    box += ' ';
+    box += std::to_string(w);
+    box += ' ';
+    box += std::to_string(h);
+    box += ')';
+
+    return box;
+}
+
 Matrix::Matrix(float a, float b, float c, float d, float e, float f)
     : a(a), b(b), c(c), d(d), e(e), f(f)
 {
@@ -223,6 +238,25 @@ void Matrix::reset()
     *this = Matrix(1, 0, 0, 1, 0, 0);
 }
 
+std::string Matrix::toString() const
+{
+    std::string matrix("matrix(");
+    matrix += std::to_string(a);
+    matrix += ' ';
+    matrix += std::to_string(b);
+    matrix += ' ';
+    matrix += std::to_string(c);
+    matrix += ' ';
+    matrix += std::to_string(d);
+    matrix += ' ';
+    matrix += std::to_string(e);
+    matrix += ' ';
+    matrix += std::to_string(f);
+    matrix += ')';
+
+    return matrix;
+}
+
 Matrix Matrix::translated(float tx, float ty)
 {
     return Transform::translated(tx, ty);
@@ -248,6 +282,25 @@ Node::Node(SVGNode* node)
 {
 }
 
+std::shared_ptr<Document> Node::getDocument() const
+{
+    auto element = toSVGElement(m_node);
+
+    if(element && element->id() == ElementID::Svg) {
+        auto parent = element->parentElement();
+        if(parent) return parent->document()->documentForElement(element);
+    }
+
+    return nullptr;
+}
+
+static const Identity UnknownId = { 0, 0 };
+
+const Identity& Node::identity() const
+{
+    return m_node ? m_node->identity() : UnknownId;
+}
+
 bool Node::isTextNode() const
 {
     return m_node && m_node->isTextNode();
@@ -256,6 +309,16 @@ bool Node::isTextNode() const
 bool Node::isElement() const
 {
     return m_node && m_node->isElement();
+}
+
+bool Node::isForeignObject() const
+{
+    ElementID id = ElementID::Unknown;
+
+    if(m_node && m_node->isElement())
+        id = static_cast<SVGElement*>(m_node)->id();
+
+    return (id == ElementID::ForeignObject);
 }
 
 TextNode Node::toTextNode() const
@@ -398,6 +461,13 @@ Box Element::getBoundingBox() const
     return Box();
 }
 
+Node Element::parent() const
+{
+    if(m_node == nullptr)
+        return Node();
+    return m_node->parentElement();
+}
+
 NodeList Element::children() const
 {
     if(m_node == nullptr)
@@ -414,6 +484,18 @@ SVGElement* Element::element(bool layoutIfNeeded) const
     if(element && layoutIfNeeded)
         element->rootElement()->layoutIfNeeded();
     return element;
+}
+
+Identity IdentityProvider::next(Document* document)
+{
+    Identity identity;
+
+    if(document == nullptr)
+        identity = { ++m_identity.document, 0 };
+    else
+        identity = { document->identity().document, ++m_identity.context };
+
+    return identity;
 }
 
 std::unique_ptr<Document> Document::loadFromFile(const std::string& filename)
@@ -438,11 +520,21 @@ std::unique_ptr<Document> Document::loadFromData(const char* data)
     return loadFromData(data, std::strlen(data));
 }
 
-std::unique_ptr<Document> Document::loadFromData(const char* data, size_t length)
+std::unique_ptr<Document> Document::loadFromData(const char* data, size_t length, Document* parentDocument)
 {
     std::unique_ptr<Document> document(new Document);
+
+    auto identityProvider = (parentDocument == nullptr) ? nullptr : parentDocument->m_identityProvider;
+
+    if(identityProvider == nullptr) {
+        identityProvider = std::make_shared<IdentityProvider>();
+    }
+
+    document->setIdentity(identityProvider);
+
     if(!document->parse(data, length))
         return nullptr;
+
     return document;
 }
 
@@ -480,8 +572,10 @@ void Document::render(Bitmap& bitmap, const Matrix& matrix) const
     rootElement(true)->render(state);
 }
 
-Bitmap Document::renderToBitmap(int width, int height, uint32_t backgroundColor) const
+Bitmap Document::renderToBitmap(int width, int height, uint32_t backgroundColor, float elapsedTime) const
 {
+    updateAnimation(elapsedTime);
+
     auto intrinsicWidth = rootElement(true)->intrinsicWidth();
     auto intrinsicHeight = rootElement()->intrinsicHeight();
     if(intrinsicWidth == 0.f || intrinsicHeight == 0.f)
@@ -505,8 +599,61 @@ Bitmap Document::renderToBitmap(int width, int height, uint32_t backgroundColor)
     return bitmap;
 }
 
-Element Document::elementFromPoint(float x, float y) const
+bool Document::renderToBitmap(Bitmap& bitmap, int width, int height, uint32_t backgroundColor, float elapsedTime) const
 {
+    updateAnimation(elapsedTime);
+
+    auto intrinsicWidth = rootElement(true)->intrinsicWidth();
+    auto intrinsicHeight = rootElement()->intrinsicHeight();
+    if(intrinsicWidth == 0.f || intrinsicHeight == 0.f)
+        return false;
+    if(width <= 0 && height <= 0) {
+        width = static_cast<int>(std::ceil(intrinsicWidth));
+        height = static_cast<int>(std::ceil(intrinsicHeight));
+    } else if(width > 0 && height <= 0) {
+        height = static_cast<int>(std::ceil(width * intrinsicHeight / intrinsicWidth));
+    } else if(height > 0 && width <= 0) {
+        width = static_cast<int>(std::ceil(height * intrinsicWidth / intrinsicHeight));
+    }
+
+    auto xScale = width / intrinsicWidth;
+    auto yScale = height / intrinsicHeight;
+
+    Matrix matrix(xScale, 0, 0, yScale, 0, 0);
+    if(backgroundColor) bitmap.clear(backgroundColor);
+    render(bitmap, matrix);
+
+    return true;
+}
+
+Element Document::elementFromPoint(float x, float y, Bitmap* bitmap) const
+{
+    if(bitmap != nullptr && !false) {
+        auto surface = bitmap->surface();
+
+        if(surface != nullptr) {
+            uint16_t context = plutovg_surface_get_context(surface, x, y);
+
+            if(context != 0) {
+                Identity identity = { m_identity.document, context };
+                auto element = rootElement()->getElementById(identity);
+
+                if(element == nullptr) {
+                    identity.document = 0; // special handshake
+                    for(const auto foreignObject : m_foreignObjects) {
+                        element = foreignObject->getElementById(identity);
+                        if(element != nullptr) break;
+                    }
+                }
+
+                if(element != nullptr)
+                    return element;
+            }
+
+            return Element();
+        }
+    }
+
     return rootElement(true)->elementFromPoint(x, y);
 }
 
@@ -520,11 +667,43 @@ Element Document::documentElement() const
     return m_rootElement.get();
 }
 
+Identity Document::makeIdentity(SVGNode* node)
+{
+    Identity identity = m_identityProvider->next(this);
+    if(m_rootElement) m_rootElement->addElementById(identity, node);
+    return identity;
+}
+
+void Document::setIdentity(const std::shared_ptr<IdentityProvider>& identityProvider)
+{
+    m_identityProvider = identityProvider;
+    m_identity = identityProvider->next();
+}
+
+std::shared_ptr<Document> Document::documentForElement(Element element)
+{
+    for(const auto foreignObject : m_foreignObjects) {
+        if(foreignObject->contains(element.identity()))
+            return foreignObject->containedDocument();
+    }
+
+    return nullptr;
+}
+
 SVGRootElement* Document::rootElement(bool layoutIfNeeded) const
 {
     if(layoutIfNeeded)
         m_rootElement->layoutIfNeeded();
     return m_rootElement.get();
+}
+
+void Document::updateAnimation(float elapsedTime) const
+{
+    if(elapsedTime == 0.f) return;
+
+    for(auto animation : m_animations) {
+        animation->updateAnimation(elapsedTime);
+    }
 }
 
 Document::Document(Document&&) = default;

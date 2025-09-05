@@ -9,13 +9,14 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "plutovg-stb-image.h"
 
-static plutovg_surface_t* plutovg_surface_create_uninitialized(int width, int height)
+static plutovg_surface_t* plutovg_surface_create_uninitialized(int width, int height, unsigned short contextFlags)
 {
     static const int kMaxSize = 1 << 15;
     if(width <= 0 || height <= 0 || width >= kMaxSize || height >= kMaxSize)
         return NULL;
-    const size_t size = width * height * 4;
-    plutovg_surface_t* surface = malloc(size + sizeof(plutovg_surface_t));
+    const size_t data_size = width * height * 4;
+    const size_t context_size = width * height * sizeof(uint16_t);
+    plutovg_surface_t* surface = malloc(data_size + context_size + sizeof(plutovg_surface_t));
     if(surface == NULL)
         return NULL;
     plutovg_init_reference(surface);
@@ -23,31 +24,39 @@ static plutovg_surface_t* plutovg_surface_create_uninitialized(int width, int he
     surface->height = height;
     surface->stride = width * 4;
     surface->data = (uint8_t*)(surface + 1);
+    surface->contextData = (uint16_t*)(surface->data + data_size);
+    surface->contextFlags = contextFlags;
     return surface;
 }
 
-plutovg_surface_t* plutovg_surface_create(int width, int height)
+plutovg_surface_t* plutovg_surface_create(int width, int height, unsigned short contextFlags)
 {
-    plutovg_surface_t* surface = plutovg_surface_create_uninitialized(width, height);
+    plutovg_surface_t* surface = plutovg_surface_create_uninitialized(width, height, contextFlags);
     if(surface)
+    {
         memset(surface->data, 0, surface->height * surface->stride);
+        memset(surface->contextData, 0, surface->height * surface->width * sizeof(uint16_t));
+    }
     return surface;
 }
 
-plutovg_surface_t* plutovg_surface_create_for_data(unsigned char* data, int width, int height, int stride)
+plutovg_surface_t* plutovg_surface_create_for_data(unsigned char* data, int width, int height, int stride, unsigned short contextFlags)
 {
-    plutovg_surface_t* surface = malloc(sizeof(plutovg_surface_t));
+    const size_t context_size = width * height * sizeof(uint16_t);
+    plutovg_surface_t* surface = malloc(sizeof(plutovg_surface_t) + context_size);
     plutovg_init_reference(surface);
     surface->width = width;
     surface->height = height;
     surface->stride = stride;
     surface->data = data;
+    surface->contextData = (uint16_t*)(surface + 1);
+    surface->contextFlags = contextFlags;
     return surface;
 }
 
 static plutovg_surface_t* plutovg_surface_load_from_image(stbi_uc* image, int width, int height)
 {
-    plutovg_surface_t* surface = plutovg_surface_create_uninitialized(width, height);
+    plutovg_surface_t* surface = plutovg_surface_create_uninitialized(width, height, 0);
     if(surface)
         plutovg_convert_rgba_to_argb(surface->data, image, surface->width, surface->height, surface->stride);
     stbi_image_free(image);
@@ -171,6 +180,18 @@ unsigned char* plutovg_surface_get_data(const plutovg_surface_t* surface)
     return surface->data;
 }
 
+unsigned short plutovg_surface_get_context(const plutovg_surface_t* surface, float x, float y)
+{
+    return surface->contextData[(int) y * surface->width + (int) x];
+}
+
+unsigned short plutovg_surface_set_context(plutovg_surface_t* surface, unsigned short context)
+{
+    unsigned short result = surface->context;
+    surface->context = context;
+    return result;
+}
+
 int plutovg_surface_get_width(const plutovg_surface_t* surface)
 {
     return surface->width;
@@ -193,6 +214,7 @@ void plutovg_surface_clear(plutovg_surface_t* surface, const plutovg_color_t* co
         uint32_t* pixels = (uint32_t*)(surface->data + surface->stride * y);
         plutovg_memfill32(pixels, surface->width, pixel);
     }
+    memset(surface->contextData, 0, surface->height * surface->width * sizeof(uint16_t));
 }
 
 static void plutovg_surface_write_begin(const plutovg_surface_t* surface)

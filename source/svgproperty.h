@@ -7,14 +7,16 @@
 
 namespace lunasvg {
 
-enum class PropertyID : uint8_t {
+enum class PropertyID : uint64_t {
     Unknown = 0,
     Alignment_Baseline,
+    AttributeName,
     Baseline_Shift,
+    Begin,
     Class,
+    ClipPathUnits,
     Clip_Path,
     Clip_Rule,
-    ClipPathUnits,
     Color,
     Cx,
     Cy,
@@ -22,8 +24,10 @@ enum class PropertyID : uint8_t {
     Direction,
     Display,
     Dominant_Baseline,
+    Dur,
     Dx,
     Dy,
+    End,
     Fill,
     Fill_Opacity,
     Fill_Rule,
@@ -31,6 +35,7 @@ enum class PropertyID : uint8_t {
     Font_Size,
     Font_Style,
     Font_Weight,
+    From,
     Fx,
     Fy,
     GradientTransform,
@@ -39,34 +44,38 @@ enum class PropertyID : uint8_t {
     Href,
     Id,
     LengthAdjust,
-    Letter_Spacing,
-    Marker_End,
-    Marker_Mid,
-    Marker_Start,
     MarkerHeight,
     MarkerUnits,
     MarkerWidth,
+    Marker_End,
+    Marker_Mid,
+    Marker_Start,
     Mask,
-    Mask_Type,
     MaskContentUnits,
     MaskUnits,
+    Mask_Type,
     Offset,
     Opacity,
     Orient,
     Overflow,
+    Path,
     PatternContentUnits,
     PatternTransform,
     PatternUnits,
-    Pointer_Events,
+    PointerEvents,
     Points,
     PreserveAspectRatio,
     R,
     RefX,
     RefY,
+    RepeatCount,
+    RepeatDuration,
+    Restart,
     Rotate,
     Rx,
     Ry,
     SpreadMethod,
+    StartTime,
     Stop_Color,
     Stop_Opacity,
     Stroke,
@@ -78,26 +87,26 @@ enum class PropertyID : uint8_t {
     Stroke_Opacity,
     Stroke_Width,
     Style,
-    Text_Anchor,
-    Text_Orientation,
     TextLength,
+    Text_Anchor,
+    To,
     Transform,
+    Type,
     ViewBox,
     Visibility,
-    White_Space,
+    WhiteSpace,
     Width,
-    Word_Spacing,
-    Writing_Mode,
     X,
     X1,
     X2,
     Y,
     Y1,
-    Y2
+    Y2,
 };
 
 PropertyID propertyid(const std::string_view& name);
 PropertyID csspropertyid(const std::string_view& name);
+PropertyID hashpropertyid(const std::string_view& name);
 
 class SVGElement;
 
@@ -226,16 +235,6 @@ enum class WhiteSpace : uint8_t {
     Preserve
 };
 
-enum class WritingMode : uint8_t {
-    Horizontal,
-    Vertical
-};
-
-enum class TextOrientation : uint8_t {
-    Mixed,
-    Upright
-};
-
 enum class Direction : uint8_t {
     Ltr,
     Rtl
@@ -259,6 +258,20 @@ enum class MarkerUnits : uint8_t {
 enum class LengthAdjust : uint8_t {
     Spacing,
     SpacingAndGlyphs
+};
+
+enum class TransformType : uint8_t {
+    Translate,
+    Scale,
+    Rotate,
+    SkewX,
+    SkewY
+};
+
+enum class Restart : uint8_t {
+    Always,
+    WhenNotActive,
+    Never
 };
 
 template<typename Enum>
@@ -333,12 +346,22 @@ public:
 
     bool parse(std::string_view input, LengthNegativeMode mode);
 
+    float update(float value) { return (m_value = value); }
+
 private:
     float m_value = 0.f;
     LengthUnits m_units = LengthUnits::None;
 };
 
-class SVGLength final : public SVGProperty {
+class SVGAnimationTarget
+{
+public:
+
+    virtual float getAnimationValue() = 0;
+    virtual void setAnimationValue(float value) = 0;
+};
+
+class SVGLength final : public SVGProperty, SVGAnimationTarget {
 public:
     SVGLength(PropertyID id, LengthDirection direction, LengthNegativeMode negativeMode, float value = 0, LengthUnits units = LengthUnits::None)
         : SVGProperty(id)
@@ -353,6 +376,21 @@ public:
     LengthNegativeMode negativeMode() const { return m_negativeMode; }
     const Length& value() const { return m_value; }
     bool parse(std::string_view input) final;
+
+    SVGAnimationTarget* animationTarget()
+    {
+        return this;
+    }
+
+    float getAnimationValue() final
+    {
+        return m_value.value();
+    }
+
+    void setAnimationValue(float value) final
+    {
+        m_value.update(value);
+    }
 
 private:
     const LengthDirection m_direction;
@@ -526,6 +564,10 @@ public:
 
 private:
     Transform m_value;
+
+    friend class SVGAnimateElement;
+    friend class SVGAnimateMotionElement;
+    friend class SVGAnimateTransformElement;
 };
 
 class SVGPreserveAspectRatio final : public SVGProperty {
@@ -563,6 +605,34 @@ public:
 private:
     AlignType m_alignType = AlignType::xMidYMid;
     MeetOrSlice m_meetOrSlice = MeetOrSlice::Meet;
+};
+
+class SVGTime final : public SVGProperty {
+public:
+    SVGTime(PropertyID id, float value)
+        : SVGProperty(id)
+        , m_value(value)
+    {}
+
+    float value() const { return m_value; }
+    bool parse(std::string_view input) override;
+
+private:
+    float m_value;
+};
+
+class SVGCounter final : public SVGProperty {
+public:
+    SVGCounter(PropertyID id, float value)
+        : SVGProperty(id)
+        , m_value(value)
+    {}
+
+    float value() const { return m_value; }
+    bool parse(std::string_view input) override;
+
+private:
+    float m_value;
 };
 
 } // namespace lunasvg

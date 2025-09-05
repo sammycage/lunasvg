@@ -193,6 +193,66 @@ private:
     const SVGRadialGradientElement* m_fy{nullptr};
 };
 
+class SVGConicalGradientAttributes;
+
+class SVGConicalGradientElement final : public SVGGradientElement {
+public:
+    SVGConicalGradientElement(Document* document);
+
+    const SVGLength& cx() const { return m_cx; }
+    const SVGLength& cy() const { return m_cy; }
+    const SVGLength& r() const { return m_r; }
+    const SVGLength& fx() const { return m_fx; }
+    const SVGLength& fy() const { return m_fy; }
+
+    bool applyPaint(SVGRenderState& state, float opacity) const final;
+
+private:
+    SVGConicalGradientAttributes collectGradientAttributes() const;
+    SVGLength m_cx;
+    SVGLength m_cy;
+    SVGLength m_r;
+    SVGLength m_fx;
+    SVGLength m_fy;
+};
+
+class SVGConicalGradientAttributes : public SVGGradientAttributes {
+public:
+    SVGConicalGradientAttributes() = default;
+
+    const SVGLength& cx() const { return m_cx->cx(); }
+    const SVGLength& cy() const { return m_cy->cy(); }
+    const SVGLength& r() const { return m_r->r(); }
+    const SVGLength& fx() const { return m_fx ? m_fx->fx() : m_cx->cx(); }
+    const SVGLength& fy() const { return m_fy ? m_fy->fy() : m_cy->cy(); }
+
+    bool hasCx() const { return m_cx; }
+    bool hasCy() const { return m_cy; }
+    bool hasR() const { return m_r; }
+    bool hasFx() const { return m_fx; }
+    bool hasFy() const { return m_fy; }
+
+    void setCx(const SVGConicalGradientElement* value) { m_cx = value; }
+    void setCy(const SVGConicalGradientElement* value) { m_cy = value; }
+    void setR(const SVGConicalGradientElement* value) { m_r = value; }
+    void setFx(const SVGConicalGradientElement* value) { m_fx = value; }
+    void setFy(const SVGConicalGradientElement* value) { m_fy = value; }
+
+    void setDefaultValues(const SVGConicalGradientElement* element) {
+        SVGGradientAttributes::setDefaultValues(element);
+        if(!m_cx) { m_cx = element; }
+        if(!m_cy) { m_cy = element; }
+        if(!m_r) { m_r = element; }
+    }
+
+private:
+    const SVGConicalGradientElement* m_cx{nullptr};
+    const SVGConicalGradientElement* m_cy{nullptr};
+    const SVGConicalGradientElement* m_r{nullptr};
+    const SVGConicalGradientElement* m_fx{nullptr};
+    const SVGConicalGradientElement* m_fy{nullptr};
+};
+
 class SVGPatternAttributes;
 
 class SVGPatternElement final : public SVGPaintElement, public SVGURIReference, public SVGFitToViewBox {

@@ -1,7 +1,7 @@
 #ifndef PLUTOVG_PRIVATE_H
 #define PLUTOVG_PRIVATE_H
 
-#include "plutovg.h"
+#include "..\include\plutovg.h"
 
 #if defined(_WIN32)
 
@@ -41,7 +41,10 @@ struct plutovg_surface {
     int width;
     int height;
     int stride;
+    unsigned short context;
+    unsigned short contextFlags;
     unsigned char* data;
+    unsigned short* contextData;
 };
 
 struct plutovg_path {
@@ -75,7 +78,8 @@ typedef struct {
 
 typedef enum {
     PLUTOVG_GRADIENT_TYPE_LINEAR,
-    PLUTOVG_GRADIENT_TYPE_RADIAL
+    PLUTOVG_GRADIENT_TYPE_RADIAL,
+    PLUTOVG_GRADIENT_TYPE_CONICAL
 } plutovg_gradient_type_t;
 
 typedef struct {

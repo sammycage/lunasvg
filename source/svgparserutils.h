@@ -7,38 +7,38 @@
 
 namespace lunasvg {
 
-constexpr bool IS_NUM(int cc) { return cc >= '0' && cc <= '9'; }
-constexpr bool IS_ALPHA(int cc) { return (cc >= 'a' && cc <= 'z') || (cc >= 'A' && cc <= 'Z'); }
-constexpr bool IS_WS(int cc) { return cc == ' ' || cc == '\t' || cc == '\n' || cc == '\r'; }
+inline constexpr bool IS_NUM(int cc) { return cc >= '0' && cc <= '9'; }
+inline constexpr bool IS_ALPHA(int cc) { return (cc >= 'a' && cc <= 'z') || (cc >= 'A' && cc <= 'Z'); }
+inline constexpr bool IS_WS(int cc) { return cc == ' ' || cc == '\t' || cc == '\n' || cc == '\r'; }
 
-constexpr void stripLeadingSpaces(std::string_view& input)
+inline constexpr void stripLeadingSpaces(std::string_view& input)
 {
     while(!input.empty() && IS_WS(input.front())) {
         input.remove_prefix(1);
     }
 }
 
-constexpr void stripTrailingSpaces(std::string_view& input)
+inline constexpr void stripTrailingSpaces(std::string_view& input)
 {
     while(!input.empty() && IS_WS(input.back())) {
         input.remove_suffix(1);
     }
 }
 
-constexpr void stripLeadingAndTrailingSpaces(std::string_view& input)
+inline constexpr void stripLeadingAndTrailingSpaces(std::string_view& input)
 {
     stripLeadingSpaces(input);
     stripTrailingSpaces(input);
 }
 
-constexpr bool skipOptionalSpaces(std::string_view& input)
+inline constexpr bool skipOptionalSpaces(std::string_view& input)
 {
     while(!input.empty() && IS_WS(input.front()))
         input.remove_prefix(1);
     return !input.empty();
 }
 
-constexpr bool skipOptionalSpacesOrDelimiter(std::string_view& input, char delimiter)
+inline constexpr bool skipOptionalSpacesOrDelimiter(std::string_view& input, char delimiter)
 {
     if(!input.empty() && !IS_WS(input.front()) && delimiter != input.front())
         return false;
@@ -52,12 +52,12 @@ constexpr bool skipOptionalSpacesOrDelimiter(std::string_view& input, char delim
     return !input.empty();
 }
 
-constexpr bool skipOptionalSpacesOrComma(std::string_view& input)
+inline constexpr bool skipOptionalSpacesOrComma(std::string_view& input)
 {
     return skipOptionalSpacesOrDelimiter(input, ',');
 }
 
-constexpr bool skipDelimiterAndOptionalSpaces(std::string_view& input, char delimiter)
+inline constexpr bool skipDelimiterAndOptionalSpaces(std::string_view& input, char delimiter)
 {
     if(!input.empty() && input.front() == delimiter) {
         input.remove_prefix(1);
@@ -68,7 +68,7 @@ constexpr bool skipDelimiterAndOptionalSpaces(std::string_view& input, char deli
     return false;
 }
 
-constexpr bool skipDelimiter(std::string_view& input, char delimiter)
+inline constexpr bool skipDelimiter(std::string_view& input, char delimiter)
 {
     if(!input.empty() && input.front() == delimiter) {
         input.remove_prefix(1);
@@ -78,7 +78,7 @@ constexpr bool skipDelimiter(std::string_view& input, char delimiter)
     return false;
 }
 
-constexpr bool skipString(std::string_view& input, const std::string_view& value)
+inline constexpr bool skipString(std::string_view& input, const std::string_view& value)
 {
     if(input.size() >= value.size() && value == input.substr(0, value.size())) {
         input.remove_prefix(value.size());
@@ -88,7 +88,7 @@ constexpr bool skipString(std::string_view& input, const std::string_view& value
     return false;
 }
 
-constexpr bool isIntegralDigit(char ch, int base)
+inline constexpr bool isIntegralDigit(char ch, int base)
 {
     if(IS_NUM(ch))
         return ch - '0' < base;
@@ -97,7 +97,7 @@ constexpr bool isIntegralDigit(char ch, int base)
     return false;
 }
 
-constexpr int toIntegralDigit(char ch)
+inline constexpr int toIntegralDigit(char ch)
 {
     if(IS_NUM(ch))
         return ch - '0';
@@ -203,6 +203,55 @@ inline bool parseNumber(std::string_view& input, T& number)
     if(exponent)
         number *= static_cast<T>(std::pow(10.0, expsign * exponent));
     return number >= -maxValue && number <= maxValue;
+}
+
+template<typename T>
+inline bool parseTime(std::string_view& _input, T& number)
+{
+    std::string_view input = _input;
+    std::size_t length = _input.length();
+
+    int hour = 0;
+    if (!parseInteger(input, hour))
+        return false;
+
+    // todo - support short time format
+
+    if (input.empty() || input.front() != ':')
+        return false;
+
+    input.remove_prefix(1);
+
+    int minute = 0;
+    if (!parseInteger(input, minute))
+        return false;
+
+    if (input.empty() || input.front() != ':')
+        return false;
+
+    input.remove_prefix(1);
+
+    int second = 0;
+    if (!parseInteger(input, second))
+        return false;
+
+    if (input.empty() || input.front() != '.')
+        return false;
+
+    input.remove_prefix(1);
+
+    int millisecond = 0;
+    if (!parseInteger(input, millisecond))
+        return false;
+
+    _input.remove_prefix(length - input.length());
+
+    number = millisecond + 
+             second * 1000 + 
+             minute * 60 * 1000 +
+             hour * 24 * 60 * 1000;
+
+    return true;
 }
 
 } // namespace lunasvg

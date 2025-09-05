@@ -147,13 +147,6 @@ static LengthList parseDashArray(std::string_view input)
     return values;
 }
 
-static Length parseLengthOrNormal(std::string_view input)
-{
-    if(input.compare("normal") == 0)
-        return Length(0, LengthUnits::None);
-    return parseLength(input, LengthNegativeMode::Allow, Length(0, LengthUnits::None));
-}
-
 static float parseFontSize(std::string_view input, const SVGLayoutState* state)
 {
     auto length = parseLength(input, LengthNegativeMode::Forbid, Length(12, LengthUnits::None));
@@ -310,33 +303,6 @@ static Direction parseDirection(const std::string_view& input)
     return parseEnumValue(input, entries, Direction::Ltr);
 }
 
-static WritingMode parseWritingMode(const std::string_view& input)
-{
-    static const SVGEnumerationEntry<WritingMode> entries[] = {
-        {WritingMode::Horizontal, "horizontal-tb"},
-        {WritingMode::Vertical, "vertical-rl"},
-        {WritingMode::Vertical, "vertical-lr"},
-        {WritingMode::Horizontal, "lr-tb"},
-        {WritingMode::Horizontal, "lr"},
-        {WritingMode::Horizontal, "rl-tb"},
-        {WritingMode::Horizontal, "rl"},
-        {WritingMode::Vertical, "tb-rl"},
-        {WritingMode::Vertical, "tb"}
-    };
-
-    return parseEnumValue(input, entries, WritingMode::Horizontal);
-}
-
-static TextOrientation parseTextOrientation(const std::string_view& input)
-{
-    static const SVGEnumerationEntry<TextOrientation> entries[] = {
-        {TextOrientation::Mixed, "mixed"},
-        {TextOrientation::Upright, "upright"}
-    };
-
-    return parseEnumValue(input, entries, TextOrientation::Mixed);
-}
-
 static TextAnchor parseTextAnchor(const std::string_view& input)
 {
     static const SVGEnumerationEntry<TextAnchor> entries[] = {
@@ -415,8 +381,6 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
     , m_stroke_opacity(parent.stroke_opacity())
     , m_stroke_miterlimit(parent.stroke_miterlimit())
     , m_font_size(parent.font_size())
-    , m_letter_spacing(parent.letter_spacing())
-    , m_word_spacing(parent.word_spacing())
     , m_stroke_width(parent.stroke_width())
     , m_stroke_dashoffset(parent.stroke_dashoffset())
     , m_stroke_dasharray(parent.stroke_dasharray())
@@ -429,8 +393,6 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
     , m_dominant_baseline(parent.dominant_baseline())
     , m_text_anchor(parent.text_anchor())
     , m_white_space(parent.white_space())
-    , m_writing_mode(parent.writing_mode())
-    , m_text_orientation(parent.text_orientation())
     , m_direction(parent.direction())
     , m_visibility(parent.visibility())
     , m_overflow(element->isRootElement() ? Overflow::Visible : Overflow::Hidden)
@@ -476,12 +438,6 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
         case PropertyID::Font_Size:
             m_font_size = parseFontSize(input, this);
             break;
-        case PropertyID::Letter_Spacing:
-            m_letter_spacing = parseLengthOrNormal(input);
-            break;
-        case PropertyID::Word_Spacing:
-            m_word_spacing = parseLengthOrNormal(input);
-            break;
         case PropertyID::Baseline_Shift:
             m_baseline_shit = parseBaselineShift(input);
             break;
@@ -524,14 +480,8 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
         case PropertyID::Text_Anchor:
             m_text_anchor = parseTextAnchor(input);
             break;
-        case PropertyID::White_Space:
+        case PropertyID::WhiteSpace:
             m_white_space = parseWhiteSpace(input);
-            break;
-        case PropertyID::Writing_Mode:
-            m_writing_mode = parseWritingMode(input);
-            break;
-        case PropertyID::Text_Orientation:
-            m_text_orientation = parseTextOrientation(input);
             break;
         case PropertyID::Display:
             m_display = parseDisplay(input);
@@ -542,7 +492,7 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
         case PropertyID::Overflow:
             m_overflow = parseOverflow(input);
             break;
-        case PropertyID::Pointer_Events:
+        case PropertyID::PointerEvents:
             m_pointer_events = parsePointerEvents(input);
             break;
         case PropertyID::Mask_Type:

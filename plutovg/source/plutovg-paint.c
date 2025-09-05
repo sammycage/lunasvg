@@ -455,6 +455,18 @@ plutovg_paint_t* plutovg_paint_create_radial_gradient(float cx, float cy, float 
     return &gradient->base;
 }
 
+plutovg_paint_t* plutovg_paint_create_conical_gradient(float cx, float cy, float cr, float fx, float fy, float fr, plutovg_spread_method_t spread, const plutovg_gradient_stop_t* stops, int nstops, const plutovg_matrix_t* matrix)
+{
+    plutovg_gradient_paint_t* gradient = plutovg_gradient_create(PLUTOVG_GRADIENT_TYPE_CONICAL, spread, stops, nstops, matrix);
+    gradient->values[0] = cx;
+    gradient->values[1] = cy;
+    gradient->values[2] = cr;
+    gradient->values[3] = fx;
+    gradient->values[4] = fy;
+    gradient->values[5] = fr;
+    return &gradient->base;
+}
+
 plutovg_paint_t* plutovg_paint_create_texture(plutovg_surface_t* surface, plutovg_texture_type_t type, float opacity, const plutovg_matrix_t* matrix)
 {
     plutovg_texture_paint_t* texture = plutovg_paint_create(PLUTOVG_PAINT_TYPE_TEXTURE, sizeof(plutovg_texture_paint_t));

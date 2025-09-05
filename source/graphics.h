@@ -10,6 +10,9 @@
 #include <vector>
 #include <array>
 #include <string>
+#include <map>
+
+#include <string_view>
 
 namespace lunasvg {
 
@@ -68,6 +71,7 @@ private:
     uint32_t m_value = 0;
 };
 
+inline
 constexpr Color Color::colorWithAlpha(float opacity) const
 {
     auto rgb = m_value & 0x00FFFFFF;
@@ -95,33 +99,39 @@ public:
     float y{0};
 };
 
+inline
 constexpr Point operator+(const Point& a, const Point& b)
 {
     return Point(a.x + b.x, a.y + b.y);
 }
 
+inline
 constexpr Point operator-(const Point& a, const Point& b)
 {
     return Point(a.x - b.x, a.y - b.y);
 }
 
+inline
 constexpr Point operator-(const Point& a)
 {
     return Point(-a.x, -a.y);
 }
 
+inline
 constexpr Point& operator+=(Point& a, const Point& b)
 {
     a.move(b);
     return a;
 }
 
+inline
 constexpr Point& operator-=(Point& a, const Point& b)
 {
     a.move(-b);
     return a;
 }
 
+inline
 constexpr float operator*(const Point& a, const Point& b)
 {
     return a.dot(b);
@@ -148,27 +158,32 @@ public:
     float h{0};
 };
 
+inline
 constexpr Size operator+(const Size& a, const Size& b)
 {
     return Size(a.w + b.w, a.h + b.h);
 }
 
+inline
 constexpr Size operator-(const Size& a, const Size& b)
 {
     return Size(a.w - b.w, a.h - b.h);
 }
 
+inline
 constexpr Size operator-(const Size& a)
 {
     return Size(-a.w, -a.h);
 }
 
+inline
 constexpr Size& operator+=(Size& a, const Size& b)
 {
     a.expand(b);
     return a;
 }
 
+inline
 constexpr Size& operator-=(Size& a, const Size& b)
 {
     a.expand(-b);
@@ -228,6 +243,7 @@ public:
     float h{0};
 };
 
+inline
 constexpr Rect Rect::intersected(const Rect& rect) const
 {
     if(!rect.isValid())
@@ -243,6 +259,7 @@ constexpr Rect Rect::intersected(const Rect& rect) const
     return Rect(l, t, r - l, b - t);
 }
 
+inline
 constexpr Rect Rect::united(const Rect& rect) const
 {
     if(!rect.isValid())
@@ -256,12 +273,14 @@ constexpr Rect Rect::united(const Rect& rect) const
     return Rect(l, t, r - l, b - t);
 }
 
+inline
 constexpr Rect& Rect::intersect(const Rect& o)
 {
     *this = intersected(o);
     return *this;
 }
 
+inline
 constexpr Rect& Rect::unite(const Rect& o)
 {
     *this = united(o);
@@ -394,6 +413,8 @@ private:
     int m_index;
 };
 
+extern const std::string emptyString;
+
 class FontFace {
 public:
     FontFace() = default;
@@ -435,10 +456,9 @@ public:
     Font() = default;
     Font(const FontFace& face, float size);
 
-    float ascent() const { return m_ascent; }
-    float descent() const { return m_descent; }
-    float height() const { return m_ascent - m_descent; }
-    float lineGap() const { return m_lineGap; }
+    float ascent() const;
+    float descent() const;
+    float height() const;
     float xHeight() const;
 
     float measureText(const std::u32string_view& text) const;
@@ -451,9 +471,6 @@ public:
 private:
     FontFace m_face;
     float m_size = 0.f;
-    float m_ascent = 0.f;
-    float m_descent = 0.f;
-    float m_lineGap = 0.f;
 };
 
 enum class TextureType {
@@ -516,6 +533,7 @@ public:
     void setColor(float r, float g, float b, float a);
     void setLinearGradient(float x1, float y1, float x2, float y2, SpreadMethod spread, const GradientStops& stops, const Transform& transform);
     void setRadialGradient(float cx, float cy, float r, float fx, float fy, SpreadMethod spread, const GradientStops& stops, const Transform& transform);
+    void setConicalGradient(float cx, float cy, float r, float fx, float fy, SpreadMethod spread, const GradientStops& stops, const Transform& transform);
     void setTexture(const Canvas& source, TextureType type, float opacity, const Transform& transform);
 
     void fillPath(const Path& path, FillRule fillRule, const Transform& transform);

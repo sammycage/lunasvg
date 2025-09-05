@@ -57,7 +57,8 @@ void SVGGradientElement::collectGradientAttributes(SVGGradientAttributes& attrib
         attributes.setGradientUnits(this);
     if(!attributes.hasGradientContentElement()) {
         for(const auto& child : children()) {
-            if(auto element = toSVGElement(child); element && element->id() == ElementID::Stop) {
+            auto element = toSVGElement(child);
+            if(element && element->id() == ElementID::Stop) {
                 attributes.setGradientContentElement(this);
                 break;
             }
@@ -99,7 +100,7 @@ SVGLinearGradientAttributes SVGLinearGradientElement::collectGradientAttributes(
         }
 
         auto targetElement = current->getTargetElement(document());
-        if(!targetElement || !(targetElement->id() == ElementID::LinearGradient || targetElement->id() == ElementID::RadialGradient))
+        if(!targetElement || !(targetElement->id() == ElementID::LinearGradient || targetElement->id() == ElementID::RadialGradient || targetElement->id() == ElementID::ConicalGradient))
             break;
         processedGradients.insert(current);
         current = static_cast<const SVGGradientElement*>(targetElement);
@@ -229,7 +230,90 @@ SVGRadialGradientAttributes SVGRadialGradientElement::collectGradientAttributes(
         }
 
         auto targetElement = current->getTargetElement(document());
-        if(!targetElement || !(targetElement->id() == ElementID::LinearGradient || targetElement->id() == ElementID::RadialGradient))
+        if(!targetElement || !(targetElement->id() == ElementID::LinearGradient || targetElement->id() == ElementID::RadialGradient || targetElement->id() == ElementID::ConicalGradient))
+            break;
+        processedGradients.insert(current);
+        current = static_cast<const SVGGradientElement*>(targetElement);
+        if(processedGradients.count(current) > 0) {
+            break;
+        }
+    }
+
+    attributes.setDefaultValues(this);
+    return attributes;
+}
+
+SVGConicalGradientElement::SVGConicalGradientElement(Document* document)
+    : SVGGradientElement(document, ElementID::ConicalGradient)
+    , m_cx(PropertyID::Cx, LengthDirection::Horizontal, LengthNegativeMode::Allow, 50.f, LengthUnits::Percent)
+    , m_cy(PropertyID::Cy, LengthDirection::Vertical, LengthNegativeMode::Allow, 50.f, LengthUnits::Percent)
+    , m_r(PropertyID::R, LengthDirection::Diagonal, LengthNegativeMode::Forbid, 50.f, LengthUnits::Percent)
+    , m_fx(PropertyID::Fx, LengthDirection::Horizontal, LengthNegativeMode::Allow, 0.f, LengthUnits::None)
+    , m_fy(PropertyID::Fy, LengthDirection::Vertical, LengthNegativeMode::Allow, 0.f, LengthUnits::None)
+{
+    addProperty(m_cx);
+    addProperty(m_cy);
+    addProperty(m_r);
+    addProperty(m_fx);
+    addProperty(m_fy);
+}
+
+bool SVGConicalGradientElement::applyPaint(SVGRenderState& state, float opacity) const
+{
+    auto attributes = collectGradientAttributes();
+    auto gradientContentElement = attributes.gradientContentElement();
+    auto gradientStops = buildGradientStops(gradientContentElement, opacity);
+    if(gradientStops.empty())
+        return false;
+    LengthContext lengthContext(this, attributes.gradientUnits());
+    auto r = lengthContext.valueForLength(attributes.r());
+    if(r == 0.f || gradientStops.size() == 1) {
+        const auto& lastStop = gradientStops.back();
+        state->setColor(lastStop.color.r, lastStop.color.g, lastStop.color.b, lastStop.color.a);
+        return true;
+    }
+
+    auto fx = lengthContext.valueForLength(attributes.fx());
+    auto fy = lengthContext.valueForLength(attributes.fy());
+    auto cx = lengthContext.valueForLength(attributes.cx());
+    auto cy = lengthContext.valueForLength(attributes.cy());
+
+    auto spreadMethod = attributes.spreadMethod();
+    auto gradientUnits = attributes.gradientUnits();
+    auto gradientTransform = attributes.gradientTransform();
+    if(gradientUnits == Units::ObjectBoundingBox) {
+        auto bbox = state.fillBoundingBox();
+        gradientTransform.postMultiply(Transform(bbox.w, 0, 0, bbox.h, bbox.x, bbox.y));
+    }
+
+    state->setConicalGradient(cx, cy, r, fx, fy, spreadMethod, gradientStops, gradientTransform);
+    return true;
+}
+
+SVGConicalGradientAttributes SVGConicalGradientElement::collectGradientAttributes() const
+{
+    SVGConicalGradientAttributes attributes;
+    std::set<const SVGGradientElement*> processedGradients;
+    const SVGGradientElement* current = this;
+    while(true) {
+        current->collectGradientAttributes(attributes);
+        if(current->id() == ElementID::ConicalGradient) {
+            auto element = static_cast<const SVGConicalGradientElement*>(current);
+            if(!attributes.hasCx() && element->hasAttribute(PropertyID::Cx))
+                attributes.setCx(element);
+            if(!attributes.hasCy() && element->hasAttribute(PropertyID::Cy))
+                attributes.setCy(element);
+            if(!attributes.hasR() && element->hasAttribute(PropertyID::R))
+                attributes.setR(element);
+            if(!attributes.hasFx() && element->hasAttribute(PropertyID::Fx))
+                attributes.setFx(element);
+            if(!attributes.hasFy() && element->hasAttribute(PropertyID::Fy)) {
+                attributes.setFy(element);
+            }
+        }
+
+        auto targetElement = current->getTargetElement(document());
+        if(!targetElement || !(targetElement->id() == ElementID::LinearGradient || targetElement->id() == ElementID::RadialGradient || targetElement->id() == ElementID::ConicalGradient))
             break;
         processedGradients.insert(current);
         current = static_cast<const SVGGradientElement*>(targetElement);
@@ -305,7 +389,6 @@ bool SVGPatternElement::applyPaint(SVGRenderState& state, float opacity) const
 
     SVGRenderState newState(this, &state, patternImageTransform, SVGRenderMode::Painting, patternImage);
     patternContentElement->renderChildren(newState);
-
     auto patternTransform = attributes.patternTransform();
     patternTransform.translate(patternRect.x, patternRect.y);
     patternTransform.scale(1.f / xScale, 1.f / yScale);

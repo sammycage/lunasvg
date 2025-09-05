@@ -55,6 +55,7 @@ struct SimpleSelector {
         InDirectAdjacent
     };
 
+    SimpleSelector() {}
     explicit SimpleSelector(Combinator combinator) : combinator(combinator) {}
 
     Combinator combinator{Combinator::Descendant};
@@ -101,6 +102,95 @@ private:
 inline bool operator<(const RuleData& a, const RuleData& b) { return a.isLessThan(b); }
 
 using RuleDataList = std::vector<RuleData>;
+
+class StyleSheet {
+public:
+    StyleSheet() = default;
+
+    bool parseSheet(std::string_view input);
+    const RuleDataList& rules() const { return m_rules; }
+    bool isEmpty() const { return m_rules.empty(); }
+
+    void sortRules();
+
+private:
+    static bool parseRule(std::string_view& input, Rule& rule);
+    static bool parseSelectors(std::string_view& input, SelectorList& selectors);
+    static bool parseDeclarations(std::string_view& input, DeclarationList& declarations);
+    static bool parseSelector(std::string_view& input, Selector& selector);
+    static bool parseSimpleSelector(std::string_view& input, SimpleSelector& simpleSelector);
+
+    RuleDataList m_rules;
+    size_t m_position{0};
+};
+
+bool StyleSheet::parseSheet(std::string_view input)
+{
+    Rule rule;
+    while(!input.empty()) {
+        skipOptionalSpaces(input);
+        if(skipDelimiter(input, '@')) {
+            int depth = 0;
+            while(!input.empty()) {
+                auto ch = input.front();
+                input.remove_prefix(1);
+                if(ch == ';' && depth == 0)
+                    break;
+                if(ch == '{') ++depth;
+                else if(ch == '}' && depth > 0) {
+                    if(depth == 1)
+                        break;
+                    --depth;
+                }
+            }
+
+            continue;
+        }
+
+        if(!parseRule(input, rule))
+            return false;
+        for(const auto& selector : rule.selectors) {
+            size_t specificity = 0;
+            for(const auto& simpleSelector : selector) {
+                specificity += (simpleSelector.id == ElementID::Star) ? 0x0 : 0x1;
+                for(const auto& attributeSelector : simpleSelector.attributeSelectors) {
+                    specificity += (attributeSelector.id == PropertyID::Id) ? 0x10000 : 0x100;
+                }
+            }
+
+            m_rules.emplace_back(selector, rule.declarations, specificity, m_position);
+        }
+
+        m_position += 1;
+    }
+
+    return true;
+}
+
+void StyleSheet::sortRules()
+{
+    std::sort(m_rules.begin(), m_rules.end());
+}
+
+bool StyleSheet::parseRule(std::string_view& input, Rule& rule)
+{
+    rule.selectors.clear();
+    rule.declarations.clear();
+    if(!parseSelectors(input, rule.selectors))
+        return false;
+    return parseDeclarations(input, rule.declarations);
+}
+
+bool StyleSheet::parseSelectors(std::string_view& input, SelectorList& selectors)
+{
+    do {
+        Selector selector;
+        if(!parseSelector(input, selector))
+            return false;
+        selectors.push_back(std::move(selector));
+    } while(skipDelimiter(input, ',') && skipOptionalSpaces(input));
+    return true;
+}
 
 constexpr bool equals(const std::string_view& value, const std::string_view& subvalue)
 {
@@ -311,6 +401,180 @@ inline bool readCSSIdentifier(std::string_view& input, std::string& output)
         output.push_back(input.front());
         input.remove_prefix(1);
     } while(!input.empty() && IS_CSS_NAMECHAR(input.front()));
+    return true;
+}
+
+bool StyleSheet::parseDeclarations(std::string_view& input, DeclarationList& declarations)
+{
+    if(!skipDelimiter(input, '{'))
+        return false;
+    skipOptionalSpaces(input);
+    do {
+        std::string name;
+        if(!readCSSIdentifier(input, name))
+            return false;
+        skipOptionalSpaces(input);
+        if(!skipDelimiter(input, ':'))
+            return false;
+        skipOptionalSpaces(input);
+        std::string_view value(input);
+        while(!input.empty() && !(input.front() == '!' || input.front() == ';' || input.front() == '}'))
+            input.remove_prefix(1);
+        value.remove_suffix(input.length());
+        stripTrailingSpaces(value);
+
+        Declaration declaration;
+        declaration.specificity = 0x10;
+        declaration.id = csspropertyid(name);
+        declaration.value.assign(value);
+        if(skipDelimiter(input, '!')) {
+            skipOptionalSpaces(input);
+            if(!skipString(input, "important"))
+                return false;
+            declaration.specificity = 0x1000;
+        }
+
+        if(declaration.id != PropertyID::Unknown)
+            declarations.push_back(std::move(declaration));
+        skipOptionalSpacesOrDelimiter(input, ';');
+    } while(!input.empty() && input.front() != '}');
+    return skipDelimiter(input, '}');
+}
+
+bool StyleSheet::parseSelector(std::string_view& input, Selector& selector)
+{
+    do {
+        SimpleSelector simpleSelector;
+        if(!parseSimpleSelector(input, simpleSelector))
+            return false;
+        selector.push_back(std::move(simpleSelector));
+    } while(skipOptionalSpaces(input) && input.front() != ',' && input.front() != '{');
+    return true;
+}
+
+bool StyleSheet::parseSimpleSelector(std::string_view& input, SimpleSelector& simpleSelector)
+{
+    std::string name;
+    if(skipDelimiter(input, '*'))
+        simpleSelector.id = ElementID::Star;
+    else if(readCSSIdentifier(input, name))
+        simpleSelector.id = elementid(name);
+    while(!input.empty()) {
+        if(input.front() == ':') {
+            input.remove_prefix(1);
+            if(!readCSSIdentifier(input, name))
+                return false;
+            PseudoClassSelector selector;
+            if(name.compare("empty") == 0)
+                selector.type = PseudoClassSelector::Type::Empty;
+            else if(name.compare("root") == 0)
+                selector.type = PseudoClassSelector::Type::Root;
+            else if(name.compare("not") == 0)
+                selector.type = PseudoClassSelector::Type::Not;
+            else if(name.compare("first-child") == 0)
+                selector.type = PseudoClassSelector::Type::FirstChild;
+            else if(name.compare("last-child") == 0)
+                selector.type = PseudoClassSelector::Type::LastChild;
+            else if(name.compare("only-child") == 0)
+                selector.type = PseudoClassSelector::Type::OnlyChild;
+            else if(name.compare("first-of-type") == 0)
+                selector.type = PseudoClassSelector::Type::FirstOfType;
+            else if(name.compare("last-of-type") == 0)
+                selector.type = PseudoClassSelector::Type::LastOfType;
+            else if(name.compare("only-of-type") == 0)
+                selector.type = PseudoClassSelector::Type::OnlyOfType;
+            if(selector.type == PseudoClassSelector::Type::Is || selector.type == PseudoClassSelector::Type::Not) {
+                skipOptionalSpaces(input);
+                if(!skipDelimiter(input, '('))
+                    return false;
+                skipOptionalSpaces(input);
+                if(!parseSelectors(input, selector.subSelectors))
+                    return false;
+                skipOptionalSpaces(input);
+                if(!skipDelimiter(input, ')')) {
+                    return false;
+                }
+            }
+
+            simpleSelector.pseudoClassSelectors.push_back(std::move(selector));
+            continue;
+        }
+
+        if(input.front() == '#') {
+            input.remove_prefix(1);
+            AttributeSelector a;
+            a.id = PropertyID::Id;
+            a.matchType = AttributeSelector::MatchType::Equals;
+            if(!readCSSIdentifier(input, a.value))
+                return false;
+            simpleSelector.attributeSelectors.push_back(std::move(a));
+            continue;
+        }
+
+        if(input.front() == '.') {
+            input.remove_prefix(1);
+            AttributeSelector a;
+            a.id = PropertyID::Class;
+            a.matchType = AttributeSelector::MatchType::Includes;
+            if(!readCSSIdentifier(input, a.value))
+                return false;
+            simpleSelector.attributeSelectors.push_back(std::move(a));
+            continue;
+        }
+
+        if(input.front() == '[') {
+            input.remove_prefix(1);
+            skipOptionalSpaces(input);
+            if(!readCSSIdentifier(input, name))
+                return false;
+            AttributeSelector a;
+            a.id = propertyid(name);
+            a.matchType = AttributeSelector::MatchType::None;
+            if(skipDelimiter(input, '='))
+                a.matchType = AttributeSelector::MatchType::Equals;
+            else if(skipString(input, "*="))
+                a.matchType = AttributeSelector::MatchType::Contains;
+            else if(skipString(input, "~="))
+                a.matchType = AttributeSelector::MatchType::Includes;
+            else if(skipString(input, "^="))
+                a.matchType = AttributeSelector::MatchType::StartsWith;
+            else if(skipString(input, "$="))
+                a.matchType = AttributeSelector::MatchType::EndsWith;
+            else if(skipString(input, "|="))
+                a.matchType = AttributeSelector::MatchType::DashEquals;
+            if(a.matchType != AttributeSelector::MatchType::None) {
+                skipOptionalSpaces(input);
+                if(!readCSSIdentifier(input, a.value)) {
+                    if(input.empty() || !(input.front() == '\"' || input.front() == '\''))
+                        return false;
+                    auto quote = input.front();
+                    input.remove_prefix(1);
+                    auto n = input.find(quote);
+                    if(n == std::string_view::npos)
+                        return false;
+                    a.value.assign(input.substr(0, n));
+                    input.remove_prefix(n + 1);
+                }
+            }
+
+            skipOptionalSpaces(input);
+            if(!skipDelimiter(input, ']'))
+                return false;
+            simpleSelector.attributeSelectors.push_back(std::move(a));
+            continue;
+        }
+
+        break;
+    }
+
+    skipOptionalSpaces(input);
+    simpleSelector.combinator = SimpleSelector::Combinator::Descendant;
+    if(skipDelimiter(input, '>'))
+        simpleSelector.combinator = SimpleSelector::Combinator::Child;
+    else if(skipDelimiter(input, '+'))
+        simpleSelector.combinator = SimpleSelector::Combinator::DirectAdjacent;
+    else if(skipDelimiter(input, '~'))
+        simpleSelector.combinator = SimpleSelector::Combinator::InDirectAdjacent;
     return true;
 }
 
@@ -757,6 +1021,36 @@ bool Document::parse(const char* data, size_t length)
             auto n = input.find("?>");
             if(n == std::string_view::npos)
                 return false;
+            if (buffer == "import") {
+                Namespace theNamespace;
+                skipOptionalSpaces(input);
+                while(readIdentifier(input, buffer)) {
+                    skipOptionalSpaces(input);
+                    if(!skipDelimiter(input, '='))
+                        return false;
+                    skipOptionalSpaces(input);
+                    if(input.empty() || !(input.front() == '\"' || input.front() == '\''))
+                        return false;
+                    auto quote = input.front();
+                    input.remove_prefix(1);
+                    auto n = input.find(quote);
+                    if(n == std::string_view::npos)
+                        return false;
+                    auto id = propertyid(buffer);
+                    if(id != PropertyID::Unknown) {
+                        if (id == hashpropertyid("namespace"))
+                            theNamespace.namespaceId = input.substr(0, n);
+                        else if (id == hashpropertyid("implementation"))
+                            theNamespace.implementation = input.substr(0, n);
+                    }
+                    input.remove_prefix(n + 1);
+                    skipOptionalSpaces(input);
+                }
+                n = input.find("?>");
+                if(n == std::string_view::npos)
+                    return false;
+                m_namespaceList.push_back(theNamespace);
+            }
             input.remove_prefix(n + 2);
             continue;
         }
@@ -841,9 +1135,12 @@ bool Document::parse(const char* data, size_t length)
                     m_rootElement = std::make_unique<SVGRootElement>(this);
                     element = m_rootElement.get();
                 } else {
-                    auto child = SVGElement::create(this, id);
-                    element = child.get();
-                    currentElement->addChild(std::move(child));
+                    auto child = SVGElement::create(this, id, currentElement);
+
+                    if (child != nullptr) {
+                        element = child.get();
+                        currentElement->addChild(std::move(child));
+                    }
                 }
             }
         }
@@ -899,25 +1196,52 @@ bool Document::parse(const char* data, size_t length)
 
     if(m_rootElement == nullptr || ignoring > 0 || !input.empty())
         return false;
+
     applyStyleSheet(styleSheet);
     m_rootElement->build();
+
     return true;
 }
 
 void Document::applyStyleSheet(const std::string& content)
 {
-    auto rules = parseStyleSheet(content);
-    if(!rules.empty()) {
-        std::sort(rules.begin(), rules.end());
-        m_rootElement->transverse([&rules](SVGElement* element) {
-            for(const auto& rule : rules) {
+    StyleSheet styleSheet;
+    styleSheet.parseSheet(content);
+    if(!styleSheet.isEmpty()) {
+        styleSheet.sortRules();
+        m_rootElement->transverse([&styleSheet](SVGNode* node) {
+            if(node->isTextNode())
+                return true;
+            auto element = static_cast<SVGElement*>(node);
+            for(const auto& rule : styleSheet.rules()) {
                 if(rule.match(element)) {
                     for(const auto& declaration : rule.declarations()) {
                         element->setAttribute(declaration.specificity, declaration.id, declaration.value);
                     }
                 }
             }
+
+            return true;
         });
+
+        m_styleSheet.reset(new StyleSheetReference(styleSheet));
+    }
+}
+
+void Document::applyStyleSheet(Element& element)
+{
+    if (element.isElement() && m_styleSheet != nullptr) {
+        auto elementPtr = element.element();
+        if (elementPtr != nullptr) {
+            auto styleSheet = m_styleSheet->styleSheet();
+            for(const auto& rule : styleSheet->rules()) {
+                if(rule.match(elementPtr)) {
+                    for(const auto& declaration : rule.declarations()) {
+                        elementPtr->setAttribute(declaration.specificity, declaration.id, declaration.value);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -937,6 +1261,21 @@ ElementList Document::querySelectorAll(const std::string& content) const
     });
 
     return elements;
+}
+
+StyleSheetReference::StyleSheetReference(const class StyleSheet& styleSheet)
+{
+    m_styleSheet = new StyleSheet(styleSheet);
+}
+
+StyleSheetReference::~StyleSheetReference()
+{
+    delete m_styleSheet;
+}
+
+StyleSheet* StyleSheetReference::styleSheet()
+{
+    return m_styleSheet;
 }
 
 } // namespace lunasvg

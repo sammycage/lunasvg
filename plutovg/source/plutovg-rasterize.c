@@ -189,7 +189,8 @@ static void ft_outline_destroy(PVG_FT_Outline* outline)
     free(outline);
 }
 
-#define FT_COORD(x) (PVG_FT_Pos)(roundf(x * 64))
+#define FT_SCALE 64
+#define FT_COORD(x) (PVG_FT_Pos)(roundf(x * FT_SCALE))
 static void ft_outline_move_to(PVG_FT_Outline* ft, float x, float y)
 {
     ft->points[ft->n_points].x = FT_COORD(x);
@@ -390,5 +391,62 @@ void plutovg_rasterize(plutovg_span_buffer_t* span_buffer, const plutovg_path_t*
 
     plutovg_span_buffer_reset(span_buffer);
     PVG_FT_Raster_Render(&params);
+    ft_outline_destroy(outline);
+}
+
+/* DCI - ft_outline_convert returns the path for tracing a closed loop which isn't needed
+ *       because the stroke width is set to zero resulting in equal paths.  for animation
+ *       to work we only use half the calculated path which is then used to compute the
+ *       total distance around the path.  see SVGAnimateMotionElement for usage.
+ */
+
+const plutovg_outline_t* plutovg_outline_create(const plutovg_path_t* path, const plutovg_matrix_t* matrix)
+{
+    plutovg_matrix_t defaultMatrix;
+    if(matrix == NULL) {
+        matrix = &defaultMatrix;
+        plutovg_matrix_init_identity(&defaultMatrix);
+    }
+
+    plutovg_stroke_data_t stroke_data;
+    stroke_data.dash.offset = 0;
+    stroke_data.dash.array.capacity = 0;
+    stroke_data.dash.array.size = 0;
+    stroke_data.dash.array.data = NULL;
+    stroke_data.style.width = 0; // equal paths
+    stroke_data.style.cap = PLUTOVG_LINE_CAP_BUTT;
+    stroke_data.style.join = PLUTOVG_LINE_JOIN_MITER;
+    stroke_data.style.miter_limit = 0;
+
+    return (const plutovg_outline_t*) ft_outline_convert_stroke(path, matrix, &stroke_data);
+}
+
+int plutovg_outline_point_count(const plutovg_outline_t* outlineHandle)
+{
+    const PVG_FT_Outline* outline = (PVG_FT_Outline*) outlineHandle;
+
+    if(outline && outline->n_points > 0)
+        return outline->n_points / 2 + 1;
+
+    return 0;
+}
+
+int plutovg_outline_point_at(const plutovg_outline_t* outlineHandle, int index, plutovg_point_t* point)
+{
+    const PVG_FT_Outline* outline = (PVG_FT_Outline*) outlineHandle;
+
+    if(!outline || !point) return -1;
+    if(index >= outline->n_points) return -1;
+
+    point->x = outline->points[index].x / (float) FT_SCALE;
+    point->y = outline->points[index].y / (float) FT_SCALE;
+
+    return index;
+}
+
+void plutovg_outline_destroy(const plutovg_outline_t* outlineHandle)
+{
+    PVG_FT_Outline* outline = (PVG_FT_Outline*) outlineHandle;
+
     ft_outline_destroy(outline);
 }

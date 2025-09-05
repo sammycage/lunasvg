@@ -10,6 +10,53 @@
 
 namespace lunasvg {
 
+// user-defined implementation (checkbox shown as example)
+bool createNamespaceElement(ElementID id, std::string& markup);
+#if 0
+{
+    markup = std::string("<svg viewbox=\"0 0 32 32\"><path id=\"border\" d=\"M26,4H6A2,2,0,0,0,4,6V26a2,2,0,0,0,2,2H26a2,2,0,0,0,2-2V6A2,2,0,0,0,26,4ZM6,26V6H26V26Z\"/><polygon id=\"check\" points=\"14 21.5 9 16.54 10.59 15 14 18.35 21.41 11 23 12.58 14 21.5\"/><rect style=\"fill: none;\" width=\"32\" height=\"32\"/></svg>");
+
+    return true;
+}
+#endif
+
+ElementID hashelementid(const std::string_view& name)
+{
+    union NamespaceElementID
+    {
+        ElementID id;
+        struct
+        {
+            uint32_t elementId;
+            uint32_t namespaceId;
+        } hash;
+
+        operator ElementID() { return id; }
+    };
+
+    if(!name.empty() && name.find(':') != std::string_view::npos) {
+        NamespaceElementID id;
+
+        auto separator = name.find(':');
+
+        if(separator <= 0) {
+            id.hash.elementId = (uint32_t) std::hash<std::string_view>{}(name);
+            id.hash.namespaceId = 0;
+        }
+        else {
+            id.hash.elementId = (uint32_t) std::hash<std::string_view>{}(name.substr(separator + 1));
+            id.hash.namespaceId = (uint32_t) std::hash<std::string_view>{}(name.substr(0, separator));
+        }
+
+        if(id.hash.elementId < 256)
+            id.hash.elementId |= 0xFFFFFF00; // avoid collisions with original enum (uint8_t) values
+
+        return id;
+    }
+
+    return ElementID::Unknown;
+}
+
 ElementID elementid(const std::string_view& name)
 {
     static const struct {
@@ -17,10 +64,15 @@ ElementID elementid(const std::string_view& name)
         ElementID value;
     } table[] = {
         {"a", ElementID::G},
+        {"animate", ElementID::Animate},
+        {"animateMotion", ElementID::AnimateMotion},
+        {"animateTransform", ElementID::AnimateTransform},
         {"circle", ElementID::Circle},
         {"clipPath", ElementID::ClipPath},
+        {"conicalGradient", ElementID::ConicalGradient},
         {"defs", ElementID::Defs},
         {"ellipse", ElementID::Ellipse},
+        {"foreignObject", ElementID::ForeignObject},
         {"g", ElementID::G},
         {"image", ElementID::Image},
         {"line", ElementID::Line},
@@ -33,6 +85,7 @@ ElementID elementid(const std::string_view& name)
         {"polyline", ElementID::Polyline},
         {"radialGradient", ElementID::RadialGradient},
         {"rect", ElementID::Rect},
+        {"set", ElementID::Set},
         {"stop", ElementID::Stop},
         {"style", ElementID::Style},
         {"svg", ElementID::Svg},
@@ -44,7 +97,7 @@ ElementID elementid(const std::string_view& name)
 
     auto it = std::lower_bound(table, std::end(table), name, [](const auto& item, const auto& name) { return item.name < name; });
     if(it == std::end(table) || it->name != name)
-        return ElementID::Unknown;
+        return !false ? hashelementid(name) : ElementID::Unknown;
     return it->value;
 }
 
@@ -68,7 +121,7 @@ std::unique_ptr<SVGNode> SVGTextNode::clone(bool deep) const
 
 const std::string emptyString;
 
-std::unique_ptr<SVGElement> SVGElement::create(Document* document, ElementID id)
+std::unique_ptr<SVGElement> SVGElement::create(Document* document, ElementID id, SVGElement* parent)
 {
     switch(id) {
     case ElementID::Svg:
@@ -83,6 +136,8 @@ std::unique_ptr<SVGElement> SVGElement::create(Document* document, ElementID id)
         return std::make_unique<SVGCircleElement>(document);
     case ElementID::Ellipse:
         return std::make_unique<SVGEllipseElement>(document);
+    case ElementID::ForeignObject:
+        return std::make_unique<SVGForeignObjectElement>(document);
     case ElementID::Line:
         return std::make_unique<SVGLineElement>(document);
     case ElementID::Defs:
@@ -96,6 +151,8 @@ std::unique_ptr<SVGElement> SVGElement::create(Document* document, ElementID id)
         return std::make_unique<SVGLinearGradientElement>(document);
     case ElementID::RadialGradient:
         return std::make_unique<SVGRadialGradientElement>(document);
+    case ElementID::ConicalGradient:
+        return std::make_unique<SVGConicalGradientElement>(document);
     case ElementID::Symbol:
         return std::make_unique<SVGSymbolElement>(document);
     case ElementID::Use:
@@ -116,7 +173,20 @@ std::unique_ptr<SVGElement> SVGElement::create(Document* document, ElementID id)
         return std::make_unique<SVGTextElement>(document);
     case ElementID::Tspan:
         return std::make_unique<SVGTSpanElement>(document);
+    case ElementID::Animate:
+        return std::make_unique<SVGAnimateElement>(document);
+    case ElementID::AnimateMotion:
+        return std::make_unique<SVGAnimateMotionElement>(document);
+    case ElementID::AnimateTransform:
+        return std::make_unique<SVGAnimateTransformElement>(document);
+    case ElementID::Set:
+        return std::make_unique<SVGSetElement>(document);
     default:
+
+        if(parent && parent->id() == ElementID::ForeignObject) {
+            return static_cast<SVGForeignObjectElement*>(parent)->loadContent(document, id);
+        }
+
         assert(false);
     }
 
@@ -290,7 +360,8 @@ Rect SVGElement::fillBoundingBox() const
 {
     auto fillBoundingBox = Rect::Invalid;
     for(const auto& child : m_children) {
-        if(auto element = toSVGElement(child); element && !element->isHiddenElement()) {
+        auto element = toSVGElement(child);
+        if(element && !element->isHiddenElement()) {
             fillBoundingBox.unite(element->localTransform().mapRect(element->fillBoundingBox()));
         }
     }
@@ -304,7 +375,8 @@ Rect SVGElement::strokeBoundingBox() const
 {
     auto strokeBoundingBox = Rect::Invalid;
     for(const auto& child : m_children) {
-        if(auto element = toSVGElement(child); element && !element->isHiddenElement()) {
+        auto element = toSVGElement(child);
+        if(element && !element->isHiddenElement()) {
             strokeBoundingBox.unite(element->localTransform().mapRect(element->strokeBoundingBox()));
         }
     }
@@ -411,15 +483,20 @@ Size SVGElement::currentViewportSize() const
         return Size(300, 150);
     }
 
-    if(parent->id() == ElementID::Svg) {
-        auto element = static_cast<const SVGSVGElement*>(parent);
-        const auto& viewBox = element->viewBox();
-        if(viewBox.value().isValid())
-            return viewBox.value().size();
-        LengthContext lengthContext(element);
-        auto width = lengthContext.valueForLength(element->width());
-        auto height = lengthContext.valueForLength(element->height());
-        return Size(width, height);
+    switch (parent->id())
+    {
+        case ElementID::Svg:
+        case ElementID::ForeignObject:
+        {
+            auto element = static_cast<const SVGSVGElement*>(parent);
+            const auto& viewBox = element->viewBox();
+            if(viewBox.value().isValid())
+                return viewBox.value().size();
+            LengthContext lengthContext(element);
+            auto width = lengthContext.valueForLength(element->width());
+            auto height = lengthContext.valueForLength(element->height());
+            return Size(width, height);
+        }
     }
 
     return parent->currentViewportSize();
@@ -504,6 +581,7 @@ bool SVGElement::isHiddenElement() const
     case ElementID::Mask:
     case ElementID::LinearGradient:
     case ElementID::RadialGradient:
+    case ElementID::ConicalGradient:
     case ElementID::Pattern:
     case ElementID::Stop:
         return true;
@@ -522,6 +600,7 @@ bool SVGElement::isPointableElement() const
         case ElementID::Line:
         case ElementID::Rect:
         case ElementID::Ellipse:
+        case ElementID::ForeignObject:
         case ElementID::Circle:
         case ElementID::Polyline:
         case ElementID::Polygon:
@@ -580,9 +659,26 @@ SVGElement* SVGURIReference::getTargetElement(const Document* document) const
     return document->rootElement()->getElementById(value.substr(1));
 }
 
+bool SVGPaintServer::isRenderable(const SVGElement* element) const
+{
+    if(element && element->isPointableElement())
+        return true;
+
+    return m_opacity > 0.f && (m_element || m_color.alpha() > 0);
+}
+
 bool SVGPaintServer::applyPaint(SVGRenderState& state) const
 {
-    if(!isRenderable())
+    auto canvas = state.canvas();
+
+    if(canvas) {
+        const SVGElement* element = state.element();
+        if(element == nullptr) element = m_element;
+
+        plutovg_surface_set_context(canvas->surface(), element ? element->identity() : 0 );
+    }
+
+    if(!isRenderable(state.element()))
         return false;
     if(m_element) return m_element->applyPaint(state, m_opacity);
     state->setColor(m_color.colorWithAlpha(m_opacity));
@@ -683,12 +779,28 @@ SVGRootElement* SVGRootElement::layoutIfNeeded()
     return this;
 }
 
+SVGElement* SVGRootElement::getElementById(const Identity& id) const
+{
+    if(id.document != identity().document)
+        return nullptr;
+
+    auto it = m_uniqueIdCache.find(id.hash());
+    if(it == m_uniqueIdCache.end())
+        return nullptr;
+    return toSVGElement(it->second);
+}
+
 SVGElement* SVGRootElement::getElementById(const std::string_view& id) const
 {
     auto it = m_idCache.find(id);
     if(it == m_idCache.end())
         return nullptr;
     return it->second;
+}
+
+void SVGRootElement::addElementById(const Identity& id, SVGNode* element)
+{
+    m_uniqueIdCache.emplace(id.hash(), element);
 }
 
 void SVGRootElement::addElementById(const std::string& id, SVGElement* element)
@@ -796,6 +908,7 @@ inline bool isDisallowedElement(const SVGElement* element)
     switch(element->id()) {
     case ElementID::Circle:
     case ElementID::Ellipse:
+    case ElementID::ForeignObject:
     case ElementID::G:
     case ElementID::Image:
     case ElementID::Line:
@@ -1220,6 +1333,375 @@ void SVGMaskElement::layoutElement(const SVGLayoutState& state)
 {
     m_mask_type = state.mask_type();
     SVGElement::layoutElement(state);
+}
+
+SVGForeignObjectElement::SVGForeignObjectElement(Document* document)
+    : SVGGraphicsElement(document, ElementID::ForeignObject)
+    , SVGFitToViewBox(this)
+    , m_x(PropertyID::X, LengthDirection::Horizontal, LengthNegativeMode::Allow, 0.f, LengthUnits::None)
+    , m_y(PropertyID::Y, LengthDirection::Vertical, LengthNegativeMode::Allow, 0.f, LengthUnits::None)
+    , m_width(PropertyID::Width, LengthDirection::Horizontal, LengthNegativeMode::Forbid, 100.f, LengthUnits::Percent)
+    , m_height(PropertyID::Height, LengthDirection::Vertical, LengthNegativeMode::Forbid, 100.f, LengthUnits::Percent)
+{
+    addProperty(m_x);
+    addProperty(m_y);
+    addProperty(m_width);
+    addProperty(m_height);
+
+    manageDocument(true);
+}
+
+SVGForeignObjectElement::~SVGForeignObjectElement()
+{
+    manageDocument(false);
+}
+
+void SVGForeignObjectElement::manageDocument(bool advise)
+{
+    if(advise) {
+        document()->m_foreignObjects.addItem(this);
+    }
+    else {
+        document()->m_foreignObjects.removeItem(this);
+
+        // !!! release root instance since already managed by parent document !!!
+        if(m_containedDocument != NULL) m_containedDocument->m_rootElement.release();
+    }
+}
+
+Transform SVGForeignObjectElement::localTransform() const
+{
+    LengthContext lengthContext(this);
+    const Rect viewportRect = {
+        lengthContext.valueForLength(m_x),
+        lengthContext.valueForLength(m_y),
+        lengthContext.valueForLength(m_width),
+        lengthContext.valueForLength(m_height)
+    };
+
+    if(isRootElement())
+        return viewBoxToViewTransform(viewportRect.size());
+    return SVGGraphicsElement::localTransform() * Transform::translated(viewportRect.x, viewportRect.y) * viewBoxToViewTransform(viewportRect.size());
+}
+
+void SVGForeignObjectElement::render(SVGRenderState& state) const
+{
+    if(isDisplayNone())
+        return;
+    LengthContext lengthContext(this);
+    const Size viewportSize = {
+        lengthContext.valueForLength(m_width),
+        lengthContext.valueForLength(m_height)
+    };
+
+    if(viewportSize.isEmpty())
+        return;
+    SVGBlendInfo blendInfo(this);
+    SVGRenderState newState(this, state, localTransform());
+    newState.beginGroup(blendInfo);
+    if(isOverflowHidden())
+        newState->clipRect(getClipRect(viewportSize), FillRule::NonZero, newState.currentTransform());
+    renderChildren(newState);
+    newState.endGroup(blendInfo);
+}
+
+std::unique_ptr<SVGElement> SVGForeignObjectElement::loadContent(Document* document, ElementID id)
+{
+    for(const auto& namespaceItem : document->m_namespaceList) {
+        auto namespaceId = hashelementid(namespaceItem.namespaceId);
+
+        // do something with the namespace, for now this isn't used.
+    }
+
+    std::string markup;
+    if(createNamespaceElement(id, markup)) {
+        auto containedDocument = Document::loadFromData(markup.data(), markup.length(), document);
+
+        m_containedDocument = std::shared_ptr<Document>(containedDocument.release());
+
+        if(m_containedDocument != nullptr) {
+            auto rootElement = m_containedDocument->m_rootElement.get();
+            rootElement->setParentElement(this);
+            return std::unique_ptr<SVGElement>(rootElement);
+        }
+    }
+
+    return nullptr;
+}
+
+bool SVGForeignObjectElement::contains(const Identity& identity) const
+{
+    if(m_containedDocument == nullptr)
+        return false;
+
+    return (identity.document == m_containedDocument->identity().document);
+}
+
+SVGElement* SVGForeignObjectElement::getElementById(const Identity& identity)
+{
+    if(m_containedDocument == nullptr)
+        return nullptr;
+
+    Identity lookup = identity; // special handshake
+    if (lookup.document == 0) lookup.document = m_containedDocument->identity().document;
+
+    return m_containedDocument->rootElement()->getElementById(lookup);
+}
+
+SVGAnimationElement::SVGAnimationElement(Document* document, ElementID id)
+    : SVGElement(document, id)
+    , m_attributeName(PropertyID::AttributeName)
+    , m_startTime(PropertyID::StartTime, 0.f)
+    , m_simpleDuration(PropertyID::Dur, 0.f)
+    , m_repeatCount(PropertyID::RepeatCount, 0.f)
+    , m_repeatDuration(PropertyID::RepeatDuration, 0.f)
+    , m_from(PropertyID::From)
+    , m_to(PropertyID::To)
+    , m_begin(PropertyID::Begin)
+    , m_end(PropertyID::End)
+    , m_restart(PropertyID::Restart, Restart::Always)
+    , m_elapsedTime(0.f)
+{
+    addProperty(m_attributeName);
+    addProperty(m_startTime);
+    addProperty(m_simpleDuration);
+    addProperty(m_repeatCount);
+    addProperty(m_repeatDuration);
+    addProperty(m_from);
+    addProperty(m_to);
+    addProperty(m_begin);
+    addProperty(m_end);
+    addProperty(m_restart);
+
+    manageDocument(true);
+}
+
+SVGAnimationElement::~SVGAnimationElement()
+{
+    manageDocument(false);
+}
+
+float SVGAnimationElement::calculatePosition(float elapsedTime, float distance)
+{
+    m_elapsedTime += elapsedTime;
+
+    while(m_elapsedTime > m_simpleDuration.value()) {
+        m_elapsedTime -= m_simpleDuration.value();
+    }
+
+    return (distance * m_elapsedTime / m_simpleDuration.value());
+}
+
+bool SVGAnimationElement::isRunning() const
+{
+    return (m_simpleDuration.value() > 0.f);
+}
+
+void SVGAnimationElement::manageDocument(bool advise)
+{
+    if(advise) {
+        document()->m_animations.addItem(this);
+    }
+    else {
+        document()->m_animations.removeItem(this);
+    }
+}
+
+SVGAnimateElement::SVGAnimateElement(Document* document)
+    : SVGAnimationElement(document, ElementID::Animate)
+    , m_animationTarget(nullptr)
+{
+}
+
+void SVGAnimateElement::updateAnimation(float elapsedTime)
+{
+    if(!isRunning()) return;
+
+    auto target = parentElement();
+
+    if(target == nullptr) return;
+
+    if(m_animationTarget == nullptr && !m_attributeName.value().empty())
+        m_animationTarget = target->getAnimationName(m_attributeName.value());
+
+    if(m_animationTarget == nullptr) return;
+
+    float value = m_animationTarget->getAnimationValue();
+    m_animationTarget->setAnimationValue(value + 1.f);
+}
+
+SVGAnimateMotionElement::SVGAnimateMotionElement(Document* document)
+    : SVGAnimationElement(document, ElementID::AnimateMotion)
+    , m_path(PropertyID::Path)
+{
+    addProperty(m_path);
+}
+
+void SVGAnimateMotionElement::updateAnimation(float elapsedTime)
+{
+    if(!isRunning()) return;
+
+    auto target = parentElement();
+
+    if(target == nullptr) return;
+
+    auto transformProperty = target->getProperty(PropertyID::Transform);
+
+    if(transformProperty == nullptr) return;
+
+    auto& transform = static_cast<SVGTransform*>(transformProperty)->m_value;
+
+    auto& path = m_path.value();
+
+    if(path.isNull() || path.isEmpty()) return;
+
+    if(m_points.size() == 0) {
+
+        m_baseTransform = transform;
+
+        const plutovg_outline_t* outline = plutovg_outline_create(path.data(), nullptr);
+
+        if(outline != nullptr) {
+            const int count = plutovg_outline_point_count(outline);
+
+            if(count > 1) {
+                m_points.reserve(count);
+
+                plutovg_point_t last;
+                plutovg_outline_point_at(outline, 0, &last);
+
+                float last_distance = 0.f;
+                m_points.push_back( { { last.x, last.y }, last_distance } );
+
+                for(int index = 1; index < count; index++) {
+                    plutovg_point_t point;
+                    plutovg_outline_point_at(outline, index, &point);
+
+                    float dx = point.x - last.x;
+                    float dy = point.y - last.y;
+
+                    float point_distance = sqrt(dx * dx + dy * dy);
+
+                    last_distance += point_distance;
+
+                    last = point;
+
+                    m_points.push_back( { { last.x, last.y }, last_distance } );
+                }
+            }
+
+            plutovg_outline_destroy(outline);
+        }
+
+        // make sure this only runs once
+        if(m_points.size() == 0) m_points.push_back( { { 0.f, 0.f }, 0.f} );
+    }
+
+    auto points = m_points.size();
+
+    if(points <= 1) return; // nothing to animate
+
+    const auto distance = calculatePosition(elapsedTime, m_points.at(points - 1).distance);
+
+    const auto* previous = &m_points.front();
+
+    for(const auto& current : m_points) {
+        if(distance >= previous->distance && distance <= current.distance) {
+            // subtract previous distance and scale remaining differential
+            auto scale = (distance - previous->distance) / (current.distance - previous->distance);
+
+            float x = previous->location.x + (current.location.x - previous->location.x) * scale;
+            float y = previous->location.y + (current.location.y - previous->location.y) * scale;
+
+            transform = m_baseTransform.translated(x, y);
+            break;
+        }
+        previous = &current;
+    }
+}
+
+SVGAnimateTransformElement::SVGAnimateTransformElement(Document* document)
+    : SVGAnimationElement(document, ElementID::AnimateTransform)
+    , m_type(PropertyID::Type, TransformType::Translate)
+{
+    addProperty(m_type);
+}
+
+void SVGAnimateTransformElement::updateAnimation(float elapsedTime)
+{
+    if(!isRunning()) return;
+
+    auto target = parentElement();
+
+    if(target == nullptr) return;
+
+    auto transformProperty = target->getProperty(PropertyID::Transform);
+
+    if(transformProperty == nullptr) return;
+
+    auto& transform = static_cast<SVGTransform*>(transformProperty)->m_value;
+
+    auto animationPosition = calculatePosition(elapsedTime);
+
+    auto calculateNumber = [&](size_t pos)
+    {
+        auto from = m_from.values().at(pos);
+        auto to = m_to.values().at(pos);
+
+        return from + (to - from) * animationPosition;
+    };
+
+    switch (m_type.value())
+    {
+        case TransformType::Translate:
+        {
+            auto tx = calculateNumber(0);
+            auto ty = calculateNumber(1);
+
+            transform.translate(tx, ty);
+            break;
+        }
+        case TransformType::Scale:
+        {
+            auto sx = calculateNumber(0);
+            auto sy = calculateNumber(1);
+
+            transform.scale(sx, sy);
+            break;
+        }
+        case TransformType::Rotate:
+        {
+            auto angle = calculateNumber(0);
+            auto cx = calculateNumber(1);
+            auto cy = calculateNumber(2);
+
+            transform.rotate(angle, cx, cy);
+            break;
+        }
+        case TransformType::SkewX:
+        {
+            auto shx = calculateNumber(0);
+
+            transform.shear(shx, 0.f);
+            break;
+        }
+        case TransformType::SkewY:
+        {
+            auto shy = calculateNumber(0);
+
+            transform.shear(0.f, shy);
+            break;
+        }
+    }
+}
+
+SVGSetElement::SVGSetElement(Document* document)
+    : SVGAnimationElement(document, ElementID::Set)
+{
+}
+
+void SVGSetElement::updateAnimation(float elapsedTime)
+{
 }
 
 } // namespace lunasvg

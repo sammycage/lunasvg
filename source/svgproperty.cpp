@@ -3,6 +3,7 @@
 #include "svgparserutils.h"
 
 #include <cassert>
+#include <cctype>
 
 namespace lunasvg {
 
@@ -12,13 +13,18 @@ PropertyID propertyid(const std::string_view& name)
         std::string_view name;
         PropertyID value;
     } table[] = {
+        {"attributeName", PropertyID::AttributeName},
+        {"begin", PropertyID::Begin},
         {"class", PropertyID::Class},
         {"clipPathUnits", PropertyID::ClipPathUnits},
         {"cx", PropertyID::Cx},
         {"cy", PropertyID::Cy},
         {"d", PropertyID::D},
+        {"dur", PropertyID::Dur},
         {"dx", PropertyID::Dx},
         {"dy", PropertyID::Dy},
+        {"end", PropertyID::End},
+        {"from", PropertyID::From},
         {"fx", PropertyID::Fx},
         {"fy", PropertyID::Fy},
         {"gradientTransform", PropertyID::GradientTransform},
@@ -34,6 +40,7 @@ PropertyID propertyid(const std::string_view& name)
         {"maskUnits", PropertyID::MaskUnits},
         {"offset", PropertyID::Offset},
         {"orient", PropertyID::Orient},
+        {"path", PropertyID::Path},
         {"patternContentUnits", PropertyID::PatternContentUnits},
         {"patternTransform", PropertyID::PatternTransform},
         {"patternUnits", PropertyID::PatternUnits},
@@ -42,23 +49,29 @@ PropertyID propertyid(const std::string_view& name)
         {"r", PropertyID::R},
         {"refX", PropertyID::RefX},
         {"refY", PropertyID::RefY},
+        {"repeatCount", PropertyID::RepeatCount},
+        {"repeatDur", PropertyID::RepeatDuration},
+        {"restart", PropertyID::Restart},
         {"rotate", PropertyID::Rotate},
         {"rx", PropertyID::Rx},
         {"ry", PropertyID::Ry},
         {"spreadMethod", PropertyID::SpreadMethod},
+        {"startTime", PropertyID::StartTime},
         {"style", PropertyID::Style},
         {"textLength", PropertyID::TextLength},
+        {"to", PropertyID::To},
         {"transform", PropertyID::Transform},
+        {"type", PropertyID::Type},
         {"viewBox", PropertyID::ViewBox},
         {"width", PropertyID::Width},
         {"x", PropertyID::X},
         {"x1", PropertyID::X1},
         {"x2", PropertyID::X2},
         {"xlink:href", PropertyID::Href},
-        {"xml:space", PropertyID::White_Space},
+        {"xml:space", PropertyID::WhiteSpace},
         {"y", PropertyID::Y},
         {"y1", PropertyID::Y1},
-        {"y2", PropertyID::Y2}
+        {"y2", PropertyID::Y2},
     };
 
     auto it = std::lower_bound(table, std::end(table), name, [](const auto& item, const auto& name) { return item.name < name; });
@@ -88,7 +101,6 @@ PropertyID csspropertyid(const std::string_view& name)
         {"font-size", PropertyID::Font_Size},
         {"font-style", PropertyID::Font_Style},
         {"font-weight", PropertyID::Font_Weight},
-        {"letter-spacing", PropertyID::Letter_Spacing},
         {"marker-end", PropertyID::Marker_End},
         {"marker-mid", PropertyID::Marker_Mid},
         {"marker-start", PropertyID::Marker_Start},
@@ -96,7 +108,7 @@ PropertyID csspropertyid(const std::string_view& name)
         {"mask-type", PropertyID::Mask_Type},
         {"opacity", PropertyID::Opacity},
         {"overflow", PropertyID::Overflow},
-        {"pointer-events", PropertyID::Pointer_Events},
+        {"pointer-events", PropertyID::PointerEvents},
         {"stop-color", PropertyID::Stop_Color},
         {"stop-opacity", PropertyID::Stop_Opacity},
         {"stroke", PropertyID::Stroke},
@@ -108,17 +120,49 @@ PropertyID csspropertyid(const std::string_view& name)
         {"stroke-opacity", PropertyID::Stroke_Opacity},
         {"stroke-width", PropertyID::Stroke_Width},
         {"text-anchor", PropertyID::Text_Anchor},
-        {"text-orientation", PropertyID::Text_Orientation},
         {"visibility", PropertyID::Visibility},
-        {"white-space", PropertyID::White_Space},
-        {"word-spacing", PropertyID::Word_Spacing},
-        {"writing-mode", PropertyID::Writing_Mode}
+        {"white-space", PropertyID::WhiteSpace}
     };
 
     auto it = std::lower_bound(table, std::end(table), name, [](const auto& item, const auto& name) { return item.name < name; });
     if(it == std::end(table) || it->name != name)
-        return PropertyID::Unknown;
+        return hashpropertyid(name);
     return it->value;
+}
+
+PropertyID hashpropertyid(const std::string_view& name)
+{
+    if(!name.empty()) {
+        union NamespacePropertyID
+        {
+            PropertyID id;
+            struct
+            {
+                uint32_t propertyId;
+                uint32_t namespaceId;
+            } hash;
+
+            operator PropertyID() { return id; }
+        } id;
+
+        auto delimiter = name.find(':');
+
+        if (delimiter == std::string_view::npos) {
+            id.hash.propertyId = (uint32_t) std::hash<std::string_view>{}(name);
+            id.hash.namespaceId = 0;
+        }
+        else {
+            id.hash.propertyId = (uint32_t) std::hash<std::string_view>{}(name.substr(delimiter + 1));
+            id.hash.namespaceId = (uint32_t) std::hash<std::string_view>{}(name.substr(0, delimiter));
+        }
+
+        if (id.hash.propertyId < 256)
+            id.hash.propertyId |= 0xFFFFFF00; // avoid collisions with original enum (uint8_t) values
+
+        return id;
+    }
+
+    return PropertyID::Unknown;
 }
 
 SVGProperty::SVGProperty(PropertyID id)
@@ -173,6 +217,32 @@ bool SVGEnumeration<LengthAdjust>::parse(std::string_view input)
     static const SVGEnumerationEntry<LengthAdjust> entries[] = {
         {LengthAdjust::Spacing, "spacing"},
         {LengthAdjust::SpacingAndGlyphs, "spacingAndGlyphs"}
+    };
+
+    return parseEnum(input, entries);
+}
+
+template<>
+bool SVGEnumeration<TransformType>::parse(std::string_view input)
+{
+    static const SVGEnumerationEntry<TransformType> entries[] = {
+        {TransformType::Translate, "translate"},
+        {TransformType::Scale, "scale"},
+        {TransformType::Rotate, "rotate"},
+        {TransformType::SkewX, "skewX"},
+        {TransformType::SkewY, "skewY"}
+    };
+
+    return parseEnum(input, entries);
+}
+
+template<>
+bool SVGEnumeration<Restart>::parse(std::string_view input)
+{
+    static const SVGEnumerationEntry<Restart> entries[] = {
+        {Restart::Always, "always"},
+        {Restart::WhenNotActive, "whenNotActive"},
+        {Restart::Never, "never"}
     };
 
     return parseEnum(input, entries);
@@ -700,6 +770,58 @@ void SVGPreserveAspectRatio::transformRect(Rect& dstRect, Rect& srcRect) const
             }
         }
     }
+}
+
+bool SVGTime::parse(std::string_view input)
+{
+    stripLeadingAndTrailingSpaces(input);
+    if(input == "indefinite") {
+        m_value = -1.f;
+        return true;
+    }
+
+    float value = 0.f;
+
+    if (parseTime(input, value)) {
+    }
+    else if(!parseNumber(input, value)) {
+        return false;
+    }
+    else if(!input.empty()) {
+        if(input == "h")
+            value *= 60.f * 60.f * 1000.f;
+        else if(input == "m")
+            value *= 60.f * 1000.f;
+        else if(input == "s")
+            value *= 1000.f;
+        else if(input == "ms") {
+            value *= 1.f;
+        }
+        else {
+            return false;
+        }
+    }
+
+    m_value = value;
+    return true;
+}
+
+bool SVGCounter::parse(std::string_view input)
+{
+    stripLeadingAndTrailingSpaces(input);
+    if(input == "indefinite") {
+        m_value = -1.f;
+        return true;
+    }
+
+    float value = 0.f;
+    if(!parseNumber(input, value))
+        return false;
+    if(!input.empty())
+        return false;
+
+    m_value = value;
+    return true;
 }
 
 } // namespace lunasvg

@@ -18,12 +18,18 @@ typedef struct {
             float cx, cy, cr;
             float fx, fy, fr;
         } radial;
+        struct {
+            float cx, cy, cr;
+            float fx, fy, fr;
+        } conical;
     } values;
 } gradient_data_t;
 
 typedef struct {
     plutovg_matrix_t matrix;
     uint8_t* data;
+    uint16_t* contextData;
+    uint16_t contextFlags;
     int width;
     int height;
     int stride;
@@ -45,6 +51,15 @@ typedef struct {
     float a;
     bool extended;
 } radial_gradient_values_t;
+
+typedef struct {
+    float dx;
+    float dy;
+    float dr;
+    float sqrfr;
+    float a;
+    bool extended;
+} conical_gradient_values_t;
 
 static inline uint32_t premultiply_color_with_opacity(const plutovg_color_t* color, float opacity)
 {
@@ -266,6 +281,72 @@ static void fetch_radial_gradient(uint32_t* buffer, const radial_gradient_values
             if(det >= 0) {
                 float w = sqrtf(det) - b;
                 if(gradient->values.radial.fr + v->dr * w >= 0) {
+                    result = gradient_pixel(gradient, w);
+                }
+            }
+
+            *buffer = result;
+            det += delta_det;
+            delta_det += delta_delta_det;
+            b += delta_b;
+            ++buffer;
+        }
+    } else {
+        while(buffer < end) {
+            *buffer++ = gradient_pixel(gradient, sqrtf(det) - b);
+            det += delta_det;
+            delta_det += delta_delta_det;
+            b += delta_b;
+        }
+    }
+}
+
+static void fetch_conical_gradient(uint32_t* buffer, const conical_gradient_values_t* v, const gradient_data_t* gradient, int y, int x, int length)
+{
+    if(v->a == 0.f) {
+        plutovg_memfill32(buffer, length, 0);
+        return;
+    }
+
+    float rx = gradient->matrix.c * (y + 0.5f) + gradient->matrix.e + gradient->matrix.a * (x + 0.5f);
+    float ry = gradient->matrix.d * (y + 0.5f) + gradient->matrix.f + gradient->matrix.b * (x + 0.5f);
+
+    rx -= gradient->values.conical.fx;
+    ry -= gradient->values.conical.fy;
+
+    float inv_a = 1.f / (2.f * v->a);
+    float delta_rx = gradient->matrix.a;
+    float delta_ry = gradient->matrix.b;
+
+    float b = 2 * (v->dr * gradient->values.conical.fr + rx * v->dx + ry * v->dy);
+    float delta_b = 2 * (delta_rx * v->dx + delta_ry * v->dy);
+    float b_delta_b = 2 * b * delta_b;
+    float delta_b_delta_b = 2 * delta_b * delta_b;
+
+    float bb = b * b;
+    float delta_bb = delta_b * delta_b;
+
+    b *= inv_a;
+    delta_b *= inv_a;
+
+    float rxrxryry = rx * rx + ry * ry;
+    float delta_rxrxryry = delta_rx * delta_rx + delta_ry * delta_ry;
+    float rx_plus_ry = 2 * (rx * delta_rx + ry * delta_ry);
+    float delta_rx_plus_ry = 2 * delta_rxrxryry;
+
+    inv_a *= inv_a;
+
+    float det = (bb - 4 * v->a * (v->sqrfr - rxrxryry)) * inv_a;
+    float delta_det = (b_delta_b + delta_bb + 4 * v->a * (rx_plus_ry + delta_rxrxryry)) * inv_a;
+    float delta_delta_det = (delta_b_delta_b + 4 * v->a * delta_rx_plus_ry) * inv_a;
+
+    const uint32_t* end = buffer + length;
+    if(v->extended) {
+        while(buffer < end) {
+            uint32_t result = 0;
+            if(det >= 0) {
+                float w = sqrtf(det) - b;
+                if(gradient->values.conical.fr + v->dr * w >= 0) {
                     result = gradient_pixel(gradient, w);
                 }
             }
@@ -635,6 +716,32 @@ static const composition_function_t composition_table[] = {
     composition_xor
 };
 
+static void set_context_id(plutovg_surface_t* surface, int x, int y, int length)
+{
+    if (surface->contextData)
+    {
+        unsigned short context = surface->context;
+        unsigned short* contextData = (unsigned short*)(surface->contextData + y * surface->width) + x;
+
+        for (int i = 0; i < length; i++) {
+            *contextData++ = context;
+        }
+    }
+}
+
+static void set_context_id_using(plutovg_surface_t* surface, int x, int y, int length, const texture_data_t* texture, int sx, int sy)
+{
+    if (surface->contextData)
+    {
+        unsigned short* srcContextData = (unsigned short*)(texture->contextData + sy * texture->width) + sx;
+        unsigned short* dstContextData = (unsigned short*)(surface->contextData + y * surface->width) + x;
+
+        for (int i = 0; i < length; i++) {
+            *dstContextData++ = *srcContextData++;
+        }
+    }
+}
+
 static void blend_solid(plutovg_surface_t* surface, plutovg_operator_t op, uint32_t solid, const plutovg_span_buffer_t* span_buffer)
 {
     composition_solid_function_t func = composition_solid_table[op];
@@ -643,6 +750,7 @@ static void blend_solid(plutovg_surface_t* surface, plutovg_operator_t op, uint3
     while(count--) {
         uint32_t* target = (uint32_t*)(surface->data + spans->y * surface->stride) + spans->x;
         func(target, spans->len, solid, spans->coverage);
+        set_context_id(surface, spans->x, spans->y, spans->len);
         ++spans;
     }
 }
@@ -674,6 +782,7 @@ static void blend_linear_gradient(plutovg_surface_t* surface, plutovg_operator_t
             fetch_linear_gradient(buffer, &v, gradient, spans->y, x, l);
             uint32_t* target = (uint32_t*)(surface->data + spans->y * surface->stride) + x;
             func(target, l, buffer, spans->coverage);
+            set_context_id(surface, x, spans->y, spans->len);
             x += l;
             length -= l;
         }
@@ -705,6 +814,39 @@ static void blend_radial_gradient(plutovg_surface_t* surface, plutovg_operator_t
             fetch_radial_gradient(buffer, &v, gradient, spans->y, x, l);
             uint32_t* target = (uint32_t*)(surface->data + spans->y * surface->stride) + x;
             func(target, l, buffer, spans->coverage);
+            set_context_id(surface, x, spans->y, spans->len);
+            x += l;
+            length -= l;
+        }
+
+        ++spans;
+    }
+}
+
+static void blend_conical_gradient(plutovg_surface_t* surface, plutovg_operator_t op, const gradient_data_t* gradient, const plutovg_span_buffer_t* span_buffer)
+{
+    composition_function_t func = composition_table[op];
+    unsigned int buffer[BUFFER_SIZE];
+
+    conical_gradient_values_t v;
+    v.dx = gradient->values.conical.cx - gradient->values.conical.fx;
+    v.dy = gradient->values.conical.cy - gradient->values.conical.fy;
+    v.dr = gradient->values.conical.cr - gradient->values.conical.fr;
+    v.sqrfr = gradient->values.conical.fr * gradient->values.conical.fr;
+    v.a = v.dr * v.dr - v.dx * v.dx - v.dy * v.dy;
+    v.extended = gradient->values.conical.fr != 0.f || v.a <= 0.f;
+
+    int count = span_buffer->spans.size;
+    const plutovg_span_t* spans = span_buffer->spans.data;
+    while(count--) {
+        int length = spans->len;
+        int x = spans->x;
+        while(length) {
+            int l = plutovg_min(length, BUFFER_SIZE);
+            fetch_conical_gradient(buffer, &v, gradient, spans->y, x, l);
+            uint32_t* target = (uint32_t*)(surface->data + spans->y * surface->stride) + x;
+            func(target, l, buffer, spans->coverage);
+            set_context_id(surface, x, spans->y, spans->len);
             x += l;
             length -= l;
         }
@@ -744,6 +886,11 @@ static void blend_untransformed_argb(plutovg_surface_t* surface, plutovg_operato
                 const uint32_t* src = (const uint32_t*)(texture->data + sy * texture->stride) + sx;
                 uint32_t* dest = (uint32_t*)(surface->data + spans->y * surface->stride) + x;
                 func(dest, length, src, coverage);
+
+                if (texture->contextFlags & 0x1)
+                    set_context_id_using(surface, x, spans->y, length, texture, sx, sy);
+                else
+                    set_context_id(surface, x, spans->y, length);
             }
         }
 
@@ -795,9 +942,15 @@ static void blend_transformed_argb(plutovg_surface_t* surface, plutovg_operator_
             }
 
             func(target, l, buffer, coverage);
+
             target += l;
             length -= l;
         }
+
+        if (texture->contextFlags & 0x1)
+            ; // set_context_id_using(surface, spans->x, spans->y, spans->len, texture);
+        else
+            set_context_id(surface, spans->x, spans->y, spans->len);
 
         ++spans;
     }
@@ -847,6 +1000,11 @@ static void blend_untransformed_tiled_argb(plutovg_surface_t* surface, plutovg_o
                 sx = 0;
             }
         }
+
+        if (texture->contextFlags & 0x1)
+            ; // set_context_id_using(surface, spans->x, spans->y, spans->len, texture);
+        else
+            set_context_id(surface, spans->x, spans->y, spans->len);
 
         ++spans;
     }
@@ -901,9 +1059,15 @@ static void blend_transformed_tiled_argb(plutovg_surface_t* surface, plutovg_ope
             }
 
             func(target, l, buffer, coverage);
+
             target += l;
             length -= l;
         }
+
+        if (texture->contextFlags & 0x1)
+            ; // set_context_id_using(surface, spans->x, spans->y, spans->len, texture);
+        else
+            set_context_id(surface, spans->x, spans->y, spans->len);
 
         ++spans;
     }
@@ -985,7 +1149,7 @@ static void plutovg_blend_gradient(plutovg_canvas_t* canvas, const plutovg_gradi
         data.values.linear.x2 = gradient->values[2];
         data.values.linear.y2 = gradient->values[3];
         blend_linear_gradient(canvas->surface, state->op, &data, span_buffer);
-    } else {
+    } else if(gradient->type == PLUTOVG_GRADIENT_TYPE_RADIAL) {
         data.values.radial.cx = gradient->values[0];
         data.values.radial.cy = gradient->values[1];
         data.values.radial.cr = gradient->values[2];
@@ -993,6 +1157,14 @@ static void plutovg_blend_gradient(plutovg_canvas_t* canvas, const plutovg_gradi
         data.values.radial.fy = gradient->values[4];
         data.values.radial.fr = gradient->values[5];
         blend_radial_gradient(canvas->surface, state->op, &data, span_buffer);
+    } else if(gradient->type == PLUTOVG_GRADIENT_TYPE_CONICAL) {
+        data.values.radial.cx = gradient->values[0];
+        data.values.radial.cy = gradient->values[1];
+        data.values.radial.cr = gradient->values[2];
+        data.values.radial.fx = gradient->values[3];
+        data.values.radial.fy = gradient->values[4];
+        data.values.radial.fr = gradient->values[5];
+        blend_conical_gradient(canvas->surface, state->op, &data, span_buffer);
     }
 }
 
@@ -1008,6 +1180,8 @@ static void plutovg_blend_texture(plutovg_canvas_t* canvas, const plutovg_textur
     data.height = texture->surface->height;
     data.stride = texture->surface->stride;
     data.const_alpha = lroundf(state->opacity * texture->opacity * 256);
+    data.contextData = texture->surface->contextData;
+    data.contextFlags = texture->surface->contextFlags;
 
     plutovg_matrix_multiply(&data.matrix, &data.matrix, &state->matrix);
     if(!plutovg_matrix_invert(&data.matrix, &data.matrix))

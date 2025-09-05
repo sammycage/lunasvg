@@ -80,6 +80,8 @@ public:
 
     Rect updateShape(Path& path) final;
 
+    SVGAnimationTarget* getAnimationName(const std::string_view& name) override;
+
 private:
     SVGLength m_x;
     SVGLength m_y;
@@ -87,6 +89,8 @@ private:
     SVGLength m_height;
     SVGLength m_rx;
     SVGLength m_ry;
+
+    friend class SVGAnimateElement; // todo : remove
 };
 
 class SVGEllipseElement final : public SVGGeometryElement {
@@ -94,6 +98,8 @@ public:
     SVGEllipseElement(Document* document);
 
     Rect updateShape(Path& path) final;
+
+    SVGAnimationTarget* getAnimationName(const std::string_view& name) override;
 
 private:
     SVGLength m_cx;
@@ -107,6 +113,8 @@ public:
     SVGCircleElement(Document* document);
 
     Rect updateShape(Path& path) final;
+
+    SVGAnimationTarget* getAnimationName(const std::string_view& name) override;
 
 private:
     SVGLength m_cx;

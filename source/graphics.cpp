@@ -468,9 +468,30 @@ FontFaceCache* fontFaceCache()
 Font::Font(const FontFace& face, float size)
     : m_face(face), m_size(size)
 {
-    if(m_size > 0.f && !m_face.isNull()) {
-        plutovg_font_face_get_metrics(m_face.get(), m_size, &m_ascent, &m_descent, &m_lineGap, nullptr);
-    }
+}
+
+float Font::ascent() const
+{
+    float ascent = 0;
+    if(m_size > 0.f && !m_face.isNull())
+        plutovg_font_face_get_metrics(m_face.get(), m_size, &ascent, nullptr, nullptr, nullptr);
+    return ascent;
+}
+
+float Font::descent() const
+{
+    float descent = 0;
+    if(m_size > 0.f && !m_face.isNull())
+        plutovg_font_face_get_metrics(m_face.get(), m_size, nullptr, &descent, nullptr, nullptr);
+    return descent;
+}
+
+float Font::height() const
+{
+    float ascent = 0, descent = 0;
+    if(m_size > 0.f && !m_face.isNull())
+        plutovg_font_face_get_metrics(m_face.get(), m_size, &ascent, &descent, nullptr, nullptr);
+    return ascent + descent;
 }
 
 float Font::xHeight() const
@@ -528,6 +549,11 @@ void Canvas::setLinearGradient(float x1, float y1, float x2, float y2, SpreadMet
 void Canvas::setRadialGradient(float cx, float cy, float r, float fx, float fy, SpreadMethod spread, const GradientStops& stops, const Transform& transform)
 {
     plutovg_canvas_set_radial_gradient(m_canvas, cx, cy, r, fx, fy, 0.f, static_cast<plutovg_spread_method_t>(spread), stops.data(), stops.size(), &transform.matrix());
+}
+
+void Canvas::setConicalGradient(float cx, float cy, float r, float fx, float fy, SpreadMethod spread, const GradientStops& stops, const Transform& transform)
+{
+    plutovg_canvas_set_conical_gradient(m_canvas, cx, cy, r, fx, fy, 0.f, static_cast<plutovg_spread_method_t>(spread), stops.data(), stops.size(), &transform.matrix());
 }
 
 void Canvas::setTexture(const Canvas& source, TextureType type, float opacity, const Transform& transform)
@@ -612,7 +638,6 @@ void Canvas::drawImage(const Bitmap& image, const Rect& dstRect, const Rect& src
     plutovg_canvas_set_texture(m_canvas, image.surface(), PLUTOVG_TEXTURE_TYPE_PLAIN, 1.f, &matrix);
     plutovg_canvas_fill_rect(m_canvas, 0, 0, dstRect.w, dstRect.h);
 }
-
 void Canvas::blendCanvas(const Canvas& canvas, BlendMode blendMode, float opacity)
 {
     plutovg_matrix_t matrix = { 1, 0, 0, 1, static_cast<float>(canvas.x()), static_cast<float>(canvas.y()) };
@@ -683,7 +708,7 @@ Canvas::Canvas(const Bitmap& bitmap)
 }
 
 Canvas::Canvas(int x, int y, int width, int height)
-    : m_surface(plutovg_surface_create(width, height))
+    : m_surface(plutovg_surface_create(width, height, 0x1))
     , m_canvas(plutovg_canvas_create(m_surface))
     , m_translation({1, 0, 0, 1, -static_cast<float>(x), -static_cast<float>(y)})
     , m_x(x), m_y(y)

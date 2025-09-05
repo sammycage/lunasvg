@@ -29,6 +29,8 @@
 extern "C" {
 #endif
 
+#define __SSE2__
+
 #if defined(PLUTOVG_BUILD_STATIC)
 #define PLUTOVG_EXPORT
 #define PLUTOVG_IMPORT
@@ -1145,7 +1147,7 @@ typedef struct plutovg_surface plutovg_surface_t;
  * @param height The height of the surface in pixels.
  * @return A pointer to the newly created `plutovg_surface_t` object.
  */
-PLUTOVG_API plutovg_surface_t* plutovg_surface_create(int width, int height);
+PLUTOVG_API plutovg_surface_t* plutovg_surface_create(int width, int height, unsigned short contextFlags);
 
 /**
  * @brief Creates an image surface using existing pixel data.
@@ -1156,7 +1158,7 @@ PLUTOVG_API plutovg_surface_t* plutovg_surface_create(int width, int height);
  * @param stride The number of bytes per row in the pixel data.
  * @return A pointer to the newly created `plutovg_surface_t` object.
  */
-PLUTOVG_API plutovg_surface_t* plutovg_surface_create_for_data(unsigned char* data, int width, int height, int stride);
+PLUTOVG_API plutovg_surface_t* plutovg_surface_create_for_data(unsigned char* data, int width, int height, int stride, unsigned short contextFlags);
 
 /**
  * @brief Loads an image surface from a file.
@@ -1214,6 +1216,24 @@ PLUTOVG_API int plutovg_surface_get_reference_count(const plutovg_surface_t* sur
  * @return Pointer to the pixel data.
  */
 PLUTOVG_API unsigned char* plutovg_surface_get_data(const plutovg_surface_t* surface);
+
+/**
+ * @brief Gets the pixel context of the surface.
+ *
+ * @param surface Pointer to the `plutovg_surface_t` object.
+ * @param x The X coordinate of the point, in user space.
+ * @param y The Y coordinate of the point, in user space.
+ * @return Context identifier for the pixel data.
+ */
+PLUTOVG_API unsigned short plutovg_surface_get_context(const plutovg_surface_t* surface, float x, float y);
+
+/**
+ * @brief Gets the pixel context of the surface.
+ *
+ * @param context The context identifier to use when writing pixel data.
+ * @return Previous context identifier.
+ */
+PLUTOVG_API unsigned short plutovg_surface_set_context(plutovg_surface_t* surface, unsigned short context);
 
 /**
  * @brief Gets the width of the surface.
@@ -1406,6 +1426,24 @@ PLUTOVG_API plutovg_paint_t* plutovg_paint_create_linear_gradient(float x1, floa
  * @return A pointer to the created `plutovg_paint_t` object.
  */
 PLUTOVG_API plutovg_paint_t* plutovg_paint_create_radial_gradient(float cx, float cy, float cr, float fx, float fy, float fr,
+    plutovg_spread_method_t spread, const plutovg_gradient_stop_t* stops, int nstops, const plutovg_matrix_t* matrix);
+
+/**
+ * @brief Creates a radial gradient paint.
+ *
+ * @param cx The x coordinate of the gradient center.
+ * @param cy The y coordinate of the gradient center.
+ * @param cr The radius of the gradient.
+ * @param fx The x coordinate of the focal point.
+ * @param fy The y coordinate of the focal point.
+ * @param fr The radius of the focal point.
+ * @param spread The gradient spread method.
+ * @param stops Array of gradient stops.
+ * @param nstops Number of gradient stops.
+ * @param matrix Optional transformation matrix.
+ * @return A pointer to the created `plutovg_paint_t` object.
+ */
+PLUTOVG_API plutovg_paint_t* plutovg_paint_create_conical_gradient(float cx, float cy, float cr, float fx, float fy, float fr,
     plutovg_spread_method_t spread, const plutovg_gradient_stop_t* stops, int nstops, const plutovg_matrix_t* matrix);
 
 /**
@@ -1615,6 +1653,26 @@ PLUTOVG_API void plutovg_canvas_set_linear_gradient(plutovg_canvas_t* canvas, fl
  * @param matrix Optional transformation matrix.
  */
 PLUTOVG_API void plutovg_canvas_set_radial_gradient(plutovg_canvas_t* canvas, float cx, float cy, float cr, float fx, float fy, float fr,
+    plutovg_spread_method_t spread, const plutovg_gradient_stop_t* stops, int nstops, const plutovg_matrix_t* matrix);
+
+/**
+ * @brief Sets the current paint to a radial gradient.
+ *
+ * If not set, the default paint is opaque black color.
+ *
+ * @param canvas A pointer to a `plutovg_canvas_t` object.
+ * @param cx The x coordinate of the center.
+ * @param cy The y coordinate of the center.
+ * @param cr The radius of the gradient.
+ * @param fx The x coordinate of the focal point.
+ * @param fy The y coordinate of the focal point.
+ * @param fr The radius of the focal point.
+ * @param spread The gradient spread method.
+ * @param stops Array of gradient stops.
+ * @param nstops Number of gradient stops.
+ * @param matrix Optional transformation matrix.
+ */
+PLUTOVG_API void plutovg_canvas_set_conical_gradient(plutovg_canvas_t* canvas, float cx, float cy, float cr, float fx, float fy, float fr,
     plutovg_spread_method_t spread, const plutovg_gradient_stop_t* stops, int nstops, const plutovg_matrix_t* matrix);
 
 /**
@@ -2540,6 +2598,17 @@ PLUTOVG_API void plutovg_canvas_glyph_metrics(plutovg_canvas_t* canvas, plutovg_
  * @return The total advance width of the text.
  */
 PLUTOVG_API float plutovg_canvas_text_extents(plutovg_canvas_t* canvas, const void* text, int length, plutovg_text_encoding_t encoding, plutovg_rect_t* extents);
+
+/**
+ * @brief Used by the animation functions
+ */
+
+typedef void* plutovg_outline_t;
+
+PLUTOVG_API const plutovg_outline_t* plutovg_outline_create(const plutovg_path_t* path, const plutovg_matrix_t* matrix);
+PLUTOVG_API int plutovg_outline_point_count(const plutovg_outline_t* outlineHandle);
+PLUTOVG_API int plutovg_outline_point_at(const plutovg_outline_t* outlineHandle, int index, plutovg_point_t* point);
+PLUTOVG_API void plutovg_outline_destroy(const plutovg_outline_t* outlineHandle);
 
 #ifdef __cplusplus
 }

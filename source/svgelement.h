@@ -19,7 +19,10 @@ class SVGNode {
 public:
     SVGNode(Document* document)
         : m_document(document)
-    {}
+        , m_parentElement(nullptr)
+    {
+        m_identity = m_document->makeIdentity(this);
+    }
 
     virtual ~SVGNode() = default;
     virtual bool isTextNode() const { return false; }
@@ -37,13 +40,16 @@ public:
 
     bool isRootElement() const { return m_parentElement == nullptr; }
 
+    const Identity& identity() const { return m_identity; }
+
     virtual std::unique_ptr<SVGNode> clone(bool deep) const = 0;
 
 private:
     SVGNode(const SVGNode&) = delete;
     SVGNode& operator=(const SVGNode&) = delete;
     Document* m_document;
-    SVGElement* m_parentElement = nullptr;
+    SVGElement* m_parentElement;
+    Identity m_identity;
 };
 
 class SVGTextNode final : public SVGNode {
@@ -80,13 +86,18 @@ private:
 
 using AttributeList = std::forward_list<Attribute>;
 
-enum class ElementID : uint8_t {
+enum class ElementID : uint64_t {
     Unknown = 0,
     Star,
+    Animate,
+    AnimateMotion,
+    AnimateTransform,
     Circle,
     ClipPath,
+    ConicalGradient,
     Defs,
     Ellipse,
+    ForeignObject,
     G,
     Image,
     Line,
@@ -99,6 +110,7 @@ enum class ElementID : uint8_t {
     Polyline,
     RadialGradient,
     Rect,
+    Set,
     Stop,
     Style,
     Svg,
@@ -124,7 +136,7 @@ extern const std::string emptyString;
 
 class SVGElement : public SVGNode {
 public:
-    static std::unique_ptr<SVGElement> create(Document* document, ElementID id);
+    static std::unique_ptr<SVGElement> create(Document* document, ElementID id, SVGElement* parent = nullptr);
 
     SVGElement(Document* document, ElementID id);
     virtual ~SVGElement() = default;
@@ -198,6 +210,8 @@ public:
     float opacity() const { return m_opacity; }
 
     bool isElement() const final { return true; }
+
+    virtual SVGAnimationTarget* getAnimationName(const std::string_view& name) { return nullptr; }
 
 private:
     mutable Rect m_paintBoundingBox = Rect::Invalid;
@@ -285,7 +299,7 @@ public:
         : m_element(element), m_color(color), m_opacity(opacity)
     {}
 
-    bool isRenderable() const { return m_opacity > 0.f && (m_element || m_color.alpha() > 0); }
+    bool isRenderable(const SVGElement* element = nullptr) const;
 
     const SVGPaintElement* element() const { return m_element; }
     const Color& color() const { return  m_color; }
@@ -346,7 +360,9 @@ public:
 
     SVGRootElement* layoutIfNeeded();
 
+    SVGElement* getElementById(const Identity& id) const;
     SVGElement* getElementById(const std::string_view& id) const;
+    void addElementById(const Identity& id, SVGNode* element);
     void addElementById(const std::string& id, SVGElement* element);
     void layout(SVGLayoutState& state) final;
 
@@ -354,6 +370,7 @@ public:
 
 private:
     std::map<std::string, SVGElement*, std::less<>> m_idCache;
+    std::map<uint32_t, SVGNode*, std::less<>> m_uniqueIdCache;
     float m_intrinsicWidth{-1.f};
     float m_intrinsicHeight{-1.f};
 };
@@ -491,6 +508,144 @@ private:
     SVGEnumeration<Units> m_maskUnits;
     SVGEnumeration<Units> m_maskContentUnits;
     MaskType m_mask_type = MaskType::Luminance;
+};
+
+class SVGForeignObjectElement : public SVGGraphicsElement, public SVGFitToViewBox {
+public:
+    SVGForeignObjectElement(Document* document);
+    ~SVGForeignObjectElement();
+
+    const SVGLength& x() const { return m_x; }
+    const SVGLength& y() const { return m_y; }
+    const SVGLength& width() const { return m_width; }
+    const SVGLength& height() const { return m_height; }
+
+    Transform localTransform() const override;
+    void render(SVGRenderState& state) const override;
+
+    std::unique_ptr<SVGElement> loadContent(Document* document, ElementID id);
+
+    bool contains(const Identity& identity) const;
+
+    SVGElement* getElementById(const Identity& identity);
+
+    std::shared_ptr<Document> containedDocument() const { return m_containedDocument; }
+
+private:
+    SVGLength m_x;
+    SVGLength m_y;
+    SVGLength m_width;
+    SVGLength m_height;
+
+    std::shared_ptr<Document> m_containedDocument;
+
+    void manageDocument(bool advise);
+};
+
+class SVGAnimationElement : public SVGElement {
+public:
+    SVGAnimationElement(Document* document, ElementID id);
+    ~SVGAnimationElement();
+
+    virtual void updateAnimation(float elapsedTime) = 0;
+
+    const SVGString& attributeName() const { return m_attributeName; }
+
+    const SVGTime& startTime() const { return m_startTime; }
+    const SVGTime& simpleDuration() const { return m_simpleDuration; }
+
+    const SVGCounter& repeatCount() const { return m_repeatCount; };
+    const SVGTime& repeatDuration() const { return m_repeatDuration; };
+
+    const SVGNumberList& from() const { return m_from; };
+    const SVGNumberList& to() const { return m_to; };
+
+    const SVGNumberList& begin() const { return m_begin; };
+    const SVGNumberList& end() const { return m_end; };
+
+    const SVGEnumeration<Restart>& restart() const { return m_restart; }
+
+private:
+    SVGString m_attributeName;
+
+    SVGTime m_startTime;
+    SVGTime m_simpleDuration;
+
+    SVGCounter m_repeatCount;
+    SVGTime m_repeatDuration;
+
+    SVGNumberList m_from;
+    SVGNumberList m_to;
+
+    SVGNumberList m_begin;
+    SVGNumberList m_end;
+
+    SVGEnumeration<Restart> m_restart;
+
+    float m_elapsedTime;
+
+    bool isRunning() const;
+
+    float calculatePosition(float elapsedTime, float distance = 1.f);
+
+    void manageDocument(bool advise);
+
+    friend class SVGAnimateElement;
+    friend class SVGAnimateMotionElement;
+    friend class SVGAnimateTransformElement;
+    friend class SVGSetElement;
+};
+
+class SVGAnimateElement final : public SVGAnimationElement {
+public:
+    SVGAnimateElement(Document* document);
+
+    virtual void updateAnimation(float elapsedTime);
+
+private:
+    SVGAnimationTarget* m_animationTarget;
+};
+
+class SVGAnimateMotionElement final : public SVGAnimationElement {
+public:
+    SVGAnimateMotionElement(Document* document);
+
+    const SVGPath& path() const { return m_path; }
+
+    virtual void updateAnimation(float elapsedTime);
+
+private:
+    SVGPath m_path;
+
+    struct PathPoint
+    {
+        Point location;
+        float distance;
+    };
+
+    std::vector<PathPoint> m_points;
+
+    Transform m_baseTransform;
+};
+
+class SVGAnimateTransformElement final : public SVGAnimationElement {
+public:
+    SVGAnimateTransformElement(Document* document);
+
+    virtual void updateAnimation(float elapsedTime);
+
+private:
+    SVGEnumeration<TransformType> m_type;
+};
+
+class SVGSetElement : public SVGAnimationElement {
+public:
+    SVGSetElement(Document* document);
+
+    virtual void updateAnimation(float elapsedTime);
+
+private:
+
 };
 
 } // namespace lunasvg

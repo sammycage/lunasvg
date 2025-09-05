@@ -187,6 +187,13 @@ void plutovg_canvas_set_radial_gradient(plutovg_canvas_t* canvas, float cx, floa
     plutovg_paint_destroy(paint);
 }
 
+void plutovg_canvas_set_conical_gradient(plutovg_canvas_t* canvas, float cx, float cy, float cr, float fx, float fy, float fr, plutovg_spread_method_t spread, const plutovg_gradient_stop_t* stops, int nstops, const plutovg_matrix_t* matrix)
+{
+    plutovg_paint_t* paint = plutovg_paint_create_conical_gradient(cx, cy, cr, fx, fy, fr, spread, stops, nstops, matrix);
+    plutovg_canvas_set_paint(canvas, paint);
+    plutovg_paint_destroy(paint);
+}
+
 void plutovg_canvas_set_texture(plutovg_canvas_t* canvas, plutovg_surface_t* surface, plutovg_texture_type_t type, float opacity, const plutovg_matrix_t* matrix)
 {
     plutovg_paint_t* paint = plutovg_paint_create_texture(surface, type, opacity, matrix);

@@ -28,10 +28,7 @@
 #include <string>
 #include <vector>
 
-#if defined(LUNASVG_BUILD_STATIC)
-#define LUNASVG_EXPORT
-#define LUNASVG_IMPORT
-#elif (defined(_WIN32) || defined(__CYGWIN__))
+#if !defined(LUNASVG_BUILD_STATIC) && (defined(_WIN32) || defined(__CYGWIN__))
 #define LUNASVG_EXPORT __declspec(dllexport)
 #define LUNASVG_IMPORT __declspec(dllimport)
 #elif defined(__GNUC__) && (__GNUC__ >= 4)
@@ -131,6 +128,81 @@ LUNASVG_API bool lunasvg_add_font_face_from_data(const char* family, bool bold, 
 #endif
 
 namespace lunasvg {
+
+/**
+ * @brief Represents a unique identifier across a document.
+ */
+struct Identity
+{
+    uint16_t document; // valid values > 0
+    uint16_t context;  // valid values > 0
+
+    bool operator==(const Identity& rhs) const
+    {
+        return (document == rhs.document && context == rhs.context);
+    }
+
+    bool operator!=(const Identity& rhs) const
+    {
+        return !(document == rhs.document && context == rhs.context);
+    }
+
+    operator uint16_t() const
+    {
+        return context;
+    }
+
+    operator uint32_t() const
+    {
+        return ((document << 16) | context);
+    }
+
+    uint32_t hash() const
+    {
+        return ((document << 16) | context);
+    }
+};
+
+/**
+ * @brief Represents a collection of like items.
+ */
+template <typename Item>
+class Collection : public std::vector<Item*>
+{
+public:
+    Collection() = default;
+    ~Collection() = default;
+    Collection(const Collection&) = default;
+    Collection(Collection&&) = default;
+    Collection& operator=(const Collection&) = default;
+
+    using collection = std::vector<Item*>;
+
+    /**
+     * @brief Inserts the item into the collection.
+     *
+     * @param item The item of interest.
+    */
+    void addItem(Item* item)
+    {
+        auto it = std::find(collection::begin(), collection::end(), item);
+
+        if(it == collection::end()) collection::push_back(item);
+    }
+
+    /**
+     * @brief Deletes the item from the collection.
+     *
+     * @param item The item of interest.
+    */
+    void removeItem(Item* item)
+    {
+        auto it = std::find(collection::begin(), collection::end(), item);
+
+        if(it != collection::end()) collection::erase(it);
+    }
+
+};
 
 /**
 * @note Bitmap pixel format is ARGB32_Premultiplied.
@@ -316,6 +388,12 @@ public:
      */
     Box transformed(const Matrix& matrix) const;
 
+    /**
+     * @brief Returns the string representing this box.
+     * @return A string representing this box.
+     */
+    std::string toString() const;
+
     float x{0}; ///< The x-coordinate of the box's origin.
     float y{0}; ///< The y-coordinate of the box's origin.
     float w{0}; ///< The width of the box.
@@ -427,6 +505,12 @@ public:
     void reset();
 
     /**
+     * @brief Returns the string representing this matrix.
+     * @return A string representing this matrix.
+     */
+    std::string toString() const;
+
+    /**
      * @brief Creates a translation matrix with the specified offsets.
      * @param tx The horizontal translation offset.
      * @param ty The vertical translation offset.
@@ -482,6 +566,12 @@ public:
     Node() = default;
 
     /**
+     * @brief Returns the unique identifier of this node.
+     * @return The unique identifier of this node.
+     */
+    const Identity& identity() const;
+
+    /**
      * @brief Checks if the node is a text node.
      * @return True if the node is a text node, false otherwise.
      */
@@ -492,6 +582,12 @@ public:
      * @return True if the node is an element node, false otherwise.
      */
     bool isElement() const;
+
+    /**
+     * @brief Checks if the node is a foreigh object node.
+     * @return True if the node is a foreigh object, false otherwise.
+     */
+    bool isForeignObject() const;
 
     /**
      * @brief Converts the node to a TextNode.
@@ -510,6 +606,8 @@ public:
      * @return The parent element of this node. If this node has no parent, a null `Element` is returned.
      */
     Element parentElement() const;
+
+    std::shared_ptr<class Document> getDocument() const;
 
     /**
      * @brief Checks if the node is null.
@@ -646,6 +744,12 @@ public:
     Box getBoundingBox() const;
 
     /**
+     * @brief Returns the parent of this node.
+     * @return A Node representing the parent of this node.
+     */
+    Node parent() const;
+
+    /**
      * @brief Returns the child nodes of this node.
      * @return A NodeList containing the child nodes.
      */
@@ -661,6 +765,34 @@ private:
 using ElementList = std::vector<Element>;
 
 class SVGRootElement;
+
+class LUNASVG_API StyleSheetReference
+{
+public:
+
+    StyleSheetReference(const class StyleSheet& styleSheet);
+    ~StyleSheetReference();
+
+    class StyleSheet* styleSheet();
+
+private:
+    class StyleSheet* m_styleSheet;
+};
+
+class LUNASVG_API IdentityProvider
+{
+public:
+
+    IdentityProvider()
+    : m_identity { 0, 0 }
+    {
+    }
+
+    Identity next(class Document* = nullptr);
+
+private:
+    Identity m_identity;
+};
 
 class LUNASVG_API Document {
 public:
@@ -691,13 +823,16 @@ public:
      * @param length The length of the string in bytes.
      * @return A pointer to the loaded `Document`, or `nullptr` on failure.
      */
-    static std::unique_ptr<Document> loadFromData(const char* data, size_t length);
+    static std::unique_ptr<Document> loadFromData(const char* data, size_t length, Document* parentDocument = nullptr);
 
     /**
      * @brief Applies a CSS stylesheet to the document.
      * @param content A string containing the CSS rules to apply, with comments removed.
      */
     void applyStyleSheet(const std::string& content);
+    void applyStyleSheet(Element& element);
+
+    void setStyleSheetRule(const std::string& ruleName, const std::string& styleName, const std::string& styleValue);
 
     /**
      * @brief Selects all elements that match the given CSS selector(s).
@@ -748,7 +883,11 @@ public:
      * @param backgroundColor The background color in 0xRRGGBBAA format.
      * @return A Bitmap containing the raster representation of the document.
      */
-    Bitmap renderToBitmap(int width = -1, int height = -1, uint32_t backgroundColor = 0x00000000) const;
+    Bitmap renderToBitmap(int width = -1, int height = -1, uint32_t backgroundColor = 0x00000000, float elapsedTime = 0.f) const;
+
+    bool renderToBitmap(Bitmap& bitmap, int width = -1, int height = -1, uint32_t backgroundColor = 0x00000000, float elapsedTime = 0.f) const;
+
+    void updateAnimation(float elapsedTime) const;
 
     /**
      * @brief Returns the topmost element under the specified point.
@@ -756,7 +895,7 @@ public:
      * @param y The y-coordinate in viewport space.
      * @return The topmost Element at the given point, or a null `Element` if no match is found.
      */
-    Element elementFromPoint(float x, float y) const;
+    Element elementFromPoint(float x, float y, Bitmap* bitmap = nullptr) const;
 
     /**
      * @brief Retrieves an element by its ID.
@@ -771,6 +910,24 @@ public:
      */
     Element documentElement() const;
 
+    /**
+     * @brief Retrieves a unique identifier for hit testing.
+     * @return The unique identifier for hit testing.
+     */
+    Identity makeIdentity(SVGNode* node);
+
+    /**
+     * @brief Retrieves the document for a given element.
+     * @return The document for a given element.
+     */
+    std::shared_ptr<Document> documentForElement(Element element);
+
+    /**
+     * @brief Retrieves the document identifier.
+     * @return The document identifier.
+     */
+    const Identity& identity() { return m_identity; }
+
     Document(Document&&);
     Document& operator=(Document&&);
     ~Document();
@@ -781,11 +938,26 @@ private:
     Document& operator=(const Document&) = delete;
     SVGRootElement* rootElement(bool layoutIfNeeded = false) const;
     bool parse(const char* data, size_t length);
+    void setIdentity(const std::shared_ptr<IdentityProvider>& identityProvider);
+    Identity m_identity;
+    std::shared_ptr<IdentityProvider> m_identityProvider;
     std::unique_ptr<SVGRootElement> m_rootElement;
+    std::unique_ptr<StyleSheetReference> m_styleSheet;
+    struct Namespace
+    {
+        std::string namespaceId;
+        std::string implementation;
+    };
+    std::vector<Namespace> m_namespaceList;
+    Collection< class SVGAnimationElement > m_animations;
+    Collection< class SVGForeignObjectElement > m_foreignObjects;
     friend class SVGURIReference;
     friend class SVGNode;
+    friend class SVGElement;
+    friend class SVGAnimationElement;
+    friend class SVGForeignObjectElement;
 };
 
-} // namespace lunasvg
+} //namespace lunasvg
 
 #endif // LUNASVG_H
