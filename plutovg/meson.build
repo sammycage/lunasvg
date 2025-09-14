@@ -1,7 +1,7 @@
 project('plutovg', 'c',
-    version: '1.3.0',
+    version: '1.3.1',
     license: 'MIT',
-    meson_version: '>=0.59.0',
+    meson_version: '>=1.3.0',
     default_options: ['c_std=gnu11,c11']
 )
 
@@ -28,6 +28,18 @@ endif
 math_dep = cc.find_library('m', required: false)
 if math_dep.found()
     plutovg_deps += [math_dep]
+endif
+
+threads_dep = dependency('threads', required: false)
+if threads_dep.found()
+    plutovg_deps += [threads_dep]
+endif
+stdthreads_dep = cc.find_library('stdthreads', required: false)
+if stdthreads_dep.found()
+    plutovg_deps += [stdthreads_dep]
+endif
+if cc.check_header('threads.h')
+    plutovg_c_args += ['-DHAVE_THREADS_H']
 endif
 
 plutovg_sources = [

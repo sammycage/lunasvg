@@ -2,7 +2,7 @@ option('examples', type : 'feature', value : 'auto')
 option('tests', type : 'feature', value : 'auto')
 
 option('font-face-cache-load',
-	type : 'feature',
+    type : 'feature',
     value : 'auto',
     description : 'Enable loading font face cache from files and directories'
 )

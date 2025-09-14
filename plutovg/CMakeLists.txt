@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 
 set(PLUTOVG_VERSION_MAJOR 1)
 set(PLUTOVG_VERSION_MINOR 3)
-set(PLUTOVG_VERSION_MICRO 0)
+set(PLUTOVG_VERSION_MICRO 1)
 
 project(plutovg LANGUAGES C VERSION ${PLUTOVG_VERSION_MAJOR}.${PLUTOVG_VERSION_MINOR}.${PLUTOVG_VERSION_MICRO})
 
@@ -38,6 +38,7 @@ add_library(plutovg::plutovg ALIAS plutovg)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
+include(CheckIncludeFile)
 
 set_target_properties(plutovg PROPERTIES
     SOVERSION ${PLUTOVG_VERSION_MAJOR}
@@ -59,6 +60,19 @@ target_include_directories(plutovg PUBLIC
 find_library(MATH_LIBRARY m)
 if(MATH_LIBRARY)
     target_link_libraries(plutovg PRIVATE m)
+endif()
+
+check_include_file("threads.h" HAVE_THREADS_H)
+if(HAVE_THREADS_H)
+    target_compile_definitions(plutovg PRIVATE HAVE_THREADS_H)
+endif()
+find_package(Threads)
+if(Threads_FOUND)
+    target_link_libraries(plutovg PRIVATE Threads::Threads)
+endif()
+find_library(STDTHREADS_LIBRARY stdthreads)
+if(STDTHREADS_LIBRARY)
+    target_link_libraries(plutovg PRIVATE stdthreads)
 endif()
 
 target_compile_definitions(plutovg PRIVATE PLUTOVG_BUILD)
@@ -121,6 +135,10 @@ set(plutovg_pc_libs_private "")
 
 if(MATH_LIBRARY)
     string(APPEND plutovg_pc_libs_private " -lm")
+endif()
+
+if(Threads_FOUND AND CMAKE_THREAD_LIBS_INIT)
+    string(APPEND plutovg_pc_libs_private " ${CMAKE_THREAD_LIBS_INIT}")
 endif()
 
 if(NOT BUILD_SHARED_LIBS)
