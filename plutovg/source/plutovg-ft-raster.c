@@ -58,9 +58,6 @@
 #include "plutovg-ft-raster.h"
 #include "plutovg-ft-math.h"
 
-#define PVG_FT_BEGIN_STMNT  do {
-#define PVG_FT_END_STMNT    } while ( 0 )
-
 #include <setjmp.h>
 
 #define pvg_ft_setjmp   setjmp
@@ -109,15 +106,15 @@ typedef ptrdiff_t  PVG_FT_PtrDist;
 /* remainder, cast to a specific type.  This macro also ensures that */
 /* the remainder is always positive.                                 */
 #define PVG_FT_DIV_MOD( type, dividend, divisor, quotient, remainder ) \
-PVG_FT_BEGIN_STMNT                                                   \
-  (quotient)  = (type)( (dividend) / (divisor) );                \
-  (remainder) = (type)( (dividend) % (divisor) );                \
-  if ( (remainder) < 0 )                                         \
-  {                                                              \
-    (quotient)--;                                                \
-    (remainder) += (type)(divisor);                              \
-  }                                                              \
-PVG_FT_END_STMNT
+  do {                                                                 \
+    (quotient)  = (type)( (dividend) / (divisor) );                    \
+    (remainder) = (type)( (dividend) % (divisor) );                    \
+    if ( (remainder) < 0 )                                             \
+    {                                                                  \
+      (quotient)--;                                                    \
+      (remainder) += (type)(divisor);                                  \
+    }                                                                  \
+  } while ( 0 )
 
   /* These macros speed up repetitive divisions by replacing them */
   /* with multiplications and right shifts.                       */
