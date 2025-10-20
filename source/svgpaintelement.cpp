@@ -2,6 +2,7 @@
 #include "svglayoutstate.h"
 #include "svgrenderstate.h"
 
+#include <cmath>
 #include <set>
 
 namespace lunasvg {
@@ -291,7 +292,10 @@ bool SVGPatternElement::applyPaint(SVGRenderState& state, float opacity) const
     auto xScale = currentTransform.xScale();
     auto yScale = currentTransform.yScale();
 
-    auto patternImage = Canvas::create(0, 0, patternRect.w * xScale, patternRect.h * yScale);
+    auto tileWidth = std::round(patternRect.w * xScale);
+    auto tileHeight = std::round(patternRect.h * yScale);
+
+    auto patternImage = Canvas::create(0, 0, tileWidth, tileHeight);
     auto patternImageTransform = Transform::scaled(xScale, yScale);
 
     const auto& viewBoxRect = attributes.viewBox();
