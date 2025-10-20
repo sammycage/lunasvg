@@ -696,7 +696,12 @@ plutovg_font_face_t* plutovg_font_face_cache_get(plutovg_font_face_cache_t* cach
 #include <fcntl.h>
 #include <unistd.h>
 #include <dirent.h>
+
+#ifdef __linux__
+#include <linux/limits.h>
+#else
 #include <limits.h>
+#endif
 
 #include <sys/mman.h>
 #include <sys/stat.h>
