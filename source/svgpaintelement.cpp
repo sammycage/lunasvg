@@ -308,7 +308,7 @@ bool SVGPatternElement::applyPaint(SVGRenderState& state, float opacity) const
 
     auto patternTransform = attributes.patternTransform();
     patternTransform.translate(patternRect.x, patternRect.y);
-    patternTransform.scale(1.f / xScale, 1.f / yScale);
+    patternTransform.scale(patternRect.w / patternImage->width(), patternRect.h / patternImage->height());
     state->setTexture(*patternImage, TextureType::Tiled, opacity, patternTransform);
     return true;
 }
