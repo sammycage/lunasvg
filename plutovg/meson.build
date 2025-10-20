@@ -2,7 +2,7 @@ project('plutovg', 'c',
     version: '1.3.1',
     license: 'MIT',
     meson_version: '>=1.3.0',
-    default_options: ['c_std=gnu11,c11']
+    default_options: ['c_std=gnu11']
 )
 
 plutovg_deps = []
