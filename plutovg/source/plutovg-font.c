@@ -125,7 +125,7 @@ typedef CRITICAL_SECTION plutovg_mutex_t;
 
 typedef mtx_t plutovg_mutex_t;
 
-#define plutovg_mutex_init(mutex) mtx_init(mutex, mtx_recursive)
+#define plutovg_mutex_init(mutex) mtx_init(mutex, mtx_plain | mtx_recursive)
 #define plutovg_mutex_lock(mutex) mtx_lock(mutex)
 #define plutovg_mutex_unlock(mutex) mtx_unlock(mutex)
 #define plutovg_mutex_destroy(mutex) mtx_destroy(mutex)
