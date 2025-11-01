@@ -289,8 +289,8 @@ bool SVGPatternElement::applyPaint(SVGRenderState& state, float opacity) const
     }
 
     auto currentTransform = attributes.patternTransform() * state.currentTransform();
-    auto xScale = std::max(1.f, currentTransform.xScale());
-    auto yScale = std::max(1.f, currentTransform.yScale());
+    auto xScale = currentTransform.xScale();
+    auto yScale = currentTransform.yScale();
 
     auto patternImage = Canvas::create(0, 0, patternRect.w * xScale, patternRect.h * yScale);
     auto patternImageTransform = Transform::scaled(xScale, yScale);
@@ -309,7 +309,7 @@ bool SVGPatternElement::applyPaint(SVGRenderState& state, float opacity) const
 
     auto patternTransform = attributes.patternTransform();
     patternTransform.translate(patternRect.x, patternRect.y);
-    patternTransform.scale(1.f / xScale, 1.f / yScale);
+    patternTransform.scale(patternRect.w / patternImage->width(), patternRect.h / patternImage->height());
     state->setTexture(*patternImage, TextureType::Tiled, opacity, patternTransform);
     return true;
 }
