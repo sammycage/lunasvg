@@ -1,0 +1,21 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 427 1585" width="427" height="1585">
+	<title>Drawing1</title>
+	<defs>
+		<clipPath clipPathUnits="userSpaceOnUse" id="cp1">
+			<path d="m-144 0h1227v1586h-1227z"/>
+		</clipPath>
+	</defs>
+	<style>
+		tspan { white-space:pre } 
+		.s0 { fill: #000000 } 
+		.t1 { font-size: 53px;fill: #000000;font-family: "Sim Sun" } 
+		.s2 { fill: none;stroke: #000000;stroke-linecap: round;stroke-linejoin: round;stroke-width: 1.4 } 
+		.s3 { fill: #000000;stroke: #000000;stroke-linecap: round;stroke-miterlimit:10;stroke-width: .4 } 
+	</style>
+	<g id="Page 1" clip-path="url(#cp1)">
+		<text id="Sync Data Ethernet Converter" style="transform: matrix(0,1,-1,0,100.92,768.88)" >
+			<tspan x="0" y="0" class="t1">Sync Data Ethernet Converter
+</tspan>
+		</text>
+	</g>
+</svg>
