@@ -1,5 +1,5 @@
 project('plutovg', 'c',
-    version: '1.3.1',
+    version: '1.3.2',
     license: 'MIT',
     meson_version: '>=1.3.0',
     default_options: ['c_std=gnu11']
