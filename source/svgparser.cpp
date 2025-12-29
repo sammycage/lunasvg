@@ -738,6 +738,17 @@ bool Document::parse(const char* data, size_t length)
     };
 
     std::string_view input(data, length);
+    if(length >= 3) {
+        auto buffer = (const uint8_t*)(data);
+
+        const auto c1 = buffer[0];
+        const auto c2 = buffer[1];
+        const auto c3 = buffer[2];
+        if(c1 == 0xEF && c2 == 0xBB && c3 == 0xBF) {
+            input.remove_prefix(3);
+        }
+    }
+
     while(!input.empty()) {
         if(currentElement) {
             auto text = input.substr(0, input.find('<'));
