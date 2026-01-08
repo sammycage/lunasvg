@@ -214,7 +214,7 @@ static bool matchPseudoClassSelector(const PseudoClassSelector& selector, const 
         while(sibling) {
             if(sibling->id() == element->id())
                 return false;
-            sibling = element->previousElement();
+            sibling = sibling->previousElement();
         }
 
         return true;
@@ -225,7 +225,7 @@ static bool matchPseudoClassSelector(const PseudoClassSelector& selector, const 
         while(sibling) {
             if(sibling->id() == element->id())
                 return false;
-            sibling = element->nextElement();
+            sibling = sibling->nextElement();
         }
 
         return true;
@@ -570,6 +570,9 @@ static RuleDataList parseStyleSheet(std::string_view input)
                 specificity += (simpleSelector.id == ElementID::Star) ? 0x0 : 0x1;
                 for(const auto& attributeSelector : simpleSelector.attributeSelectors) {
                     specificity += (attributeSelector.id == PropertyID::Id) ? 0x10000 : 0x100;
+                }
+                for(const auto& pseudoClassSelector : simpleSelector.pseudoClassSelectors) {
+                    specificity += 0x100;
                 }
             }
 
