@@ -866,6 +866,63 @@ static void blend_untransformed_tiled_argb(plutovg_surface_t* surface, plutovg_o
     }
 }
 
+static void blend_transformed_tiled_argb(plutovg_surface_t* surface, plutovg_operator_t op, const texture_data_t* texture, const plutovg_span_buffer_t* span_buffer)
+{
+    composition_function_t func = composition_table[op];
+    uint32_t buffer[BUFFER_SIZE];
+
+    int image_width = texture->width;
+    int image_height = texture->height;
+    const int scanline_offset = texture->stride / 4;
+
+    int fdx = (int)(texture->matrix.a * FIXED_SCALE);
+    int fdy = (int)(texture->matrix.b * FIXED_SCALE);
+
+    int count = span_buffer->spans.size;
+    const plutovg_span_t* spans = span_buffer->spans.data;
+    while(count--) {
+        uint32_t* target = (uint32_t*)(surface->data + spans->y * surface->stride) + spans->x;
+        const uint32_t* image_bits = (const uint32_t*)texture->data;
+
+        const float cx = spans->x + 0.5f;
+        const float cy = spans->y + 0.5f;
+
+        int x = (int)((texture->matrix.c * cy + texture->matrix.a * cx + texture->matrix.e) * FIXED_SCALE);
+        int y = (int)((texture->matrix.d * cy + texture->matrix.b * cx + texture->matrix.f) * FIXED_SCALE);
+
+        const int coverage = (spans->coverage * texture->const_alpha) >> 8;
+        int length = spans->len;
+        while(length) {
+            int l = plutovg_min(length, BUFFER_SIZE);
+            const uint32_t* end = buffer + l;
+            uint32_t* b = buffer;
+            while(b < end) {
+                int px = x >> 16;
+                int py = y >> 16;
+                px %= image_width;
+                py %= image_height;
+                if(px < 0) px += image_width;
+                if(py < 0) py += image_height;
+                int y_offset = py * scanline_offset;
+
+                assert(px >= 0 && px < image_width);
+                assert(py >= 0 && py < image_height);
+
+                *b = image_bits[y_offset + px];
+                x += fdx;
+                y += fdy;
+                ++b;
+            }
+
+            func(target, l, buffer, coverage);
+            target += l;
+            length -= l;
+        }
+
+        ++spans;
+    }
+}
+
 static inline uint32_t interpolate_4_pixels(uint32_t tl, uint32_t tr, uint32_t bl, uint32_t br, uint32_t distx, uint32_t disty)
 {
     uint32_t idistx = 256 - distx;
@@ -876,7 +933,7 @@ static inline uint32_t interpolate_4_pixels(uint32_t tl, uint32_t tr, uint32_t b
 }
 
 #define HALF_POINT (1 << 15)
-static void blend_transformed_tiled_argb(plutovg_surface_t* surface, plutovg_operator_t op, const texture_data_t* texture, const plutovg_span_buffer_t* span_buffer)
+static void blend_transformed_bilinear_tiled_argb(plutovg_surface_t* surface, plutovg_operator_t op, const texture_data_t* texture, const plutovg_span_buffer_t* span_buffer)
 {
     composition_function_t func = composition_table[op];
     uint32_t buffer[BUFFER_SIZE];
@@ -1056,6 +1113,8 @@ static void plutovg_blend_texture(plutovg_canvas_t* canvas, const plutovg_textur
     } else {
         if(texture->type == PLUTOVG_TEXTURE_TYPE_PLAIN) {
             blend_transformed_argb(canvas->surface, state->op, &data, span_buffer);
+        } else if(fabsf(matrix->b) > 1e-6f || fabsf(matrix->c) > 1e-6f) {
+            blend_transformed_bilinear_tiled_argb(canvas->surface, state->op, &data, span_buffer);
         } else {
             blend_transformed_tiled_argb(canvas->surface, state->op, &data, span_buffer);
         }
