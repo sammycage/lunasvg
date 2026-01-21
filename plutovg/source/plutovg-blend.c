@@ -800,16 +800,84 @@ static inline float lanczos_weight(float x, int a)
     return sinc(x) * sinc(x / (float)a);
 }
 
-// Gaussian weight for blur
-static inline float gaussian_weight(float x, float sigma)
+// Mitchell-Netravali filter weight
+// B=1/3, C=1/3 - the "recommended" values by Mitchell & Netravali
+// This filter is specifically designed for image resizing
+static inline float mitchell_weight(float x)
 {
-    return expf(-(x * x) / (2.0f * sigma * sigma));
+    const float B = 1.0f / 3.0f;
+    const float C = 1.0f / 3.0f;
+    
+    float ax = fabsf(x);
+    
+    if(ax < 1.0f) {
+        return ((12.0f - 9.0f * B - 6.0f * C) * ax * ax * ax +
+                (-18.0f + 12.0f * B + 6.0f * C) * ax * ax +
+                (6.0f - 2.0f * B)) / 6.0f;
+    } else if(ax < 2.0f) {
+        return ((-B - 6.0f * C) * ax * ax * ax +
+                (6.0f * B + 30.0f * C) * ax * ax +
+                (-12.0f * B - 48.0f * C) * ax +
+                (8.0f * B + 24.0f * C)) / 6.0f;
+    }
+    return 0.0f;
 }
 
-// Pre-filter with Gaussian blur, then Lanczos-8 (16x16 kernel)
-// Maximum quality resampling - uses largest practical kernel size
-static inline uint32_t blur_lanczos8_blur_sample(const texture_data_t* texture, int x_fixed, int y_fixed)
+// ARGB color components stored as floats for interpolation
+typedef struct {
+    float a, r, g, b;
+} color_components_t;
+
+// Apply Mitchell-Netravali filter to a single sample point (4x4 kernel)
+static inline color_components_t mitchell_filter_sample(
+    const texture_data_t* texture, int sx, int sy)
 {
+    color_components_t result = {0, 0, 0, 0};
+    float weight_total = 0;
+    
+    // Mitchell uses a 4x4 kernel (-1 to +2 in each direction)
+    for(int bj = -1; bj <= 2; bj++) {
+        float wy = mitchell_weight((float)bj);
+        for(int bi = -1; bi <= 2; bi++) {
+            float wx = mitchell_weight((float)bi);
+            float weight = wx * wy;
+            uint32_t pixel = fetch_pixel_clamped(texture, sx + bi, sy + bj);
+            
+            result.a += (float)((pixel >> 24) & 0xff) * weight;
+            result.r += (float)((pixel >> 16) & 0xff) * weight;
+            result.g += (float)((pixel >> 8) & 0xff) * weight;
+            result.b += (float)(pixel & 0xff) * weight;
+            weight_total += weight;
+        }
+    }
+    
+    if(weight_total > 0.0f) {
+        result.a /= weight_total;
+        result.r /= weight_total;
+        result.g /= weight_total;
+        result.b /= weight_total;
+    }
+    return result;
+}
+
+// Pack float color components to uint32_t ARGB
+static inline uint32_t pack_argb(float a, float r, float g, float b)
+{
+    int ia = clamp_int((int)roundf(a), 0, 255);
+    int ir = clamp_int((int)roundf(r), 0, 255);
+    int ig = clamp_int((int)roundf(g), 0, 255);
+    int ib = clamp_int((int)roundf(b), 0, 255);
+    return ((uint32_t)ia << 24) | ((uint32_t)ir << 16) | ((uint32_t)ig << 8) | (uint32_t)ib;
+}
+
+// Pre-filter with Mitchell-Netravali, then Lanczos-8 (16x16 kernel)
+// Maximum quality resampling - Mitchell provides optimal pre-filtering
+static inline uint32_t mitchell_lanczos8_sample(const texture_data_t* texture, int x_fixed, int y_fixed)
+{
+    const int KERNEL_SIZE = 16;
+    const int KERNEL_OFFSET = 7;
+    const int LANCZOS_A = 8;
+    
     // Convert fixed-point to float for precision
     float fx = (float)x_fixed / (float)FIXED_SCALE;
     float fy = (float)y_fixed / (float)FIXED_SCALE;
@@ -818,99 +886,232 @@ static inline uint32_t blur_lanczos8_blur_sample(const texture_data_t* texture, 
     int py = (int)floorf(fy);
     
     // Check if completely outside the image
-    if(px < -9 || px >= texture->width + 8 || py < -9 || py >= texture->height + 8) {
+    if(px < -(KERNEL_OFFSET + 2) || px >= texture->width + KERNEL_OFFSET + 1 ||
+       py < -(KERNEL_OFFSET + 2) || py >= texture->height + KERNEL_OFFSET + 1) {
         return 0x00000000;
     }
     
     float tx = fx - (float)px;
     float ty = fy - (float)py;
     
-    // Blur radius and sigma for pre-filtering
-    const float blur_sigma = 0.5f;
-    const int blur_radius = 1;
-    
-    // Precompute Lanczos-8 weights for 16 samples (-7 to +8)
+    // Precompute Lanczos weights
     float lanczos_wx[16], lanczos_wy[16];
     float lx_sum = 0, ly_sum = 0;
-    for(int i = 0; i < 16; i++) {
-        lanczos_wx[i] = lanczos_weight(tx - (float)(i - 7), 8);
-        lanczos_wy[i] = lanczos_weight(ty - (float)(i - 7), 8);
+    for(int i = 0; i < KERNEL_SIZE; i++) {
+        lanczos_wx[i] = lanczos_weight(tx - (float)(i - KERNEL_OFFSET), LANCZOS_A);
+        lanczos_wy[i] = lanczos_weight(ty - (float)(i - KERNEL_OFFSET), LANCZOS_A);
         lx_sum += lanczos_wx[i];
         ly_sum += lanczos_wy[i];
     }
-    if(lx_sum > 0.0f) for(int i = 0; i < 16; i++) lanczos_wx[i] /= lx_sum;
-    if(ly_sum > 0.0f) for(int i = 0; i < 16; i++) lanczos_wy[i] /= ly_sum;
     
-    // Precompute Gaussian blur weights
-    float blur_w[3];  // -1, 0, +1
-    float blur_sum = 0;
-    for(int i = -blur_radius; i <= blur_radius; i++) {
-        blur_w[i + blur_radius] = gaussian_weight((float)i, blur_sigma);
-        blur_sum += blur_w[i + blur_radius];
-    }
-    for(int i = 0; i < 3; i++) blur_w[i] /= blur_sum;
+    // Normalize Lanczos weights
+    if(lx_sum > 0.0f) for(int i = 0; i < KERNEL_SIZE; i++) lanczos_wx[i] /= lx_sum;
+    if(ly_sum > 0.0f) for(int i = 0; i < KERNEL_SIZE; i++) lanczos_wy[i] /= ly_sum;
     
-    // First pass: Pre-blur the source pixels we'll sample (16x16 region)
-    float pre_r[16][16], pre_g[16][16], pre_b[16][16], pre_a[16][16];
+    // Apply Mitchell-Netravali pre-filter and Lanczos interpolation
+    float out_a = 0, out_r = 0, out_g = 0, out_b = 0;
     
-    for(int j = 0; j < 16; j++) {
-        int sy = py + j - 7;
-        for(int i = 0; i < 16; i++) {
-            int sx = px + i - 7;
-            
-            // Apply pre-blur to this sample point
-            float br = 0, bg = 0, bb = 0, ba = 0;
-            float bw_total = 0;
-            
-            for(int bj = -blur_radius; bj <= blur_radius; bj++) {
-                for(int bi = -blur_radius; bi <= blur_radius; bi++) {
-                    float bweight = blur_w[bi + blur_radius] * blur_w[bj + blur_radius];
-                    uint32_t bpixel = fetch_pixel_clamped(texture, sx + bi, sy + bj);
-                    
-                    ba += (float)((bpixel >> 24) & 0xff) * bweight;
-                    br += (float)((bpixel >> 16) & 0xff) * bweight;
-                    bg += (float)((bpixel >> 8) & 0xff) * bweight;
-                    bb += (float)(bpixel & 0xff) * bweight;
-                    bw_total += bweight;
-                }
-            }
-            
-            pre_a[j][i] = ba / bw_total;
-            pre_r[j][i] = br / bw_total;
-            pre_g[j][i] = bg / bw_total;
-            pre_b[j][i] = bb / bw_total;
-        }
-    }
-    
-    // Second pass: Apply Lanczos-8 to pre-blurred samples
-    float lanc_r = 0, lanc_g = 0, lanc_b = 0, lanc_a = 0;
-    
-    for(int j = 0; j < 16; j++) {
-        for(int i = 0; i < 16; i++) {
+    for(int j = 0; j < KERNEL_SIZE; j++) {
+        int sy = py + j - KERNEL_OFFSET;
+        for(int i = 0; i < KERNEL_SIZE; i++) {
+            int sx = px + i - KERNEL_OFFSET;
+            color_components_t filtered = mitchell_filter_sample(texture, sx, sy);
             float weight = lanczos_wx[i] * lanczos_wy[j];
-            lanc_a += pre_a[j][i] * weight;
-            lanc_r += pre_r[j][i] * weight;
-            lanc_g += pre_g[j][i] * weight;
-            lanc_b += pre_b[j][i] * weight;
+            out_a += filtered.a * weight;
+            out_r += filtered.r * weight;
+            out_g += filtered.g * weight;
+            out_b += filtered.b * weight;
         }
     }
     
-    // Clamp results to valid range
-    int ia = clamp_int((int)roundf(lanc_a), 0, 255);
-    int ir = clamp_int((int)roundf(lanc_r), 0, 255);
-    int ig = clamp_int((int)roundf(lanc_g), 0, 255);
-    int ib = clamp_int((int)roundf(lanc_b), 0, 255);
+    return pack_argb(out_a, out_r, out_g, out_b);
+}
+
+// Calculate the scale ratio from transformation matrix
+// Returns the approximate magnification factor (> 1.0 means downscaling source to smaller dest)
+static inline float get_scale_ratio(const texture_data_t* texture)
+{
+    // The matrix transforms destination coords to source coords
+    // So scale = sqrt(a*a + b*b) gives us how many source pixels per dest pixel
+    float scale_x = sqrtf(texture->matrix.a * texture->matrix.a + texture->matrix.b * texture->matrix.b);
+    float scale_y = sqrtf(texture->matrix.c * texture->matrix.c + texture->matrix.d * texture->matrix.d);
+    float scale = (scale_x + scale_y) * 0.5f;  // Average scale
     
-    return ((uint32_t)ia << 24) | ((uint32_t)ir << 16) | ((uint32_t)ig << 8) | (uint32_t)ib;
+    // Sanity check - avoid issues with degenerate matrices
+    if(scale < 0.001f) scale = 0.001f;
+    if(scale > 1000.0f) scale = 1000.0f;
+    
+    return scale;
+}
+
+// Create a downscaled version of a texture using Mitchell-Lanczos sampling
+static plutovg_surface_t* create_downscaled_surface(const texture_data_t* src_texture, float scale_factor)
+{
+    // Sanity checks to prevent hangs or crashes
+    if(scale_factor < 1.0f) scale_factor = 1.0f;  // Never upscale
+    if(scale_factor > 16.0f) scale_factor = 16.0f;  // Limit max reduction per pass
+    
+    int new_width = (int)(src_texture->width / scale_factor);
+    int new_height = (int)(src_texture->height / scale_factor);
+    
+    // Ensure minimum size
+    if(new_width < 1) new_width = 1;
+    if(new_height < 1) new_height = 1;
+    
+    // Don't create surface if it's the same size or larger
+    if(new_width >= src_texture->width && new_height >= src_texture->height) {
+        return NULL;
+    }
+    
+    plutovg_surface_t* surface = plutovg_surface_create(new_width, new_height);
+    if(!surface) return NULL;
+    
+    // Create a temporary texture_data for sampling
+    texture_data_t temp_texture = *src_texture;
+    
+    // Sample each pixel of the new surface from the source
+    uint32_t* dest_data = (uint32_t*)surface->data;
+    
+    for(int y = 0; y < new_height; y++) {
+        for(int x = 0; x < new_width; x++) {
+            // Map destination coords to source coords
+            float src_x = (x + 0.5f) * scale_factor;
+            float src_y = (y + 0.5f) * scale_factor;
+            
+            int x_fixed = (int)(src_x * FIXED_SCALE);
+            int y_fixed = (int)(src_y * FIXED_SCALE);
+            
+            uint32_t pixel = mitchell_lanczos8_sample(&temp_texture, x_fixed, y_fixed);
+            dest_data[y * (surface->stride / 4) + x] = pixel;
+        }
+    }
+    
+    return surface;
+}
+
+// Progressive downscaling - creates mipmap-style intermediate levels
+// Returns the final intermediate texture to sample from, or NULL to use original
+typedef struct {
+    plutovg_surface_t* surfaces[4];  // Up to 4 intermediate levels
+    int num_levels;
+    texture_data_t final_texture;
+    float adjusted_matrix_scale;
+} progressive_mipmap_t;
+
+static void init_progressive_mipmap(progressive_mipmap_t* mipmap, const texture_data_t* texture)
+{
+    mipmap->num_levels = 0;
+    mipmap->final_texture = *texture;
+    mipmap->adjusted_matrix_scale = 1.0f;
+    
+    for(int i = 0; i < 4; i++) {
+        mipmap->surfaces[i] = NULL;
+    }
+    
+    float scale = get_scale_ratio(texture);
+    
+    // Only use progressive downscaling if scale > 2.0 (significant downscale)
+    // Also check for valid texture dimensions
+    if(scale <= 2.0f || texture->width < 2 || texture->height < 2) {
+        return;
+    }
+    
+    // Calculate number of passes needed (each pass reduces by 2x)
+    // For scale of 8x, we need about 3 passes: 8->4->2->final
+    float remaining_scale = scale;
+    float accumulated_scale = 1.0f;
+    int max_iterations = 10;  // Safety limit to prevent infinite loops
+    
+    while(remaining_scale > 2.0f && mipmap->num_levels < 4 && max_iterations-- > 0) {
+        // Each pass reduces by exactly 2x
+        float pass_scale = 2.0f;
+        
+        // Ensure pass_scale is valid (>= 1.0)
+        if(pass_scale < 1.0f) pass_scale = 1.0f;
+        
+        accumulated_scale *= pass_scale;
+        
+        // Create intermediate surface from previous level or original
+        texture_data_t src_tex;
+        if(mipmap->num_levels == 0) {
+            src_tex = *texture;
+        } else {
+            plutovg_surface_t* prev_surface = mipmap->surfaces[mipmap->num_levels - 1];
+            if(!prev_surface) break;  // Safety check
+            
+            src_tex.data = prev_surface->data;
+            src_tex.width = prev_surface->width;
+            src_tex.height = prev_surface->height;
+            src_tex.stride = prev_surface->stride;
+            src_tex.const_alpha = texture->const_alpha;
+            plutovg_matrix_init_identity(&src_tex.matrix);
+        }
+        
+        // Check if source is too small to downsample further
+        if(src_tex.width < 4 || src_tex.height < 4) {
+            break;
+        }
+        
+        mipmap->surfaces[mipmap->num_levels] = create_downscaled_surface(&src_tex, pass_scale);
+        if(!mipmap->surfaces[mipmap->num_levels]) {
+            break;  // Surface creation failed
+        }
+        
+        mipmap->num_levels++;
+        remaining_scale /= pass_scale;
+        
+        // Safety: if remaining_scale isn't decreasing, break to prevent infinite loop
+        if(remaining_scale >= scale) {
+            break;
+        }
+    }
+    
+    // Set up final texture to sample from
+    if(mipmap->num_levels > 0) {
+        plutovg_surface_t* final_surface = mipmap->surfaces[mipmap->num_levels - 1];
+        mipmap->final_texture.data = final_surface->data;
+        mipmap->final_texture.width = final_surface->width;
+        mipmap->final_texture.height = final_surface->height;
+        mipmap->final_texture.stride = final_surface->stride;
+        
+        // Adjust the matrix to account for the pre-scaling
+        mipmap->final_texture.matrix = texture->matrix;
+        mipmap->final_texture.matrix.a /= accumulated_scale;
+        mipmap->final_texture.matrix.b /= accumulated_scale;
+        mipmap->final_texture.matrix.c /= accumulated_scale;
+        mipmap->final_texture.matrix.d /= accumulated_scale;
+        mipmap->final_texture.matrix.e /= accumulated_scale;
+        mipmap->final_texture.matrix.f /= accumulated_scale;
+        
+        mipmap->adjusted_matrix_scale = accumulated_scale;
+    }
+}
+
+static void destroy_progressive_mipmap(progressive_mipmap_t* mipmap)
+{
+    for(int i = 0; i < mipmap->num_levels; i++) {
+        if(mipmap->surfaces[i]) {
+            plutovg_surface_destroy(mipmap->surfaces[i]);
+            mipmap->surfaces[i] = NULL;
+        }
+    }
+    mipmap->num_levels = 0;
 }
 
 static void blend_transformed_argb(plutovg_surface_t* surface, plutovg_operator_t op, const texture_data_t* texture, const plutovg_span_buffer_t* span_buffer)
 {
     composition_function_t func = composition_table[op];
     uint32_t buffer[BUFFER_SIZE];
+    
+    // Initialize progressive mipmap for large downscales
+    progressive_mipmap_t mipmap;
+    init_progressive_mipmap(&mipmap, texture);
+    
+    // Use the potentially pre-scaled texture
+    const texture_data_t* sample_texture = &mipmap.final_texture;
 
-    int fdx = (int)(texture->matrix.a * FIXED_SCALE);
-    int fdy = (int)(texture->matrix.b * FIXED_SCALE);
+    int fdx = (int)(sample_texture->matrix.a * FIXED_SCALE);
+    int fdy = (int)(sample_texture->matrix.b * FIXED_SCALE);
 
     int count = span_buffer->spans.size;
     const plutovg_span_t* spans = span_buffer->spans.data;
@@ -920,17 +1121,17 @@ static void blend_transformed_argb(plutovg_surface_t* surface, plutovg_operator_
         const float cx = spans->x + 0.5f;
         const float cy = spans->y + 0.5f;
 
-        int x = (int)((texture->matrix.c * cy + texture->matrix.a * cx + texture->matrix.e) * FIXED_SCALE);
-        int y = (int)((texture->matrix.d * cy + texture->matrix.b * cx + texture->matrix.f) * FIXED_SCALE);
+        int x = (int)((sample_texture->matrix.c * cy + sample_texture->matrix.a * cx + sample_texture->matrix.e) * FIXED_SCALE);
+        int y = (int)((sample_texture->matrix.d * cy + sample_texture->matrix.b * cx + sample_texture->matrix.f) * FIXED_SCALE);
 
         int length = spans->len;
-        const int coverage = (spans->coverage * texture->const_alpha) >> 8;
+        const int coverage = (spans->coverage * sample_texture->const_alpha) >> 8;
         while(length) {
             int l = plutovg_min(length, BUFFER_SIZE);
             const uint32_t* end = buffer + l;
             uint32_t* b = buffer;
             while(b < end) {
-                *b = blur_lanczos8_blur_sample(texture, x, y);
+                *b = mitchell_lanczos8_sample(sample_texture, x, y);
                 x += fdx;
                 y += fdy;
                 ++b;
@@ -943,6 +1144,9 @@ static void blend_transformed_argb(plutovg_surface_t* surface, plutovg_operator_
 
         ++spans;
     }
+    
+    // Clean up intermediate surfaces
+    destroy_progressive_mipmap(&mipmap);
 }
 
 static void blend_untransformed_tiled_argb(plutovg_surface_t* surface, plutovg_operator_t op, const texture_data_t* texture, const plutovg_span_buffer_t* span_buffer)
