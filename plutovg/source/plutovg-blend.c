@@ -766,13 +766,148 @@ static void blend_untransformed_argb(plutovg_surface_t* surface, plutovg_operato
 }
 
 #define FIXED_SCALE (1 << 16)
+#define PI_F 3.14159265358979323846f
+
+static inline uint32_t fetch_pixel_clamped(const texture_data_t* texture, int px, int py)
+{
+    if(px < 0) px = 0;
+    else if(px >= texture->width) px = texture->width - 1;
+    if(py < 0) py = 0;
+    else if(py >= texture->height) py = texture->height - 1;
+    return ((const uint32_t*)(texture->data + py * texture->stride))[px];
+}
+
+static inline int clamp_int(int val, int min_val, int max_val)
+{
+    if(val < min_val) return min_val;
+    if(val > max_val) return max_val;
+    return val;
+}
+
+// Sinc function: sin(pi*x) / (pi*x)
+static inline float sinc(float x)
+{
+    if(fabsf(x) < 0.0001f) return 1.0f;
+    float pix = PI_F * x;
+    return sinf(pix) / pix;
+}
+
+// Lanczos kernel with parameter a (typically 2 or 3)
+static inline float lanczos_weight(float x, int a)
+{
+    if(x == 0.0f) return 1.0f;
+    if(fabsf(x) >= (float)a) return 0.0f;
+    return sinc(x) * sinc(x / (float)a);
+}
+
+// Gaussian weight for blur
+static inline float gaussian_weight(float x, float sigma)
+{
+    return expf(-(x * x) / (2.0f * sigma * sigma));
+}
+
+// Pre-filter with Gaussian blur, then Lanczos-8 (16x16 kernel)
+// Maximum quality resampling - uses largest practical kernel size
+static inline uint32_t blur_lanczos8_blur_sample(const texture_data_t* texture, int x_fixed, int y_fixed)
+{
+    // Convert fixed-point to float for precision
+    float fx = (float)x_fixed / (float)FIXED_SCALE;
+    float fy = (float)y_fixed / (float)FIXED_SCALE;
+    
+    int px = (int)floorf(fx);
+    int py = (int)floorf(fy);
+    
+    // Check if completely outside the image
+    if(px < -9 || px >= texture->width + 8 || py < -9 || py >= texture->height + 8) {
+        return 0x00000000;
+    }
+    
+    float tx = fx - (float)px;
+    float ty = fy - (float)py;
+    
+    // Blur radius and sigma for pre-filtering
+    const float blur_sigma = 0.5f;
+    const int blur_radius = 1;
+    
+    // Precompute Lanczos-8 weights for 16 samples (-7 to +8)
+    float lanczos_wx[16], lanczos_wy[16];
+    float lx_sum = 0, ly_sum = 0;
+    for(int i = 0; i < 16; i++) {
+        lanczos_wx[i] = lanczos_weight(tx - (float)(i - 7), 8);
+        lanczos_wy[i] = lanczos_weight(ty - (float)(i - 7), 8);
+        lx_sum += lanczos_wx[i];
+        ly_sum += lanczos_wy[i];
+    }
+    if(lx_sum > 0.0f) for(int i = 0; i < 16; i++) lanczos_wx[i] /= lx_sum;
+    if(ly_sum > 0.0f) for(int i = 0; i < 16; i++) lanczos_wy[i] /= ly_sum;
+    
+    // Precompute Gaussian blur weights
+    float blur_w[3];  // -1, 0, +1
+    float blur_sum = 0;
+    for(int i = -blur_radius; i <= blur_radius; i++) {
+        blur_w[i + blur_radius] = gaussian_weight((float)i, blur_sigma);
+        blur_sum += blur_w[i + blur_radius];
+    }
+    for(int i = 0; i < 3; i++) blur_w[i] /= blur_sum;
+    
+    // First pass: Pre-blur the source pixels we'll sample (16x16 region)
+    float pre_r[16][16], pre_g[16][16], pre_b[16][16], pre_a[16][16];
+    
+    for(int j = 0; j < 16; j++) {
+        int sy = py + j - 7;
+        for(int i = 0; i < 16; i++) {
+            int sx = px + i - 7;
+            
+            // Apply pre-blur to this sample point
+            float br = 0, bg = 0, bb = 0, ba = 0;
+            float bw_total = 0;
+            
+            for(int bj = -blur_radius; bj <= blur_radius; bj++) {
+                for(int bi = -blur_radius; bi <= blur_radius; bi++) {
+                    float bweight = blur_w[bi + blur_radius] * blur_w[bj + blur_radius];
+                    uint32_t bpixel = fetch_pixel_clamped(texture, sx + bi, sy + bj);
+                    
+                    ba += (float)((bpixel >> 24) & 0xff) * bweight;
+                    br += (float)((bpixel >> 16) & 0xff) * bweight;
+                    bg += (float)((bpixel >> 8) & 0xff) * bweight;
+                    bb += (float)(bpixel & 0xff) * bweight;
+                    bw_total += bweight;
+                }
+            }
+            
+            pre_a[j][i] = ba / bw_total;
+            pre_r[j][i] = br / bw_total;
+            pre_g[j][i] = bg / bw_total;
+            pre_b[j][i] = bb / bw_total;
+        }
+    }
+    
+    // Second pass: Apply Lanczos-8 to pre-blurred samples
+    float lanc_r = 0, lanc_g = 0, lanc_b = 0, lanc_a = 0;
+    
+    for(int j = 0; j < 16; j++) {
+        for(int i = 0; i < 16; i++) {
+            float weight = lanczos_wx[i] * lanczos_wy[j];
+            lanc_a += pre_a[j][i] * weight;
+            lanc_r += pre_r[j][i] * weight;
+            lanc_g += pre_g[j][i] * weight;
+            lanc_b += pre_b[j][i] * weight;
+        }
+    }
+    
+    // Clamp results to valid range
+    int ia = clamp_int((int)roundf(lanc_a), 0, 255);
+    int ir = clamp_int((int)roundf(lanc_r), 0, 255);
+    int ig = clamp_int((int)roundf(lanc_g), 0, 255);
+    int ib = clamp_int((int)roundf(lanc_b), 0, 255);
+    
+    return ((uint32_t)ia << 24) | ((uint32_t)ir << 16) | ((uint32_t)ig << 8) | (uint32_t)ib;
+}
+
 static void blend_transformed_argb(plutovg_surface_t* surface, plutovg_operator_t op, const texture_data_t* texture, const plutovg_span_buffer_t* span_buffer)
 {
     composition_function_t func = composition_table[op];
     uint32_t buffer[BUFFER_SIZE];
-
-    int image_width = texture->width;
-    int image_height = texture->height;
 
     int fdx = (int)(texture->matrix.a * FIXED_SCALE);
     int fdy = (int)(texture->matrix.b * FIXED_SCALE);
@@ -795,14 +930,7 @@ static void blend_transformed_argb(plutovg_surface_t* surface, plutovg_operator_
             const uint32_t* end = buffer + l;
             uint32_t* b = buffer;
             while(b < end) {
-                int px = x >> 16;
-                int py = y >> 16;
-                if((px < 0) || (px >= image_width) || (py < 0) || (py >= image_height)) {
-                    *b = 0x00000000;
-                } else {
-                    *b = ((const uint32_t*)(texture->data + py * texture->stride))[px];
-                }
-
+                *b = blur_lanczos8_blur_sample(texture, x, y);
                 x += fdx;
                 y += fdy;
                 ++b;
