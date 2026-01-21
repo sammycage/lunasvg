@@ -1031,6 +1031,65 @@ static inline uint32_t box_filter_2x2(const texture_data_t* texture, int sx, int
     return (a << 24) | (r << 16) | (g << 8) | b;
 }
 
+// Area averaging filter for arbitrary scale factors
+static inline uint32_t area_average_sample(const texture_data_t* texture, int sx, int sy, 
+                                           int scale_int, int max_height, int max_width)
+{
+    float sum_a = 0, sum_r = 0, sum_g = 0, sum_b = 0;
+    int count = 0;
+    int max_j = (sy + scale_int < max_height) ? scale_int : max_height - sy;
+    int max_i = (sx + scale_int < max_width) ? scale_int : max_width - sx;
+    
+    for(int j = 0; j < max_j; j++) {
+        for(int i = 0; i < max_i; i++) {
+            uint32_t p = fetch_pixel_clamped(texture, sx + i, sy + j);
+            sum_a += (float)((p >> 24) & 0xff);
+            sum_r += (float)((p >> 16) & 0xff);
+            sum_g += (float)((p >> 8) & 0xff);
+            sum_b += (float)(p & 0xff);
+            count++;
+        }
+    }
+    
+    if(count > 0) {
+        float inv_count = 1.0f / (float)count;
+        return pack_argb(sum_a * inv_count, sum_r * inv_count, 
+                         sum_g * inv_count, sum_b * inv_count);
+    }
+    return 0;
+}
+
+// Downscale using optimized 2x2 box filter
+static void downscale_box_2x(const texture_data_t* src_texture, uint32_t* dest_data, 
+                             int dest_stride, int new_width, int new_height)
+{
+    for(int y = 0; y < new_height; y++) {
+        int sy = y * 2;
+        uint32_t* dest_row = dest_data + y * dest_stride;
+        for(int x = 0; x < new_width; x++) {
+            int sx = x * 2;
+            dest_row[x] = box_filter_2x2(src_texture, sx, sy);
+        }
+    }
+}
+
+// Downscale using area averaging for arbitrary scale factors
+static void downscale_area_average(const texture_data_t* src_texture, uint32_t* dest_data,
+                                   int dest_stride, int new_width, int new_height, float scale_factor)
+{
+    int scale_int = (int)ceilf(scale_factor);
+    
+    for(int y = 0; y < new_height; y++) {
+        int sy = (int)(y * scale_factor);
+        uint32_t* dest_row = dest_data + y * dest_stride;
+        for(int x = 0; x < new_width; x++) {
+            int sx = (int)(x * scale_factor);
+            dest_row[x] = area_average_sample(src_texture, sx, sy, scale_int, 
+                                              src_texture->height, src_texture->width);
+        }
+    }
+}
+
 // Create a downscaled version of a texture using fast box filter
 // This is optimized for 2x downscaling in mipmap chain
 static plutovg_surface_t* create_downscaled_surface(const texture_data_t* src_texture, float scale_factor)
@@ -1054,57 +1113,14 @@ static plutovg_surface_t* create_downscaled_surface(const texture_data_t* src_te
     plutovg_surface_t* surface = plutovg_surface_create(new_width, new_height);
     if(!surface) return NULL;
     
-    // Sample each pixel using fast box filter
     uint32_t* dest_data = (uint32_t*)surface->data;
     int dest_stride = surface->stride / 4;
     
     // For 2x downscale, use optimized 2x2 box filter
     if(scale_factor >= 1.9f && scale_factor <= 2.1f) {
-        for(int y = 0; y < new_height; y++) {
-            int sy = y * 2;
-            uint32_t* dest_row = dest_data + y * dest_stride;
-            for(int x = 0; x < new_width; x++) {
-                int sx = x * 2;
-                dest_row[x] = box_filter_2x2(src_texture, sx, sy);
-            }
-        }
+        downscale_box_2x(src_texture, dest_data, dest_stride, new_width, new_height);
     } else {
-        // For other scale factors, use area averaging
-        int scale_int = (int)ceilf(scale_factor);
-        float inv_area = 1.0f / (scale_factor * scale_factor);
-        
-        for(int y = 0; y < new_height; y++) {
-            float src_y = y * scale_factor;
-            int sy = (int)src_y;
-            uint32_t* dest_row = dest_data + y * dest_stride;
-            
-            for(int x = 0; x < new_width; x++) {
-                float src_x = x * scale_factor;
-                int sx = (int)src_x;
-                
-                // Sum pixels in the area
-                float sum_a = 0, sum_r = 0, sum_g = 0, sum_b = 0;
-                int count = 0;
-                for(int j = 0; j < scale_int && sy + j < src_texture->height; j++) {
-                    for(int i = 0; i < scale_int && sx + i < src_texture->width; i++) {
-                        uint32_t p = fetch_pixel_clamped(src_texture, sx + i, sy + j);
-                        sum_a += (float)((p >> 24) & 0xff);
-                        sum_r += (float)((p >> 16) & 0xff);
-                        sum_g += (float)((p >> 8) & 0xff);
-                        sum_b += (float)(p & 0xff);
-                        count++;
-                    }
-                }
-                
-                if(count > 0) {
-                    float inv_count = 1.0f / (float)count;
-                    dest_row[x] = pack_argb(sum_a * inv_count, sum_r * inv_count, 
-                                            sum_g * inv_count, sum_b * inv_count);
-                } else {
-                    dest_row[x] = 0;
-                }
-            }
-        }
+        downscale_area_average(src_texture, dest_data, dest_stride, new_width, new_height, scale_factor);
     }
     
     return surface;
