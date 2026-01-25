@@ -96,8 +96,8 @@ enum class PropertyID : uint8_t {
     Y2
 };
 
-PropertyID propertyid(const std::string_view& name);
-PropertyID csspropertyid(const std::string_view& name);
+PropertyID propertyid(std::string_view name);
+PropertyID csspropertyid(std::string_view name);
 
 class SVGElement;
 
