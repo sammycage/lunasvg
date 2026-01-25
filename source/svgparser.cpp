@@ -102,17 +102,17 @@ inline bool operator<(const RuleData& a, const RuleData& b) { return a.isLessTha
 
 using RuleDataList = std::vector<RuleData>;
 
-constexpr bool equals(const std::string_view& value, const std::string_view& subvalue)
+constexpr bool equals(std::string_view value, std::string_view subvalue)
 {
     return value.compare(subvalue) == 0;
 }
 
-constexpr bool contains(const std::string_view& value, const std::string_view& subvalue)
+constexpr bool contains(std::string_view value, std::string_view subvalue)
 {
     return value.find(subvalue) != std::string_view::npos;
 }
 
-constexpr bool includes(const std::string_view& value, const std::string_view& subvalue)
+constexpr bool includes(std::string_view value, std::string_view subvalue)
 {
     if(subvalue.empty() || subvalue.length() > value.length())
         return false;
@@ -130,21 +130,21 @@ constexpr bool includes(const std::string_view& value, const std::string_view& s
     return false;
 }
 
-constexpr bool startswith(const std::string_view& value, const std::string_view& subvalue)
+constexpr bool startswith(std::string_view value, std::string_view subvalue)
 {
     if(subvalue.empty() || subvalue.length() > value.length())
         return false;
     return subvalue == value.substr(0, subvalue.size());
 }
 
-constexpr bool endswith(const std::string_view& value, const std::string_view& subvalue)
+constexpr bool endswith(std::string_view value, std::string_view subvalue)
 {
     if(subvalue.empty() || subvalue.length() > value.length())
         return false;
     return subvalue == value.substr(value.size() - subvalue.size(), subvalue.size());
 }
 
-constexpr bool dashequals(const std::string_view& value, const std::string_view& subvalue)
+constexpr bool dashequals(std::string_view value, std::string_view subvalue)
 {
     if(startswith(value, subvalue))
         return (value.length() == subvalue.length() || value.at(subvalue.length()) == '-');
@@ -717,7 +717,7 @@ bool Document::parse(const char* data, size_t length)
     std::string styleSheet;
     SVGElement* currentElement = nullptr;
     int ignoring = 0;
-    auto handleText = [&](const std::string_view& text, bool in_cdata) {
+    auto handleText = [&](std::string_view text, bool in_cdata) {
         if(text.empty() || currentElement == nullptr || ignoring > 0)
             return;
         if(currentElement->id() != ElementID::Text && currentElement->id() != ElementID::Tspan && currentElement->id() != ElementID::Style) {

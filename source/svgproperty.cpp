@@ -6,7 +6,7 @@
 
 namespace lunasvg {
 
-PropertyID propertyid(const std::string_view& name)
+PropertyID propertyid(std::string_view name)
 {
     static const struct {
         std::string_view name;
@@ -67,7 +67,7 @@ PropertyID propertyid(const std::string_view& name)
     return it->value;
 }
 
-PropertyID csspropertyid(const std::string_view& name)
+PropertyID csspropertyid(std::string_view name)
 {
     static const struct {
         std::string_view name;

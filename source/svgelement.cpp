@@ -10,7 +10,7 @@
 
 namespace lunasvg {
 
-ElementID elementid(const std::string_view& name)
+ElementID elementid(std::string_view name)
 {
     static const struct {
         std::string_view name;
@@ -129,7 +129,7 @@ SVGElement::SVGElement(Document* document, ElementID id)
 {
 }
 
-bool SVGElement::hasAttribute(const std::string_view& name) const
+bool SVGElement::hasAttribute(std::string_view name) const
 {
     auto id = propertyid(name);
     if(id == PropertyID::Unknown)
@@ -137,7 +137,7 @@ bool SVGElement::hasAttribute(const std::string_view& name) const
     return hasAttribute(id);
 }
 
-const std::string& SVGElement::getAttribute(const std::string_view& name) const
+const std::string& SVGElement::getAttribute(std::string_view name) const
 {
     auto id = propertyid(name);
     if(id == PropertyID::Unknown)
@@ -145,7 +145,7 @@ const std::string& SVGElement::getAttribute(const std::string_view& name) const
     return getAttribute(id);
 }
 
-bool SVGElement::setAttribute(const std::string_view& name, const std::string& value)
+bool SVGElement::setAttribute(std::string_view name, const std::string& value)
 {
     auto id = propertyid(name);
     if(id == PropertyID::Unknown)
@@ -326,7 +326,7 @@ Rect SVGElement::paintBoundingBox() const
     return m_paintBoundingBox;
 }
 
-SVGMarkerElement* SVGElement::getMarker(const std::string_view& id) const
+SVGMarkerElement* SVGElement::getMarker(std::string_view id) const
 {
     auto element = rootElement()->getElementById(id);
     if(element && element->id() == ElementID::Marker)
@@ -334,7 +334,7 @@ SVGMarkerElement* SVGElement::getMarker(const std::string_view& id) const
     return nullptr;
 }
 
-SVGClipPathElement* SVGElement::getClipper(const std::string_view& id) const
+SVGClipPathElement* SVGElement::getClipper(std::string_view id) const
 {
     auto element = rootElement()->getElementById(id);
     if(element && element->id() == ElementID::ClipPath)
@@ -342,7 +342,7 @@ SVGClipPathElement* SVGElement::getClipper(const std::string_view& id) const
     return nullptr;
 }
 
-SVGMaskElement* SVGElement::getMasker(const std::string_view& id) const
+SVGMaskElement* SVGElement::getMasker(std::string_view id) const
 {
     auto element = rootElement()->getElementById(id);
     if(element && element->id() == ElementID::Mask)
@@ -350,7 +350,7 @@ SVGMaskElement* SVGElement::getMasker(const std::string_view& id) const
     return nullptr;
 }
 
-SVGPaintElement* SVGElement::getPainter(const std::string_view& id) const
+SVGPaintElement* SVGElement::getPainter(std::string_view id) const
 {
     auto element = rootElement()->getElementById(id);
     if(element && element->isPaintElement())
@@ -683,7 +683,7 @@ SVGRootElement* SVGRootElement::layoutIfNeeded()
     return this;
 }
 
-SVGElement* SVGRootElement::getElementById(const std::string_view& id) const
+SVGElement* SVGRootElement::getElementById(std::string_view id) const
 {
     auto it = m_idCache.find(id);
     if(it == m_idCache.end())
