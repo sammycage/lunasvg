@@ -218,6 +218,19 @@ cmake -B build -DUSE_SYSTEM_PLUTOVG=ON .
 cmake --build build
 ```
 
+LUNASVG_INSTALL (default: ON): Enable installing the library to the system/install prefix. Useful for preventing a separate installation of the library when statically linked to your project.
+Example:
+
+```bash
+# Static libraries don't need a separate install
+set(LUNASVG_INSTALL OFF)
+set(PLUTOVG_INSTALL OFF)
+FetchContent_Declare(
+    lunasvg
+    # ...
+)
+```
+
 ### Using Meson
 
 ```bash
