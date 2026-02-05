@@ -3,6 +3,11 @@
 
 #include <stdio.h>
 #include <assert.h>
+#ifdef __linux__
+#include <linux/limits.h>  // PATH_MAX
+#else
+#include <limits.h>        // PATH_MAX
+#endif
 
 #define STBTT_STATIC
 #define STB_TRUETYPE_IMPLEMENTATION
