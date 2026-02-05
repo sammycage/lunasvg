@@ -110,7 +110,7 @@ static float parseNumberOrPercentage(std::string_view input, bool allowPercentag
     return value;
 }
 
-static Length parseLength(const std::string_view& input, LengthNegativeMode mode, const Length& defaultValue)
+static Length parseLength(std::string_view input, LengthNegativeMode mode, const Length& defaultValue)
 {
     Length value;
     if(!value.parse(input, mode))
@@ -118,7 +118,7 @@ static Length parseLength(const std::string_view& input, LengthNegativeMode mode
     return value;
 }
 
-static BaselineShift parseBaselineShift(const std::string_view& input)
+static BaselineShift parseBaselineShift(std::string_view input)
 {
     if(input.compare("baseline") == 0)
         return BaselineShift::Type::Baseline;
@@ -167,7 +167,7 @@ static float parseFontSize(std::string_view input, const SVGLayoutState* state)
 }
 
 template<typename Enum, unsigned int N>
-static Enum parseEnumValue(const std::string_view& input, const SVGEnumerationEntry<Enum>(&entries)[N], Enum defaultValue)
+static Enum parseEnumValue(std::string_view input, const SVGEnumerationEntry<Enum>(&entries)[N], Enum defaultValue)
 {
     for(const auto& entry : entries) {
         if(input == entry.second) {
@@ -178,7 +178,7 @@ static Enum parseEnumValue(const std::string_view& input, const SVGEnumerationEn
     return defaultValue;
 }
 
-static Display parseDisplay(const std::string_view& input)
+static Display parseDisplay(std::string_view input)
 {
     static const SVGEnumerationEntry<Display> entries[] = {
         {Display::Inline, "inline"},
@@ -188,7 +188,7 @@ static Display parseDisplay(const std::string_view& input)
     return parseEnumValue(input, entries, Display::Inline);
 }
 
-static Visibility parseVisibility(const std::string_view& input)
+static Visibility parseVisibility(std::string_view input)
 {
     static const SVGEnumerationEntry<Visibility> entries[] = {
         {Visibility::Visible, "visible"},
@@ -199,7 +199,7 @@ static Visibility parseVisibility(const std::string_view& input)
     return parseEnumValue(input, entries, Visibility::Visible);
 }
 
-static Overflow parseOverflow(const std::string_view& input)
+static Overflow parseOverflow(std::string_view input)
 {
     static const SVGEnumerationEntry<Overflow> entries[] = {
         {Overflow::Visible, "visible"},
@@ -209,7 +209,7 @@ static Overflow parseOverflow(const std::string_view& input)
     return parseEnumValue(input, entries, Overflow::Visible);
 }
 
-static PointerEvents parsePointerEvents(const std::string_view& input)
+static PointerEvents parsePointerEvents(std::string_view input)
 {
     static const SVGEnumerationEntry<PointerEvents> entries[] = {
         {PointerEvents::None,"none"},
@@ -228,7 +228,7 @@ static PointerEvents parsePointerEvents(const std::string_view& input)
     return parseEnumValue(input, entries, PointerEvents::Auto);
 }
 
-static FontWeight parseFontWeight(const std::string_view& input)
+static FontWeight parseFontWeight(std::string_view input)
 {
     static const SVGEnumerationEntry<FontWeight> entries[] = {
         {FontWeight::Normal, "normal"},
@@ -249,7 +249,7 @@ static FontWeight parseFontWeight(const std::string_view& input)
     return parseEnumValue(input, entries, FontWeight::Normal);
 }
 
-static FontStyle parseFontStyle(const std::string_view& input)
+static FontStyle parseFontStyle(std::string_view input)
 {
     static const SVGEnumerationEntry<FontStyle> entries[] = {
         {FontStyle::Normal, "normal"},
@@ -260,7 +260,7 @@ static FontStyle parseFontStyle(const std::string_view& input)
     return parseEnumValue(input, entries, FontStyle::Normal);
 }
 
-static AlignmentBaseline parseAlignmentBaseline(const std::string_view& input)
+static AlignmentBaseline parseAlignmentBaseline(std::string_view input)
 {
     static const SVGEnumerationEntry<AlignmentBaseline> entries[] = {
         {AlignmentBaseline::Auto, "auto"},
@@ -280,7 +280,7 @@ static AlignmentBaseline parseAlignmentBaseline(const std::string_view& input)
     return parseEnumValue(input, entries, AlignmentBaseline::Auto);
 }
 
-static DominantBaseline parseDominantBaseline(const std::string_view& input)
+static DominantBaseline parseDominantBaseline(std::string_view input)
 {
     static const SVGEnumerationEntry<DominantBaseline> entries[] = {
         {DominantBaseline::Auto, "auto"},
@@ -300,7 +300,7 @@ static DominantBaseline parseDominantBaseline(const std::string_view& input)
     return parseEnumValue(input, entries, DominantBaseline::Auto);
 }
 
-static Direction parseDirection(const std::string_view& input)
+static Direction parseDirection(std::string_view input)
 {
     static const SVGEnumerationEntry<Direction> entries[] = {
         {Direction::Ltr, "ltr"},
@@ -310,7 +310,7 @@ static Direction parseDirection(const std::string_view& input)
     return parseEnumValue(input, entries, Direction::Ltr);
 }
 
-static WritingMode parseWritingMode(const std::string_view& input)
+static WritingMode parseWritingMode(std::string_view input)
 {
     static const SVGEnumerationEntry<WritingMode> entries[] = {
         {WritingMode::Horizontal, "horizontal-tb"},
@@ -327,7 +327,7 @@ static WritingMode parseWritingMode(const std::string_view& input)
     return parseEnumValue(input, entries, WritingMode::Horizontal);
 }
 
-static TextOrientation parseTextOrientation(const std::string_view& input)
+static TextOrientation parseTextOrientation(std::string_view input)
 {
     static const SVGEnumerationEntry<TextOrientation> entries[] = {
         {TextOrientation::Mixed, "mixed"},
@@ -337,7 +337,7 @@ static TextOrientation parseTextOrientation(const std::string_view& input)
     return parseEnumValue(input, entries, TextOrientation::Mixed);
 }
 
-static TextAnchor parseTextAnchor(const std::string_view& input)
+static TextAnchor parseTextAnchor(std::string_view input)
 {
     static const SVGEnumerationEntry<TextAnchor> entries[] = {
         {TextAnchor::Start, "start"},
@@ -348,7 +348,7 @@ static TextAnchor parseTextAnchor(const std::string_view& input)
     return parseEnumValue(input, entries, TextAnchor::Start);
 }
 
-static WhiteSpace parseWhiteSpace(const std::string_view& input)
+static WhiteSpace parseWhiteSpace(std::string_view input)
 {
     static const SVGEnumerationEntry<WhiteSpace> entries[] = {
         {WhiteSpace::Default, "default"},
@@ -363,7 +363,7 @@ static WhiteSpace parseWhiteSpace(const std::string_view& input)
     return parseEnumValue(input, entries, WhiteSpace::Default);
 }
 
-static MaskType parseMaskType(const std::string_view& input)
+static MaskType parseMaskType(std::string_view input)
 {
     static const SVGEnumerationEntry<MaskType> entries[] = {
         {MaskType::Luminance, "luminance"},
@@ -373,7 +373,7 @@ static MaskType parseMaskType(const std::string_view& input)
     return parseEnumValue(input, entries, MaskType::Luminance);
 }
 
-static FillRule parseFillRule(const std::string_view& input)
+static FillRule parseFillRule(std::string_view input)
 {
     static const SVGEnumerationEntry<FillRule> entries[] = {
         {FillRule::NonZero, "nonzero"},
@@ -383,7 +383,7 @@ static FillRule parseFillRule(const std::string_view& input)
     return parseEnumValue(input, entries, FillRule::NonZero);
 }
 
-static LineCap parseLineCap(const std::string_view& input)
+static LineCap parseLineCap(std::string_view input)
 {
     static const SVGEnumerationEntry<LineCap> entries[] = {
         {LineCap::Butt, "butt"},
@@ -394,7 +394,7 @@ static LineCap parseLineCap(const std::string_view& input)
     return parseEnumValue(input, entries, LineCap::Butt);
 }
 
-static LineJoin parseLineJoin(const std::string_view& input)
+static LineJoin parseLineJoin(std::string_view input)
 {
     static const SVGEnumerationEntry<LineJoin> entries[] = {
         {LineJoin::Miter, "miter"},
