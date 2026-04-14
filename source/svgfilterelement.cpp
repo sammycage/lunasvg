@@ -2,6 +2,9 @@
 #include "svglayoutstate.h"
 #include "svgrenderstate.h"
 
+#include <cmath>
+#include <cstring>
+
 extern "C" {
 #include "plutovg-filter.h"
 }
@@ -444,8 +447,8 @@ void SVGFeColorMatrixElement::layoutElement(const SVGLayoutState& state)
     } else if(m_type == 2) {
         // hueRotate: values="<angle>" in degrees
         float angle = (hasValues ? rawValue : 0.f) * 3.14159265358979f / 180.f;
-        float cosA = cosf(angle);
-        float sinA = sinf(angle);
+        float cosA = std::cos(angle);
+        float sinA = std::sin(angle);
         memset(m_matrix, 0, sizeof(m_matrix));
         m_matrix[0]  = 0.213f + 0.787f * cosA - 0.213f * sinA;
         m_matrix[1]  = 0.715f - 0.715f * cosA - 0.715f * sinA;
