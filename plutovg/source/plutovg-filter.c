@@ -206,10 +206,13 @@ static void box_blur_h(const uint32_t* src, uint32_t* dst, int w, int h, int src
             val_b += (int32_t)(p & 0xFF) - (int32_t)(fv & 0xFF);
             val_a += (int32_t)((p >> 24) & 0xFF) - (int32_t)((fv >> 24) & 0xFF);
             ri++;
-            dp[ti++] = ((uint32_t)(int32_t)(val_a * iarr + 0.5f) << 24)
-                     | ((uint32_t)(int32_t)(val_r * iarr + 0.5f) << 16)
-                     | ((uint32_t)(int32_t)(val_g * iarr + 0.5f) << 8)
-                     | (uint32_t)(int32_t)(val_b * iarr + 0.5f);
+            if(ti < w) {
+                dp[ti] = ((uint32_t)(int32_t)(val_a * iarr + 0.5f) << 24)
+                       | ((uint32_t)(int32_t)(val_r * iarr + 0.5f) << 16)
+                       | ((uint32_t)(int32_t)(val_g * iarr + 0.5f) << 8)
+                       | (uint32_t)(int32_t)(val_b * iarr + 0.5f);
+            }
+            ti++;
         }
 
         for(int j = radius + 1; j < w - radius; ++j) {
@@ -223,10 +226,13 @@ static void box_blur_h(const uint32_t* src, uint32_t* dst, int w, int h, int src
             val_a += (int32_t)((rp >> 24) & 0xFF) - (int32_t)((lp >> 24) & 0xFF);
             ri++;
             li++;
-            dp[ti++] = ((uint32_t)(int32_t)(val_a * iarr + 0.5f) << 24)
-                     | ((uint32_t)(int32_t)(val_r * iarr + 0.5f) << 16)
-                     | ((uint32_t)(int32_t)(val_g * iarr + 0.5f) << 8)
-                     | (uint32_t)(int32_t)(val_b * iarr + 0.5f);
+            if(ti < w) {
+                dp[ti] = ((uint32_t)(int32_t)(val_a * iarr + 0.5f) << 24)
+                       | ((uint32_t)(int32_t)(val_r * iarr + 0.5f) << 16)
+                       | ((uint32_t)(int32_t)(val_g * iarr + 0.5f) << 8)
+                       | (uint32_t)(int32_t)(val_b * iarr + 0.5f);
+            }
+            ti++;
         }
 
         for(int j = w - radius; j < w; ++j) {
@@ -237,10 +243,13 @@ static void box_blur_h(const uint32_t* src, uint32_t* dst, int w, int h, int src
             val_b += (int32_t)(lv & 0xFF) - (int32_t)(lp & 0xFF);
             val_a += (int32_t)((lv >> 24) & 0xFF) - (int32_t)((lp >> 24) & 0xFF);
             li++;
-            dp[ti++] = ((uint32_t)(int32_t)(val_a * iarr + 0.5f) << 24)
-                     | ((uint32_t)(int32_t)(val_r * iarr + 0.5f) << 16)
-                     | ((uint32_t)(int32_t)(val_g * iarr + 0.5f) << 8)
-                     | (uint32_t)(int32_t)(val_b * iarr + 0.5f);
+            if(ti < w) {
+                dp[ti] = ((uint32_t)(int32_t)(val_a * iarr + 0.5f) << 24)
+                       | ((uint32_t)(int32_t)(val_r * iarr + 0.5f) << 16)
+                       | ((uint32_t)(int32_t)(val_g * iarr + 0.5f) << 8)
+                       | (uint32_t)(int32_t)(val_b * iarr + 0.5f);
+            }
+            ti++;
         }
     }
 }
@@ -283,10 +292,12 @@ static void box_blur_v(const uint32_t* src, uint32_t* dst, int w, int h, int src
             val_b += (int32_t)(p & 0xFF) - (int32_t)(fv & 0xFF);
             val_a += (int32_t)((p >> 24) & 0xFF) - (int32_t)((fv >> 24) & 0xFF);
             ri++;
-            dst[ti * dst_stride + x] = ((uint32_t)(int32_t)(val_a * iarr + 0.5f) << 24)
-                                     | ((uint32_t)(int32_t)(val_r * iarr + 0.5f) << 16)
-                                     | ((uint32_t)(int32_t)(val_g * iarr + 0.5f) << 8)
-                                     | (uint32_t)(int32_t)(val_b * iarr + 0.5f);
+            if(ti < h) {
+                dst[ti * dst_stride + x] = ((uint32_t)(int32_t)(val_a * iarr + 0.5f) << 24)
+                                         | ((uint32_t)(int32_t)(val_r * iarr + 0.5f) << 16)
+                                         | ((uint32_t)(int32_t)(val_g * iarr + 0.5f) << 8)
+                                         | (uint32_t)(int32_t)(val_b * iarr + 0.5f);
+            }
             ti++;
         }
 
@@ -301,10 +312,12 @@ static void box_blur_v(const uint32_t* src, uint32_t* dst, int w, int h, int src
             val_a += (int32_t)((rp >> 24) & 0xFF) - (int32_t)((lp >> 24) & 0xFF);
             ri++;
             li++;
-            dst[ti * dst_stride + x] = ((uint32_t)(int32_t)(val_a * iarr + 0.5f) << 24)
-                                     | ((uint32_t)(int32_t)(val_r * iarr + 0.5f) << 16)
-                                     | ((uint32_t)(int32_t)(val_g * iarr + 0.5f) << 8)
-                                     | (uint32_t)(int32_t)(val_b * iarr + 0.5f);
+            if(ti < h) {
+                dst[ti * dst_stride + x] = ((uint32_t)(int32_t)(val_a * iarr + 0.5f) << 24)
+                                         | ((uint32_t)(int32_t)(val_r * iarr + 0.5f) << 16)
+                                         | ((uint32_t)(int32_t)(val_g * iarr + 0.5f) << 8)
+                                         | (uint32_t)(int32_t)(val_b * iarr + 0.5f);
+            }
             ti++;
         }
 
@@ -316,10 +329,12 @@ static void box_blur_v(const uint32_t* src, uint32_t* dst, int w, int h, int src
             val_b += (int32_t)(lv & 0xFF) - (int32_t)(lp & 0xFF);
             val_a += (int32_t)((lv >> 24) & 0xFF) - (int32_t)((lp >> 24) & 0xFF);
             li++;
-            dst[ti * dst_stride + x] = ((uint32_t)(int32_t)(val_a * iarr + 0.5f) << 24)
-                                     | ((uint32_t)(int32_t)(val_r * iarr + 0.5f) << 16)
-                                     | ((uint32_t)(int32_t)(val_g * iarr + 0.5f) << 8)
-                                     | (uint32_t)(int32_t)(val_b * iarr + 0.5f);
+            if(ti < h) {
+                dst[ti * dst_stride + x] = ((uint32_t)(int32_t)(val_a * iarr + 0.5f) << 24)
+                                         | ((uint32_t)(int32_t)(val_r * iarr + 0.5f) << 16)
+                                         | ((uint32_t)(int32_t)(val_g * iarr + 0.5f) << 8)
+                                         | (uint32_t)(int32_t)(val_b * iarr + 0.5f);
+            }
             ti++;
         }
     }
@@ -634,15 +649,23 @@ void plutovg_filter_composite(
             }
             case 5: // arithmetic: k1*i1*i2 + k2*i1 + k3*i2 + k4
             {
-                float fr = k1 * r1 * r2 / 255.f + k2 * r1 + k3 * r2 + k4 * 255.f;
-                float fg = k1 * g1 * g2 / 255.f + k2 * g1 + k3 * g2 + k4 * 255.f;
-                float fb = k1 * b1 * b2 / 255.f + k2 * b1 + k3 * b2 + k4 * 255.f;
+                uint32_t ur1 = a1 ? r1 * 255 / a1 : 0;
+                uint32_t ug1 = a1 ? g1 * 255 / a1 : 0;
+                uint32_t ub1 = a1 ? b1 * 255 / a1 : 0;
+                uint32_t ur2 = a2 ? r2 * 255 / a2 : 0;
+                uint32_t ug2 = a2 ? g2 * 255 / a2 : 0;
+                uint32_t ub2 = a2 ? b2 * 255 / a2 : 0;
+
+                float fr = k1 * ur1 * ur2 / 255.f + k2 * ur1 + k3 * ur2 + k4 * 255.f;
+                float fg = k1 * ug1 * ug2 / 255.f + k2 * ug1 + k3 * ug2 + k4 * 255.f;
+                float fb = k1 * ub1 * ub2 / 255.f + k2 * ub1 + k3 * ub2 + k4 * 255.f;
                 float fa = k1 * a1 * a2 / 255.f + k2 * a1 + k3 * a2 + k4 * 255.f;
                 ra = clamp255((int)(fa + 0.5f));
                 rr = clamp255((int)(fr + 0.5f));
                 rg = clamp255((int)(fg + 0.5f));
                 rb = clamp255((int)(fb + 0.5f));
-                break;
+                dst_data[row * dst_stride + col] = premultiply_pixel(rr, rg, rb, ra);
+                continue;
             }
             default:
                 ra = rr = rg = rb = 0;
@@ -683,7 +706,7 @@ void plutovg_filter_premultiply(uint32_t* pixels, int count)
 }
 
 // ============================================================
-// Phase F3: Component Transfer, Morphology, Tile
+// Component Transfer, Morphology, Tile
 // ============================================================
 
 static float apply_transfer_func(float value, const plutovg_transfer_func_t* func)
@@ -892,7 +915,7 @@ void plutovg_filter_tile(
 }
 
 // ============================================================
-// Phase F4: Turbulence, Convolve Matrix, Displacement Map
+// Turbulence, Convolve Matrix, Displacement Map
 // ============================================================
 
 // --- Perlin Turbulence (per SVG spec appendix) ---
@@ -1144,7 +1167,7 @@ void plutovg_filter_convolve_matrix(
 
                     // SVG spec: kernel index is (orderY-1-ky)*orderX + (orderX-1-kx)
                     // for the standard flipped convolution
-                    float kv = kernelMatrix[ky * orderX + kx];
+                    float kv = kernelMatrix[(orderY - 1 - ky) * orderX + (orderX - 1 - kx)];
 
                     // Unpremultiply for correct math
                     uint32_t pa = (p >> 24) & 0xFF;
@@ -1257,9 +1280,6 @@ void plutovg_filter_displacement_map(
         }
     }
 }
-
-
-// --- Phase F5: Lighting primitives ---
 
 // Get alpha value at pixel (x,y), clamped to surface bounds
 static float get_alpha(const plutovg_surface_t* src, int x, int y, int w, int h)
