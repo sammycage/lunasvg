@@ -3,13 +3,15 @@
 
 #include "plutovg.h"
 
+#if defined(_MSC_VER)
+#define CDECL __cdecl
+#else
 #define CDECL
+#endif
 
 #if defined(_WIN32)
 
 #include <windows.h>
-
-#define CDECL __cdecl
 
 typedef LONG plutovg_ref_count_t;
 
@@ -19,8 +21,6 @@ typedef LONG plutovg_ref_count_t;
 #define plutovg_get_reference_count(ob) ((ob) ? InterlockedCompareExchange((LONG*)&(ob)->ref_count, 0, 0) : 0)
 
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && !defined(__STDC_NO_ATOMICS__)
-
-#define CDECL
 
 #include <stdatomic.h>
 
@@ -32,8 +32,6 @@ typedef atomic_int plutovg_ref_count_t;
 #define plutovg_get_reference_count(ob) ((ob) ? atomic_load(&(ob)->ref_count) : 0)
 
 #else
-
-#define CDECL
 
 typedef int plutovg_ref_count_t;
 
