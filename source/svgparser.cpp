@@ -568,12 +568,9 @@ static RuleDataList parseStyleSheet(std::string_view input)
             size_t specificity = 0;
             for(const auto& simpleSelector : selector) {
                 specificity += (simpleSelector.id == ElementID::Star) ? 0x0 : 0x1;
-                for(const auto& attributeSelector : simpleSelector.attributeSelectors) {
+                for(const auto& attributeSelector : simpleSelector.attributeSelectors)
                     specificity += (attributeSelector.id == PropertyID::Id) ? 0x10000 : 0x100;
-                }
-                for(const auto& pseudoClassSelector : simpleSelector.pseudoClassSelectors) {
-                    specificity += 0x100;
-                }
+                specificity += simpleSelector.pseudoClassSelectors.size() * 0x100;
             }
 
             rules.emplace_back(selector, rule.declarations, specificity, rules.size());
