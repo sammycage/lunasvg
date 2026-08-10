@@ -96,56 +96,59 @@ write_basic_package_version_file(plutovgConfigVersion.cmake
     COMPATIBILITY SameMajorVersion
 )
 
-install(FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/plutovg.h
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/plutovg
-)
 
-install(TARGETS plutovg
-    EXPORT plutovgTargets
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+option(PLUTOVG_INSTALL "Generate the install target" ON)
+if(PLUTOVG_INSTALL)
+    install(FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/plutovg.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/plutovg
+    )
 
-install(EXPORT plutovgTargets
-    FILE plutovgTargets.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/plutovg
-    NAMESPACE plutovg::
-)
+    install(TARGETS plutovg
+        EXPORT plutovgTargets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
 
-install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/plutovgConfig.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/plutovgConfigVersion.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/plutovg
-)
+    install(EXPORT plutovgTargets
+        FILE plutovgTargets.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/plutovg
+        NAMESPACE plutovg::
+    )
 
-export(EXPORT plutovgTargets
-    FILE ${CMAKE_CURRENT_BINARY_DIR}/plutovgTargets.cmake
-    NAMESPACE plutovg::
-)
+    install(FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/plutovgConfig.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/plutovgConfigVersion.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/plutovg
+    )
 
-file(RELATIVE_PATH plutovg_pc_prefix_relative
-    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pkgconfig"
-    "${CMAKE_INSTALL_PREFIX}"
-)
+    export(EXPORT plutovgTargets
+        FILE ${CMAKE_CURRENT_BINARY_DIR}/plutovgTargets.cmake
+        NAMESPACE plutovg::
+    )
 
-set(plutovg_pc_cflags "")
-set(plutovg_pc_libs_private "")
+    file(RELATIVE_PATH plutovg_pc_prefix_relative
+        "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pkgconfig"
+        "${CMAKE_INSTALL_PREFIX}"
+    )
 
-if(MATH_LIBRARY)
-    string(APPEND plutovg_pc_libs_private " -lm")
-endif()
+    set(plutovg_pc_cflags "")
+    set(plutovg_pc_libs_private "")
 
-if(Threads_FOUND AND CMAKE_THREAD_LIBS_INIT)
-    string(APPEND plutovg_pc_libs_private " ${CMAKE_THREAD_LIBS_INIT}")
-endif()
+    if(MATH_LIBRARY)
+        string(APPEND plutovg_pc_libs_private " -lm")
+    endif()
 
-if(NOT BUILD_SHARED_LIBS)
-    string(APPEND plutovg_pc_cflags " -DPLUTOVG_BUILD_STATIC")
-endif()
+    if(Threads_FOUND AND CMAKE_THREAD_LIBS_INIT)
+        string(APPEND plutovg_pc_libs_private " ${CMAKE_THREAD_LIBS_INIT}")
+    endif()
 
-string(CONFIGURE [[
+    if(NOT BUILD_SHARED_LIBS)
+        string(APPEND plutovg_pc_cflags " -DPLUTOVG_BUILD_STATIC")
+    endif()
+
+    string(CONFIGURE [[
 prefix=${pcfiledir}/@plutovg_pc_prefix_relative@
 includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
@@ -159,11 +162,12 @@ Libs: -L${libdir} -lplutovg
 Libs.private:@plutovg_pc_libs_private@
 ]] plutovg_pc @ONLY)
 
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/plutovg.pc" "${plutovg_pc}")
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/plutovg.pc" "${plutovg_pc}")
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/plutovg.pc"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
-)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/plutovg.pc"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
+    )
+endif()
 
 option(PLUTOVG_BUILD_EXAMPLES "Build examples" ON)
 if(PLUTOVG_BUILD_EXAMPLES)

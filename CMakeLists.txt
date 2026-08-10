@@ -77,60 +77,62 @@ if(LUNASVG_DISABLE_LOAD_SYSTEM_FONTS)
     target_compile_definitions(lunasvg PRIVATE LUNASVG_DISABLE_LOAD_SYSTEM_FONTS)
 endif()
 
-include(GNUInstallDirs)
-include(CMakePackageConfigHelpers)
+option(LUNASVG_INSTALL "Generate the install target" ON)
+if(LUNASVG_INSTALL)
+    include(GNUInstallDirs)
+    include(CMakePackageConfigHelpers)
 
-configure_package_config_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/lunasvgConfig.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/lunasvgConfig.cmake"
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lunasvg
-)
+    configure_package_config_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/lunasvgConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/lunasvgConfig.cmake"
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lunasvg
+    )
 
-write_basic_package_version_file(lunasvgConfigVersion.cmake
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
+    write_basic_package_version_file(lunasvgConfigVersion.cmake
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMajorVersion
+    )
 
-install(FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/lunasvg.h
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lunasvg
-)
+    install(FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/lunasvg.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lunasvg
+    )
 
-install(TARGETS lunasvg
-    EXPORT lunasvgTargets
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+    install(TARGETS lunasvg
+        EXPORT lunasvgTargets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
 
-install(EXPORT lunasvgTargets
-    FILE lunasvgTargets.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lunasvg
-    NAMESPACE lunasvg::
-)
+    install(EXPORT lunasvgTargets
+        FILE lunasvgTargets.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lunasvg
+        NAMESPACE lunasvg::
+    )
 
-install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/lunasvgConfig.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/lunasvgConfigVersion.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lunasvg
-)
+    install(FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/lunasvgConfig.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/lunasvgConfigVersion.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/lunasvg
+    )
 
-export(EXPORT lunasvgTargets
-    FILE ${CMAKE_CURRENT_BINARY_DIR}/lunasvgTargets.cmake
-    NAMESPACE lunasvg::
-)
+    export(EXPORT lunasvgTargets
+        FILE ${CMAKE_CURRENT_BINARY_DIR}/lunasvgTargets.cmake
+        NAMESPACE lunasvg::
+    )
 
-file(RELATIVE_PATH lunasvg_pc_prefix_relative
-    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pkgconfig"
-    "${CMAKE_INSTALL_PREFIX}"
-)
+    file(RELATIVE_PATH lunasvg_pc_prefix_relative
+        "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/pkgconfig"
+        "${CMAKE_INSTALL_PREFIX}"
+    )
 
-set(lunasvg_pc_cflags "")
-if(NOT BUILD_SHARED_LIBS)
-    string(APPEND lunasvg_pc_cflags " -DLUNASVG_BUILD_STATIC")
-endif()
+    set(lunasvg_pc_cflags "")
+    if(NOT BUILD_SHARED_LIBS)
+        string(APPEND lunasvg_pc_cflags " -DLUNASVG_BUILD_STATIC")
+    endif()
 
-string(CONFIGURE [[
+    string(CONFIGURE [[
 prefix=${pcfiledir}/@lunasvg_pc_prefix_relative@
 includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
@@ -144,10 +146,11 @@ Cflags: -I${includedir}/lunasvg@lunasvg_pc_cflags@
 Libs: -L${libdir} -llunasvg
 ]] lunasvg_pc @ONLY)
 
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/lunasvg.pc" "${lunasvg_pc}")
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/lunasvg.pc"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
-)
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/lunasvg.pc" "${lunasvg_pc}")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/lunasvg.pc"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
+    )
+endif()
 
 option(LUNASVG_BUILD_EXAMPLES "Build examples" ON)
 if(LUNASVG_BUILD_EXAMPLES)
