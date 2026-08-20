@@ -285,6 +285,7 @@ $ svg2png input.svg 512x512 0xff00ffff
 - [CARLA Simulator](https://carla.org/)
 - [AUI Framework](https://github.com/aui-framework/aui)
 - [Software Companions](http://www.softwarecompanions.com)
+- [node-canvas](https://github.com/Automattic/node-canvas)
 
 ## License
 
