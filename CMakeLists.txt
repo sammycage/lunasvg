@@ -77,6 +77,11 @@ if(LUNASVG_DISABLE_LOAD_SYSTEM_FONTS)
     target_compile_definitions(lunasvg PRIVATE LUNASVG_DISABLE_LOAD_SYSTEM_FONTS)
 endif()
 
+option(LUNASVG_DISABLE_EXTERNAL_RESOURCES "Disable loading of resources referenced by file path, leaving only data: URIs" OFF)
+if(LUNASVG_DISABLE_EXTERNAL_RESOURCES)
+    target_compile_definitions(lunasvg PRIVATE LUNASVG_DISABLE_EXTERNAL_RESOURCES)
+endif()
+
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 

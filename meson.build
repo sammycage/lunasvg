@@ -36,6 +36,10 @@ if get_option('load-system-fonts').disabled()
     lunasvg_cpp_args += ['-DLUNASVG_DISABLE_LOAD_SYSTEM_FONTS']
 endif
 
+if get_option('external-resources').disabled()
+    lunasvg_cpp_args += ['-DLUNASVG_DISABLE_EXTERNAL_RESOURCES']
+endif
+
 lunasvg_lib = library('lunasvg', lunasvg_sources,
     include_directories: include_directories('include', 'source'),
     dependencies: plutovg_dep,

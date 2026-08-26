@@ -6,3 +6,9 @@ option('load-system-fonts',
     value : 'auto',
     description : 'Enable automatic loading of fonts from system directories'
 )
+
+option('external-resources',
+    type : 'feature',
+    value : 'auto',
+    description : 'Enable loading of resources referenced by file path'
+)
