@@ -908,7 +908,11 @@ static Bitmap loadImageResource(const std::string& href)
         return plutovg_surface_load_from_image_base64(input.data(), input.length());
     }
 
+#ifdef LUNASVG_DISABLE_EXTERNAL_RESOURCES
+    return Bitmap();
+#else
     return plutovg_surface_load_from_image_file(href.data());
+#endif
 }
 
 void SVGImageElement::parseAttribute(PropertyID id, const std::string& value)
