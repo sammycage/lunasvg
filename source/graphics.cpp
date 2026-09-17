@@ -496,12 +496,20 @@ std::shared_ptr<Canvas> Canvas::create(const Bitmap& bitmap)
 std::shared_ptr<Canvas> Canvas::create(float x, float y, float width, float height)
 {
     constexpr int kMaxSize = 1 << 15;
-    if(width <= 0 || height <= 0 || width >= kMaxSize || height >= kMaxSize)
+    constexpr float kMaxCoord = 1 << 24;
+    // NaN compares false against everything, so this also rejects non-finite
+    // geometry, whose conversion to int below would be undefined.
+    if(!(width > 0 && height > 0 && width < kMaxCoord && height < kMaxCoord
+        && std::abs(x) < kMaxCoord && std::abs(y) < kMaxCoord))
         return std::shared_ptr<Canvas>(new Canvas(0, 0, 1, 1));
     auto l = static_cast<int>(std::floor(x));
     auto t = static_cast<int>(std::floor(y));
     auto r = static_cast<int>(std::ceil(x + width));
     auto b = static_cast<int>(std::ceil(y + height));
+    // Rounding can push the extent past what plutovg_surface_create() accepts;
+    // it returns null there and plutovg_canvas_create() dereferences it.
+    if(r - l <= 0 || b - t <= 0 || r - l >= kMaxSize || b - t >= kMaxSize)
+        return std::shared_ptr<Canvas>(new Canvas(0, 0, 1, 1));
     return std::shared_ptr<Canvas>(new Canvas(l, t, r - l, b - t));
 }
 
