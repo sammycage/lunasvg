@@ -286,6 +286,7 @@ $ svg2png input.svg 512x512 0xff00ffff
 - [AUI Framework](https://github.com/aui-framework/aui)
 - [Software Companions](http://www.softwarecompanions.com)
 - [node-canvas](https://github.com/Automattic/node-canvas)
+- [pillow-lunasvg](https://github.com/Maksim-Burtsev/pillow-lunasvg)
 
 ## License
 
