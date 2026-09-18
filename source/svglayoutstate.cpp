@@ -554,6 +554,9 @@ SVGLayoutState::SVGLayoutState(const SVGLayoutState& parent, const SVGElement* e
         case PropertyID::Clip_Path:
             m_clip_path = parseUrl(input);
             break;
+        case PropertyID::Filter:
+            m_filter = parseUrl(input);
+            break;
         case PropertyID::Marker_Start:
             m_marker_start = parseUrl(input);
             break;
