@@ -703,7 +703,11 @@ plutovg_font_face_t* plutovg_font_face_cache_get(plutovg_font_face_cache_t* cach
 #include <limits.h>
 #endif
 
+#if defined(__SWITCH__) || defined(__vita__)
+#include "osdep/mman.h"
+#else
 #include <sys/mman.h>
+#endif
 #include <sys/stat.h>
 #endif
 
