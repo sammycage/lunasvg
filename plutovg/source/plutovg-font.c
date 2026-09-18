@@ -640,7 +640,7 @@ static plutovg_font_face_entry_t* plutovg_font_face_entry_select(plutovg_font_fa
     return a_score > b_score ? a : b;
 }
 
-static int plutovg_font_face_entry_compare(const void* a, const void* b)
+static int CDECL plutovg_font_face_entry_compare(const void* a, const void* b)
 {
     const plutovg_font_face_entry_t* a_entry = *(const plutovg_font_face_entry_t**)a;
     const plutovg_font_face_entry_t* b_entry = *(const plutovg_font_face_entry_t**)b;
