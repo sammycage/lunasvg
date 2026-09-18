@@ -48,12 +48,12 @@ static inline int clz(unsigned int x) {
 
 /* transfer sign leaving a positive number */
 #define PVG_FT_MOVE_SIGN(x, s) \
-    PVG_FT_BEGIN_STMNT         \
-    if (x < 0) {              \
-        x = -x;               \
-        s = -s;               \
-    }                         \
-    PVG_FT_END_STMNT
+    do {                       \
+      if (x < 0) {             \
+          x = -x;              \
+          s = -s;              \
+      }                        \
+    } while (0)
 
 PVG_FT_Long PVG_FT_MulFix(PVG_FT_Long a, PVG_FT_Long b)
 {
