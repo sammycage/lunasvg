@@ -511,6 +511,8 @@ typedef struct plutovg_font_face_entry {
     char* family;
     char* filename;
     int ttcindex;
+    int weight;
+    int width;
     bool bold;
     bool italic;
     struct plutovg_font_face_entry* next;
@@ -605,6 +607,26 @@ unlock:
     plutovg_mutex_unlock(&cache->mutex);
 }
 
+static int plutovg_font_face_weight(stbtt_uint8* data, int offset, bool bold)
+{
+    int weight = 0;
+    stbtt_uint32 os2 = stbtt__find_table(data, offset, "OS/2");
+    if(os2)
+        weight = ttUSHORT(data + os2 + 4);
+    if(weight < 1 || weight > 1000)
+        return bold ? 700 : 400;
+    if(bold && weight < 600)
+        return 700;
+    return weight;
+}
+
+static int plutovg_font_face_width(stbtt_uint8* data, int offset)
+{
+    stbtt_uint32 os2 = stbtt__find_table(data, offset, "OS/2");
+    int width = os2 ? ttUSHORT(data + os2 + 6) : 5;
+    return width < 1 || width > 9 ? 5 : width;
+}
+
 void plutovg_font_face_cache_add(plutovg_font_face_cache_t* cache, const char* family, bool bold, bool italic, plutovg_font_face_t* face)
 {
     if(family == NULL) family = "";
@@ -617,6 +639,8 @@ void plutovg_font_face_cache_add(plutovg_font_face_cache_t* cache, const char* f
 
     entry->filename = NULL;
     entry->ttcindex = 0;
+    entry->weight = plutovg_font_face_weight(face->info.data, face->info.fontstart, bold);
+    entry->width = plutovg_font_face_width(face->info.data, face->info.fontstart);
     entry->bold = bold;
     entry->italic = italic;
 
@@ -633,11 +657,22 @@ bool plutovg_font_face_cache_add_file(plutovg_font_face_cache_t* cache, const ch
     return true;
 }
 
-static plutovg_font_face_entry_t* plutovg_font_face_entry_select(plutovg_font_face_entry_t* a, plutovg_font_face_entry_t* b, bool bold, bool italic)
+static int plutovg_font_face_entry_score(const plutovg_font_face_entry_t* entry, int weight, bool italic)
 {
-    int a_score = (bold == a->bold) + (italic == a->italic);
-    int b_score = (bold == b->bold) + (italic == b->italic);
-    return a_score > b_score ? a : b;
+    int score = abs(entry->width - 5) * 100000 + (entry->italic == italic ? 0 : 10000);
+    if(entry->weight == weight)
+        return score;
+    if(weight >= 400 && weight <= 500) {
+        if(entry->weight > weight && entry->weight <= 500)
+            return score + entry->weight - weight;
+        if(entry->weight < weight)
+            return score + 1000 + weight - entry->weight;
+        return score + 2000 + entry->weight - weight;
+    }
+
+    if(weight < 400)
+        return score + (entry->weight < weight ? weight - entry->weight : 1000 + entry->weight - weight);
+    return score + (entry->weight > weight ? entry->weight - weight : 1000 + weight - entry->weight);
 }
 
 static int plutovg_font_face_entry_compare(const void* a, const void* b)
@@ -648,6 +683,11 @@ static int plutovg_font_face_entry_compare(const void* a, const void* b)
 }
 
 plutovg_font_face_t* plutovg_font_face_cache_get(plutovg_font_face_cache_t* cache, const char* family, bool bold, bool italic)
+{
+    return plutovg_font_face_cache_match(cache, family, bold ? 700 : 400, italic);
+}
+
+plutovg_font_face_t* plutovg_font_face_cache_match(plutovg_font_face_cache_t* cache, const char* family, int weight, bool italic)
 {
     plutovg_mutex_lock(&cache->mutex);
 
@@ -671,10 +711,13 @@ plutovg_font_face_t* plutovg_font_face_cache_get(plutovg_font_face_cache_t* cach
     plutovg_font_face_t* face = NULL;
     if(entry_result) {
         plutovg_font_face_entry_t* selected = *entry_result;
-        plutovg_font_face_entry_t* entry = selected->next;
-        while(entry) {
-            selected = plutovg_font_face_entry_select(entry, selected, bold, italic);
-            entry = entry->next;
+        int selected_score = plutovg_font_face_entry_score(selected, weight, italic);
+        for(plutovg_font_face_entry_t* entry = selected->next; entry; entry = entry->next) {
+            int score = plutovg_font_face_entry_score(entry, weight, italic);
+            if(score < selected_score) {
+                selected = entry;
+                selected_score = score;
+            }
         }
 
         if(selected->filename && selected->face == NULL)
@@ -774,6 +817,12 @@ static void plutovg_unmap(void* data, long length)
 }
 
 #endif // _WIN32
+
+static bool plutovg_font_face_is_italic(stbtt_uint8* data, int offset)
+{
+    stbtt_uint32 os2 = stbtt__find_table(data, offset, "OS/2");
+    return os2 && (ttUSHORT(data + os2 + 62) & 0x201);
+}
 
 static int plutovg_font_face_name_encoding(stbtt_uint16 platform, stbtt_uint16 encoding)
 {
@@ -878,10 +927,29 @@ int plutovg_font_face_cache_load_file(plutovg_font_face_cache_t* cache, const ch
 
         stbtt_uint32 hd = stbtt__find_table(data, offset, "head");
         stbtt_uint16 style = ttUSHORT(data + hd + 44);
+        bool bold = style & 0x1;
+        bool italic = (style & 0x2) || plutovg_font_face_is_italic(data, offset);
+        int weight = plutovg_font_face_weight(data, offset, bold);
+        int width = plutovg_font_face_width(data, offset);
 
         stbtt_uint32 nm = stbtt__find_table(data, offset, "name");
         stbtt_uint16 nm_count = ttUSHORT(data + nm + 2);
         const stbtt_uint8* nm_strings = data + nm + ttUSHORT(data + nm + 4);
+
+        for(stbtt_int32 i = 0; i < nm_count && !italic; ++i) {
+            stbtt_uint32 loc = nm + 6 + 12 * i;
+            stbtt_uint16 nm_id = ttUSHORT(data + loc + 6);
+            if(nm_id != 2 && nm_id != 17)
+                continue;
+            int name_encoding = plutovg_font_face_name_encoding(ttUSHORT(data + loc + 0), ttUSHORT(data + loc + 2));
+            if(name_encoding == 0)
+                continue;
+            size_t name_length = ttUSHORT(data + loc + 8);
+            char* name = malloc(3 * name_length + 1);
+            plutovg_font_face_decode_name(nm_strings + ttUSHORT(data + loc + 10), name_length, name_encoding, name);
+            italic = strstr(name, "Italic") || strstr(name, "Oblique");
+            free(name);
+        }
 
         size_t filename_length = strlen(filename) + 1;
         plutovg_font_face_entry_t* first_entry = NULL;
@@ -913,8 +981,10 @@ int plutovg_font_face_cache_load_file(plutovg_font_face_cache_t* cache, const ch
             entry->filename = entry->family + max_family_length;
             memcpy(entry->filename, filename, filename_length);
             entry->face = NULL;
-            entry->bold = style & 0x1;
-            entry->italic = style & 0x2;
+            entry->bold = bold;
+            entry->italic = italic;
+            entry->weight = weight;
+            entry->width = width;
             entry->ttcindex = index;
             entry->next = first_entry;
             first_entry = entry;
