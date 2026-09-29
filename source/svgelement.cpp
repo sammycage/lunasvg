@@ -660,7 +660,7 @@ void SVGSVGElement::render(SVGRenderState& state) const
         lengthContext.valueForLength(m_height)
     };
 
-    if(viewportSize.isEmpty())
+    if(viewportSize.isEmpty() || hasEmptyViewBox())
         return;
     SVGBlendInfo blendInfo(this);
     SVGRenderState newState(this, state, localTransform());
@@ -1015,7 +1015,7 @@ Rect SVGMarkerElement::markerBoundingBox(const Point& origin, float angle, float
 
 void SVGMarkerElement::renderMarker(SVGRenderState& state, const Point& origin, float angle, float strokeWidth) const
 {
-    if(state.hasCycleReference(this))
+    if(state.hasCycleReference(this) || hasEmptyViewBox())
         return;
     SVGBlendInfo blendInfo(this);
     SVGRenderState newState(this, state, markerTransform(origin, angle, strokeWidth));

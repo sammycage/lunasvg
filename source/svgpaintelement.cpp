@@ -288,6 +288,9 @@ bool SVGPatternElement::applyPaint(SVGRenderState& state, float opacity) const
         patternRect.h = patternRect.h * bbox.h;
     }
 
+    const auto& viewBoxRect = attributes.viewBox();
+    if(patternRect.isEmpty() || (viewBoxRect.isValid() && viewBoxRect.isEmpty()))
+        return false;
     auto currentTransform = attributes.patternTransform() * state.currentTransform();
     auto xScale = currentTransform.xScale();
     auto yScale = currentTransform.yScale();
@@ -295,7 +298,6 @@ bool SVGPatternElement::applyPaint(SVGRenderState& state, float opacity) const
     auto patternImage = Canvas::create(0, 0, patternRect.w * xScale, patternRect.h * yScale);
     auto patternImageTransform = Transform::scaled(xScale, yScale);
 
-    const auto& viewBoxRect = attributes.viewBox();
     if(viewBoxRect.isValid()) {
         const auto& preserveAspectRatio = attributes.preserveAspectRatio();
         patternImageTransform.multiply(preserveAspectRatio.getTransform(viewBoxRect, patternRect.size()));
