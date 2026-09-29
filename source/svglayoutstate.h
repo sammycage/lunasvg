@@ -40,7 +40,7 @@ public:
     FillRule fill_rule() const { return m_fill_rule; }
     FillRule clip_rule() const { return m_clip_rule; }
 
-    FontWeight font_weight() const { return m_font_weight; }
+    int font_weight() const { return m_font_weight; }
     FontStyle font_style() const { return m_font_style; }
 
     AlignmentBaseline alignment_baseline() const { return m_alignment_baseline; }
@@ -98,7 +98,7 @@ private:
     FillRule m_fill_rule = FillRule::NonZero;
     FillRule m_clip_rule = FillRule::NonZero;
 
-    FontWeight m_font_weight = FontWeight::Normal;
+    int m_font_weight = 400;
     FontStyle m_font_style = FontStyle::Normal;
 
     AlignmentBaseline m_alignment_baseline = AlignmentBaseline::Auto;
