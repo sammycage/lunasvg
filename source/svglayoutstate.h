@@ -60,6 +60,7 @@ public:
 
     const std::string& mask() const { return m_mask; }
     const std::string& clip_path() const { return m_clip_path; }
+    const std::string& filter() const { return m_filter; }
     const std::string& marker_start() const { return m_marker_start; }
     const std::string& marker_mid() const { return m_marker_mid; }
     const std::string& marker_end() const { return m_marker_end; }
@@ -118,6 +119,7 @@ private:
 
     std::string m_mask;
     std::string m_clip_path;
+    std::string m_filter;
     std::string m_marker_start;
     std::string m_marker_mid;
     std::string m_marker_end;

@@ -24,6 +24,7 @@ set(lunasvg_sources
     source/lunasvg.cpp
     source/graphics.cpp
     source/svgelement.cpp
+    source/svgfilterelement.cpp
     source/svggeometryelement.cpp
     source/svglayoutstate.cpp
     source/svgpaintelement.cpp
@@ -37,6 +38,7 @@ set(lunasvg_headers
     include/lunasvg.h
     source/graphics.h
     source/svgelement.h
+    source/svgfilterelement.h
     source/svggeometryelement.h
     source/svglayoutstate.h
     source/svgpaintelement.h
@@ -60,6 +62,7 @@ set_target_properties(lunasvg PROPERTIES
 target_include_directories(lunasvg PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/source
+    ${CMAKE_CURRENT_SOURCE_DIR}/plutovg/source
 )
 
 target_include_directories(lunasvg PUBLIC
