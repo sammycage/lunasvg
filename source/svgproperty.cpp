@@ -109,6 +109,7 @@ PropertyID csspropertyid(std::string_view name)
         {"stroke-width", PropertyID::Stroke_Width},
         {"text-anchor", PropertyID::Text_Anchor},
         {"text-orientation", PropertyID::Text_Orientation},
+        {"transform", PropertyID::Transform},
         {"visibility", PropertyID::Visibility},
         {"white-space", PropertyID::White_Space},
         {"word-spacing", PropertyID::Word_Spacing},
