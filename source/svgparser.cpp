@@ -777,7 +777,6 @@ bool Document::parse(const char* data, size_t length)
                 auto n = input.find("-->");
                 if(n == std::string_view::npos)
                     return false;
-                handleText(input.substr(0, n), false);
                 input.remove_prefix(n + 3);
                 continue;
             }
