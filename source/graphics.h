@@ -420,7 +420,7 @@ private:
 class FontFaceCache {
 public:
     bool addFontFace(const std::string& family, bool bold, bool italic, const FontFace& face);
-    FontFace getFontFace(const std::string& family, bool bold, bool italic) const;
+    FontFace getFontFace(const std::string& family, int weight, bool italic) const;
 
 private:
     FontFaceCache();

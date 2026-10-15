@@ -971,6 +971,17 @@ PLUTOVG_API bool plutovg_font_face_cache_add_file(plutovg_font_face_cache_t* cac
 PLUTOVG_API plutovg_font_face_t* plutovg_font_face_cache_get(plutovg_font_face_cache_t* cache, const char* family, bool bold, bool italic);
 
 /**
+ * @brief Retrieve the font face from the cache that best matches a family, weight and style.
+ *
+ * @param cache A pointer to a `plutovg_font_face_cache_t` object.
+ * @param family The font family name.
+ * @param weight The desired weight, from 1 to 1000.
+ * @param italic Whether the font is italic.
+ * @return A pointer to the matching `plutovg_font_face_t` object, or NULL if not found. The returned face is owned by the cache and must not be destroyed by the caller.
+ */
+PLUTOVG_API plutovg_font_face_t* plutovg_font_face_cache_match(plutovg_font_face_cache_t* cache, const char* family, int weight, bool italic);
+
+/**
  * @brief Load all font faces from a file and add them to the cache.
  *
  * @param cache A pointer to a `plutovg_font_face_cache_t` object.
