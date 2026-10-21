@@ -180,11 +180,6 @@ enum class FontStyle : uint8_t {
     Italic
 };
 
-enum class FontWeight : uint8_t {
-    Normal,
-    Bold
-};
-
 enum class AlignmentBaseline : uint8_t {
     Auto,
     Baseline,

@@ -511,6 +511,8 @@ typedef struct plutovg_font_face_entry {
     char* family;
     char* filename;
     int ttcindex;
+    int weight;
+    int width;
     bool bold;
     bool italic;
     struct plutovg_font_face_entry* next;
@@ -605,6 +607,26 @@ unlock:
     plutovg_mutex_unlock(&cache->mutex);
 }
 
+static int plutovg_font_face_weight(stbtt_uint8* data, int offset, bool bold)
+{
+    int weight = 0;
+    stbtt_uint32 os2 = stbtt__find_table(data, offset, "OS/2");
+    if(os2)
+        weight = ttUSHORT(data + os2 + 4);
+    if(weight < 1 || weight > 1000)
+        return bold ? 700 : 400;
+    if(bold && weight < 600)
+        return 700;
+    return weight;
+}
+
+static int plutovg_font_face_width(stbtt_uint8* data, int offset)
+{
+    stbtt_uint32 os2 = stbtt__find_table(data, offset, "OS/2");
+    int width = os2 ? ttUSHORT(data + os2 + 6) : 5;
+    return width < 1 || width > 9 ? 5 : width;
+}
+
 void plutovg_font_face_cache_add(plutovg_font_face_cache_t* cache, const char* family, bool bold, bool italic, plutovg_font_face_t* face)
 {
     if(family == NULL) family = "";
@@ -617,6 +639,8 @@ void plutovg_font_face_cache_add(plutovg_font_face_cache_t* cache, const char* f
 
     entry->filename = NULL;
     entry->ttcindex = 0;
+    entry->weight = plutovg_font_face_weight(face->info.data, face->info.fontstart, bold);
+    entry->width = plutovg_font_face_width(face->info.data, face->info.fontstart);
     entry->bold = bold;
     entry->italic = italic;
 
@@ -633,11 +657,22 @@ bool plutovg_font_face_cache_add_file(plutovg_font_face_cache_t* cache, const ch
     return true;
 }
 
-static plutovg_font_face_entry_t* plutovg_font_face_entry_select(plutovg_font_face_entry_t* a, plutovg_font_face_entry_t* b, bool bold, bool italic)
+static int plutovg_font_face_entry_score(const plutovg_font_face_entry_t* entry, int weight, bool italic)
 {
-    int a_score = (bold == a->bold) + (italic == a->italic);
-    int b_score = (bold == b->bold) + (italic == b->italic);
-    return a_score > b_score ? a : b;
+    int score = abs(entry->width - 5) * 100000 + (entry->italic == italic ? 0 : 10000);
+    if(entry->weight == weight)
+        return score;
+    if(weight >= 400 && weight <= 500) {
+        if(entry->weight > weight && entry->weight <= 500)
+            return score + entry->weight - weight;
+        if(entry->weight < weight)
+            return score + 1000 + weight - entry->weight;
+        return score + 2000 + entry->weight - weight;
+    }
+
+    if(weight < 400)
+        return score + (entry->weight < weight ? weight - entry->weight : 1000 + entry->weight - weight);
+    return score + (entry->weight > weight ? entry->weight - weight : 1000 + weight - entry->weight);
 }
 
 static int plutovg_font_face_entry_compare(const void* a, const void* b)
@@ -648,6 +683,11 @@ static int plutovg_font_face_entry_compare(const void* a, const void* b)
 }
 
 plutovg_font_face_t* plutovg_font_face_cache_get(plutovg_font_face_cache_t* cache, const char* family, bool bold, bool italic)
+{
+    return plutovg_font_face_cache_match(cache, family, bold ? 700 : 400, italic);
+}
+
+plutovg_font_face_t* plutovg_font_face_cache_match(plutovg_font_face_cache_t* cache, const char* family, int weight, bool italic)
 {
     plutovg_mutex_lock(&cache->mutex);
 
@@ -671,10 +711,13 @@ plutovg_font_face_t* plutovg_font_face_cache_get(plutovg_font_face_cache_t* cach
     plutovg_font_face_t* face = NULL;
     if(entry_result) {
         plutovg_font_face_entry_t* selected = *entry_result;
-        plutovg_font_face_entry_t* entry = selected->next;
-        while(entry) {
-            selected = plutovg_font_face_entry_select(entry, selected, bold, italic);
-            entry = entry->next;
+        int selected_score = plutovg_font_face_entry_score(selected, weight, italic);
+        for(plutovg_font_face_entry_t* entry = selected->next; entry; entry = entry->next) {
+            int score = plutovg_font_face_entry_score(entry, weight, italic);
+            if(score < selected_score) {
+                selected = entry;
+                selected_score = score;
+            }
         }
 
         if(selected->filename && selected->face == NULL)
@@ -775,6 +818,96 @@ static void plutovg_unmap(void* data, long length)
 
 #endif // _WIN32
 
+static bool plutovg_font_face_is_italic(stbtt_uint8* data, int offset)
+{
+    stbtt_uint32 os2 = stbtt__find_table(data, offset, "OS/2");
+    return os2 && (ttUSHORT(data + os2 + 62) & 0x201);
+}
+
+static int plutovg_font_face_name_encoding(stbtt_uint16 platform, stbtt_uint16 encoding)
+{
+    if(platform == 0 || (platform == 3 && (encoding == 1 || encoding == 10)))
+        return 2;
+    if(platform == 1 && encoding == 0)
+        return 1;
+    return 0;
+}
+
+static void plutovg_font_face_decode_name(const stbtt_uint8* name, size_t length, int name_encoding, char* output)
+{
+    static const stbtt_uint16 MAC_ROMAN_TABLE[256] = {
+        0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
+        0x0008, 0x0009, 0x000A, 0x000B, 0x000C, 0x000D, 0x000E, 0x000F,
+        0x0010, 0x2318, 0x21E7, 0x2325, 0x2303, 0x0015, 0x0016, 0x0017,
+        0x0018, 0x0019, 0x001A, 0x001B, 0x001C, 0x001D, 0x001E, 0x001F,
+        0x0020, 0x0021, 0x0022, 0x0023, 0x0024, 0x0025, 0x0026, 0x0027,
+        0x0028, 0x0029, 0x002A, 0x002B, 0x002C, 0x002D, 0x002E, 0x002F,
+        0x0030, 0x0031, 0x0032, 0x0033, 0x0034, 0x0035, 0x0036, 0x0037,
+        0x0038, 0x0039, 0x003A, 0x003B, 0x003C, 0x003D, 0x003E, 0x003F,
+        0x0040, 0x0041, 0x0042, 0x0043, 0x0044, 0x0045, 0x0046, 0x0047,
+        0x0048, 0x0049, 0x004A, 0x004B, 0x004C, 0x004D, 0x004E, 0x004F,
+        0x0050, 0x0051, 0x0052, 0x0053, 0x0054, 0x0055, 0x0056, 0x0057,
+        0x0058, 0x0059, 0x005A, 0x005B, 0x005C, 0x005D, 0x005E, 0x005F,
+        0x0060, 0x0061, 0x0062, 0x0063, 0x0064, 0x0065, 0x0066, 0x0067,
+        0x0068, 0x0069, 0x006A, 0x006B, 0x006C, 0x006D, 0x006E, 0x006F,
+        0x0070, 0x0071, 0x0072, 0x0073, 0x0074, 0x0075, 0x0076, 0x0077,
+        0x0078, 0x0079, 0x007A, 0x007B, 0x007C, 0x007D, 0x007E, 0x007F,
+        0x00C4, 0x00C5, 0x00C7, 0x00C9, 0x00D1, 0x00D6, 0x00DC, 0x00E1,
+        0x00E0, 0x00E2, 0x00E4, 0x00E3, 0x00E5, 0x00E7, 0x00E9, 0x00E8,
+        0x00EA, 0x00EB, 0x00ED, 0x00EC, 0x00EE, 0x00EF, 0x00F1, 0x00F3,
+        0x00F2, 0x00F4, 0x00F6, 0x00F5, 0x00FA, 0x00F9, 0x00FB, 0x00FC,
+        0x2020, 0x00B0, 0x00A2, 0x00A3, 0x00A7, 0x2022, 0x00B6, 0x00DF,
+        0x00AE, 0x00A9, 0x2122, 0x00B4, 0x00A8, 0x2260, 0x00C6, 0x00D8,
+        0x221E, 0x00B1, 0x2264, 0x2265, 0x00A5, 0x00B5, 0x2202, 0x2211,
+        0x220F, 0x03C0, 0x222B, 0x00AA, 0x00BA, 0x03A9, 0x00E6, 0x00F8,
+        0x00BF, 0x00A1, 0x00AC, 0x221A, 0x0192, 0x2248, 0x2206, 0x00AB,
+        0x00BB, 0x2026, 0x00A0, 0x00C0, 0x00C3, 0x00D5, 0x0152, 0x0153,
+        0x2013, 0x2014, 0x201C, 0x201D, 0x2018, 0x2019, 0x00F7, 0x25CA,
+        0x00FF, 0x0178, 0x2044, 0x20AC, 0x2039, 0x203A, 0xFB01, 0xFB02,
+        0x2021, 0x00B7, 0x201A, 0x201E, 0x2030, 0x00C2, 0x00CA, 0x00C1,
+        0x00CB, 0x00C8, 0x00CD, 0x00CE, 0x00CF, 0x00CC, 0x00D3, 0x00D4,
+        0xF8FF, 0x00D2, 0x00DA, 0x00DB, 0x00D9, 0x0131, 0x02C6, 0x02DC,
+        0x00AF, 0x02D8, 0x02D9, 0x02DA, 0x00B8, 0x02DD, 0x02DB, 0x02C7,
+    };
+
+    size_t index = 0;
+    while(length >= (size_t)name_encoding) {
+        stbtt_uint32 ch;
+        if(name_encoding == 2) {
+            ch = name[0] * 256 + name[1];
+            if(ch >= 0xd800 && ch < 0xdc00 && length >= 4) {
+                stbtt_uint16 ch2 = name[2] * 256 + name[3];
+                ch = ((ch - 0xd800) << 10) + (ch2 - 0xdc00) + 0x10000;
+                name += 2;
+                length -= 2;
+            }
+        } else {
+            ch = MAC_ROMAN_TABLE[name[0]];
+        }
+
+        if(ch < 0x80) {
+            output[index++] = ch;
+        } else if(ch < 0x800) {
+            output[index++] = (0xc0 + (ch >> 6));
+            output[index++] = (0x80 + (ch & 0x3f));
+        } else if(ch < 0x10000) {
+            output[index++] = (0xe0 + (ch >> 12));
+            output[index++] = (0x80 + ((ch >> 6) & 0x3f));
+            output[index++] = (0x80 + ((ch) & 0x3f));
+        } else {
+            output[index++] = (0xf0 + (ch >> 18));
+            output[index++] = (0x80 + ((ch >> 12) & 0x3f));
+            output[index++] = (0x80 + ((ch >> 6) & 0x3f));
+            output[index++] = (0x80 + ((ch) & 0x3f));
+        }
+
+        name += name_encoding;
+        length -= name_encoding;
+    }
+
+    output[index] = '\0';
+}
+
 int plutovg_font_face_cache_load_file(plutovg_font_face_cache_t* cache, const char* filename)
 {
     long length;
@@ -792,150 +925,79 @@ int plutovg_font_face_cache_load_file(plutovg_font_face_cache_t* cache, const ch
             continue;
         }
 
+        stbtt_uint32 hd = stbtt__find_table(data, offset, "head");
+        stbtt_uint16 style = ttUSHORT(data + hd + 44);
+        bool bold = style & 0x1;
+        bool italic = (style & 0x2) || plutovg_font_face_is_italic(data, offset);
+        int weight = plutovg_font_face_weight(data, offset, bold);
+        int width = plutovg_font_face_width(data, offset);
+
         stbtt_uint32 nm = stbtt__find_table(data, offset, "name");
         stbtt_uint16 nm_count = ttUSHORT(data + nm + 2);
+        const stbtt_uint8* nm_strings = data + nm + ttUSHORT(data + nm + 4);
 
-        const stbtt_uint8* unicode_family_name = NULL;
-        const stbtt_uint8* roman_family_name = NULL;
+        for(stbtt_int32 i = 0; i < nm_count && !italic; ++i) {
+            stbtt_uint32 loc = nm + 6 + 12 * i;
+            stbtt_uint16 nm_id = ttUSHORT(data + loc + 6);
+            if(nm_id != 2 && nm_id != 17)
+                continue;
+            int name_encoding = plutovg_font_face_name_encoding(ttUSHORT(data + loc + 0), ttUSHORT(data + loc + 2));
+            if(name_encoding == 0)
+                continue;
+            size_t name_length = ttUSHORT(data + loc + 8);
+            char* name = malloc(3 * name_length + 1);
+            plutovg_font_face_decode_name(nm_strings + ttUSHORT(data + loc + 10), name_length, name_encoding, name);
+            italic = strstr(name, "Italic") || strstr(name, "Oblique");
+            free(name);
+        }
 
-        size_t family_length = 0;
+        size_t filename_length = strlen(filename) + 1;
+        plutovg_font_face_entry_t* first_entry = NULL;
         for(stbtt_int32 i = 0; i < nm_count; ++i) {
             stbtt_uint32 loc = nm + 6 + 12 * i;
             stbtt_uint16 nm_id = ttUSHORT(data + loc + 6);
-            if(nm_id != 1) {
+            if(nm_id != 1 && nm_id != 16)
+                continue;
+            int name_encoding = plutovg_font_face_name_encoding(ttUSHORT(data + loc + 0), ttUSHORT(data + loc + 2));
+            if(name_encoding == 0)
+                continue;
+            size_t family_length = ttUSHORT(data + loc + 8);
+            size_t max_family_length = 3 * family_length + 1;
+
+            plutovg_font_face_entry_t* entry = malloc(max_family_length + filename_length + sizeof(plutovg_font_face_entry_t));
+            entry->family = (char*)(entry + 1);
+            plutovg_font_face_decode_name(nm_strings + ttUSHORT(data + loc + 10), family_length, name_encoding, entry->family);
+
+            bool skip = entry->family[0] == '\0';
+            for(plutovg_font_face_entry_t* other = first_entry; other && !skip; other = other->next) {
+                skip = strcmp(entry->family, other->family) == 0;
+            }
+
+            if(skip) {
+                free(entry);
                 continue;
             }
 
-            stbtt_uint16 platform = ttUSHORT(data + loc + 0);
-            stbtt_uint16 encoding = ttUSHORT(data + loc + 2);
-
-            const stbtt_uint8* family_name = data + nm + ttUSHORT(data + nm + 4) + ttUSHORT(data + loc + 10);
-            if(platform == 1 && encoding == 0) {
-                family_length = ttUSHORT(data + loc + 8);
-                roman_family_name = family_name;
-                continue;
-            }
-
-            if(platform == 0 || (platform == 3 && encoding == 1) || (platform == 3 && encoding == 10)) {
-                family_length = ttUSHORT(data + loc + 8);
-                unicode_family_name = family_name;
-                break;
-            }
+            entry->filename = entry->family + max_family_length;
+            memcpy(entry->filename, filename, filename_length);
+            entry->face = NULL;
+            entry->bold = bold;
+            entry->italic = italic;
+            entry->weight = weight;
+            entry->width = width;
+            entry->ttcindex = index;
+            entry->next = first_entry;
+            first_entry = entry;
         }
 
-        if(unicode_family_name == NULL && roman_family_name == NULL)
+        if(first_entry == NULL)
             continue;
-        size_t filename_length = strlen(filename) + 1;
-        size_t max_family_length = (unicode_family_name ? 3 * (family_length / 2) : family_length * 3) + 1;
-
-        plutovg_font_face_entry_t* entry = malloc(max_family_length + filename_length + sizeof(plutovg_font_face_entry_t));
-        entry->family = (char*)(entry + 1);
-        entry->filename = entry->family + max_family_length;
-        memcpy(entry->filename, filename, filename_length);
-
-        size_t family_index = 0;
-        if(unicode_family_name) {
-            const stbtt_uint8* family_name = unicode_family_name;
-            while(family_length) {
-                stbtt_uint16 ch = family_name[0] * 256 + family_name[1];
-                if(ch < 0x80) {
-                    entry->family[family_index++] = ch;
-                } else if(ch < 0x800) {
-                    entry->family[family_index++] = (0xc0 + (ch >> 6));
-                    entry->family[family_index++] = (0x80 + (ch & 0x3f));
-                } else if(ch >= 0xd800 && ch < 0xdc00) {
-                    stbtt_uint16 ch2 = family_name[2] * 256 + family_name[3];
-                    stbtt_uint32 c = ((ch - 0xd800) << 10) + (ch2 - 0xdc00) + 0x10000;
-
-                    entry->family[family_index++] = (0xf0 + (c >> 18));
-                    entry->family[family_index++] = (0x80 + ((c >> 12) & 0x3f));
-                    entry->family[family_index++] = (0x80 + ((c >> 6) & 0x3f));
-                    entry->family[family_index++] = (0x80 + ((c) & 0x3f));
-
-                    family_name += 2;
-                    family_length -= 2;
-                } else {
-                    entry->family[family_index++] = (0xe0 + (ch >> 12));
-                    entry->family[family_index++] = (0x80 + ((ch >> 6) & 0x3f));
-                    entry->family[family_index++] = (0x80 + ((ch) & 0x3f));
-                }
-
-                family_name += 2;
-                family_length -= 2;
-            }
-
-            entry->family[family_index] = '\0';
-        } else {
-            static const stbtt_uint16 MAC_ROMAN_TABLE[256] = {
-                0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
-                0x0008, 0x0009, 0x000A, 0x000B, 0x000C, 0x000D, 0x000E, 0x000F,
-                0x0010, 0x2318, 0x21E7, 0x2325, 0x2303, 0x0015, 0x0016, 0x0017,
-                0x0018, 0x0019, 0x001A, 0x001B, 0x001C, 0x001D, 0x001E, 0x001F,
-                0x0020, 0x0021, 0x0022, 0x0023, 0x0024, 0x0025, 0x0026, 0x0027,
-                0x0028, 0x0029, 0x002A, 0x002B, 0x002C, 0x002D, 0x002E, 0x002F,
-                0x0030, 0x0031, 0x0032, 0x0033, 0x0034, 0x0035, 0x0036, 0x0037,
-                0x0038, 0x0039, 0x003A, 0x003B, 0x003C, 0x003D, 0x003E, 0x003F,
-                0x0040, 0x0041, 0x0042, 0x0043, 0x0044, 0x0045, 0x0046, 0x0047,
-                0x0048, 0x0049, 0x004A, 0x004B, 0x004C, 0x004D, 0x004E, 0x004F,
-                0x0050, 0x0051, 0x0052, 0x0053, 0x0054, 0x0055, 0x0056, 0x0057,
-                0x0058, 0x0059, 0x005A, 0x005B, 0x005C, 0x005D, 0x005E, 0x005F,
-                0x0060, 0x0061, 0x0062, 0x0063, 0x0064, 0x0065, 0x0066, 0x0067,
-                0x0068, 0x0069, 0x006A, 0x006B, 0x006C, 0x006D, 0x006E, 0x006F,
-                0x0070, 0x0071, 0x0072, 0x0073, 0x0074, 0x0075, 0x0076, 0x0077,
-                0x0078, 0x0079, 0x007A, 0x007B, 0x007C, 0x007D, 0x007E, 0x007F,
-                0x00C4, 0x00C5, 0x00C7, 0x00C9, 0x00D1, 0x00D6, 0x00DC, 0x00E1,
-                0x00E0, 0x00E2, 0x00E4, 0x00E3, 0x00E5, 0x00E7, 0x00E9, 0x00E8,
-                0x00EA, 0x00EB, 0x00ED, 0x00EC, 0x00EE, 0x00EF, 0x00F1, 0x00F3,
-                0x00F2, 0x00F4, 0x00F6, 0x00F5, 0x00FA, 0x00F9, 0x00FB, 0x00FC,
-                0x2020, 0x00B0, 0x00A2, 0x00A3, 0x00A7, 0x2022, 0x00B6, 0x00DF,
-                0x00AE, 0x00A9, 0x2122, 0x00B4, 0x00A8, 0x2260, 0x00C6, 0x00D8,
-                0x221E, 0x00B1, 0x2264, 0x2265, 0x00A5, 0x00B5, 0x2202, 0x2211,
-                0x220F, 0x03C0, 0x222B, 0x00AA, 0x00BA, 0x03A9, 0x00E6, 0x00F8,
-                0x00BF, 0x00A1, 0x00AC, 0x221A, 0x0192, 0x2248, 0x2206, 0x00AB,
-                0x00BB, 0x2026, 0x00A0, 0x00C0, 0x00C3, 0x00D5, 0x0152, 0x0153,
-                0x2013, 0x2014, 0x201C, 0x201D, 0x2018, 0x2019, 0x00F7, 0x25CA,
-                0x00FF, 0x0178, 0x2044, 0x20AC, 0x2039, 0x203A, 0xFB01, 0xFB02,
-                0x2021, 0x00B7, 0x201A, 0x201E, 0x2030, 0x00C2, 0x00CA, 0x00C1,
-                0x00CB, 0x00C8, 0x00CD, 0x00CE, 0x00CF, 0x00CC, 0x00D3, 0x00D4,
-                0xF8FF, 0x00D2, 0x00DA, 0x00DB, 0x00D9, 0x0131, 0x02C6, 0x02DC,
-                0x00AF, 0x02D8, 0x02D9, 0x02DA, 0x00B8, 0x02DD, 0x02DB, 0x02C7,
-            };
-
-            const stbtt_uint8* family_name = roman_family_name;
-            while(family_length) {
-                stbtt_uint16 ch = MAC_ROMAN_TABLE[family_name[0]];
-                if(ch < 0x80) {
-                    entry->family[family_index++] = ch;
-                } else if(ch < 0x800) {
-                    entry->family[family_index++] = (0xc0 + (ch >> 6));
-                    entry->family[family_index++] = (0x80 + (ch & 0x3f));
-                } else {
-                    entry->family[family_index++] = (0xe0 + (ch >> 12));
-                    entry->family[family_index++] = (0x80 + ((ch >> 6) & 0x3f));
-                    entry->family[family_index++] = (0x80 + ((ch) & 0x3f));
-                }
-
-                family_name += 1;
-                family_length -= 1;
-            }
-
-            entry->family[family_index] = '\0';
+        while(first_entry) {
+            plutovg_font_face_entry_t* next = first_entry->next;
+            plutovg_font_face_cache_add_entry(cache, first_entry);
+            first_entry = next;
         }
 
-        entry->face = NULL;
-        entry->bold = false;
-        entry->italic = false;
-        entry->ttcindex = index;
-
-        stbtt_uint32 hd = stbtt__find_table(data, offset, "head");
-        stbtt_uint16 style = ttUSHORT(data + hd + 44);
-        if(style & 0x1)
-            entry->bold = true;
-        if(style & 0x2) {
-            entry->italic = true;
-        }
-
-        plutovg_font_face_cache_add_entry(cache, entry);
         num_faces++;
     }
 
