@@ -766,16 +766,497 @@ static void blend_untransformed_argb(plutovg_surface_t* surface, plutovg_operato
 }
 
 #define FIXED_SCALE (1 << 16)
+#define PI_F 3.14159265358979323846f
+
+static inline uint32_t fetch_pixel_clamped(const texture_data_t* texture, int px, int py)
+{
+    if(px < 0) px = 0;
+    else if(px >= texture->width) px = texture->width - 1;
+    if(py < 0) py = 0;
+    else if(py >= texture->height) py = texture->height - 1;
+    return ((const uint32_t*)(texture->data + py * texture->stride))[px];
+}
+
+static inline int clamp_int(int val, int min_val, int max_val)
+{
+    if(val < min_val) return min_val;
+    if(val > max_val) return max_val;
+    return val;
+}
+
+// Sinc function: sin(pi*x) / (pi*x)
+static inline float sinc(float x)
+{
+    if(fabsf(x) < 0.0001f) return 1.0f;
+    float pix = PI_F * x;
+    return sinf(pix) / pix;
+}
+
+// Lanczos kernel with parameter a (typically 2 or 3)
+static inline float lanczos_weight(float x, int a)
+{
+    if(x == 0.0f) return 1.0f;
+    if(fabsf(x) >= (float)a) return 0.0f;
+    return sinc(x) * sinc(x / (float)a);
+}
+
+// Mitchell-Netravali filter weight
+// B=1/3, C=1/3 - the "recommended" values by Mitchell & Netravali
+// This filter is specifically designed for image resizing
+static inline float mitchell_weight(float x)
+{
+    const float B = 1.0f / 3.0f;
+    const float C = 1.0f / 3.0f;
+    
+    float ax = fabsf(x);
+    
+    if(ax < 1.0f) {
+        return ((12.0f - 9.0f * B - 6.0f * C) * ax * ax * ax +
+                (-18.0f + 12.0f * B + 6.0f * C) * ax * ax +
+                (6.0f - 2.0f * B)) / 6.0f;
+    } else if(ax < 2.0f) {
+        return ((-B - 6.0f * C) * ax * ax * ax +
+                (6.0f * B + 30.0f * C) * ax * ax +
+                (-12.0f * B - 48.0f * C) * ax +
+                (8.0f * B + 24.0f * C)) / 6.0f;
+    }
+    return 0.0f;
+}
+
+// ARGB color components stored as floats for interpolation
+typedef struct {
+    float a, r, g, b;
+} color_components_t;
+
+// Apply Mitchell-Netravali filter to a single sample point (4x4 kernel)
+static inline color_components_t mitchell_filter_sample(
+    const texture_data_t* texture, int sx, int sy)
+{
+    color_components_t result = {0, 0, 0, 0};
+    float weight_total = 0;
+    
+    // Mitchell uses a 4x4 kernel (-1 to +2 in each direction)
+    for(int bj = -1; bj <= 2; bj++) {
+        float wy = mitchell_weight((float)bj);
+        for(int bi = -1; bi <= 2; bi++) {
+            float wx = mitchell_weight((float)bi);
+            float weight = wx * wy;
+            uint32_t pixel = fetch_pixel_clamped(texture, sx + bi, sy + bj);
+            
+            result.a += (float)((pixel >> 24) & 0xff) * weight;
+            result.r += (float)((pixel >> 16) & 0xff) * weight;
+            result.g += (float)((pixel >> 8) & 0xff) * weight;
+            result.b += (float)(pixel & 0xff) * weight;
+            weight_total += weight;
+        }
+    }
+    
+    if(weight_total > 0.0f) {
+        result.a /= weight_total;
+        result.r /= weight_total;
+        result.g /= weight_total;
+        result.b /= weight_total;
+    }
+    return result;
+}
+
+// Pack float color components to uint32_t ARGB
+static inline uint32_t pack_argb(float a, float r, float g, float b)
+{
+    int ia = clamp_int((int)roundf(a), 0, 255);
+    int ir = clamp_int((int)roundf(r), 0, 255);
+    int ig = clamp_int((int)roundf(g), 0, 255);
+    int ib = clamp_int((int)roundf(b), 0, 255);
+    return ((uint32_t)ia << 24) | ((uint32_t)ir << 16) | ((uint32_t)ig << 8) | (uint32_t)ib;
+}
+
+// Fast bilinear sampling for when we already have mipmaps
+static inline uint32_t bilinear_sample(const texture_data_t* texture, int x_fixed, int y_fixed)
+{
+    float fx = (float)x_fixed / (float)FIXED_SCALE;
+    float fy = (float)y_fixed / (float)FIXED_SCALE;
+    
+    int px = (int)floorf(fx);
+    int py = (int)floorf(fy);
+    
+    // Check bounds
+    if(px < -1 || px >= texture->width || py < -1 || py >= texture->height) {
+        return 0x00000000;
+    }
+    
+    float tx = fx - (float)px;
+    float ty = fy - (float)py;
+    
+    // Fetch 2x2 neighborhood
+    uint32_t p00 = fetch_pixel_clamped(texture, px, py);
+    uint32_t p10 = fetch_pixel_clamped(texture, px + 1, py);
+    uint32_t p01 = fetch_pixel_clamped(texture, px, py + 1);
+    uint32_t p11 = fetch_pixel_clamped(texture, px + 1, py + 1);
+    
+    // Bilinear interpolation using integer math (faster)
+    int itx = (int)(tx * 256.0f);
+    int ity = (int)(ty * 256.0f);
+    int itx_inv = 256 - itx;
+    int ity_inv = 256 - ity;
+    
+    // Interpolate each channel
+    uint32_t a00 = (p00 >> 24) & 0xff, a10 = (p10 >> 24) & 0xff;
+    uint32_t a01 = (p01 >> 24) & 0xff, a11 = (p11 >> 24) & 0xff;
+    uint32_t r00 = (p00 >> 16) & 0xff, r10 = (p10 >> 16) & 0xff;
+    uint32_t r01 = (p01 >> 16) & 0xff, r11 = (p11 >> 16) & 0xff;
+    uint32_t g00 = (p00 >> 8) & 0xff, g10 = (p10 >> 8) & 0xff;
+    uint32_t g01 = (p01 >> 8) & 0xff, g11 = (p11 >> 8) & 0xff;
+    uint32_t b00 = p00 & 0xff, b10 = p10 & 0xff;
+    uint32_t b01 = p01 & 0xff, b11 = p11 & 0xff;
+    
+    // Top row interpolation, then bottom, then vertical
+    uint32_t a_top = (a00 * itx_inv + a10 * itx) >> 8;
+    uint32_t a_bot = (a01 * itx_inv + a11 * itx) >> 8;
+    uint32_t a = (a_top * ity_inv + a_bot * ity) >> 8;
+    
+    uint32_t r_top = (r00 * itx_inv + r10 * itx) >> 8;
+    uint32_t r_bot = (r01 * itx_inv + r11 * itx) >> 8;
+    uint32_t r = (r_top * ity_inv + r_bot * ity) >> 8;
+    
+    uint32_t g_top = (g00 * itx_inv + g10 * itx) >> 8;
+    uint32_t g_bot = (g01 * itx_inv + g11 * itx) >> 8;
+    uint32_t g = (g_top * ity_inv + g_bot * ity) >> 8;
+    
+    uint32_t b_top = (b00 * itx_inv + b10 * itx) >> 8;
+    uint32_t b_bot = (b01 * itx_inv + b11 * itx) >> 8;
+    uint32_t b = (b_top * ity_inv + b_bot * ity) >> 8;
+    
+    return (a << 24) | (r << 16) | (g << 8) | b;
+}
+
+// Lanczos-3 sampling (6x6 kernel) - good balance of quality and speed
+// Used only for final sampling after progressive mipmapping has reduced scale to <2x
+static inline uint32_t lanczos3_sample(const texture_data_t* texture, int x_fixed, int y_fixed)
+{
+    const int KERNEL_SIZE = 6;
+    const int KERNEL_OFFSET = 2;
+    const int LANCZOS_A = 3;
+    
+    float fx = (float)x_fixed / (float)FIXED_SCALE;
+    float fy = (float)y_fixed / (float)FIXED_SCALE;
+    
+    int px = (int)floorf(fx);
+    int py = (int)floorf(fy);
+    
+    // Check if completely outside the image
+    if(px < -(KERNEL_OFFSET + 1) || px >= texture->width + KERNEL_OFFSET ||
+       py < -(KERNEL_OFFSET + 1) || py >= texture->height + KERNEL_OFFSET) {
+        return 0x00000000;
+    }
+    
+    float tx = fx - (float)px;
+    float ty = fy - (float)py;
+    
+    // Precompute Lanczos weights
+    float lanczos_wx[6], lanczos_wy[6];
+    float lx_sum = 0, ly_sum = 0;
+    for(int i = 0; i < KERNEL_SIZE; i++) {
+        lanczos_wx[i] = lanczos_weight(tx - (float)(i - KERNEL_OFFSET), LANCZOS_A);
+        lanczos_wy[i] = lanczos_weight(ty - (float)(i - KERNEL_OFFSET), LANCZOS_A);
+        lx_sum += lanczos_wx[i];
+        ly_sum += lanczos_wy[i];
+    }
+    
+    // Normalize Lanczos weights
+    if(lx_sum > 0.0f) {
+        float inv = 1.0f / lx_sum;
+        for(int i = 0; i < KERNEL_SIZE; i++) lanczos_wx[i] *= inv;
+    }
+    if(ly_sum > 0.0f) {
+        float inv = 1.0f / ly_sum;
+        for(int i = 0; i < KERNEL_SIZE; i++) lanczos_wy[i] *= inv;
+    }
+    
+    // Apply Lanczos interpolation
+    float out_a = 0, out_r = 0, out_g = 0, out_b = 0;
+    
+    for(int j = 0; j < KERNEL_SIZE; j++) {
+        int sy = py + j - KERNEL_OFFSET;
+        float wy = lanczos_wy[j];
+        for(int i = 0; i < KERNEL_SIZE; i++) {
+            int sx = px + i - KERNEL_OFFSET;
+            uint32_t pixel = fetch_pixel_clamped(texture, sx, sy);
+            float weight = lanczos_wx[i] * wy;
+            out_a += (float)((pixel >> 24) & 0xff) * weight;
+            out_r += (float)((pixel >> 16) & 0xff) * weight;
+            out_g += (float)((pixel >> 8) & 0xff) * weight;
+            out_b += (float)(pixel & 0xff) * weight;
+        }
+    }
+    
+    return pack_argb(out_a, out_r, out_g, out_b);
+}
+
+// Calculate the scale ratio from transformation matrix
+// Returns the approximate magnification factor (> 1.0 means downscaling source to smaller dest)
+static inline float get_scale_ratio(const texture_data_t* texture)
+{
+    // The matrix transforms destination coords to source coords
+    // So scale = sqrt(a*a + b*b) gives us how many source pixels per dest pixel
+    float scale_x = sqrtf(texture->matrix.a * texture->matrix.a + texture->matrix.b * texture->matrix.b);
+    float scale_y = sqrtf(texture->matrix.c * texture->matrix.c + texture->matrix.d * texture->matrix.d);
+    float scale = (scale_x + scale_y) * 0.5f;  // Average scale
+    
+    // Sanity check - avoid issues with degenerate matrices
+    if(scale < 0.001f) scale = 0.001f;
+    if(scale > 1000.0f) scale = 1000.0f;
+    
+    return scale;
+}
+
+// Fast 2x2 box filter for mipmap generation (much faster than full Mitchell-Lanczos)
+static inline uint32_t box_filter_2x2(const texture_data_t* texture, int sx, int sy)
+{
+    // Get 2x2 block of pixels
+    uint32_t p00 = fetch_pixel_clamped(texture, sx, sy);
+    uint32_t p10 = fetch_pixel_clamped(texture, sx + 1, sy);
+    uint32_t p01 = fetch_pixel_clamped(texture, sx, sy + 1);
+    uint32_t p11 = fetch_pixel_clamped(texture, sx + 1, sy + 1);
+    
+    // Average each channel
+    uint32_t a = (((p00 >> 24) & 0xff) + ((p10 >> 24) & 0xff) + 
+                  ((p01 >> 24) & 0xff) + ((p11 >> 24) & 0xff) + 2) >> 2;
+    uint32_t r = (((p00 >> 16) & 0xff) + ((p10 >> 16) & 0xff) + 
+                  ((p01 >> 16) & 0xff) + ((p11 >> 16) & 0xff) + 2) >> 2;
+    uint32_t g = (((p00 >> 8) & 0xff) + ((p10 >> 8) & 0xff) + 
+                  ((p01 >> 8) & 0xff) + ((p11 >> 8) & 0xff) + 2) >> 2;
+    uint32_t b = ((p00 & 0xff) + (p10 & 0xff) + 
+                  (p01 & 0xff) + (p11 & 0xff) + 2) >> 2;
+    
+    return (a << 24) | (r << 16) | (g << 8) | b;
+}
+
+// Area averaging filter for arbitrary scale factors
+static inline uint32_t area_average_sample(const texture_data_t* texture, int sx, int sy, 
+                                           int scale_int, int max_height, int max_width)
+{
+    float sum_a = 0, sum_r = 0, sum_g = 0, sum_b = 0;
+    int count = 0;
+    int max_j = (sy + scale_int < max_height) ? scale_int : max_height - sy;
+    int max_i = (sx + scale_int < max_width) ? scale_int : max_width - sx;
+    
+    for(int j = 0; j < max_j; j++) {
+        for(int i = 0; i < max_i; i++) {
+            uint32_t p = fetch_pixel_clamped(texture, sx + i, sy + j);
+            sum_a += (float)((p >> 24) & 0xff);
+            sum_r += (float)((p >> 16) & 0xff);
+            sum_g += (float)((p >> 8) & 0xff);
+            sum_b += (float)(p & 0xff);
+            count++;
+        }
+    }
+    
+    if(count > 0) {
+        float inv_count = 1.0f / (float)count;
+        return pack_argb(sum_a * inv_count, sum_r * inv_count, 
+                         sum_g * inv_count, sum_b * inv_count);
+    }
+    return 0;
+}
+
+// Downscale using optimized 2x2 box filter
+static void downscale_box_2x(const texture_data_t* src_texture, uint32_t* dest_data, 
+                             int dest_stride, int new_width, int new_height)
+{
+    for(int y = 0; y < new_height; y++) {
+        int sy = y * 2;
+        uint32_t* dest_row = dest_data + y * dest_stride;
+        for(int x = 0; x < new_width; x++) {
+            int sx = x * 2;
+            dest_row[x] = box_filter_2x2(src_texture, sx, sy);
+        }
+    }
+}
+
+// Downscale using area averaging for arbitrary scale factors
+static void downscale_area_average(const texture_data_t* src_texture, uint32_t* dest_data,
+                                   int dest_stride, int new_width, int new_height, float scale_factor)
+{
+    int scale_int = (int)ceilf(scale_factor);
+    
+    for(int y = 0; y < new_height; y++) {
+        int sy = (int)(y * scale_factor);
+        uint32_t* dest_row = dest_data + y * dest_stride;
+        for(int x = 0; x < new_width; x++) {
+            int sx = (int)(x * scale_factor);
+            dest_row[x] = area_average_sample(src_texture, sx, sy, scale_int, 
+                                              src_texture->height, src_texture->width);
+        }
+    }
+}
+
+// Create a downscaled version of a texture using fast box filter
+// This is optimized for 2x downscaling in mipmap chain
+static plutovg_surface_t* create_downscaled_surface(const texture_data_t* src_texture, float scale_factor)
+{
+    // Sanity checks to prevent hangs or crashes
+    if(scale_factor < 1.0f) scale_factor = 1.0f;  // Never upscale
+    if(scale_factor > 16.0f) scale_factor = 16.0f;  // Limit max reduction per pass
+    
+    int new_width = (int)(src_texture->width / scale_factor);
+    int new_height = (int)(src_texture->height / scale_factor);
+    
+    // Ensure minimum size
+    if(new_width < 1) new_width = 1;
+    if(new_height < 1) new_height = 1;
+    
+    // Don't create surface if it's the same size or larger
+    if(new_width >= src_texture->width && new_height >= src_texture->height) {
+        return NULL;
+    }
+    
+    plutovg_surface_t* surface = plutovg_surface_create(new_width, new_height);
+    if(!surface) return NULL;
+    
+    uint32_t* dest_data = (uint32_t*)surface->data;
+    int dest_stride = surface->stride / 4;
+    
+    // For 2x downscale, use optimized 2x2 box filter
+    if(scale_factor >= 1.9f && scale_factor <= 2.1f) {
+        downscale_box_2x(src_texture, dest_data, dest_stride, new_width, new_height);
+    } else {
+        downscale_area_average(src_texture, dest_data, dest_stride, new_width, new_height, scale_factor);
+    }
+    
+    return surface;
+}
+
+// Progressive downscaling - creates mipmap-style intermediate levels
+// Returns the final intermediate texture to sample from, or NULL to use original
+typedef struct {
+    plutovg_surface_t* surfaces[4];  // Up to 4 intermediate levels
+    int num_levels;
+    texture_data_t final_texture;
+    float adjusted_matrix_scale;
+} progressive_mipmap_t;
+
+static void init_progressive_mipmap(progressive_mipmap_t* mipmap, const texture_data_t* texture)
+{
+    mipmap->num_levels = 0;
+    mipmap->final_texture = *texture;
+    mipmap->adjusted_matrix_scale = 1.0f;
+    
+    for(int i = 0; i < 4; i++) {
+        mipmap->surfaces[i] = NULL;
+    }
+    
+    float scale = get_scale_ratio(texture);
+    
+    // Only use progressive downscaling if scale > 2.0 (significant downscale)
+    // Also check for valid texture dimensions
+    if(scale <= 2.0f || texture->width < 2 || texture->height < 2) {
+        return;
+    }
+    
+    // Calculate number of passes needed (each pass reduces by 2x)
+    // For scale of 8x, we need about 3 passes: 8->4->2->final
+    float remaining_scale = scale;
+    float accumulated_scale = 1.0f;
+    int max_iterations = 10;  // Safety limit to prevent infinite loops
+    
+    while(remaining_scale > 2.0f && mipmap->num_levels < 4 && max_iterations-- > 0) {
+        // Each pass reduces by exactly 2x
+        float pass_scale = 2.0f;
+        
+        // Ensure pass_scale is valid (>= 1.0)
+        if(pass_scale < 1.0f) pass_scale = 1.0f;
+        
+        accumulated_scale *= pass_scale;
+        
+        // Create intermediate surface from previous level or original
+        texture_data_t src_tex;
+        if(mipmap->num_levels == 0) {
+            src_tex = *texture;
+        } else {
+            plutovg_surface_t* prev_surface = mipmap->surfaces[mipmap->num_levels - 1];
+            if(!prev_surface) break;  // Safety check
+            
+            src_tex.data = prev_surface->data;
+            src_tex.width = prev_surface->width;
+            src_tex.height = prev_surface->height;
+            src_tex.stride = prev_surface->stride;
+            src_tex.const_alpha = texture->const_alpha;
+            plutovg_matrix_init_identity(&src_tex.matrix);
+        }
+        
+        // Check if source is too small to downsample further
+        if(src_tex.width < 4 || src_tex.height < 4) {
+            break;
+        }
+        
+        mipmap->surfaces[mipmap->num_levels] = create_downscaled_surface(&src_tex, pass_scale);
+        if(!mipmap->surfaces[mipmap->num_levels]) {
+            break;  // Surface creation failed
+        }
+        
+        mipmap->num_levels++;
+        remaining_scale /= pass_scale;
+        
+        // Safety: if remaining_scale isn't decreasing, break to prevent infinite loop
+        if(remaining_scale >= scale) {
+            break;
+        }
+    }
+    
+    // Set up final texture to sample from
+    if(mipmap->num_levels > 0) {
+        plutovg_surface_t* final_surface = mipmap->surfaces[mipmap->num_levels - 1];
+        mipmap->final_texture.data = final_surface->data;
+        mipmap->final_texture.width = final_surface->width;
+        mipmap->final_texture.height = final_surface->height;
+        mipmap->final_texture.stride = final_surface->stride;
+        
+        // Adjust the matrix to account for the pre-scaling
+        mipmap->final_texture.matrix = texture->matrix;
+        mipmap->final_texture.matrix.a /= accumulated_scale;
+        mipmap->final_texture.matrix.b /= accumulated_scale;
+        mipmap->final_texture.matrix.c /= accumulated_scale;
+        mipmap->final_texture.matrix.d /= accumulated_scale;
+        mipmap->final_texture.matrix.e /= accumulated_scale;
+        mipmap->final_texture.matrix.f /= accumulated_scale;
+        
+        mipmap->adjusted_matrix_scale = accumulated_scale;
+    }
+}
+
+static void destroy_progressive_mipmap(progressive_mipmap_t* mipmap)
+{
+    for(int i = 0; i < mipmap->num_levels; i++) {
+        if(mipmap->surfaces[i]) {
+            plutovg_surface_destroy(mipmap->surfaces[i]);
+            mipmap->surfaces[i] = NULL;
+        }
+    }
+    mipmap->num_levels = 0;
+}
+
 static void blend_transformed_argb(plutovg_surface_t* surface, plutovg_operator_t op, const texture_data_t* texture, const plutovg_span_buffer_t* span_buffer)
 {
     composition_function_t func = composition_table[op];
     uint32_t buffer[BUFFER_SIZE];
+    
+    // Initialize progressive mipmap for large downscales
+    progressive_mipmap_t mipmap;
+    init_progressive_mipmap(&mipmap, texture);
+    
+    // Use the potentially pre-scaled texture
+    const texture_data_t* sample_texture = &mipmap.final_texture;
+    
+    // Determine remaining scale after mipmapping
+    float remaining_scale = get_scale_ratio(sample_texture);
+    
+    // Choose sampling method based on remaining scale
+    // If mipmaps reduced scale to near 1:1, use fast bilinear
+    // Otherwise use Lanczos-3 for quality
+    int use_bilinear = (remaining_scale < 1.5f);
 
-    int image_width = texture->width;
-    int image_height = texture->height;
-
-    int fdx = (int)(texture->matrix.a * FIXED_SCALE);
-    int fdy = (int)(texture->matrix.b * FIXED_SCALE);
+    int fdx = (int)(sample_texture->matrix.a * FIXED_SCALE);
+    int fdy = (int)(sample_texture->matrix.b * FIXED_SCALE);
 
     int count = span_buffer->spans.size;
     const plutovg_span_t* spans = span_buffer->spans.data;
@@ -785,27 +1266,30 @@ static void blend_transformed_argb(plutovg_surface_t* surface, plutovg_operator_
         const float cx = spans->x + 0.5f;
         const float cy = spans->y + 0.5f;
 
-        int x = (int)((texture->matrix.c * cy + texture->matrix.a * cx + texture->matrix.e) * FIXED_SCALE);
-        int y = (int)((texture->matrix.d * cy + texture->matrix.b * cx + texture->matrix.f) * FIXED_SCALE);
+        int x = (int)((sample_texture->matrix.c * cy + sample_texture->matrix.a * cx + sample_texture->matrix.e) * FIXED_SCALE);
+        int y = (int)((sample_texture->matrix.d * cy + sample_texture->matrix.b * cx + sample_texture->matrix.f) * FIXED_SCALE);
 
         int length = spans->len;
-        const int coverage = (spans->coverage * texture->const_alpha) >> 8;
+        const int coverage = (spans->coverage * sample_texture->const_alpha) >> 8;
         while(length) {
             int l = plutovg_min(length, BUFFER_SIZE);
             const uint32_t* end = buffer + l;
             uint32_t* b = buffer;
-            while(b < end) {
-                int px = x >> 16;
-                int py = y >> 16;
-                if((px < 0) || (px >= image_width) || (py < 0) || (py >= image_height)) {
-                    *b = 0x00000000;
-                } else {
-                    *b = ((const uint32_t*)(texture->data + py * texture->stride))[px];
+            
+            if(use_bilinear) {
+                while(b < end) {
+                    *b = bilinear_sample(sample_texture, x, y);
+                    x += fdx;
+                    y += fdy;
+                    ++b;
                 }
-
-                x += fdx;
-                y += fdy;
-                ++b;
+            } else {
+                while(b < end) {
+                    *b = lanczos3_sample(sample_texture, x, y);
+                    x += fdx;
+                    y += fdy;
+                    ++b;
+                }
             }
 
             func(target, l, buffer, coverage);
@@ -815,6 +1299,9 @@ static void blend_transformed_argb(plutovg_surface_t* surface, plutovg_operator_
 
         ++spans;
     }
+    
+    // Clean up intermediate surfaces
+    destroy_progressive_mipmap(&mipmap);
 }
 
 static void blend_untransformed_tiled_argb(plutovg_surface_t* surface, plutovg_operator_t op, const texture_data_t* texture, const plutovg_span_buffer_t* span_buffer)
