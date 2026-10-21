@@ -186,7 +186,7 @@ Rect SVGLineElement::updateShape(Path& path)
 
     path.moveTo(x1, y1);
     path.lineTo(x2, y2);
-    return Rect(x1, y1, x2 - x1, y2 - y1);
+    return Rect(std::min(x1, x2), std::min(y1, y2), std::abs(x2 - x1), std::abs(y2 - y1));
 }
 
 SVGRectElement::SVGRectElement(Document* document)
