@@ -45,6 +45,7 @@ endif
 plutovg_sources = [
     'source/plutovg-blend.c',
     'source/plutovg-canvas.c',
+    'source/plutovg-filter.c',
     'source/plutovg-font.c',
     'source/plutovg-matrix.c',
     'source/plutovg-paint.c',

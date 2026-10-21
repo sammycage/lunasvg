@@ -9,6 +9,7 @@ project(plutovg LANGUAGES C VERSION ${PLUTOVG_VERSION_MAJOR}.${PLUTOVG_VERSION_M
 set(plutovg_sources
     source/plutovg-blend.c
     source/plutovg-canvas.c
+    source/plutovg-filter.c
     source/plutovg-font.c
     source/plutovg-matrix.c
     source/plutovg-paint.c
@@ -23,6 +24,7 @@ set(plutovg_sources
 set(plutovg_headers
     include/plutovg.h
     source/plutovg-private.h
+    source/plutovg-filter.h
     source/plutovg-utils.h
     source/plutovg-ft-math.h
     source/plutovg-ft-raster.h

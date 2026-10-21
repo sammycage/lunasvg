@@ -2,6 +2,7 @@
 #include "svgpaintelement.h"
 #include "svggeometryelement.h"
 #include "svgtextelement.h"
+#include "svgfilterelement.h"
 #include "svgproperty.h"
 #include "svglayoutstate.h"
 #include "svgrenderstate.h"
@@ -21,6 +22,31 @@ ElementID elementid(std::string_view name)
         {"clipPath", ElementID::ClipPath},
         {"defs", ElementID::Defs},
         {"ellipse", ElementID::Ellipse},
+        {"feBlend", ElementID::FeBlend},
+        {"feColorMatrix", ElementID::FeColorMatrix},
+        {"feComponentTransfer", ElementID::FeComponentTransfer},
+        {"feComposite", ElementID::FeComposite},
+        {"feConvolveMatrix", ElementID::FeConvolveMatrix},
+        {"feDiffuseLighting", ElementID::FeDiffuseLighting},
+        {"feDisplacementMap", ElementID::FeDisplacementMap},
+        {"feDistantLight", ElementID::FeDistantLight},
+        {"feFlood", ElementID::FeFlood},
+        {"feFuncA", ElementID::FeFuncA},
+        {"feFuncB", ElementID::FeFuncB},
+        {"feFuncG", ElementID::FeFuncG},
+        {"feFuncR", ElementID::FeFuncR},
+        {"feGaussianBlur", ElementID::FeGaussianBlur},
+        {"feImage", ElementID::FeImage},
+        {"feMerge", ElementID::FeMerge},
+        {"feMergeNode", ElementID::FeMergeNode},
+        {"feMorphology", ElementID::FeMorphology},
+        {"feOffset", ElementID::FeOffset},
+        {"fePointLight", ElementID::FePointLight},
+        {"feSpecularLighting", ElementID::FeSpecularLighting},
+        {"feSpotLight", ElementID::FeSpotLight},
+        {"feTile", ElementID::FeTile},
+        {"feTurbulence", ElementID::FeTurbulence},
+        {"filter", ElementID::Filter},
         {"g", ElementID::G},
         {"image", ElementID::Image},
         {"line", ElementID::Line},
@@ -116,8 +142,55 @@ std::unique_ptr<SVGElement> SVGElement::create(Document* document, ElementID id)
         return std::make_unique<SVGTextElement>(document);
     case ElementID::Tspan:
         return std::make_unique<SVGTSpanElement>(document);
+    case ElementID::Filter:
+        return std::make_unique<SVGFilterElement>(document);
+    case ElementID::FeFlood:
+        return std::make_unique<SVGFeFloodElement>(document);
+    case ElementID::FeOffset:
+        return std::make_unique<SVGFeOffsetElement>(document);
+    case ElementID::FeMerge:
+        return std::make_unique<SVGFeMergeElement>(document);
+    case ElementID::FeMergeNode:
+        return std::make_unique<SVGFeMergeNodeElement>(document);
+    case ElementID::FeGaussianBlur:
+        return std::make_unique<SVGFeGaussianBlurElement>(document);
+    case ElementID::FeBlend:
+        return std::make_unique<SVGFeBlendElement>(document);
+    case ElementID::FeColorMatrix:
+        return std::make_unique<SVGFeColorMatrixElement>(document);
+    case ElementID::FeComposite:
+        return std::make_unique<SVGFeCompositeElement>(document);
+    case ElementID::FeComponentTransfer:
+        return std::make_unique<SVGFeComponentTransferElement>(document);
+    case ElementID::FeFuncR:
+    case ElementID::FeFuncG:
+    case ElementID::FeFuncB:
+    case ElementID::FeFuncA:
+        return std::make_unique<SVGFeFuncElement>(document, id);
+    case ElementID::FeMorphology:
+        return std::make_unique<SVGFeMorphologyElement>(document);
+    case ElementID::FeTile:
+        return std::make_unique<SVGFeTileElement>(document);
+    case ElementID::FeImage:
+        return std::make_unique<SVGFeImageElement>(document);
+    case ElementID::FeTurbulence:
+        return std::make_unique<SVGFeTurbulenceElement>(document);
+    case ElementID::FeConvolveMatrix:
+        return std::make_unique<SVGFeConvolveMatrixElement>(document);
+    case ElementID::FeDisplacementMap:
+        return std::make_unique<SVGFeDisplacementMapElement>(document);
+    case ElementID::FeDistantLight:
+        return std::make_unique<SVGFeDistantLightElement>(document);
+    case ElementID::FePointLight:
+        return std::make_unique<SVGFePointLightElement>(document);
+    case ElementID::FeSpotLight:
+        return std::make_unique<SVGFeSpotLightElement>(document);
+    case ElementID::FeDiffuseLighting:
+        return std::make_unique<SVGFeDiffuseLightingElement>(document);
+    case ElementID::FeSpecularLighting:
+        return std::make_unique<SVGFeSpecularLightingElement>(document);
     default:
-        assert(false);
+        break;
     }
 
     return nullptr;
@@ -350,6 +423,14 @@ SVGMaskElement* SVGElement::getMasker(std::string_view id) const
     return nullptr;
 }
 
+SVGFilterElement* SVGElement::getFilter(std::string_view id) const
+{
+    auto element = rootElement()->getElementById(id);
+    if(element && element->id() == ElementID::Filter)
+        return static_cast<SVGFilterElement*>(element);
+    return nullptr;
+}
+
 SVGPaintElement* SVGElement::getPainter(std::string_view id) const
 {
     auto element = rootElement()->getElementById(id);
@@ -454,6 +535,7 @@ void SVGElement::layoutElement(const SVGLayoutState& state)
     m_paintBoundingBox = Rect::Invalid;
     m_clipper = getClipper(state.clip_path());
     m_masker = getMasker(state.mask());
+    m_filter = getFilter(state.filter());
     m_opacity = state.opacity();
 
     m_font_size = state.font_size();
@@ -506,6 +588,31 @@ bool SVGElement::isHiddenElement() const
     case ElementID::RadialGradient:
     case ElementID::Pattern:
     case ElementID::Stop:
+    case ElementID::Filter:
+    case ElementID::FeBlend:
+    case ElementID::FeColorMatrix:
+    case ElementID::FeComponentTransfer:
+    case ElementID::FeComposite:
+    case ElementID::FeConvolveMatrix:
+    case ElementID::FeDiffuseLighting:
+    case ElementID::FeDisplacementMap:
+    case ElementID::FeDistantLight:
+    case ElementID::FeFlood:
+    case ElementID::FeFuncA:
+    case ElementID::FeFuncB:
+    case ElementID::FeFuncG:
+    case ElementID::FeFuncR:
+    case ElementID::FeGaussianBlur:
+    case ElementID::FeImage:
+    case ElementID::FeMerge:
+    case ElementID::FeMergeNode:
+    case ElementID::FeMorphology:
+    case ElementID::FeOffset:
+    case ElementID::FePointLight:
+    case ElementID::FeSpecularLighting:
+    case ElementID::FeSpotLight:
+    case ElementID::FeTile:
+    case ElementID::FeTurbulence:
         return true;
     default:
         return false;
