@@ -56,6 +56,7 @@ public:
 
 private:
     void handleText(const SVGTextNode* node);
+    void removeTrailingCollapsibleSpace();
     void handleElement(const SVGTextPositioningElement* element);
     void fillCharacterPositions(const SVGTextPosition& position);
     std::u32string& m_text;

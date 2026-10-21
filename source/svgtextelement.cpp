@@ -2,6 +2,7 @@
 #include "svglayoutstate.h"
 #include "svgrenderstate.h"
 
+#include <algorithm>
 #include <cassert>
 
 namespace lunasvg {
@@ -231,6 +232,7 @@ SVGTextFragmentsBuilder::SVGTextFragmentsBuilder(std::u32string& text, SVGTextFr
 void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
 {
     handleElement(textElement);
+    removeTrailingCollapsibleSpace();
     for(const auto& position : m_textPositions) {
         fillCharacterPositions(position);
     }
@@ -345,6 +347,30 @@ void SVGTextFragmentsBuilder::build(const SVGTextElement* textElement)
     }
 
     handleTextChunk(begin, it);
+}
+
+void SVGTextFragmentsBuilder::removeTrailingCollapsibleSpace()
+{
+    if(m_text.empty() || m_text.back() != ' ')
+        return;
+    auto it = std::find_if(m_textPositions.rbegin(), m_textPositions.rend(), [](const auto& position) {
+        return position.node->isTextNode();
+    });
+
+    assert(it != m_textPositions.rend());
+    auto element = toSVGTextPositioningElement(it->node->parentElement());
+    if(element->white_space() != WhiteSpace::Default)
+        return;
+    m_text.pop_back();
+    const auto length = m_text.length();
+    if(it->startOffset == length) {
+        m_textPositions.erase(std::next(it).base());
+    }
+
+    for(auto& position : m_textPositions) {
+        position.startOffset = std::min(position.startOffset, length);
+        position.endOffset = std::min(position.endOffset, length);
+    }
 }
 
 void SVGTextFragmentsBuilder::handleText(const SVGTextNode* node)
