@@ -260,6 +260,7 @@ public:
     const SVGRect& viewBox() const { return m_viewBox; }
     const SVGPreserveAspectRatio& preserveAspectRatio() const { return m_preserveAspectRatio; }
     Transform viewBoxToViewTransform(const Size& viewportSize) const;
+    bool hasEmptyViewBox() const { return m_viewBox.value().isValid() && m_viewBox.value().isEmpty(); }
     Rect getClipRect(const Size& viewportSize) const;
 
 private:
