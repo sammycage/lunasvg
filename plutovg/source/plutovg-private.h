@@ -3,6 +3,12 @@
 
 #include "plutovg.h"
 
+#if defined(_MSC_VER)
+#define CDECL __cdecl
+#else
+#define CDECL
+#endif
+
 #if defined(_WIN32)
 
 #include <windows.h>
