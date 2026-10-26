@@ -137,6 +137,8 @@ bool SVGLinearGradientElement::applyPaint(SVGRenderState& state, float opacity) 
     auto gradientStops = buildGradientStops(gradientContentElement, opacity);
     if(gradientStops.empty())
         return false;
+    if(attributes.gradientUnits() == Units::ObjectBoundingBox && state.fillBoundingBox().isEmpty())
+        return false;
     LengthContext lengthContext(this, attributes.gradientUnits());
     auto x1 = lengthContext.valueForLength(attributes.x1());
     auto y1 = lengthContext.valueForLength(attributes.y1());
@@ -181,6 +183,8 @@ bool SVGRadialGradientElement::applyPaint(SVGRenderState& state, float opacity) 
     auto gradientContentElement = attributes.gradientContentElement();
     auto gradientStops = buildGradientStops(gradientContentElement, opacity);
     if(gradientStops.empty())
+        return false;
+    if(attributes.gradientUnits() == Units::ObjectBoundingBox && state.fillBoundingBox().isEmpty())
         return false;
     LengthContext lengthContext(this, attributes.gradientUnits());
     auto r = lengthContext.valueForLength(attributes.r());
