@@ -851,8 +851,8 @@ SVGImageElement::SVGImageElement(Document* document)
     : SVGGraphicsElement(document, ElementID::Image)
     , m_x(PropertyID::X, LengthDirection::Horizontal, LengthNegativeMode::Allow, 0.f, LengthUnits::None)
     , m_y(PropertyID::Y, LengthDirection::Vertical, LengthNegativeMode::Allow, 0.f, LengthUnits::None)
-    , m_width(PropertyID::Width, LengthDirection::Horizontal, LengthNegativeMode::Forbid, 100.f, LengthUnits::Percent)
-    , m_height(PropertyID::Height, LengthDirection::Vertical, LengthNegativeMode::Forbid, 100.f, LengthUnits::Percent)
+    , m_width(PropertyID::Width, LengthDirection::Horizontal, LengthNegativeMode::Forbid, -1.f, LengthUnits::None)
+    , m_height(PropertyID::Height, LengthDirection::Vertical, LengthNegativeMode::Forbid, -1.f, LengthUnits::None)
     , m_preserveAspectRatio(PropertyID::PreserveAspectRatio)
 {
     addProperty(m_x);
@@ -865,12 +865,22 @@ SVGImageElement::SVGImageElement(Document* document)
 Rect SVGImageElement::fillBoundingBox() const
 {
     LengthContext lengthContext(this);
-    const Rect viewportRect = {
+    Rect viewportRect = {
         lengthContext.valueForLength(m_x),
         lengthContext.valueForLength(m_y),
         lengthContext.valueForLength(m_width),
         lengthContext.valueForLength(m_height)
     };
+
+    const Size imageSize(m_image.width(), m_image.height());
+    if(viewportRect.w < 0.f && viewportRect.h < 0.f) {
+        viewportRect.w = imageSize.w;
+        viewportRect.h = imageSize.h;
+    } else if(viewportRect.w < 0.f) {
+        viewportRect.w = imageSize.h > 0.f ? viewportRect.h * imageSize.w / imageSize.h : 0.f;
+    } else if(viewportRect.h < 0.f) {
+        viewportRect.h = imageSize.w > 0.f ? viewportRect.w * imageSize.h / imageSize.w : 0.f;
+    }
 
     return viewportRect;
 }
